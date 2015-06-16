@@ -1,0 +1,59 @@
+buildscript {
+	repositories {
+		mavenCentral()
+	}
+	dependencies {
+		classpath 'com.android.tools.build:gradle:1.2.3'
+	}
+}
+
+apply plugin: 'android'
+
+repositories {
+	mavenLocal()
+	mavenCentral()
+	maven { url 'https://download.01.org/crosswalk/releases/crosswalk/android/maven2'}
+}
+
+// from https://stackoverflow.com/questions/28781803/embed-crosswalk-in-android-studio
+def xwalkVersion = '13.42.319.11'
+dependencies {
+	compile fileTree(dir: 'libs', include: ['*.jar'])
+	compile 'com.android.support:appcompat-v7:21.0.3'
+	compile "org.xwalk:xwalk_core_library:$xwalkVersion"
+}
+
+task removeUnwantedNativeBinaries (type: Delete) {
+	def badArchitectures = ['x86']
+	def jniRootDir = "$buildDir/intermediates/exploded-aar/org.xwalk/xwalk_core_library/$xwalkVersion/jni"
+	doFirst {
+		println 'Removing unwanted native binaries...'
+		badArchitectures.each { arch ->
+			println "Removing dir: $jniRootDir/$arch"
+		}
+	}
+	delete badArchitectures.collect { arch -> "$jniRootDir/$arch" }
+}
+
+tasks.whenTaskAdded { t ->
+	if(t.name ==~ /compile\w+Java/) {
+		t.dependsOn removeUnwantedNativeBinaries
+	}
+}
+
+android {
+	compileSdkVersion 'Google Inc.:Google APIs:22'
+	buildToolsVersion '22.0.1'
+	packagingOptions {
+		exclude 'META-INF/LICENSE'
+		exclude 'META-INF/NOTICE'
+	}
+
+	buildTypes {
+		release {
+			minifyEnabled false
+			proguardFile getDefaultProguardFile('proguard-android.txt')
+			signingConfig signingConfigs.debug
+		}
+	}
+}
