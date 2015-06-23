@@ -23,6 +23,9 @@ public class EmbeddedBrowserActivity extends Activity {
 
 		WebView container = (WebView) findViewById(R.id.WebViewContainer);
 		container.getSettings().setJavaScriptEnabled(true);
+		container.addJavascriptInterface(
+				new MedicAndroidJavascript(),
+				"medicmobile_android");
 
 		handleAuth(container);
 
