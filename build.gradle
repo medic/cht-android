@@ -22,6 +22,12 @@ android {
 		exclude 'META-INF/NOTICE'
 	}
 
+	applicationVariants.all {
+		buildConfigField "boolean", "DEFAULT_TO_DEMO_APP",
+				(System.env.DEFAULT_TO_DEMO_APP ?: "true")
+
+	}
+
 	buildTypes {
 		release {
 			minifyEnabled false

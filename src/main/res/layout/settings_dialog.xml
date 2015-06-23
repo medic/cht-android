@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+		android:layout_width="fill_parent"
+		android:layout_height="fill_parent"
+		android:paddingLeft="16dp"
+		android:paddingRight="16dp"
+		android:orientation="vertical">
+	<EditText android:id="@+id/txtAppUrl"
+			android:hint="@string/txtAppUrl"
+			android:layout_width="fill_parent"
+			android:layout_height="wrap_content"
+			android:inputType="textUri"/>
+	<EditText android:id="@+id/txtUsername"
+			android:hint="@string/txtUsername"
+			android:layout_width="fill_parent"
+			android:layout_height="wrap_content"
+			android:inputType="text"/>
+	<EditText android:id="@+id/txtPassword"
+			android:hint="@string/txtPassword"
+			android:layout_width="fill_parent"
+			android:layout_height="wrap_content"
+			android:inputType="text"/>
+	<Button android:text="@string/btnSaveSettings"
+			android:onClick="verifyAndSave"
+			android:layout_height="wrap_content"
+			android:layout_width="wrap_content"
+			android:layout_gravity="right"
+			android:paddingLeft="16dp"
+			android:paddingRight="16dp"/>
+</LinearLayout>

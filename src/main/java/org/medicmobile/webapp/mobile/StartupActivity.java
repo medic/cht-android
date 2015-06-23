@@ -16,8 +16,7 @@ public class StartupActivity extends Activity {
 		if(SettingsStore.$.hasSettings()) {
 			newActivity = EmbeddedBrowserActivity.class;
 		} else {
-			// TODO launch settings request dialog
-			newActivity = null;
+			newActivity = SettingsDialogActivity.class;
 		}
 
 		if(DEBUG) log("Starting new activity with class %s", newActivity);

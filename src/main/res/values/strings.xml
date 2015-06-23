@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Medic Mobile</string>
+	<string name="app_name">Medic Mobile</string>
+	<string name="txtAppUrl">Webapp URL</string>
+	<string name="txtUsername">Username</string>
+	<string name="txtPassword">Password</string>
+	<string name="btnSaveSettings">Save</string>
 </resources>

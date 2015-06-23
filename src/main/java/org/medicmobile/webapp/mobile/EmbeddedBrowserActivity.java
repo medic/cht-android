@@ -8,8 +8,6 @@ import java.util.regex.*;
 
 public class EmbeddedBrowserActivity extends Activity {
 	private static final boolean DEBUG = BuildConfig.DEBUG;
-	private static final Pattern URL_PATTERN = Pattern.compile(
-			"http[s]?://([^/:]*)(:\\d*)?(.*)");
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -29,7 +27,7 @@ public class EmbeddedBrowserActivity extends Activity {
 		final String url = SettingsStore.$.getAppUrl();
 		log("Setting up Basic Auth credentials for %s...", url);
 
-		final Matcher m = URL_PATTERN.matcher(url);
+		final Matcher m = Settings.URL_PATTERN.matcher(url);
 		if(!m.matches()) {
 			throw new IllegalArgumentException("URL does not appear valid: " + url);
 		}
