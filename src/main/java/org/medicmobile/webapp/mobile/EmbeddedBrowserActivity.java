@@ -9,6 +9,12 @@ import java.util.regex.*;
 public class EmbeddedBrowserActivity extends Activity {
 	private static final boolean DEBUG = BuildConfig.DEBUG;
 
+	private final SettingsStore settings;
+
+	public EmbeddedBrowserActivity() {
+		this.settings = SettingsStore.in(this);
+	}
+
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
@@ -18,13 +24,13 @@ public class EmbeddedBrowserActivity extends Activity {
 
 		handleAuth(container);
 
-		String url = SettingsStore.$.getAppUrl();
+		String url = settings.getAppUrl();
 		if(DEBUG) log("Pointing browser to %s", url);
 		container.loadUrl(url);
 	}
 
 	private void handleAuth(WebView container) {
-		final String url = SettingsStore.$.getAppUrl();
+		final String url = settings.getAppUrl();
 		log("Setting up Basic Auth credentials for %s...", url);
 
 		final Matcher m = Settings.URL_PATTERN.matcher(url);
@@ -35,8 +41,8 @@ public class EmbeddedBrowserActivity extends Activity {
 		final String authPort = m.group(2);
 		final String authRealm = "couch";
 
-		final String username = SettingsStore.$.getUsername();
-		final String password = SettingsStore.$.getPassword();
+		final String username = settings.getUsername();
+		final String password = settings.getPassword();
 
 		log("username=%s, password=%s, host=%s, port=%s, realm=%s",
 				username, password, authHost, authPort, authRealm);

@@ -5,7 +5,7 @@ import android.content.*;
 import android.webkit.*;
 import android.os.*;
 
-public class StartupActivity extends Activity {
+public class StartupActivity extends Activity implements SettingsLoader {
 	private static final boolean DEBUG = BuildConfig.DEBUG;
 
 	public void onCreate(Bundle savedInstanceState) {
@@ -13,7 +13,7 @@ public class StartupActivity extends Activity {
 		super.onCreate(savedInstanceState);
 
 		Class newActivity;
-		if(SettingsStore.$.hasSettings()) {
+		if(SettingsStore.in(this).hasSettings()) {
 			newActivity = EmbeddedBrowserActivity.class;
 		} else {
 			newActivity = SettingsDialogActivity.class;

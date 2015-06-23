@@ -25,14 +25,19 @@ public class SettingsDialogActivity extends Activity {
 				text(R.id.txtUsername),
 				text(R.id.txtPassword));
 		try {
-			SettingsStore.$.save(s);
+			SettingsStore.in(this).save(s);
 			startActivity(new Intent(this,
 					EmbeddedBrowserActivity.class));
 			finish();
 		} catch(IllegalSettingsException ex) {
+			if(DEBUG) ex.printStackTrace();
 			for(IllegalSetting error : ex.errors) {
 				showError(error);
 			}
+		} catch(SettingsException ex) {
+			if(DEBUG) ex.printStackTrace();
+			((Button) findViewById(R.id.btnSaveSettings))
+					.setError(ex.getMessage());
 		}
 	}
 

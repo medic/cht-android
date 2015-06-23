@@ -20,7 +20,8 @@
 			android:layout_width="fill_parent"
 			android:layout_height="wrap_content"
 			android:inputType="text"/>
-	<Button android:text="@string/btnSaveSettings"
+	<Button  android:id="@+id/btnSaveSettings"
+			android:text="@string/btnSaveSettings"
 			android:onClick="verifyAndSave"
 			android:layout_height="wrap_content"
 			android:layout_width="wrap_content"
