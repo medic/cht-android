@@ -1,8 +1,10 @@
 package org.medicmobile.webapp.mobile;
 
 import android.app.*;
+import android.content.*;
 import android.webkit.*;
 import android.os.*;
+import android.view.*;
 
 import java.util.regex.*;
 
@@ -29,9 +31,24 @@ public class EmbeddedBrowserActivity extends Activity {
 		container.loadUrl(url);
 	}
 
+	public boolean onCreateOptionsMenu(Menu menu) {
+		getMenuInflater().inflate(R.menu.web_menu, menu);
+		return super.onCreateOptionsMenu(menu);
+	}
+
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch(item.getItemId()) {
+			case R.id.mnuSettings:
+				openSettings();
+				return true;
+			default:
+				return super.onOptionsItemSelected(item);
+		}
+	}
+
 	private void handleAuth(WebView container) {
 		final String url = settings.getAppUrl();
-		log("Setting up Basic Auth credentials for %s...", url);
+		if(DEBUG) log("Setting up Basic Auth credentials for %s...", url);
 
 		final Matcher m = Settings.URL_PATTERN.matcher(url);
 		if(!m.matches()) {
@@ -44,7 +61,7 @@ public class EmbeddedBrowserActivity extends Activity {
 		final String username = settings.getUsername();
 		final String password = settings.getPassword();
 
-		log("username=%s, password=%s, host=%s, port=%s, realm=%s",
+		if(DEBUG) log("username=%s, password=%s, host=%s, port=%s, realm=%s",
 				username, password, authHost, authPort, authRealm);
 
 		container.setHttpAuthUsernamePassword(authHost, authRealm,
@@ -64,12 +81,18 @@ public class EmbeddedBrowserActivity extends Activity {
 							requestHost, requestRealm);
 					return;
 				}
-				log("Providing credentials %s:%s to %s|%s",
+				if(DEBUG) log("Providing credentials %s:%s to %s|%s",
 					username, password,
 					requestHost, requestRealm);
 				handler.proceed(username, password);
 			}
 		});
+	}
+
+	private void openSettings() {
+		startActivity(new Intent(this,
+				SettingsDialogActivity.class));
+		finish();
 	}
 
 	private void log(String message, Object...extras) {

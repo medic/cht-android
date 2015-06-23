@@ -5,4 +5,5 @@
 	<string name="txtUsername">Username</string>
 	<string name="txtPassword">Password</string>
 	<string name="btnSaveSettings">Save</string>
+	<string name="mnuSettings">Settings</string>
 </resources>
