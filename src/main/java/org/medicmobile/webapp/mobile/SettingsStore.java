@@ -18,4 +18,14 @@ public class SettingsStore {
 	public String getAppUrl() {
 		return "https://demo.app.medicmobile.org";
 	}
+
+	public boolean hasSettings() {
+		return isSet(getAppUrl()) &&
+				isSet(getUsername()) &&
+				isSet(getPassword());
+	}
+
+	private boolean isSet(String val) {
+		return val != null && val.length() > 0;
+	}
 }
