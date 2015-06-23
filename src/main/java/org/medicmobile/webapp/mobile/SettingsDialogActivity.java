@@ -10,11 +10,19 @@ import android.widget.*;
 public class SettingsDialogActivity extends Activity {
 	private static final boolean DEBUG = BuildConfig.DEBUG;
 
+	private SettingsStore settings;
+
 	public void onCreate(Bundle savedInstanceState) {
 		if(DEBUG) log("Starting...");
 		super.onCreate(savedInstanceState);
 
 		setContentView(R.layout.settings_dialog);
+
+		this.settings = SettingsStore.in(this);
+
+		text(R.id.txtAppUrl, settings.getAppUrl());
+		text(R.id.txtUsername, settings.getUsername());
+		text(R.id.txtPassword, settings.getPassword());
 	}
 
 	public void verifyAndSave(View view) {
@@ -25,7 +33,7 @@ public class SettingsDialogActivity extends Activity {
 				text(R.id.txtUsername),
 				text(R.id.txtPassword));
 		try {
-			SettingsStore.in(this).save(s);
+			settings.save(s);
 			startActivity(new Intent(this,
 					EmbeddedBrowserActivity.class));
 			finish();
@@ -44,6 +52,11 @@ public class SettingsDialogActivity extends Activity {
 	private String text(int componentId) {
 		EditText field = (EditText) findViewById(componentId);
 		return field.getText().toString();
+	}
+
+	private void text(int componentId, String value) {
+		EditText field = (EditText) findViewById(componentId);
+		field.setText(value);
 	}
 
 	private void removeError(int componentId) {
