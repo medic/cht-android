@@ -15,30 +15,12 @@ public class SettingsStore {
 		this.prefs = prefs;
 	}
 
-	public synchronized static SettingsStore in(ContextWrapper ctx) {
-		if(DEBUG) log("Loading settings for %s...", ctx);
-
-		if(instance != null) return instance; // TODO this is a heck to help diagnose the NPE when loading from EmbeddedBrowserActivity
-
+	public static SettingsStore in(ContextWrapper ctx) {
+		if(DEBUG) log("Loading settings for context %s...", ctx);
 		SharedPreferences prefs = ctx.getSharedPreferences(
 				SettingsStore.class.getName(),
 				Context.MODE_PRIVATE);
-		instance = new SettingsStore(prefs); // TODO more NPE hack
-
-		if(ctx instanceof SettingsLoader) {
-			if(DEBUG) log("Checking for settings in SharedPreferences...");
-			if(instance.hasSettings()) return instance;
-
-			if(DEBUG) log("Checking for settings in bundle...");
-			if(instance.loadFromBundle()) return instance;
-
-			if(BuildConfig.DEFAULT_TO_DEMO_APP) {
-				if(DEBUG) log("Loading demo settings...");
-				if(instance.loadDemo()) return instance;
-			} else if(DEBUG) log("Not checking settings.");
-		}
-
-		return instance;
+		return new SettingsStore(prefs);
 	}
 
 //> ACCESSORS
@@ -83,19 +65,6 @@ public class SettingsStore {
 		ed.putString("password", s.password);
 		if(!ed.commit()) throw new SettingsException(
 				"Failed to save to SharedPreferences.");
-	}
-
-//> LOADERS
-	private boolean loadFromBundle() {
-		// TODO implement this
-		// TODO if read from bundle:
-		//   1. save to preferences
-		//   2. clear app cache and offline storage
-		return false;
-	}
-
-	private boolean loadDemo() {
-		return save("https://demo.app.medicmobile.org", "demo", "medic");
 	}
 
 	private static void log(String message, Object...extras) {
@@ -194,5 +163,3 @@ class IllegalSettingsException extends SettingsException {
 		return null;
 	}
 }
-
-interface SettingsLoader {}

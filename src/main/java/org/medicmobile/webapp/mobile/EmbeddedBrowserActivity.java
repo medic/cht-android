@@ -11,14 +11,11 @@ import java.util.regex.*;
 public class EmbeddedBrowserActivity extends Activity {
 	private static final boolean DEBUG = BuildConfig.DEBUG;
 
-	private final SettingsStore settings;
-
-	public EmbeddedBrowserActivity() {
-		this.settings = SettingsStore.in(this);
-	}
+	private SettingsStore settings;
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		this.settings = SettingsStore.in(this);
 		setContentView(R.layout.main);
 
 		WebView container = (WebView) findViewById(R.id.WebViewContainer);

@@ -17,10 +17,9 @@ public class SettingsDialogActivity extends Activity {
 	public void onCreate(Bundle savedInstanceState) {
 		if(DEBUG) log("Starting...");
 		super.onCreate(savedInstanceState);
-
+		this.settings = SettingsStore.in(this);
 		setContentView(R.layout.settings_dialog);
 
-		this.settings = SettingsStore.in(this);
 
 		text(R.id.txtAppUrl, settings.getAppUrl());
 		text(R.id.txtUsername, settings.getUsername());

@@ -5,7 +5,7 @@ import android.content.*;
 import android.webkit.*;
 import android.os.*;
 
-public class StartupActivity extends Activity implements SettingsLoader {
+public class StartupActivity extends Activity {
 	private static final boolean DEBUG = BuildConfig.DEBUG;
 
 	public void onCreate(Bundle savedInstanceState) {
