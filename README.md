@@ -5,7 +5,8 @@ Medic Mobile Demo Webapp Mobile Demo
 
 1. Plug in your android phone
 2. execute:
-
-	git clone git@github.com:alxndrsn/medic-webapp-mobile-demo.git && \
-	cd medic-webapp-mobile-demo && \
-	make
+```
+git clone git@github.com:alxndrsn/medic-webapp-mobile-demo.git && \
+cd medic-webapp-mobile-demo && \
+make
+```
