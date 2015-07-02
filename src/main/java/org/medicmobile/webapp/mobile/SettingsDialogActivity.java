@@ -20,7 +20,6 @@ public class SettingsDialogActivity extends Activity {
 		this.settings = SettingsStore.in(this);
 		setContentView(R.layout.settings_dialog);
 
-
 		text(R.id.txtAppUrl, settings.getAppUrl());
 		text(R.id.txtUsername, settings.getUsername());
 		text(R.id.txtPassword, settings.getPassword());
@@ -33,14 +32,17 @@ public class SettingsDialogActivity extends Activity {
 	public void verifyAndSave(View view) {
 		log("verifyAndSave");
 
-		Settings s = new Settings(
-				text(R.id.txtAppUrl),
+		String appUrl = text(R.id.txtAppUrl);
+		Settings oldSettings = settings.get();
+		Settings newSettings = new Settings(
+				appUrl,
 				text(R.id.txtUsername),
 				text(R.id.txtPassword));
 		try {
-			settings.save(s);
-			startActivity(new Intent(this,
-					EmbeddedBrowserActivity.class));
+			settings.save(newSettings);
+			new IconChangerTask().execute(getApplicationContext(),
+					oldSettings, newSettings);
+			startActivity(new Intent(this, EmbeddedBrowserActivity.class));
 			finish();
 		} catch(IllegalSettingsException ex) {
 			if(DEBUG) ex.printStackTrace();
@@ -85,18 +87,18 @@ class PreconfigSpinner
 		implements android.widget.AdapterView.OnItemSelectedListener {
 	private final Activity ctx;
 	private final int targetId;
-	private final List<PreconfigOption> options;
+	private final PreconfigProvider preconfig;
 
 	public PreconfigSpinner(Activity ctx, int spinnerId, int targetId,
 			final String initialUrl) {
 		this.ctx = ctx;
 		this.targetId = targetId;
 
-		options = getAppPreconfOptions();
+		preconfig = new PreconfigProvider(ctx);
 		ArrayAdapter<PreconfigOption> adapter =
 				new ArrayAdapter<PreconfigOption>(ctx,
 						android.R.layout.simple_spinner_item,
-						options);
+						preconfig.options);
 		adapter.setDropDownViewResource(
 				android.R.layout.simple_spinner_dropdown_item);
 
@@ -104,12 +106,7 @@ class PreconfigSpinner
 		spinner.setOnItemSelectedListener(this);
 		spinner.setAdapter(adapter);
 
-		spinner.setSelection(Func.findIndex(options,
-				new Func<PreconfigOption, Boolean>() {
-			public Boolean apply(PreconfigOption o) {
-				return o.url.equals(initialUrl);
-			}
-		}));
+		spinner.setSelection(preconfig.indexOf(initialUrl));
 	}
 
 //> SPINNER EVENT HANDLERS
@@ -118,7 +115,7 @@ class PreconfigSpinner
 		if(DEBUG) log("onItemSelected() :: " +
 				"parent=%s, view=%s, position=%s, id=%s",
 				parent, view, position, id);
-		PreconfigOption selected = options.get(position);
+		PreconfigOption selected = preconfig.options.get(position);
 		EditText target = (EditText) ctx.findViewById(targetId);
 
 		// Allow editing of custom URLs.  When switching from preconfig
@@ -132,33 +129,8 @@ class PreconfigSpinner
 	public void onNothingSelected(AdapterView<?> parent) {}
 
 //> PRIVATE HELPERS
-	private List<PreconfigOption> getAppPreconfOptions() {
-		String[] strings = ctx.getResources()
-				.getStringArray(R.array.app_preconfigurations);
-		return Func.map(strings, new Func<String, PreconfigOption>() {
-			public PreconfigOption apply(String s) {
-				String[] parts = s.split("\\|", 2);
-				return new PreconfigOption(parts[1], parts[0]);
-			}
-		});
-	}
-
 	private void log(String message, Object...extras) {
 		if(DEBUG) System.err.println("LOG | PreconfigSpinner :: " +
 				String.format(message, extras));
-	}
-}
-
-class PreconfigOption {
-	public final String description;
-	public final String url;
-
-	public PreconfigOption(String description, String url) {
-		this.description = description;
-		this.url = url;
-	}
-
-	public String toString() {
-		return this.description;
 	}
 }

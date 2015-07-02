@@ -6,9 +6,4 @@
 	<string name="txtPassword">Password</string>
 	<string name="btnSaveSettings">Save</string>
 	<string name="mnuSettings">Settings</string>
-	<string-array name="app_preconfigurations">
-		<item>|Configure URL Manually</item>
-		<item>https://demo.app.medicmobile.org/|MedicMobile demo</item>
-		<item>http://example.com/lg|Living Goods</item>
-	</string-array>
 </resources>

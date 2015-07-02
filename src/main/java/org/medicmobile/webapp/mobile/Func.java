@@ -13,15 +13,40 @@ public abstract class Func<X, Y> {
 		return result;
 	}
 
-	public static <A> int findIndex(List<A> collection, Func<A, Boolean> func) {
+	public static <A> A find(List<A> collection, Func<A, Boolean> func) {
 		int index = 0;
 		Iterator<A> i = collection.iterator();
 
 		while(i.hasNext()) {
-			if(func.apply(i.next())) return index;
+			A next = i.next();
+			Boolean result = func.apply(next);
+			if(result != null && result) return next;
+		}
+
+		return null;
+	}
+
+	public static <A> int indexOf(List<A> collection, Func<A, Boolean> func) {
+		int index = 0;
+		Iterator<A> i = collection.iterator();
+
+		while(i.hasNext()) {
+			Boolean result = func.apply(i.next());
+			if(result != null && result) return index;
 			++index;
 		}
 
 		return -1;
+	}
+
+	public static <A> boolean any(List<A> collection, Func<A, Boolean> func) {
+		Iterator<A> i = collection.iterator();
+
+		while(i.hasNext()) {
+			Boolean result = func.apply(i.next());
+			if(result != null && result) return true;
+		}
+
+		return false;
 	}
 }

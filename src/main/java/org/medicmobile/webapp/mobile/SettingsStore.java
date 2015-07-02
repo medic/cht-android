@@ -34,16 +34,18 @@ public class SettingsStore {
 		return prefs.getString(key, null);
 	}
 
-	public boolean hasSettings() {
+	public Settings get() {
+		Settings s = new Settings(getAppUrl(), getUsername(), getPassword());
 		try {
-			new Settings(getAppUrl(), getUsername(), getPassword())
-					.validate();
+			s.validate();
 		} catch(IllegalSettingsException ex) {
-			log("hasSettings() :: false");
-			return false;
+			return null;
 		}
-		log("hasSettings() :: true");
-		return true;
+		return s;
+	}
+
+	public boolean hasSettings() {
+		return get() != null;
 	}
 
 	public boolean save(String appUrl, String username, String password) {
