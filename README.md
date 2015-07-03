@@ -3,7 +3,7 @@ Medic Mobile Android App
 
 # Build
 
-Travis build status: <img src="https://travis-ci.org/medic/medic-android.svg"/>
+Travis build status: <a href="https://travis-ci.org/medic/medic-android"><img src="https://travis-ci.org/medic/medic-android.svg"/></a>
 
 # Installation
 
