@@ -16,6 +16,8 @@ public class EmbeddedBrowserActivity extends Activity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		this.settings = SettingsStore.in(this);
+
+		this.requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.main);
 
 		WebView container = (WebView) findViewById(R.id.WebViewContainer);
