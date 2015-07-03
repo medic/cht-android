@@ -2,6 +2,7 @@ package org.medicmobile.webapp.mobile;
 
 import android.*;
 import android.content.*;
+import android.content.pm.*;
 import android.graphics.*;
 import android.graphics.drawable.*;
 import android.os.*;
@@ -14,6 +15,8 @@ import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static android.content.Intent.*;
 
 public class IconChangerTask extends AsyncTask<Object, Void, Void> {
+	private static final String CHANGER_IMP = BuildConfig.ICON_CHANGER;
+
 	protected Void doInBackground(Object... args) {
 		assert(args.length == 3);
 		Context ctx = (Context) args[0];
@@ -23,12 +26,27 @@ public class IconChangerTask extends AsyncTask<Object, Void, Void> {
 		if(oldSettings != null &&
 				oldSettings.appUrl.equals(newSettings.appUrl)) {
 			if(DEBUG) log("Not changing app icon, as URL has not changed.");
-		} else {
-			if(DEBUG) log("Changing app icon for URL: %s", newSettings.appUrl);
-			new IconChanger(ctx, oldSettings, newSettings).change();
+			return null;
 		}
 
+		IconChanger changer = createChanger(ctx, oldSettings, newSettings);
+		if(changer == null) {
+			if(DEBUG) log("Icon will not be changed - changer type not recognised/supported: %s", CHANGER_IMP);
+			return null;
+		}
+
+		if(DEBUG) log("Changing app icon for '%s' with changer %s", newSettings.appUrl, changer.getClass());
+		changer.change();
+
 		return null;
+	}
+
+	private IconChanger createChanger(Context ctx, Settings oldSettings, Settings newSettings) {
+		if(DEBUG) log("Attempting to load icon changer of type: %s...", CHANGER_IMP);
+		if(CHANGER_IMP.equals("shortcut")) {
+			return new ShortcutIconChanger(ctx, oldSettings, newSettings);
+		}
+		return new AliasIconChanger(ctx, oldSettings, newSettings);
 	}
 
 	private void log(String message, Object...extras) {
@@ -37,7 +55,57 @@ public class IconChangerTask extends AsyncTask<Object, Void, Void> {
 	}
 }
 
-class IconChanger {
+interface IconChanger {
+	void change();
+}
+
+class AliasIconChanger implements IconChanger {
+	private static final String PACKAGE = StartupActivity.class.getPackage().getName();
+	private static final String STARTUP_ACTIVITY = StartupActivity.class.getName();
+
+	private final Context ctx;
+	private final Settings oldSettings;
+	private final Settings newSettings;
+	private final PreconfigProvider preconfig;
+
+	public AliasIconChanger(Context ctx, Settings oldSettings, Settings newSettings) {
+		this.ctx = ctx;
+		this.oldSettings = oldSettings;
+		this.newSettings = newSettings;
+		this.preconfig = new PreconfigProvider(ctx);
+	}
+
+	public void change() {
+		PackageManager packageManager = ctx.getPackageManager();
+		packageManager.setComponentEnabledSetting(componentFor(oldSettings),
+				PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+				PackageManager.DONT_KILL_APP);
+		packageManager.setComponentEnabledSetting(componentFor(newSettings),
+				PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+				PackageManager.DONT_KILL_APP);
+	}
+
+	private ComponentName componentFor(Settings s) {
+		return new ComponentName(PACKAGE, activityNameFor(s));
+	}
+
+	private String activityNameFor(Settings s) {
+		if(s == null) return STARTUP_ACTIVITY;
+
+		PreconfigOption p = preconfig.with(s.appUrl);
+
+		if(p == null) return STARTUP_ACTIVITY;
+
+		return String.format("%s-%s", STARTUP_ACTIVITY, p.id);
+	}
+
+	private void log(String message, Object...extras) {
+		if(DEBUG) System.err.println("LOG | AliasIconChanger :: " +
+				String.format(message, extras));
+	}
+}
+
+class ShortcutIconChanger implements IconChanger {
 	private static final String INSTALL_SHORTCUT =
 			"com.android.launcher.action.INSTALL_SHORTCUT";
 	private static final String UNINSTALL_SHORTCUT =
@@ -48,7 +116,7 @@ class IconChanger {
 	private final Settings newSettings;
 	private final PreconfigProvider preconfig;
 
-	public IconChanger(Context ctx, Settings oldSettings, Settings newSettings) {
+	public ShortcutIconChanger(Context ctx, Settings oldSettings, Settings newSettings) {
 		this.ctx = ctx;
 		this.oldSettings = oldSettings;
 		this.newSettings = newSettings;
@@ -117,7 +185,7 @@ class IconChanger {
 	}
 
 	private void log(String message, Object...extras) {
-		if(DEBUG) System.err.println("LOG | IconChanger :: " +
+		if(DEBUG) System.err.println("LOG | ShortcutIconChanger :: " +
 				String.format(message, extras));
 	}
 }

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 	<string-array name="preconfig_strings">
-		<item>|Configure URL Manually</item>
-		<item>https://demo.app.medicmobile.org/|MedicMobile demo</item>
-		<item>http://example.com/lg|Living Goods</item>
+		<item>||Configure URL Manually</item>
+		<item>medicmobile|https://demo.app.medicmobile.org/|MedicMobile demo</item>
+		<item>livinggoods|http://example.com/lg|Living Goods</item>
 	</string-array>
 	<array name="preconfig_icons">
 		<item>@drawable/preconfig_icn_medicmobile</item>

@@ -22,6 +22,10 @@ android {
 		exclude 'META-INF/NOTICE'
 	}
 
+	applicationVariants.all {
+		buildConfigField "String", "ICON_CHANGER", "\"${System.env.ICON_CHANGER}\"";
+	}
+
 	buildTypes {
 		release {
 			minifyEnabled false

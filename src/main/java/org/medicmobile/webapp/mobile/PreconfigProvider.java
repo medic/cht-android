@@ -14,8 +14,8 @@ public class PreconfigProvider {
 				.getStringArray(R.array.preconfig_strings);
 		options = Func.map(strings, new Func<String, PreconfigOption>() {
 			public PreconfigOption apply(String s) {
-				String[] parts = s.split("\\|", 2);
-				return new PreconfigOption(parts[1], parts[0]);
+				String[] parts = s.split("\\|", 3);
+				return new PreconfigOption(parts[0], parts[2], parts[1]);
 			}
 		});
 	}
@@ -48,10 +48,12 @@ public class PreconfigProvider {
 }
 
 class PreconfigOption {
+	public final String id;
 	public final String description;
 	public final String url;
 
-	public PreconfigOption(String description, String url) {
+	public PreconfigOption(String id, String description, String url) {
+		this.id = id;
 		this.description = description;
 		this.url = url;
 	}

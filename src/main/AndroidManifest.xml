@@ -20,6 +20,28 @@
 		</activity>
 		<activity android:name="EmbeddedBrowserActivity"/>
 		<activity android:name="SettingsDialogActivity"/>
+
+		<!-- [ALIASES] for different brands -->
+		<activity-alias android:label="MedicMobile demo"
+				android:icon="@drawable/preconfig_icn_medicmobile"
+				android:name=".StartupActivity-medicmobile"
+				android:enabled="false"
+				android:targetActivity=".StartupActivity">
+			<intent-filter>
+				<action android:name="android.intent.action.MAIN"/>
+				<category android:name="android.intent.category.LAUNCHER" />
+			</intent-filter>
+		</activity-alias>
+		<activity-alias android:label="Living Goods"
+				android:icon="@drawable/preconfig_icn_livinggoods"
+				android:name=".StartupActivity-livinggoods"
+				android:enabled="false"
+				android:targetActivity=".StartupActivity">
+			<intent-filter>
+				<action android:name="android.intent.action.MAIN"/>
+				<category android:name="android.intent.category.LAUNCHER" />
+			</intent-filter>
+		</activity-alias>
 	</application>
 </manifest>
 
