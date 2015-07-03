@@ -1,5 +1,9 @@
-Medic Mobile Demo Webapp Mobile Demo
-====================================
+Medic Mobile Android App
+========================
+
+# Build
+
+Travis build status: <img src="https://travis-ci.org/medic/medic-android.svg"/>
 
 # Installation
 
