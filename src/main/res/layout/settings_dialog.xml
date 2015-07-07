@@ -5,9 +5,6 @@
 		android:paddingLeft="16dp"
 		android:paddingRight="16dp"
 		android:orientation="vertical">
-	<Spinner android:id="@+id/spnAppPreconf"
-			android:layout_width="fill_parent"
-			android:layout_height="wrap_content"/>
 	<EditText android:id="@+id/txtAppUrl"
 			android:hint="@string/txtAppUrl"
 			android:layout_width="fill_parent"

@@ -33,4 +33,18 @@ android {
 			signingConfig signingConfigs.debug
 		}
 	}
+
+	productFlavors {
+		unbranded {
+			// we will not create project-specific src directories
+			// for `unbranded` - it will use the defaults in
+			// src/main
+		}
+		medicMobileDemo {
+			applicationId = 'org.medicmobile.webapp.mobile.medicmobiledemo'
+		}
+		livingGoods {
+			applicationId = 'org.medicmobile.webapp.mobile.livinggoods'
+		}
+	}
 }

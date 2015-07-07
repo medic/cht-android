@@ -10,4 +10,7 @@ android-logs:
 	${ADB} shell logcat
 
 deploy:
-	./gradlew --daemon installDebug
+	rm -rf build/outputs/apk/
+	./gradlew --daemon --parallel assemble
+	ls build/outputs/apk/*-debug.apk | \
+		xargs -n1 ${ADB} install -r

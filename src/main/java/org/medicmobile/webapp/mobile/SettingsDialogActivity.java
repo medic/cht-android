@@ -10,9 +10,12 @@ import android.widget.*;
 import java.util.*;
 
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
+import static android.view.View.GONE;
 
 public class SettingsDialogActivity extends Activity {
 	private SettingsStore settings;
+	private boolean isBranded;
+	private String fixedAppUrl;
 
 	public void onCreate(Bundle savedInstanceState) {
 		if(DEBUG) log("Starting...");
@@ -24,15 +27,20 @@ public class SettingsDialogActivity extends Activity {
 		text(R.id.txtUsername, settings.getUsername());
 		text(R.id.txtPassword, settings.getPassword());
 
-		new PreconfigSpinner(this, R.id.spnAppPreconf, R.id.txtAppUrl,
-				settings.getAppUrl());
+		// TODO if fixed_app_url is set, remove the textfield and force
+		// the value in settings
+		fixedAppUrl = getResources().
+				getString(R.string.fixed_app_url);
+		isBranded = fixedAppUrl.length() > 0;
+		if(isBranded) findViewById(R.id.txtAppUrl).
+				setVisibility(GONE);
 	}
 
 //> EVENT HANDLERS
 	public void verifyAndSave(View view) {
 		log("verifyAndSave");
 
-		String appUrl = text(R.id.txtAppUrl);
+		String appUrl = isBranded ? fixedAppUrl : text(R.id.txtAppUrl);
 		Settings oldSettings = settings.get();
 		Settings newSettings = new Settings(
 				appUrl,
@@ -40,8 +48,6 @@ public class SettingsDialogActivity extends Activity {
 				text(R.id.txtPassword));
 		try {
 			settings.save(newSettings);
-			new IconChangerTask().execute(getApplicationContext(),
-					oldSettings, newSettings);
 			startActivity(new Intent(this, EmbeddedBrowserActivity.class));
 			finish();
 		} catch(IllegalSettingsException ex) {
@@ -79,58 +85,6 @@ public class SettingsDialogActivity extends Activity {
 
 	private void log(String message, Object...extras) {
 		if(DEBUG) System.err.println("LOG | SettingsDialogActivity :: " +
-				String.format(message, extras));
-	}
-}
-
-class PreconfigSpinner
-		implements android.widget.AdapterView.OnItemSelectedListener {
-	private final Activity ctx;
-	private final int targetId;
-	private final PreconfigProvider preconfig;
-
-	public PreconfigSpinner(Activity ctx, int spinnerId, int targetId,
-			final String initialUrl) {
-		this.ctx = ctx;
-		this.targetId = targetId;
-
-		preconfig = new PreconfigProvider(ctx);
-		ArrayAdapter<PreconfigOption> adapter =
-				new ArrayAdapter<PreconfigOption>(ctx,
-						android.R.layout.simple_spinner_item,
-						preconfig.options);
-		adapter.setDropDownViewResource(
-				android.R.layout.simple_spinner_dropdown_item);
-
-		Spinner spinner = (Spinner) ctx.findViewById(spinnerId);
-		spinner.setOnItemSelectedListener(this);
-		spinner.setAdapter(adapter);
-
-		spinner.setSelection(preconfig.indexOf(initialUrl));
-	}
-
-//> SPINNER EVENT HANDLERS
-	public void onItemSelected(AdapterView<?> parent, View view,
-			int position, long id) {
-		if(DEBUG) log("onItemSelected() :: " +
-				"parent=%s, view=%s, position=%s, id=%s",
-				parent, view, position, id);
-		PreconfigOption selected = preconfig.options.get(position);
-		EditText target = (EditText) ctx.findViewById(targetId);
-
-		// Allow editing of custom URLs.  When switching from preconfig
-		// to custom, preserve the value so that preconfig URLs can be
-		// modified.
-		boolean isCustom = position == 0;
-		target.setEnabled(isCustom);
-		if(!isCustom) target.setText(selected.url);
-	}
-
-	public void onNothingSelected(AdapterView<?> parent) {}
-
-//> PRIVATE HELPERS
-	private void log(String message, Object...extras) {
-		if(DEBUG) System.err.println("LOG | PreconfigSpinner :: " +
 				String.format(message, extras));
 	}
 }
