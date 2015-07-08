@@ -11,6 +11,6 @@ Travis build status: <a href="https://travis-ci.org/medic/medic-android"><img sr
 2. execute:
 ```
 git clone git@github.com:medic/medic-android.git && \
-cd medic-webapp-mobile-demo && \
+cd medic-android && \
 make
 ```
