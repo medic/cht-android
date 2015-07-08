@@ -8,9 +8,14 @@ Travis build status: <a href="https://travis-ci.org/medic/medic-android"><img sr
 # Installation
 
 1. Plug in your android phone
-2. execute:
-```
-git clone git@github.com:medic/medic-android.git && \
-cd medic-android && \
-make
-```
+2. Clone the repo
+3. execute:
+
+	make
+
+# Branding
+
+To add a new brand:
+
+1. add `productFlavors { <new_brand> { ... } }` in `build.gradle`
+2. add icons, strings etc. in `src/<new_brand>`
