@@ -20,5 +20,3 @@ android-logs:
 deploy:
 	rm -rf build/outputs/apk/
 	${GRADLEW} --daemon --parallel assemble
-	ls build/outputs/apk/*-debug.apk | \
-		xargs -n1 ${ADB} install -r

@@ -3,15 +3,15 @@ Medic Mobile Android App
 
 # Build
 
-Travis build status: <a href="https://travis-ci.org/medic/medic-android"><img src="https://travis-ci.org/medic/medic-android.svg"/></a>
+<a href="https://travis-ci.org/medic/medic-android"><img src="https://travis-ci.org/medic/medic-android.svg"/></a>
 
 # Installation
 
-1. Plug in your android phone
+1. Install Android SDK
 2. Clone the repo
-3. execute:
-
-	make
+3. Execute: `make`
+4. Plug in your phone
+5. Install the desired SDK: `adb install build/outputs/apk/<apk name>`
 
 # Branding
 
