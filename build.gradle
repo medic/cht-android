@@ -40,10 +40,10 @@ android {
 			// for `unbranded` - it will use the defaults in
 			// src/main
 		}
-		medicMobileDemo {
+		medicmobiledemo {
 			applicationId = 'org.medicmobile.webapp.mobile.medicmobiledemo'
 		}
-		livingGoods {
+		livinggoods {
 			applicationId = 'org.medicmobile.webapp.mobile.livinggoods'
 		}
 	}
