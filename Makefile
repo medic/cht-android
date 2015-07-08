@@ -1,5 +1,13 @@
 ADB = ${ANDROID_HOME}/platform-tools/adb
 EMULATOR = ${ANDROID_HOME}/tools/emulator
+GRADLEW = ./gradlew
+
+ifdef ComSpec	 # Windows
+  # Use `/` for all paths, except `.\`
+  ADB := $(subst \,/,${ADB})
+  EMULATOR := $(subst \,/,${EMULATOR})
+  GRADLEW := $(subst /,\,${GRADLEW})
+endif
 
 default: deploy android-logs
 
@@ -11,6 +19,6 @@ android-logs:
 
 deploy:
 	rm -rf build/outputs/apk/
-	./gradlew --daemon --parallel assemble
+	${GRADLEW} --daemon --parallel assemble
 	ls build/outputs/apk/*-debug.apk | \
 		xargs -n1 ${ADB} install -r
