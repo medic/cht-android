@@ -14,6 +14,14 @@ Medic Mobile Android App
 
 # Branding
 
+## Building branded apps
+
+To build and deploy APKs for all configured brands:
+
+	make branded
+
+## Adding new brands
+
 To add a new brand:
 
 1. add `productFlavors { <new_brand> { ... } }` in `build.gradle`
