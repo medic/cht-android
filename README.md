@@ -9,9 +9,8 @@ Medic Mobile Android App
 
 1. Install Android SDK
 2. Clone the repo
-3. Execute: `make`
-4. Plug in your phone
-5. Install the desired SDK: `adb install build/outputs/apk/<apk name>`
+3. Plug in your phone
+4. Execute: `make`
 
 # Branding
 
