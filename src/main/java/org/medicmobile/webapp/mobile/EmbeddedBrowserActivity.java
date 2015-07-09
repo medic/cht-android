@@ -2,6 +2,7 @@ package org.medicmobile.webapp.mobile;
 
 import android.app.*;
 import android.content.*;
+import android.util.Log;
 import android.webkit.*;
 import android.os.*;
 import android.view.*;
@@ -21,11 +22,22 @@ public class EmbeddedBrowserActivity extends Activity {
 		setContentView(R.layout.main);
 
 		WebView container = (WebView) findViewById(R.id.WebViewContainer);
+
+		if(DEBUG) {
+			container.setWebChromeClient(new WebChromeClient() {
+				public boolean onConsoleMessage(ConsoleMessage cm) {
+					Log.d("Medic Mobile", cm.message() + " -- From line "
+							+ cm.lineNumber() + " of "
+							+ cm.sourceId());
+					return true;
+				}
+			});
+		}
+
 		container.getSettings().setJavaScriptEnabled(true);
 		container.addJavascriptInterface(
 				new MedicAndroidJavascript(),
 				"medicmobile_android");
-
 		handleAuth(container);
 
 		String url = settings.getAppUrl();
