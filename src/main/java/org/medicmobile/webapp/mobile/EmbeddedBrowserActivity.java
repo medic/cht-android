@@ -7,6 +7,7 @@ import android.webkit.*;
 import android.os.*;
 import android.view.*;
 
+import java.io.File;
 import java.util.regex.*;
 
 public class EmbeddedBrowserActivity extends Activity {
@@ -34,13 +35,24 @@ public class EmbeddedBrowserActivity extends Activity {
 			});
 		}
 
-		container.getSettings().setJavaScriptEnabled(true);
+		WebSettings webSettings = container.getSettings();
+		webSettings.setJavaScriptEnabled(true);
+		webSettings.setDatabaseEnabled(true);
+		webSettings.setDomStorageEnabled(true);
+		File dir = getCacheDir();
+		if (!dir.exists()) {
+			dir.mkdirs();
+		}
+		webSettings.setAppCachePath(dir.getPath());
+		webSettings.setAppCacheEnabled(true);
+
 		container.addJavascriptInterface(
-				new MedicAndroidJavascript(),
-				"medicmobile_android");
+				new MedicAndroidJavascript(this.settings),
+				"medicmobile_android"
+		);
 		handleAuth(container);
 
-		String url = settings.getAppUrl();
+		String url = settings.getAppUrl() + "/_design/medic/_rewrite/";
 		if(DEBUG) log("Pointing browser to %s", url);
 		container.loadUrl(url);
 	}
