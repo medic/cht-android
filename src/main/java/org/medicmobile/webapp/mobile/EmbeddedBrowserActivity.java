@@ -24,32 +24,9 @@ public class EmbeddedBrowserActivity extends Activity {
 
 		WebView container = (WebView) findViewById(R.id.WebViewContainer);
 
-		if(DEBUG) {
-			container.setWebChromeClient(new WebChromeClient() {
-				public boolean onConsoleMessage(ConsoleMessage cm) {
-					Log.d("Medic Mobile", cm.message() + " -- From line "
-							+ cm.lineNumber() + " of "
-							+ cm.sourceId());
-					return true;
-				}
-			});
-		}
-
-		WebSettings webSettings = container.getSettings();
-		webSettings.setJavaScriptEnabled(true);
-		webSettings.setDatabaseEnabled(true);
-		webSettings.setDomStorageEnabled(true);
-		File dir = getCacheDir();
-		if (!dir.exists()) {
-			dir.mkdirs();
-		}
-		webSettings.setAppCachePath(dir.getPath());
-		webSettings.setAppCacheEnabled(true);
-
-		container.addJavascriptInterface(
-				new MedicAndroidJavascript(this.settings),
-				"medicmobile_android"
-		);
+		if(DEBUG) enableWebviewLogging(container);
+		enableJavascript(container);
+		enableStorage(container);
 		handleAuth(container);
 
 		String url = settings.getAppUrl() + "/_design/medic/_rewrite/";
@@ -70,6 +47,12 @@ public class EmbeddedBrowserActivity extends Activity {
 			default:
 				return super.onOptionsItemSelected(item);
 		}
+	}
+
+	private void openSettings() {
+		startActivity(new Intent(this,
+				SettingsDialogActivity.class));
+		finish();
 	}
 
 	private void handleAuth(WebView container) {
@@ -115,10 +98,35 @@ public class EmbeddedBrowserActivity extends Activity {
 		});
 	}
 
-	private void openSettings() {
-		startActivity(new Intent(this,
-				SettingsDialogActivity.class));
-		finish();
+	private void enableWebviewLogging(WebView container) {
+		container.setWebChromeClient(new WebChromeClient() {
+			public boolean onConsoleMessage(ConsoleMessage cm) {
+				Log.d("Medic Mobile", cm.message() + " -- From line "
+						+ cm.lineNumber() + " of "
+						+ cm.sourceId());
+				return true;
+			}
+		});
+	}
+
+	private void enableJavascript(WebView container) {
+		container.getSettings().setJavaScriptEnabled(true);
+		container.addJavascriptInterface(
+				new MedicAndroidJavascript(this.settings),
+				"medicmobile_android"
+		);
+	}
+
+	private void enableStorage(WebView container) {
+		WebSettings webSettings = container.getSettings();
+		webSettings.setDatabaseEnabled(true);
+		webSettings.setDomStorageEnabled(true);
+		File dir = getCacheDir();
+		if (!dir.exists()) {
+			dir.mkdirs();
+		}
+		webSettings.setAppCachePath(dir.getPath());
+		webSettings.setAppCacheEnabled(true);
 	}
 
 	private void log(String message, Object...extras) {
