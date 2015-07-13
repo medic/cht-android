@@ -10,16 +10,6 @@
 			android:layout_width="fill_parent"
 			android:layout_height="wrap_content"
 			android:inputType="textUri"/>
-	<EditText android:id="@+id/txtUsername"
-			android:hint="@string/txtUsername"
-			android:layout_width="fill_parent"
-			android:layout_height="wrap_content"
-			android:inputType="text"/>
-	<EditText android:id="@+id/txtPassword"
-			android:hint="@string/txtPassword"
-			android:layout_width="fill_parent"
-			android:layout_height="wrap_content"
-			android:inputType="text"/>
 	<Button  android:id="@+id/btnSaveSettings"
 			android:text="@string/btnSaveSettings"
 			android:onClick="verifyAndSave"

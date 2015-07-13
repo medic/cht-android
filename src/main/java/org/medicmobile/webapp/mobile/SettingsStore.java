@@ -9,7 +9,6 @@ import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 
 public class SettingsStore {
 	private final SharedPreferences prefs;
-	private static SettingsStore instance;
 
 	private SettingsStore(SharedPreferences prefs) {
 		this.prefs = prefs;
@@ -26,16 +25,12 @@ public class SettingsStore {
 //> ACCESSORS
 	public String getAppUrl() { return get("app-url"); }
 
-	public String getUsername() { return get("username"); }
-
-	public String getPassword() { return get("password"); }
-
 	private String get(String key) {
 		return prefs.getString(key, null);
 	}
 
 	public Settings get() {
-		Settings s = new Settings(getAppUrl(), getUsername(), getPassword());
+		Settings s = new Settings(getAppUrl());
 		try {
 			s.validate();
 		} catch(IllegalSettingsException ex) {
@@ -48,23 +43,11 @@ public class SettingsStore {
 		return get() != null;
 	}
 
-	public boolean save(String appUrl, String username, String password) {
-		try {
-			save(new Settings(appUrl, username, password));
-		} catch(SettingsException ex) {
-			if(DEBUG) ex.printStackTrace();
-			return false;
-		}
-		return true;
-	}
-
 	public void save(Settings s) throws SettingsException {
 		s.validate();
 
 		SharedPreferences.Editor ed = prefs.edit();
 		ed.putString("app-url", s.appUrl);
-		ed.putString("username", s.username);
-		ed.putString("password", s.password);
 		if(!ed.commit()) throw new SettingsException(
 				"Failed to save to SharedPreferences.");
 	}
@@ -80,20 +63,14 @@ class Settings {
 			"http[s]?://([^/:]*)(:\\d*)?(.*)");
 
 	public final String appUrl;
-	public final String username;
-	public final String password;
 
-	public Settings(String appUrl, String username, String password) {
-		if(BuildConfig.DEBUG) log("Settings() appUrl=%s; username=%s; password=%s",
-				appUrl, username, password);
-
+	public Settings(String appUrl) {
+		if(BuildConfig.DEBUG) log("Settings() appUrl=%s", appUrl);
 		this.appUrl = appUrl;
-		this.username = username;
-		this.password = password;
 	}
 
 	public void validate() throws IllegalSettingsException {
-		List<IllegalSetting> errors = new LinkedList<IllegalSetting>();
+		List<IllegalSetting> errors = new LinkedList<>();
 
 		if(!isSet(appUrl)) {
 			errors.add(new IllegalSetting(R.id.txtAppUrl,
@@ -101,16 +78,6 @@ class Settings {
 		} else if(!URL_PATTERN.matcher(appUrl).matches()) {
 			errors.add(new IllegalSetting(R.id.txtAppUrl,
 					"must be a valid URL"));
-		}
-
-		if(!isSet(username)) {
-			errors.add(new IllegalSetting(R.id.txtUsername,
-					"required"));
-		}
-
-		if(!isSet(password)) {
-			errors.add(new IllegalSetting(R.id.txtPassword,
-					"required"));
 		}
 
 		if(errors.size() > 0) {

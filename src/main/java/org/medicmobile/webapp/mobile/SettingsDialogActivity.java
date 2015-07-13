@@ -4,10 +4,7 @@ import android.app.*;
 import android.content.*;
 import android.os.*;
 import android.view.*;
-import android.webkit.*;
 import android.widget.*;
-
-import java.util.*;
 
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static android.view.View.GONE;
@@ -24,8 +21,6 @@ public class SettingsDialogActivity extends Activity {
 		setContentView(R.layout.settings_dialog);
 
 		text(R.id.txtAppUrl, settings.getAppUrl());
-		text(R.id.txtUsername, settings.getUsername());
-		text(R.id.txtPassword, settings.getPassword());
 
 		// TODO if fixed_app_url is set, remove the textfield and force
 		// the value in settings
@@ -41,11 +36,7 @@ public class SettingsDialogActivity extends Activity {
 		log("verifyAndSave");
 
 		String appUrl = isBranded ? fixedAppUrl : text(R.id.txtAppUrl);
-		Settings oldSettings = settings.get();
-		Settings newSettings = new Settings(
-				appUrl,
-				text(R.id.txtUsername),
-				text(R.id.txtPassword));
+		Settings newSettings = new Settings(appUrl);
 		try {
 			settings.save(newSettings);
 			startActivity(new Intent(this, EmbeddedBrowserActivity.class));
