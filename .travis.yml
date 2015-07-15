@@ -9,9 +9,9 @@ before_deploy:
 deploy:
   skip_cleanup: true
   provider: s3
-  access_key_id: AKIAIS2WMWTBDGWNKIGQ
+  access_key_id: ${s3_access_key}
   secret_access_key:
-    secure: o8SDwfDxJXdz0y/PMKa3r/nV2lbcUTGyXXnQTpa3b0RS8XVB0DDuwu5+dv9V3HBboW5vIdFwi1peKtQ95/6J4ZQSgSyAYKbXtsEuFdpzfUPqV5iNt2LqlDB3tblfbQYL1naR8VHXRUlCoOAgDyeQ5Ajm+Qf9XEXYIBFExkayg0oTC+9CsXkY85UoZpPs0/OMltA8SS9+g5o7EfpTjMa+vywq0K+vvmOiySQFkzY0srp2goyJgfcraXuU2ldNnkgJT/+HrxbpM/zn5yCMm1POsKfd8YRVmRMgg8a75410bsJn2KiBxf0EJf8VQMcnQNeJiwD1yiPsSM3a2/7eCol1olt+KpfXq/SdmG0MX1tRMf3/xDTDNuTsqVbPKxKScMIbim693aXa93lqB5R1sYOSF1bLLmJE1ODstJGkAhu8q2ltaR/Wt2cOG2SGxYtpSEVvgP4KwZkrR7TlMTrsigDd6v4I9Ug5zrZv5f8sz9gQemTAqnX6VIWw8e+NLhMlz/UGNSCVz/dOp8KJ3Kcb3Od+7o1OJfKsz3TGO/PkDTO+ipls+hAzeyLqVf5eYlqvO9URyM0PQLa3T+wVpgotxsOdUDN+CJo9kkh5+1K2w34W9C5vAiwNNbWmU8RG5x1NPNJfsnHSG9q7sZQwgtNHDgPrKxlsTT+oYBK2Oft1446/riA=
+    secure: ${s3_secret}
   bucket: medic-mobile
   local_dir: build/publish
   upload-dir: builds/medic-android
