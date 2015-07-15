@@ -5,7 +5,7 @@ android:
   - android-22
 before_deploy:
   - "mkdir -p build/publish/travis-${TRAVIS_BUILD_NUMBER}"
-  - "cp build/outputs/*-release.apk build/publish/travis-${TRAVIS_BUILD_NUMBER}"
+  - "cp build/outputs/apk/*-release.apk build/publish/travis-${TRAVIS_BUILD_NUMBER}"
 deploy:
   skip_cleanup: true
   provider: s3
