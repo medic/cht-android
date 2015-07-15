@@ -21,6 +21,5 @@ deploy:
 after_success:
   - git config --global user.email "dev@medicmobile.org"
   - git config --global user.name "Travis CI"
-  - export GIT_TAG=travis-$TRAVIS_BUILD_NUMBER
-  - git tag $GIT_TAG -a -m "Generated tag from TravisCI build $TRAVIS_BUILD_NUMBER"
-  - git push origin $GIT_TAG
+  - git tag travis-$TRAVIS_BUILD_NUMBER -a -m "Generated tag from TravisCI build $TRAVIS_BUILD_NUMBER"
+  - git push origin --tags
