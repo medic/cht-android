@@ -9,9 +9,9 @@ before_deploy:
 deploy:
   skip_cleanup: true
   provider: s3
-  access_key_id: ${s3_access_key}
+  access_key_id: ${s3_access_id}
   secret_access_key:
-    secure: ${s3_secret}
+    secure: ${s3_access_secret}
   bucket: medic-mobile
   local_dir: build/publish
   upload-dir: builds/medic-android
