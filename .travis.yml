@@ -22,4 +22,4 @@ after_success:
   - git config --global user.email "dev@medicmobile.org"
   - git config --global user.name "Travis CI"
   - git tag travis-$TRAVIS_BUILD_NUMBER
-  - git push origin --tags
+  - git push --tags https://${github_auth}@github.com/${TRAVIS_REPO_SLUG}
