@@ -2,10 +2,11 @@ package org.medicmobile.webapp.mobile;
 
 import android.app.*;
 import android.content.*;
-import android.util.Log;
-import android.webkit.*;
+import android.net.*;
 import android.os.*;
+import android.util.Log;
 import android.view.*;
+import android.webkit.*;
 
 import java.io.File;
 
@@ -26,6 +27,8 @@ public class EmbeddedBrowserActivity extends Activity {
 		if(DEBUG) enableWebviewLogging(container);
 		enableJavascript(container);
 		enableStorage(container);
+
+		enableSmsAndCallHandling(container);
 
 		String url = settings.getAppUrl() + "/login";
 		if(DEBUG) log("Pointing browser to %s", url);
@@ -82,6 +85,19 @@ public class EmbeddedBrowserActivity extends Activity {
 		}
 		webSettings.setAppCachePath(dir.getPath());
 		webSettings.setAppCacheEnabled(true);
+	}
+
+	private void enableSmsAndCallHandling(WebView container) {
+		container.setWebViewClient(new WebViewClient() {
+			public boolean shouldOverrideUrlLoading(WebView view, String url) {
+				if(url.startsWith("tel:") || url.startsWith("sms:")) {
+					Intent i= new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+					view.getContext().startActivity(i);
+					return true;
+				}
+				return false;
+			}
+		});
 	}
 
 	private void log(String message, Object...extras) {
