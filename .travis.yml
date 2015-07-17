@@ -6,8 +6,9 @@ android:
   components:
   - build-tools-22.0.1
   - android-22
-after_success:
+before_script:
   - export MEDIC_VERSION_NAME="0.1.$TRAVIS_BUILD_NUMBER"
+after_success:
   - git config --global user.email "dev@medicmobile.org"
   - git config --global user.name "Travis CI"
   - git tag "v${MEDIC_VERSION_NAME}"
