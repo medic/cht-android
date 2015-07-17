@@ -1,10 +1,18 @@
 language: android
+branches:
+  except:
+      - /^travis-.*/
 android:
   components:
   - build-tools-22.0.1
   - android-22
-before_deploy:
+after_success:
   - export MEDIC_BUILD_VERSION="$TRAVIS_BUILD_NUMBER"
+  - git config --global user.email "dev@medicmobile.org"
+  - git config --global user.name "Travis CI"
+  - git tag "v${MEDIC_BUILD_VERSION}"
+  - git push --tags "https://${github_auth}@github.com/${TRAVIS_REPO_SLUG}" >/dev/null 2>/dev/null
+before_deploy:
   - export MEDIC_PUBLISH_DIR="build/publish/${MEDIC_BUILD_VERSION}"
   - mkdir -p "$MEDIC_PUBLISH_DIR"
   - cp build/outputs/apk/*-release.apk "$MEDIC_PUBLISH_DIR"
@@ -21,11 +29,3 @@ deploy:
   on:
     repo: ${TRAVIS_REPO_SLUG}
     branch: master
-after_success:
-  - git config --global user.email "dev@medicmobile.org"
-  - git config --global user.name "Travis CI"
-  - git tag "v${MEDIC_BUILD_VERSION}"
-  - git push --tags "https://${github_auth}@github.com/${TRAVIS_REPO_SLUG}" >/dev/null 2>/dev/null
-branches:
-  except:
-      - /^travis-.*/
