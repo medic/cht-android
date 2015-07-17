@@ -4,8 +4,10 @@ android:
   - build-tools-22.0.1
   - android-22
 before_deploy:
-  - "mkdir -p build/publish/travis-${TRAVIS_BUILD_NUMBER}"
-  - "cp build/outputs/apk/*-release.apk build/publish/travis-${TRAVIS_BUILD_NUMBER}"
+  - export MEDIC_BUILD_VERSION="$TRAVIS_BUILD_NUMBER"
+  - export MEDIC_PUBLISH_DIR="build/publish/${MEDIC_BUILD_VERSION}"
+  - mkdir -p "$MEDIC_PUBLISH_DIR"
+  - cp build/outputs/apk/*-release.apk "$MEDIC_PUBLISH_DIR"
 deploy:
   skip_cleanup: true
   provider: s3
@@ -17,11 +19,12 @@ deploy:
   upload-dir: builds/medic-android
   acl: public_read
   on:
-    repo: medic/medic-android
+    repo: ${TRAVIS_REPO_SLUG}
+    branch: master
 after_success:
   - git config --global user.email "dev@medicmobile.org"
   - git config --global user.name "Travis CI"
-  - git tag travis-$TRAVIS_BUILD_NUMBER
+  - git tag "v${MEDIC_BUILD_VERSION}"
   - git push --tags "https://${github_auth}@github.com/${TRAVIS_REPO_SLUG}" >/dev/null 2>/dev/null
 branches:
   except:
