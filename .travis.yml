@@ -1,7 +1,7 @@
 language: android
 branches:
   except:
-      - /^travis-.*/
+      - /^v.*/
 android:
   components:
   - build-tools-22.0.1
