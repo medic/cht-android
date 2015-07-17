@@ -45,6 +45,7 @@ android {
 	defaultConfig {
 		versionCode getVersionCode()
 		versionName getVersionName()
+		archivesBaseName = "${project.name}-${versionName}"
 	}
 
 	applicationVariants.all {
