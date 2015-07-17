@@ -25,13 +25,13 @@ def getVersionCode = {
 	return 1
 }
 def getVersionName = {
-	def versionName = "0.1.${getVersionCode()}"
 	if(isReleaseBuild()) {
-		// It's a release build!
-		return versionName
+		def v = System.env.MEDIC_VERSION_NAME
+		if(!v) throw new RuntimeException(
+				'Missing required env var: MEDIC_VERSION_NAME')
+		return v
 	}
-	// Anything built outside of CI is not a proper release
-	return "${versionName}-SNAPSHOT"
+	return 'SNAPSHOT'
 }
 
 android {
