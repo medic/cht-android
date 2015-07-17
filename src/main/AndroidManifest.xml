@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-		package="org.medicmobile.webapp.mobile"
-		android:versionCode="1"
-		android:versionName="0.1-alpha">
+		package="org.medicmobile.webapp.mobile">
 	<uses-sdk android:minSdkVersion="19"
 			android:targetSdkVersion="19"/>
 	<uses-permission android:name="android.permission.INTERNET"/>

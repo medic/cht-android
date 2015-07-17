@@ -14,12 +14,37 @@ repositories {
 	mavenCentral()
 }
 
+def isReleaseBuild = {
+	return System.env.TRAVIS == 'true' &&
+			System.env.TRAVIS_BRANCH == 'master'
+}
+def getVersionCode = {
+	if(isReleaseBuild()) {
+		return Integer.parseInt(System.env.TRAVIS_BUILD_NUMBER)
+	}
+	return 1
+}
+def getVersionName = {
+	def versionName = "0.1.${getVersionCode()}"
+	if(isReleaseBuild()) {
+		// It's a release build!
+		return versionName
+	}
+	// Anything built outside of CI is not a proper release
+	return "${versionName}-SNAPSHOT"
+}
+
 android {
 	compileSdkVersion 22
 	buildToolsVersion '22.0.1'
 	packagingOptions {
 		exclude 'META-INF/LICENSE'
 		exclude 'META-INF/NOTICE'
+	}
+
+	defaultConfig {
+		versionCode getVersionCode()
+		versionName getVersionName()
 	}
 
 	applicationVariants.all {
