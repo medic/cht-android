@@ -5,8 +5,6 @@
 	<string name="fixed_app_url"/>
 
 	<string name="txtAppUrl">Webapp URL</string>
-	<string name="txtUsername">Username</string>
-	<string name="txtPassword">Password</string>
 	<string name="btnSaveSettings">Save</string>
 	<string name="mnuSettings">Settings</string>
 </resources>
