@@ -33,7 +33,7 @@ public class SettingsDialogActivity extends Activity {
 
 //> EVENT HANDLERS
 	public void verifyAndSave(View view) {
-		log("verifyAndSave");
+		if(DEBUG) log("verifyAndSave");
 
 		String appUrl = isBranded ? fixedAppUrl : text(R.id.txtAppUrl);
 		Settings newSettings = new Settings(appUrl);
