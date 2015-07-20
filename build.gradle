@@ -15,12 +15,15 @@ repositories {
 }
 
 def isReleaseBuild = {
-	return System.env.TRAVIS == 'true' &&
+	return System.env.JENKINS == 'true' || (System.env.TRAVIS == 'true' &&
 			System.env.TRAVIS_BRANCH == 'master'
 }
 def getVersionCode = {
 	if(isReleaseBuild()) {
-		return Integer.parseInt(System.env.TRAVIS_BUILD_NUMBER)
+		if(System.env.TRAVIS == 'true')
+			return Integer.parseInt(System.env.TRAVIS_BUILD_NUMBER)
+		else
+			return Integer.parseInt(System.env.VERSION_TO_BUILD
 	}
 	return 1
 }
