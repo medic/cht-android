@@ -74,10 +74,10 @@ class Settings {
 
 		if(!isSet(appUrl)) {
 			errors.add(new IllegalSetting(R.id.txtAppUrl,
-					"required"));
+					R.string.errRequired));
 		} else if(!URL_PATTERN.matcher(appUrl).matches()) {
 			errors.add(new IllegalSetting(R.id.txtAppUrl,
-					"must be a valid URL"));
+					R.string.errInvalidUrl));
 		}
 
 		if(errors.size() > 0) {
@@ -97,11 +97,11 @@ class Settings {
 
 class IllegalSetting {
 	public final int componentId;
-	public final String message;
+	public final int errorStringId;
 
-	public IllegalSetting(int componentId, String message) {
+	public IllegalSetting(int componentId, int errorStringId) {
 		this.componentId = componentId;
-		this.message = message;
+		this.errorStringId = errorStringId;
 	}
 }
 
@@ -125,7 +125,7 @@ class IllegalSettingsException extends SettingsException {
 			for(IllegalSetting e : errors) {
 				if(bob.length() > 0) bob.append("; ");
 				bob.append(String.format(
-						"%s: %s", e.componentId, e.message));
+						"component[%s]: error[%s]", e.componentId, e.errorStringId));
 			}
 			return bob.toString();
 		}

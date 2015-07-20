@@ -36,9 +36,44 @@ public class SettingsDialogActivity extends Activity {
 		if(DEBUG) log("verifyAndSave");
 
 		String appUrl = isBranded ? fixedAppUrl : text(R.id.txtAppUrl);
-		Settings newSettings = new Settings(appUrl);
+		submitButton().setEnabled(false);
+
+		new AsyncTask<String, Void, AppUrlVerififcation>() {
+			protected AppUrlVerififcation doInBackground(String... appUrl) {
+				assert appUrl.length == 1;
+				return verify(appUrl[0]);
+			}
+			protected void onPostExecute(AppUrlVerififcation result) {
+				if(result.isOk) {
+					saveSettings(new Settings(result.appUrl));
+				} else {
+					showError(R.id.txtAppUrl, result.failure);
+					submitButton().setEnabled(true);
+				}
+			}
+		}.execute(appUrl);
+	}
+
+//> PRIVATE HELPERS
+	private AppUrlVerififcation verify(String appUrl) {
+		AppUrlVerififcation verificationResult =
+				new AppUrlVerifier().verify(appUrl);
+
+		if(verificationResult.isCouchRoot) {
+			AppUrlVerififcation prefixedVerififcation =
+					new AppUrlVerifier().verify(appUrl + "/medic");
+			if(prefixedVerififcation.isOk) {
+				verificationResult = prefixedVerififcation;
+				return verificationResult;
+			}
+		}
+
+		return verificationResult;
+	}
+
+	private void saveSettings(Settings s) {
 		try {
-			settings.save(newSettings);
+			settings.save(s);
 			startActivity(new Intent(this, EmbeddedBrowserActivity.class));
 			finish();
 		} catch(IllegalSettingsException ex) {
@@ -48,12 +83,14 @@ public class SettingsDialogActivity extends Activity {
 			}
 		} catch(SettingsException ex) {
 			if(DEBUG) ex.printStackTrace();
-			((Button) findViewById(R.id.btnSaveSettings))
-					.setError(ex.getMessage());
+			submitButton().setError(ex.getMessage());
 		}
 	}
 
-//> PRIVATE HELPERS
+	private Button submitButton() {
+		return (Button) findViewById(R.id.btnSaveSettings);
+	}
+
 	private String text(int componentId) {
 		EditText field = (EditText) findViewById(componentId);
 		return field.getText().toString();
@@ -70,8 +107,12 @@ public class SettingsDialogActivity extends Activity {
 	}
 
 	private void showError(IllegalSetting error) {
-		EditText field = (EditText) findViewById(error.componentId);
-		field.setError(error.message);
+		showError(error.componentId, error.errorStringId);
+	}
+
+	private void showError(int componentId, int stringId) {
+		TextView field = (TextView) findViewById(componentId);
+		field.setError(getString(stringId));
 	}
 
 	private void log(String message, Object...extras) {
