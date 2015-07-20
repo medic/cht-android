@@ -20,11 +20,10 @@ def isReleaseBuild = {
 }
 def getVersionCode = {
 	if(isReleaseBuild()) {
-		if(System.env.TRAVIS == 'true') {
-			return Integer.parseInt(System.env.TRAVIS_BUILD_NUMBER)
-		} else {
-			return Integer.parseInt(System.env.VERSION_TO_BUILD)
-		}
+		def code = System.env.TRAVIS == 'true' ?
+			System.env.TRAVIS_BUILD_NUMBER :
+			System.env.VERSION_TO_BUILD.split(/\./)[-1]
+		return Integer.parseInt(code)
 	}
 	return 1
 }
