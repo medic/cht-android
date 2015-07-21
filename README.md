@@ -1,8 +1,6 @@
 Medic Mobile Android App
 ========================
 
-# Build
-
 <a href="https://travis-ci.org/medic/medic-android"><img src="https://travis-ci.org/medic/medic-android.svg"/></a>
 
 # Installation
