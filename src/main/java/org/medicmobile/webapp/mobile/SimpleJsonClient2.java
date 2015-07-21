@@ -1,29 +1,35 @@
 package org.medicmobile.webapp.mobile;
 
 import java.io.*;
-
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.params.BasicHttpParams;
+import java.net.*;
 
 import org.json.*;
 
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 
-public class SimpleJsonClient {
-	public JSONObject get(String url) throws JSONException, IOException {
+/**
+ * <p>New and improved - SimpleJsonClient2 is SimpleJsonClient, but using <code>
+ * HttpURLConnection</code> instead of <code>DefaultHttpClient</code>.
+ * <p>SimpleJsonClient2 should be used in preference to SimpleJsonClient on
+ * Android 2.3 (API level 22/Gingerbread) and above.
+ * @see java.net.HttpURLConnection
+ * @see org.apache.http.impl.client.DefaultHttpClient
+ */
+public class SimpleJsonClient2 {
+	public JSONObject get(String url) throws MalformedURLException, JSONException, IOException {
 		if(DEBUG) traceMethod("get", "url", url);
-		DefaultHttpClient httpclient = new DefaultHttpClient(new BasicHttpParams());
-		HttpGet getter = new HttpGet(url);
-		getter.setHeader("Content-type", "application/json");
+		return get(new URL(url));
+	}
+
+	public JSONObject get(URL url) throws JSONException, IOException {
+		if(DEBUG) traceMethod("get", "url", url);
+		HttpURLConnection conn = null;
 		InputStream inputStream = null;
 		try {
-			HttpResponse response = httpclient.execute(getter);
-			HttpEntity entity = response.getEntity();
+			conn = (HttpURLConnection) url.openConnection();
+			conn.setRequestProperty("Content-Type", "application/json");
 
-			inputStream = entity.getContent();
+			inputStream = conn.getInputStream();
 			BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"), 8);
 			StringBuilder bob = new StringBuilder();
 
@@ -42,10 +48,15 @@ public class SimpleJsonClient {
 			} catch(Exception ex) {
 				if(DEBUG) ex.printStackTrace();
 			}
+			if(conn != null) try {
+				conn.disconnect();
+			} catch(Exception ex) {
+				if(DEBUG) ex.printStackTrace();
+			}
 		}
 	}
 
-	private static void traceMethod(String methodName, String...args) {
+	private static void traceMethod(String methodName, Object...args) {
 		StringBuilder bob = new StringBuilder();
 		for(int i=0; i<args.length; i+=2) {
 			bob.append(args[i]);
