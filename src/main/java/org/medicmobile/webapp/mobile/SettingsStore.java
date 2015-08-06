@@ -27,6 +27,7 @@ public abstract class SettingsStore {
 	public abstract String getAppUrl();
 	public abstract boolean hasSettings();
 	public abstract void save(Settings s) throws SettingsException;
+	public abstract boolean allowsConfiguration();
 
 	private static void log(String message, Object...extras) {
 		if(BuildConfig.DEBUG) System.err.println("LOG | SettingsStore :: " +
@@ -43,6 +44,7 @@ class BrandedSettingsStore extends SettingsStore {
 
 	public String getAppUrl() { return apiUrl; }
 	public boolean hasSettings() { return true; }
+	public boolean allowsConfiguration() { return false; }
 
 	public void save(Settings s) throws SettingsException {
 		throw new SettingsException("Cannot save to BrandedSettingsStore.");
@@ -72,6 +74,8 @@ class UnbrandedSettingsStore extends SettingsStore {
 		}
 		return s;
 	}
+
+	public boolean allowsConfiguration() { return true; }
 
 	public boolean hasSettings() {
 		return get() != null;
