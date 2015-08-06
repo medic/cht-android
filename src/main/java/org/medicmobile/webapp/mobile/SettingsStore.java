@@ -7,19 +7,53 @@ import java.util.regex.*;
 
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 
-public class SettingsStore {
-	private final SharedPreferences prefs;
-
-	private SettingsStore(SharedPreferences prefs) {
-		this.prefs = prefs;
-	}
-
+public abstract class SettingsStore {
 	public static SettingsStore in(ContextWrapper ctx) {
 		if(DEBUG) log("Loading settings for context %s...", ctx);
+
+		String fixedAppUrl = ctx.getResources().
+				getString(R.string.fixed_app_url);
+		if(fixedAppUrl.length() > 0) {
+			return new BrandedSettingsStore(fixedAppUrl);
+		}
+
 		SharedPreferences prefs = ctx.getSharedPreferences(
 				SettingsStore.class.getName(),
 				Context.MODE_PRIVATE);
-		return new SettingsStore(prefs);
+
+		return new UnbrandedSettingsStore(prefs);
+	}
+
+	public abstract String getAppUrl();
+	public abstract boolean hasSettings();
+	public abstract void save(Settings s) throws SettingsException;
+
+	private static void log(String message, Object...extras) {
+		if(BuildConfig.DEBUG) System.err.println("LOG | SettingsStore :: " +
+				String.format(message, extras));
+	}
+}
+
+class BrandedSettingsStore extends SettingsStore {
+	private final String apiUrl;
+
+	BrandedSettingsStore(String apiUrl) {
+		this.apiUrl = apiUrl;
+	}
+
+	public String getAppUrl() { return apiUrl; }
+	public boolean hasSettings() { return true; }
+
+	public void save(Settings s) throws SettingsException {
+		throw new SettingsException("Cannot save to BrandedSettingsStore.");
+	}
+}
+
+class UnbrandedSettingsStore extends SettingsStore {
+	private final SharedPreferences prefs;
+
+	UnbrandedSettingsStore(SharedPreferences prefs) {
+		this.prefs = prefs;
 	}
 
 //> ACCESSORS
@@ -50,11 +84,6 @@ public class SettingsStore {
 		ed.putString("app-url", s.appUrl);
 		if(!ed.commit()) throw new SettingsException(
 				"Failed to save to SharedPreferences.");
-	}
-
-	private static void log(String message, Object...extras) {
-		if(BuildConfig.DEBUG) System.err.println("LOG | SettingsStore :: " +
-				String.format(message, extras));
 	}
 }
 

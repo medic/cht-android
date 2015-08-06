@@ -11,8 +11,6 @@ import static android.view.View.GONE;
 
 public class SettingsDialogActivity extends Activity {
 	private SettingsStore settings;
-	private boolean isBranded;
-	private String fixedAppUrl;
 
 	public void onCreate(Bundle savedInstanceState) {
 		if(DEBUG) log("Starting...");
@@ -21,21 +19,13 @@ public class SettingsDialogActivity extends Activity {
 		setContentView(R.layout.settings_dialog);
 
 		text(R.id.txtAppUrl, settings.getAppUrl());
-
-		// TODO if fixed_app_url is set, remove the textfield and force
-		// the value in settings
-		fixedAppUrl = getResources().
-				getString(R.string.fixed_app_url);
-		isBranded = fixedAppUrl.length() > 0;
-		if(isBranded) findViewById(R.id.txtAppUrl).
-				setVisibility(GONE);
 	}
 
 //> EVENT HANDLERS
 	public void verifyAndSave(View view) {
 		if(DEBUG) log("verifyAndSave");
 
-		String appUrl = isBranded ? fixedAppUrl : text(R.id.txtAppUrl);
+		String appUrl = text(R.id.txtAppUrl);
 		submitButton().setEnabled(false);
 
 		new AsyncTask<String, Void, AppUrlVerififcation>() {
