@@ -13,6 +13,7 @@ import java.io.File;
 public class EmbeddedBrowserActivity extends Activity {
 	private static final boolean DEBUG = BuildConfig.DEBUG;
 
+	private WebView container;
 	private SettingsStore settings;
 
 	public void onCreate(Bundle savedInstanceState) {
@@ -22,7 +23,7 @@ public class EmbeddedBrowserActivity extends Activity {
 		this.requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.main);
 
-		WebView container = (WebView) findViewById(R.id.WebViewContainer);
+		container = (WebView) findViewById(R.id.WebViewContainer);
 
 		if(DEBUG) enableWebviewLogging(container);
 		enableJavascript(container);
@@ -50,6 +51,12 @@ public class EmbeddedBrowserActivity extends Activity {
 			default:
 				return super.onOptionsItemSelected(item);
 		}
+	}
+
+	public void onBackPressed() {
+		if(container != null && container.canGoBack()) {
+			container.goBack();
+		} else super.onBackPressed();
 	}
 
 	private void openSettings() {
