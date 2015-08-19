@@ -100,7 +100,7 @@ public class EmbeddedBrowserActivity extends Activity {
 		container.setWebViewClient(new WebViewClient() {
 			public boolean shouldOverrideUrlLoading(WebView view, String url) {
 				if(url.startsWith("tel:") || url.startsWith("sms:")) {
-					Intent i= new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+					Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
 					view.getContext().startActivity(i);
 					return true;
 				}
