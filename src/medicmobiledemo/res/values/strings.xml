@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-	<string name="app_name">Medic Mobile Demo</string>
-	<string name="fixed_app_url">https://demo.app.medicmobile.org/medic</string>
+	<string name="app_name">Medic Mobile (alpha)</string>
+	<string name="fixed_app_url">https://alpha.dev.medicmobile.org/medic</string>
 </resources>
