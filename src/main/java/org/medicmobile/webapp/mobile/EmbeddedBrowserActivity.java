@@ -25,6 +25,10 @@ public class EmbeddedBrowserActivity extends Activity {
 
 		container = (WebView) findViewById(R.id.WebViewContainer);
 
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+			container.setWebContentsDebuggingEnabled(true);
+		}
+
 		if(DEBUG) enableWebviewLogging(container);
 		enableJavascript(container);
 		enableStorage(container);
