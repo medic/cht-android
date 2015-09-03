@@ -12,7 +12,9 @@ public class AppUrlVerifier {
 	public AppUrlVerififcation verify(String appUrl) {
 		try {
 			JSONObject json = new SimpleJsonClient2().get(appUrl);
-			if(json.has("db_name"))
+			if(json.getString("error").equals("unauthorized") &&
+					json.getString("reason").equals("Authentication required.") &&
+					is200(appUrl + "/login"))
 				return AppUrlVerififcation.ok(appUrl);
 			else return AppUrlVerififcation.failure(appUrl, errAppUrl_notACouchDb);
 		} catch(MalformedURLException ex) {
@@ -27,6 +29,29 @@ public class AppUrlVerifier {
 			return AppUrlVerififcation.failure(appUrl,
 					errAppUrl_notFound);
 		}
+	}
+
+	private boolean is200(String url) {
+		if(DEBUG) log("is200() :: url=%s", url);
+		HttpURLConnection conn = null;
+		try {
+			conn = (HttpURLConnection) new URL(url).openConnection();
+			return conn.getResponseCode() == 200;
+		} catch (Exception ex) {
+			if(DEBUG) ex.printStackTrace();
+			return false;
+		} finally {
+			if(conn != null) try {
+				conn.disconnect();
+			} catch(Exception ex) {
+				if(DEBUG) ex.printStackTrace();
+			}
+		}
+	}
+
+	private void log(String message, Object...extras) {
+		if(DEBUG) System.err.println("LOG | AppUrlVerifier::" +
+				String.format(message, extras));
 	}
 }
 
