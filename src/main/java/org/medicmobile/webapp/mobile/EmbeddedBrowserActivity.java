@@ -25,11 +25,7 @@ public class EmbeddedBrowserActivity extends Activity {
 
 		container = (WebView) findViewById(R.id.WebViewContainer);
 
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-			container.setWebContentsDebuggingEnabled(true);
-		}
-
-		if(DEBUG) enableWebviewLogging(container);
+		if(DEBUG) enableWebviewLoggingAndDebugging(container);
 		enableJavascript(container);
 		enableStorage(container);
 
@@ -69,7 +65,11 @@ public class EmbeddedBrowserActivity extends Activity {
 		finish();
 	}
 
-	private void enableWebviewLogging(WebView container) {
+	private void enableWebviewLoggingAndDebugging(WebView container) {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+			container.setWebContentsDebuggingEnabled(true);
+		}
+
 		container.setWebChromeClient(new WebChromeClient() {
 			public boolean onConsoleMessage(ConsoleMessage cm) {
 				Log.d("Medic Mobile", cm.message() + " -- From line "
