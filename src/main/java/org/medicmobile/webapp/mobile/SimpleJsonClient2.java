@@ -29,7 +29,11 @@ public class SimpleJsonClient2 {
 			conn = (HttpURLConnection) url.openConnection();
 			conn.setRequestProperty("Content-Type", "application/json");
 
-			inputStream = conn.getInputStream();
+			if(conn.getResponseCode() < 400) {
+				inputStream = conn.getInputStream();
+			} else {
+				inputStream = conn.getErrorStream();
+			}
 			BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"), 8);
 			StringBuilder bob = new StringBuilder();
 
