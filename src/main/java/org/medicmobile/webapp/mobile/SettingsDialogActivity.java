@@ -49,7 +49,7 @@ public class SettingsDialogActivity extends Activity {
 		AppUrlVerififcation verificationResult =
 				new AppUrlVerifier().verify(appUrl);
 
-		if(verificationResult.isCouchRoot) {
+		if(!verificationResult.isOk) {
 			AppUrlVerififcation prefixedVerififcation =
 					new AppUrlVerifier().verify(appUrl + "/medic");
 			if(prefixedVerififcation.isOk) {

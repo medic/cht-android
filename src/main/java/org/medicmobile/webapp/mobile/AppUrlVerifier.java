@@ -14,8 +14,6 @@ public class AppUrlVerifier {
 			JSONObject json = new SimpleJsonClient2().get(appUrl);
 			if(json.has("db_name"))
 				return AppUrlVerififcation.ok(appUrl);
-			else if(json.has("couchdb"))
-				return AppUrlVerififcation.couchRootFound(appUrl);
 			else return AppUrlVerififcation.failure(appUrl, errAppUrl_notACouchDb);
 		} catch(MalformedURLException ex) {
 			// seems unlikely, as we should have verified this already
@@ -35,23 +33,17 @@ public class AppUrlVerifier {
 class AppUrlVerififcation {
 	public final String appUrl;
 	public final boolean isOk;
-	public final boolean isCouchRoot;
 	public final int failure;
 
 	private AppUrlVerififcation(String appUrl, boolean isOk, int failure) {
 		this.appUrl = appUrl;
 		this.isOk = isOk;
 		this.failure = failure;
-		this.isCouchRoot = failure == errAppUrl_isCouchRoot;
 	}
 
 //> FACTORIES
 	public static AppUrlVerififcation ok(String appUrl) {
 		return new AppUrlVerififcation(appUrl, true, 0);
-	}
-
-	public static AppUrlVerififcation couchRootFound(String appUrl) {
-		return failure(appUrl, errAppUrl_isCouchRoot);
 	}
 
 	public static AppUrlVerififcation failure(String appUrl, int failure) {
