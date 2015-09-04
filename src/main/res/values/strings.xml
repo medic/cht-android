@@ -12,5 +12,6 @@
 	<string name="errInvalidUrl">must be a valid URL</string>
 
 	<string name="btnSave">Save</string>
+	<string name="btnCancel">Cancel</string>
 	<string name="mnuSettings">Settings</string>
 </resources>

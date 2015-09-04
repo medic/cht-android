@@ -18,6 +18,10 @@ public class SettingsDialogActivity extends Activity {
 		this.settings = SettingsStore.in(this);
 		setContentView(R.layout.settings_dialog);
 
+		if(!this.settings.hasSettings()) {
+			cancelButton().setVisibility(View.GONE);
+		}
+
 		text(R.id.txtAppUrl, settings.getAppUrl());
 	}
 
@@ -25,8 +29,10 @@ public class SettingsDialogActivity extends Activity {
 	public void verifyAndSave(View view) {
 		if(DEBUG) log("verifyAndSave");
 
-		String appUrl = text(R.id.txtAppUrl);
 		submitButton().setEnabled(false);
+		cancelButton().setEnabled(false);
+
+		String appUrl = text(R.id.txtAppUrl);
 
 		new AsyncTask<String, Void, AppUrlVerififcation>() {
 			protected AppUrlVerififcation doInBackground(String... appUrl) {
@@ -39,9 +45,16 @@ public class SettingsDialogActivity extends Activity {
 				} else {
 					showError(R.id.txtAppUrl, result.failure);
 					submitButton().setEnabled(true);
+					cancelButton().setEnabled(true);
 				}
 			}
 		}.execute(appUrl);
+	}
+
+	public void cancelSettingsEdit(View view) {
+		if(DEBUG) log("cancelSettingsEdit");
+		startActivity(new Intent(this, EmbeddedBrowserActivity.class));
+		finish();
 	}
 
 //> PRIVATE HELPERS
@@ -75,6 +88,10 @@ public class SettingsDialogActivity extends Activity {
 			if(DEBUG) ex.printStackTrace();
 			submitButton().setError(ex.getMessage());
 		}
+	}
+
+	private Button cancelButton() {
+		return (Button) findViewById(R.id.btnCancelSettings);
 	}
 
 	private Button submitButton() {
