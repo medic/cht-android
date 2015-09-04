@@ -11,6 +11,6 @@
 	<string name="errRequired">required</string>
 	<string name="errInvalidUrl">must be a valid URL</string>
 
-	<string name="btnSaveSettings">Save</string>
+	<string name="btnSave">Save</string>
 	<string name="mnuSettings">Settings</string>
 </resources>
