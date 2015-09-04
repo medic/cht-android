@@ -5,11 +5,19 @@
 		android:paddingLeft="16dp"
 		android:paddingRight="16dp"
 		android:orientation="vertical">
-	<EditText android:id="@+id/txtAppUrl"
-			android:hint="@string/txtAppUrl"
+	<ScrollView android:layout_weight="1"
 			android:layout_width="fill_parent"
-			android:layout_height="wrap_content"
-			android:inputType="textUri"/>
+			android:layout_height="fill_parent">
+		<LinearLayout
+				android:layout_width="fill_parent"
+				android:layout_height="fill_parent">
+			<EditText android:id="@+id/txtAppUrl"
+					android:hint="@string/txtAppUrl"
+					android:layout_width="fill_parent"
+					android:layout_height="wrap_content"
+					android:inputType="textUri"/>
+		</LinearLayout>
+	</ScrollView>
 	<Button  android:id="@+id/btnSaveSettings"
 			android:text="@string/btnSaveSettings"
 			android:onClick="verifyAndSave"
