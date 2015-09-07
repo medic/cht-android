@@ -11,23 +11,25 @@ import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 public class AppUrlVerifier {
 	public AppUrlVerififcation verify(String appUrl) {
 		try {
-			JSONObject json = new SimpleJsonClient2().get(appUrl);
-			if(json.getString("error").equals("unauthorized") &&
-					json.getString("reason").equals("Authentication required.") &&
-					is200(appUrl + "/login"))
-				return AppUrlVerififcation.ok(appUrl);
-			else return AppUrlVerififcation.failure(appUrl, errAppUrl_notACouchDb);
+			JSONObject json = new SimpleJsonClient2().get(appUrl + "/setup/poll");
+
+			if(!json.getString("handler").equals("medic-api"))
+				return AppUrlVerififcation.failure(appUrl, errAppUrl_appNotFound);
+			if(!json.getBoolean("ready"))
+				return AppUrlVerififcation.failure(appUrl, errAppUrl_apiNotReady);
+
+			return AppUrlVerififcation.ok(appUrl);
 		} catch(MalformedURLException ex) {
 			// seems unlikely, as we should have verified this already
 			return AppUrlVerififcation.failure(appUrl,
 					errInvalidUrl);
 		} catch(JSONException ex) {
 			return AppUrlVerififcation.failure(appUrl,
-					errAppUrl_notACouchDb);
+					errAppUrl_appNotFound);
 		} catch(IOException ex) {
 			if(DEBUG) ex.printStackTrace();
 			return AppUrlVerififcation.failure(appUrl,
-					errAppUrl_notFound);
+					errAppUrl_serverNotFound);
 		}
 	}
 

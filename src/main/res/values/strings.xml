@@ -5,8 +5,9 @@
 	<string name="fixed_app_url"/>
 
 	<string name="txtAppUrl">Webapp URL</string>
-	<string name="errAppUrl_notFound">unable to contact server</string>
-	<string name="errAppUrl_notACouchDb">no database found</string>
+	<string name="errAppUrl_serverNotFound">unable to contact server</string>
+	<string name="errAppUrl_appNotFound">URL is not a medic-webapp instance</string>
+	<string name="errAppUrl_apiNotReady">medic-webapp is not ready, please try again soon</string>
 
 	<string name="errRequired">required</string>
 	<string name="errInvalidUrl">must be a valid URL</string>

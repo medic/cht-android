@@ -37,7 +37,7 @@ public class SettingsDialogActivity extends Activity {
 		new AsyncTask<String, Void, AppUrlVerififcation>() {
 			protected AppUrlVerififcation doInBackground(String... appUrl) {
 				assert appUrl.length == 1;
-				return verify(appUrl[0]);
+				return new AppUrlVerifier().verify(appUrl[0]);
 			}
 			protected void onPostExecute(AppUrlVerififcation result) {
 				if(result.isOk) {
@@ -58,22 +58,6 @@ public class SettingsDialogActivity extends Activity {
 	}
 
 //> PRIVATE HELPERS
-	private AppUrlVerififcation verify(String appUrl) {
-		AppUrlVerififcation verificationResult =
-				new AppUrlVerifier().verify(appUrl);
-
-		if(!verificationResult.isOk) {
-			AppUrlVerififcation prefixedVerififcation =
-					new AppUrlVerifier().verify(appUrl + "/medic");
-			if(prefixedVerififcation.isOk) {
-				verificationResult = prefixedVerififcation;
-				return verificationResult;
-			}
-		}
-
-		return verificationResult;
-	}
-
 	private void saveSettings(Settings s) {
 		try {
 			settings.save(s);
