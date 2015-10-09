@@ -31,7 +31,7 @@ public class EmbeddedBrowserActivity extends Activity {
 
 		enableSmsAndCallHandling(container);
 
-		String url = settings.getAppUrl() + "/medic/login";
+		String url = settings.getAppUrl() + "/medic/_design/medic/_rewrite";
 		if(DEBUG) log("Pointing browser to %s", url);
 		container.loadUrl(url);
 	}
