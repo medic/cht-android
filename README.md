@@ -30,13 +30,14 @@ To add a new brand:
 To publish to the play store:
 
 1. identify the git tag of the app version you want to build
-1. log in to Jenkins
-1. trigger job `medic-android`, supplying the version number/git tag from step **1**
+1. open remote desktop connection to our Jenkins server, windows.dev.medicmobile.org
+1. log in to Jenkins on remote desktop (http://localhost:8080)
+1. trigger job `medic-android`, supplying the version number/git tag from step **1** as the "VERSION_TO_BUILD" (eg 0.1.93)
 1. wait for `medic-android` job to complete successfully
 1. upload the APK to the play store
 
 	_initial load_: upload the .apk file to the APK page in the play store dev console
 
-	_updates_: trigger the job `medic-android-publish`, selecting the version and branding you wish to publish
+	_updates_: trigger the job `medic-android-publish`, selecting the version, release track, and branding you wish to publish
 
 1. repeat the previous step if you want to publish the app for multiple brands
