@@ -24,3 +24,14 @@ To add a new brand:
 
 1. add `productFlavors { <new_brand> { ... } }` in `build.gradle`
 2. add icons, strings etc. in `src/<new_brand>`
+
+# Publishing
+
+To publish to the play store:
+
+1. identify the git tag of the app version you want to build
+1. log in to Jenkins
+1. trigger job `medic-android`, supplying the version number/git tag from step **1**
+1. wait for `medic-android` job to complete successfully
+1. triger the job `medic-android-publish`, selecting the version and branding you wish to publish
+1. repeat the previous step if you want to publish the app for multiple brands
