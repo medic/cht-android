@@ -23,6 +23,9 @@ android-logs:
 deploy-unbranded:
 	${GRADLEW} --daemon --parallel installUnbrandedDebug
 
+kill:
+	pkill -9 emulator64-arm
+
 clean-apks:
 	rm -rf build/outputs/apk/
 assemble-all:
