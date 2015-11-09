@@ -7,9 +7,14 @@ import org.json.*;
 import static org.medicmobile.webapp.mobile.R.string.*;
 
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
+import static org.medicmobile.webapp.mobile.BuildConfig.DISABLE_APP_URL_VALIDATION;
 
 public class AppUrlVerifier {
 	public AppUrlVerififcation verify(String appUrl) {
+		if(DISABLE_APP_URL_VALIDATION) {
+			return AppUrlVerififcation.ok(appUrl);
+		}
+
 		try {
 			JSONObject json = new SimpleJsonClient2().get(appUrl + "/setup/poll");
 

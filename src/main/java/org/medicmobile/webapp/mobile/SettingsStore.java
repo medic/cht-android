@@ -30,7 +30,7 @@ public abstract class SettingsStore {
 	public abstract boolean allowsConfiguration();
 
 	private static void log(String message, Object...extras) {
-		if(BuildConfig.DEBUG) System.err.println("LOG | SettingsStore :: " +
+		if(DEBUG) System.err.println("LOG | SettingsStore :: " +
 				String.format(message, extras));
 	}
 }
@@ -98,7 +98,7 @@ class Settings {
 	public final String appUrl;
 
 	public Settings(String appUrl) {
-		if(BuildConfig.DEBUG) log("Settings() appUrl=%s", appUrl);
+		if(DEBUG) log("Settings() appUrl=%s", appUrl);
 		this.appUrl = appUrl;
 	}
 
@@ -123,7 +123,7 @@ class Settings {
 	}
 
 	private void log(String message, Object...extras) {
-		if(BuildConfig.DEBUG) System.err.println("LOG | Settings :: " +
+		if(DEBUG) System.err.println("LOG | Settings :: " +
 				String.format(message, extras));
 	}
 }
