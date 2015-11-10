@@ -2,10 +2,12 @@ package org.medicmobile.webapp.mobile;
 
 import android.app.*;
 import android.content.*;
+import android.graphics.*;
 import android.net.*;
 import android.os.*;
-import android.util.Log;
+import android.util.*;
 import android.view.*;
+import android.view.inputmethod.*;
 import android.webkit.*;
 
 import java.io.File;
@@ -14,6 +16,14 @@ import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static org.medicmobile.webapp.mobile.BuildConfig.DISABLE_APP_URL_VALIDATION;
 
 public class EmbeddedBrowserActivity extends Activity {
+	private final ValueCallback<String> backButtonHandler = new ValueCallback<String>() {
+		public void onReceiveValue(String result) {
+			if(!"true".equals(result)) {
+				EmbeddedBrowserActivity.this.finish();
+			}
+		}
+	};
+
 	private WebView container;
 	private SettingsStore settings;
 
@@ -56,9 +66,13 @@ public class EmbeddedBrowserActivity extends Activity {
 	}
 
 	public void onBackPressed() {
-		if(container != null && container.canGoBack()) {
-			container.goBack();
-		} else super.onBackPressed();
+		if(container == null) {
+			super.onBackPressed();
+		} else {
+			container.evaluateJavascript(
+					"angular.element(document.body).scope().handleAndroidBack()",
+					backButtonHandler);
+		}
 	}
 
 	private void openSettings() {
