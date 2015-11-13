@@ -43,7 +43,7 @@ public class EmbeddedBrowserActivity extends Activity {
 		enableSmsAndCallHandling(container);
 
 		String url = settings.getAppUrl() + (DISABLE_APP_URL_VALIDATION ?
-				"" : "/medic/_design/medic/_rewrite");
+				"" : "/medic/_design/medic/_rewrite/");
 		if(DEBUG) log("Pointing browser to %s", url);
 		container.loadUrl(url);
 	}
