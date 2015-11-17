@@ -93,6 +93,19 @@ public class EmbeddedBrowserActivity extends Activity {
 						+ cm.sourceId());
 				return true;
 			}
+
+			public void onGeolocationPermissionsShowPrompt(
+					String origin,
+					GeolocationPermissions.Callback callback) {
+				// allow all location requests
+				// TODO this should be restricted to the domain
+				// set in Settings
+				EmbeddedBrowserActivity.this.log(
+						"onGeolocationPermissionsShowPrompt() :: origin=%s, callback=%s",
+						origin,
+						callback);
+				callback.invoke(origin, true, true);
+			}
 		});
 	}
 
