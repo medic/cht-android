@@ -111,10 +111,11 @@ public class EmbeddedBrowserActivity extends Activity {
 
 	private void enableJavascript(WebView container) {
 		container.getSettings().setJavaScriptEnabled(true);
-		container.addJavascriptInterface(
-				new MedicAndroidJavascript(),
-				"medicmobile_android"
-		);
+
+		MedicAndroidJavascript maj = new MedicAndroidJavascript();
+		maj.setSoundAlert(new SoundAlert(this));
+
+		container.addJavascriptInterface(maj, "medicmobile_android");
 	}
 
 	private void enableStorage(WebView container) {
