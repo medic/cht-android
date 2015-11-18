@@ -2,5 +2,7 @@
 /.gradle/
 /build/
 /emulator.log
+
+# IntelliJ IDEA files
 /.idea/
 *.iml
