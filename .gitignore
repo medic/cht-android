@@ -1,7 +1,7 @@
 /local.properties
 /.gradle/
 /build/
-/emulator.log
+/*.log
 
 # IntelliJ IDEA files
 /.idea/
