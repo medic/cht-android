@@ -14,5 +14,7 @@
 
 	<string name="btnSave">Save</string>
 	<string name="btnCancel">Cancel</string>
+
 	<string name="mnuSettings">Settings</string>
+	<string name="mnuHardRefresh">Home</string>
 </resources>

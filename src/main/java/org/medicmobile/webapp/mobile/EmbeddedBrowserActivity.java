@@ -43,10 +43,7 @@ public class EmbeddedBrowserActivity extends Activity {
 
 		enableSmsAndCallHandling(container);
 
-		String url = settings.getAppUrl() + (DISABLE_APP_URL_VALIDATION ?
-				"" : "/medic/_design/medic/_rewrite/");
-		if(DEBUG) log("Pointing browser to %s", url);
-		container.loadUrl(url);
+		browseToRoot();
 	}
 
 	public boolean onCreateOptionsMenu(Menu menu) {
@@ -60,6 +57,9 @@ public class EmbeddedBrowserActivity extends Activity {
 		switch(item.getItemId()) {
 			case R.id.mnuSettings:
 				openSettings();
+				return true;
+			case R.id.mnuHardRefresh:
+				browseToRoot();
 				return true;
 			default:
 				return super.onOptionsItemSelected(item);
@@ -80,6 +80,13 @@ public class EmbeddedBrowserActivity extends Activity {
 		startActivity(new Intent(this,
 				SettingsDialogActivity.class));
 		finish();
+	}
+
+	private void browseToRoot() {
+		String url = settings.getAppUrl() + (DISABLE_APP_URL_VALIDATION ?
+				"" : "/medic/_design/medic/_rewrite/");
+		if(DEBUG) log("Pointing browser to %s", url);
+		container.loadUrl(url);
 	}
 
 	private void enableWebviewLoggingAndDebugging(WebView container) {
