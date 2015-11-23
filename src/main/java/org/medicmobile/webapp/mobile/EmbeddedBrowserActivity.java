@@ -3,6 +3,7 @@ package org.medicmobile.webapp.mobile;
 import android.app.*;
 import android.content.*;
 import android.graphics.*;
+import android.location.*;
 import android.net.*;
 import android.os.*;
 import android.util.*;
@@ -114,6 +115,8 @@ public class EmbeddedBrowserActivity extends Activity {
 
 		MedicAndroidJavascript maj = new MedicAndroidJavascript();
 		maj.setSoundAlert(new SoundAlert(this));
+
+		maj.setLocationManager((LocationManager) this.getSystemService(Context.LOCATION_SERVICE));
 
 		container.addJavascriptInterface(maj, "medicmobile_android");
 	}
