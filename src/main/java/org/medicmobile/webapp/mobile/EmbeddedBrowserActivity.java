@@ -47,8 +47,9 @@ public class EmbeddedBrowserActivity extends Activity {
 	}
 
 	public boolean onCreateOptionsMenu(Menu menu) {
-		if(settings.allowsConfiguration()) {
-			getMenuInflater().inflate(R.menu.web_menu, menu);
+		getMenuInflater().inflate(R.menu.web_menu, menu);
+		if(!settings.allowsConfiguration()) {
+			menu.removeItem(R.id.mnuSettings);
 		}
 		return super.onCreateOptionsMenu(menu);
 	}
