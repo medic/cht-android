@@ -12,6 +12,7 @@ endif
 default: deploy-unbranded android-logs
 branded: clean-apks assemble-all deploy-all android-logs
 branded-debug: clean-apks assemble-all-debug deploy-all android-logs
+clean: clean-apks
 
 android-emulator:
 	nohup ${EMULATOR} -avd test -wipe-data > emulator.log 2>&1 &

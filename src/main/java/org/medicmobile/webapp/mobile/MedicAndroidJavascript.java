@@ -9,6 +9,7 @@ import org.json.*;
 public class MedicAndroidJavascript {
 	private LocationManager locationManager;
 	private SoundAlert soundAlert;
+	private String versionName;
 
 	public void setSoundAlert(SoundAlert soundAlert) {
 		this.soundAlert = soundAlert;
@@ -18,9 +19,13 @@ public class MedicAndroidJavascript {
 		this.locationManager = locationManager;
 	}
 
+	public void setAppVersion(String version) {
+		this.versionName = version;
+	}
+
 	@JavascriptInterface
-	public int getAppVersion() {
-		return BuildConfig.VERSION_CODE;
+	public String getAppVersion() {
+		return versionName;
 	}
 
 	@JavascriptInterface
