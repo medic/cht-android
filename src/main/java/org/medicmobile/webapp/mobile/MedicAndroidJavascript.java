@@ -1,14 +1,20 @@
 package org.medicmobile.webapp.mobile;
 
 import android.content.*;
+import android.content.pm.*;
 import android.location.*;
 import android.webkit.*;
 
 import org.json.*;
 
 public class MedicAndroidJavascript {
+	private final Context ctx;
 	private LocationManager locationManager;
 	private Alert soundAlert;
+
+	public MedicAndroidJavascript(Context ctx) {
+		this.ctx = ctx;
+	}
 
 	public void setAlert(Alert soundAlert) {
 		this.soundAlert = soundAlert;
@@ -19,8 +25,14 @@ public class MedicAndroidJavascript {
 	}
 
 	@JavascriptInterface
-	public int getAppVersion() {
-		return BuildConfig.VERSION_CODE;
+	public String getAppVersion() {
+		try {
+			return ctx.getPackageManager()
+					.getPackageInfo(ctx.getPackageName(), 0)
+					.versionName;
+		} catch(Exception ex) {
+			return jsonError("Error fetching app version: ", ex);
+		}
 	}
 
 	@JavascriptInterface
@@ -45,13 +57,17 @@ public class MedicAndroidJavascript {
 					.put("long", loc.getLongitude())
 					.toString();
 		} catch(Exception ex) {
-			return jsonError("Problem fetching location: " + ex.getClass() + ": " + ex.getMessage());
+			return jsonError("Problem fetching location: ", ex);
 		}
 	}
 
-	private static String jsonError(String cause) {
-		return "{ \"error\": true, \"cause\":\"" +
-				jsonEscape(cause) +
+	private static String jsonError(String message, Exception ex) {
+		return jsonError(message + ex.getClass() + ": " + ex.getMessage());
+	}
+
+	private static String jsonError(String message) {
+		return "{ \"error\": true, \"message\":\"" +
+				jsonEscape(message) +
 				"\" }";
 	}
 

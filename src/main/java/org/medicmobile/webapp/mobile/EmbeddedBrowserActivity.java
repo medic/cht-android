@@ -121,7 +121,7 @@ public class EmbeddedBrowserActivity extends Activity {
 	private void enableJavascript(WebView container) {
 		container.getSettings().setJavaScriptEnabled(true);
 
-		MedicAndroidJavascript maj = new MedicAndroidJavascript();
+		MedicAndroidJavascript maj = new MedicAndroidJavascript(this);
 		maj.setAlert(new Alert(this));
 
 		maj.setLocationManager((LocationManager) this.getSystemService(Context.LOCATION_SERVICE));
