@@ -122,7 +122,7 @@ public class EmbeddedBrowserActivity extends Activity {
 		container.getSettings().setJavaScriptEnabled(true);
 
 		MedicAndroidJavascript maj = new MedicAndroidJavascript();
-		maj.setSoundAlert(new SoundAlert(this));
+		maj.setAlert(new Alert(this));
 
 		maj.setLocationManager((LocationManager) this.getSystemService(Context.LOCATION_SERVICE));
 

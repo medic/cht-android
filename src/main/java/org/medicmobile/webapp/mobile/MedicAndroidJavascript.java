@@ -8,9 +8,9 @@ import org.json.*;
 
 public class MedicAndroidJavascript {
 	private LocationManager locationManager;
-	private SoundAlert soundAlert;
+	private Alert soundAlert;
 
-	public void setSoundAlert(SoundAlert soundAlert) {
+	public void setAlert(Alert soundAlert) {
 		this.soundAlert = soundAlert;
 	}
 
