@@ -17,6 +17,10 @@ import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static org.medicmobile.webapp.mobile.BuildConfig.DISABLE_APP_URL_VALIDATION;
 
 public class EmbeddedBrowserActivity extends Activity {
+	private static final ValueCallback<String> IGNORE_RESULT = new ValueCallback<String>() {
+		public void onReceiveValue(String result) {}
+	};
+
 	private final ValueCallback<String> backButtonHandler = new ValueCallback<String>() {
 		public void onReceiveValue(String result) {
 			if(!"true".equals(result)) {
@@ -75,6 +79,18 @@ public class EmbeddedBrowserActivity extends Activity {
 					"angular.element(document.body).scope().handleAndroidBack()",
 					backButtonHandler);
 		}
+	}
+
+	public void evaluateJavascript(String js) {
+		this.evaluateJavascript(js, IGNORE_RESULT);
+	}
+
+	public void evaluateJavascript(final String js, final ValueCallback callback) {
+		container.post(new Runnable() {
+			public void run() {
+				container.evaluateJavascript(js, callback);
+			}
+		});
 	}
 
 	private void openSettings() {

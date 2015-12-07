@@ -1,19 +1,30 @@
 package org.medicmobile.webapp.mobile;
 
+import android.app.*;
 import android.content.*;
 import android.content.pm.*;
 import android.location.*;
 import android.webkit.*;
+import android.widget.*;
+
+import java.text.*;
+import java.util.*;
 
 import org.json.*;
 
+import static java.util.Calendar.*;
+import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
+
 public class MedicAndroidJavascript {
-	private final Context ctx;
+	private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
+
+	private final EmbeddedBrowserActivity parent;
+
 	private LocationManager locationManager;
 	private Alert soundAlert;
 
-	public MedicAndroidJavascript(Context ctx) {
-		this.ctx = ctx;
+	public MedicAndroidJavascript(EmbeddedBrowserActivity parent) {
+		this.parent = parent;
 	}
 
 	public void setAlert(Alert soundAlert) {
@@ -27,8 +38,8 @@ public class MedicAndroidJavascript {
 	@JavascriptInterface
 	public String getAppVersion() {
 		try {
-			return ctx.getPackageManager()
-					.getPackageInfo(ctx.getPackageName(), 0)
+			return parent.getPackageManager()
+					.getPackageInfo(parent.getPackageName(), 0)
 					.versionName;
 		} catch(Exception ex) {
 			return jsonError("Error fetching app version: ", ex);
@@ -61,6 +72,42 @@ public class MedicAndroidJavascript {
 		}
 	}
 
+	@JavascriptInterface
+	public void datePicker(final String targetElement) {
+		datePicker(targetElement, Calendar.getInstance());
+	}
+
+	@JavascriptInterface
+	public void datePicker(final String targetElement, String initialDate) {
+		try {
+			Calendar c = Calendar.getInstance();
+			c.setTime(DATE_FORMAT.parse(initialDate));
+			datePicker(targetElement, c);
+		} catch(ParseException ex) {
+			datePicker(targetElement);
+		}
+	}
+
+	private void datePicker(String targetElement, Calendar initialDate) {
+		// Remove single-quotes from the `targetElement` CSS selecter, as
+		// we'll be using these to enclose the entire string in JS.  We
+		// are not trying to properly escape these characters, just prevent
+		// suprises from JS injection.
+		final String safeTargetElement = targetElement.replace('\'', '_');
+
+		DatePickerDialog.OnDateSetListener listener = new DatePickerDialog.OnDateSetListener() {
+			public void onDateSet(DatePicker view, int year, int month, int day) {
+				++month;
+				String dateString = String.format("%04d-%02d-%02d", year, month, day);
+				String setJs = String.format("$('%s').val('%s')", safeTargetElement, dateString);
+				parent.evaluateJavascript(setJs);
+			}
+		};
+
+		new DatePickerDialog(parent, listener, initialDate.get(YEAR), initialDate.get(MONTH), initialDate.get(DAY_OF_MONTH))
+				.show();
+	}
+
 	private static String jsonError(String message, Exception ex) {
 		return jsonError(message + ex.getClass() + ": " + ex.getMessage());
 	}
@@ -74,5 +121,9 @@ public class MedicAndroidJavascript {
 	private static String jsonEscape(String s) {
 		return s.replaceAll("\"", "'");
 	}
-}
 
+	private void log(String message, Object...extras) {
+		if(DEBUG) System.err.println("LOG | MedicAndroidJavascript::" +
+				String.format(message, extras));
+	}
+}
