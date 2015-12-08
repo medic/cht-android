@@ -81,14 +81,19 @@ public class EmbeddedBrowserActivity extends Activity {
 		}
 	}
 
-	public void evaluateJavascript(String js) {
-		this.evaluateJavascript(js, IGNORE_RESULT);
-	}
-
-	public void evaluateJavascript(final String js, final ValueCallback callback) {
+	public void evaluateJavascript(final String js) {
 		container.post(new Runnable() {
 			public void run() {
-				container.evaluateJavascript(js, callback);
+				// `WebView.loadUrl()` seems to be significantly faster than
+				// `WebView.evaluateJavascript()` on Tecno Y4.  We may find
+				// confusing behaviour on Android 4.4+ when using `loadUrl()`
+				// to run JS, in which case we should switch to the second
+				// block.
+				if(true) {
+					container.loadUrl("javascript:" + js);
+				} else {
+					container.evaluateJavascript(js, IGNORE_RESULT);
+				}
 			}
 		});
 	}
