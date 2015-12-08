@@ -99,7 +99,8 @@ public class MedicAndroidJavascript {
 			public void onDateSet(DatePicker view, int year, int month, int day) {
 				++month;
 				String dateString = String.format("%04d-%02d-%02d", year, month, day);
-				String setJs = String.format("$('%s').val('%s')", safeTargetElement, dateString);
+				String setJs = String.format("$('%s').val('%s').trigger('change')",
+						safeTargetElement, dateString);
 				parent.evaluateJavascript(setJs);
 			}
 		};
