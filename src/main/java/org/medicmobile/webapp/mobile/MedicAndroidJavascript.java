@@ -4,6 +4,7 @@ import android.app.*;
 import android.content.*;
 import android.content.pm.*;
 import android.location.*;
+import android.net.TrafficStats;
 import android.webkit.*;
 import android.widget.*;
 
@@ -49,6 +50,18 @@ public class MedicAndroidJavascript {
 	@JavascriptInterface
 	public void playAlert() {
 		if(soundAlert != null) soundAlert.trigger();
+	}
+
+	@JavascriptInterface
+	public String getDataUsage() {
+		try {
+			return new JSONObject()
+					.put("rx", TrafficStats.getTotalRxBytes())
+					.put("tx", TrafficStats.getTotalTxBytes())
+					.toString();
+		} catch(Exception ex) {
+			return jsonError("Problem fetching data usage stats.");
+		}
 	}
 
 	@JavascriptInterface
