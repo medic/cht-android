@@ -58,14 +58,22 @@ public class MedicAndroidJavascript {
 		int uid = Process.myUid();
 		try {
 			return new JSONObject()
-					.put("rx", TrafficStats.getTotalRxBytes())
-					.put("tx", TrafficStats.getTotalTxBytes())
-					.put("rxByUid", TrafficStats.getUidRxBytes(uid))
-					.put("txByUid", TrafficStats.getUidTxBytes(uid))
+					.put("system", getDataUsage(
+							TrafficStats.getTotalRxBytes(),
+							TrafficStats.getTotalTxBytes()))
+					.put("app", getDataUsage(
+							TrafficStats.getUidRxBytes(uid),
+							TrafficStats.getUidTxBytes(uid)))
 					.toString();
 		} catch(Exception ex) {
 			return jsonError("Problem fetching data usage stats.");
 		}
+	}
+
+	private JSONObject getDataUsage(long rx, long tx) throws JSONException {
+		return new JSONObject()
+				.put("rx", rx)
+				.put("tx", tx);
 	}
 
 	@JavascriptInterface
