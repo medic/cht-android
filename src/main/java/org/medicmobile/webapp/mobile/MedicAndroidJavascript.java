@@ -5,6 +5,7 @@ import android.content.*;
 import android.content.pm.*;
 import android.location.*;
 import android.net.TrafficStats;
+import android.os.Process;
 import android.webkit.*;
 import android.widget.*;
 
@@ -54,10 +55,13 @@ public class MedicAndroidJavascript {
 
 	@JavascriptInterface
 	public String getDataUsage() {
+		int uid = Process.myUid();
 		try {
 			return new JSONObject()
 					.put("rx", TrafficStats.getTotalRxBytes())
 					.put("tx", TrafficStats.getTotalTxBytes())
+					.put("rxByUid", TrafficStats.getUidRxBytes(uid))
+					.put("txByUid", TrafficStats.getUidTxBytes(uid))
 					.toString();
 		} catch(Exception ex) {
 			return jsonError("Problem fetching data usage stats.");
