@@ -13,7 +13,7 @@ public class FreeSpaceWarningActivity extends Activity {
 	static final String NEXT_ACTIVITY = "next-activity";
 
 	/** Recommended minimum free space on the device, in bytes */
-	static final long MINIMUM_SPACE = 100 * 1024 * 1024;
+	static final long MINIMUM_SPACE = 200 * 1024 * 1024;
 
 	public void onCreate(Bundle savedInstanceState) {
 		if(DEBUG) log("Starting...");
