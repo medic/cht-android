@@ -17,12 +17,15 @@ public class SettingsDialogActivity extends Activity {
 	private static final int STATE_FORM = 2;
 
 	private SettingsStore settings;
+	private ServerRepo serverRepo;
 	private int state;
 
 	public void onCreate(Bundle savedInstanceState) {
 		if(DEBUG) log("Starting...");
 		super.onCreate(savedInstanceState);
+
 		this.settings = SettingsStore.in(this);
+		this.serverRepo = new ServerRepo(this);
 
 		displayServerSelectList();
 	}
@@ -35,7 +38,7 @@ public class SettingsDialogActivity extends Activity {
 
 		ListView list = (ListView) findViewById(R.id.lstServers);
 
-		List<ServerMetadata> servers = getServers();
+		List<ServerMetadata> servers = serverRepo.getServers();
 
 		list.setAdapter(new SimpleAdapter(this,
 				adapt(servers),
@@ -75,6 +78,7 @@ public class SettingsDialogActivity extends Activity {
 			protected void onPostExecute(AppUrlVerififcation result) {
 				if(result.isOk) {
 					saveSettings(new Settings(result.appUrl));
+					serverRepo.save(result.appUrl);
 				} else {
 					showError(R.id.txtAppUrl, result.failure);
 					submitButton().setEnabled(true);
@@ -169,13 +173,6 @@ public class SettingsDialogActivity extends Activity {
 		return adapted;
 	}
 
-	private List<ServerMetadata> getServers() {
-		return Arrays.asList(new ServerMetadata[] {
-			new ServerMetadata("Custom"),
-			new ServerMetadata("Alpha Dev", "https://alpha.dev.medicmobile.org"),
-		});
-	}
-
 	private void log(String message, Object...extras) {
 		if(DEBUG) System.err.println("LOG | SettingsDialogActivity :: " +
 				String.format(message, extras));
@@ -214,12 +211,64 @@ class ServerMetadata {
 		this.url = url;
 	}
 
-	public String toString() {
-		return name + "[" + url + "]";
-	}
-
 	private void log(String message, Object... extras) {
 		if(DEBUG) System.err.println("LOG | ServerMetadata :: " +
 				String.format(message, extras));
+	}
+}
+
+class ServerRepo {
+	private final SharedPreferences prefs;
+
+	ServerRepo(Context ctx) {
+		prefs = ctx.getSharedPreferences(
+				"ServerRepo",
+				Context.MODE_PRIVATE);
+		save("https://alpha.dev.medicmobile.org");
+	}
+
+	List<ServerMetadata> getServers() {
+		List servers = new LinkedList<ServerMetadata>();
+
+		servers.add(new ServerMetadata("Custom"));
+
+		for(Map.Entry<String, ?> e : prefs.getAll().entrySet()) {
+			servers.add(new ServerMetadata(
+					e.getValue().toString(),
+					e.getKey()));
+		};
+
+		return servers;
+	}
+
+	void save(String url) {
+		SharedPreferences.Editor ed = prefs.edit();
+		ed.putString(url, friendly(url));
+		ed.apply();
+	}
+
+	private static String friendly(String url) {
+		int slashes = url.indexOf("//");
+		if(slashes != -1) {
+			url = url.substring(slashes + 2);
+		}
+		if(url.endsWith(".medicmobile.org")) {
+			url = url.substring(0, url.length() - ".medicmobile.org".length());
+		}
+		if(url.endsWith(".medicmobile.org/")) {
+			url = url.substring(0, url.length() - ".medicmobile.org/".length());
+		}
+		if(url.startsWith("192.168.")) {
+			return url.substring("192.168.".length());
+		} else {
+			String[] parts = url.split("\\.");
+			url = "";
+			for(String p : parts) {
+				url += " ";
+				url += p.substring(0, 1).toUpperCase();
+				url += p.substring(1);
+			}
+			return url.substring(1);
+		}
 	}
 }
