@@ -21,8 +21,21 @@ public class StartupActivity extends Activity {
 
 		if(DEBUG) log("Starting new activity with class %s", newActivity);
 
-		startActivity(new Intent(this, newActivity));
+		if(hasEnoughFreeSpace()) {
+			startActivity(new Intent(this, newActivity));
+		} else {
+			Intent i = new Intent(this, FreeSpaceWarningActivity.class);
+			i.putExtra(FreeSpaceWarningActivity.NEXT_ACTIVITY, newActivity);
+			startActivity(i);
+		}
+
 		finish();
+	}
+
+	private boolean hasEnoughFreeSpace() {
+		long freeSpace = getFilesDir().getFreeSpace();
+
+		return freeSpace > FreeSpaceWarningActivity.MINIMUM_SPACE;
 	}
 
 	private void log(String message, Object...extras) {

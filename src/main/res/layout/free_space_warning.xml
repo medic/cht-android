@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+		android:layout_width="fill_parent"
+		android:layout_height="fill_parent"
+		android:scrollbars="vertical"
+		android:fillViewport="true">
+	<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+			android:layout_width="fill_parent"
+			android:layout_height="fill_parent"
+			android:paddingLeft="16dp"
+			android:paddingRight="16dp"
+			android:orientation="vertical">
+		<TextView android:id="@+id/txtFreeSpaceWarning"
+				style="@style/BigText"
+				android:text="@string/txtFreeSpaceWarning"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"/>
+		<TextView android:id="@+id/txtFreeSpaceCurrent"
+				android:paddingTop="16dp"
+				style="@style/BigText"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"/>
+		<TextView android:id="@+id/txtFreeSpaceRecommended"
+				android:paddingTop="16dp"
+				style="@style/BigText"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"/>
+		<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+				android:layout_width="fill_parent"
+				android:layout_height="fill_parent"
+				android:orientation="vertical">
+			<Button android:id="@+id/btnFreeSpaceQuit"
+					android:text="@string/btnQuit"
+					android:onClick="evtQuit"
+					android:layout_height="wrap_content"
+					android:layout_width="wrap_content"
+					android:paddingLeft="16dp"
+					android:paddingRight="16dp"
+					android:layout_alignParentLeft="true"
+					android:layout_alignParentBottom="true"/>
+			<Button android:id="@+id/btnFreeSpaceContinue"
+					android:text="@string/btnContinue"
+					android:onClick="evtContinue"
+					android:layout_height="wrap_content"
+					android:layout_width="wrap_content"
+					android:paddingLeft="16dp"
+					android:paddingRight="16dp"
+					android:layout_alignParentRight="true"
+					android:layout_alignParentBottom="true"/>
+		</RelativeLayout>
+	</LinearLayout>
+</ScrollView>
