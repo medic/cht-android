@@ -39,7 +39,14 @@ public class EmbeddedBrowserActivity extends Activity {
 		this.requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.main);
 
-		container = (WebView) findViewById(R.id.WebViewContainer);
+		// Add an alarming red border if using configurable (i.e. dev)
+		// app with a medic production server.
+		if(settings.allowsConfiguration() &&
+				settings.getAppUrl().contains("app.medicmobile.org")) {
+			findViewById(R.id.lytWebView).setPadding(10, 10, 10, 10);
+		}
+
+		container = (WebView) findViewById(R.id.wbvMain);
 
 		if(DEBUG) enableWebviewLoggingAndDebugging(container);
 		enableJavascript(container);
