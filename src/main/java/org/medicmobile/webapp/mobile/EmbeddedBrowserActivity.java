@@ -24,7 +24,7 @@ public class EmbeddedBrowserActivity extends Activity {
 	private final ValueCallback<String> backButtonHandler = new ValueCallback<String>() {
 		public void onReceiveValue(String result) {
 			if(!"true".equals(result)) {
-				EmbeddedBrowserActivity.this.finish();
+				EmbeddedBrowserActivity.this.moveTaskToBack(false);
 			}
 		}
 	};
