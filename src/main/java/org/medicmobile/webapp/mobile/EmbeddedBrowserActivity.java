@@ -58,10 +58,10 @@ public class EmbeddedBrowserActivity extends Activity {
 	}
 
 	public boolean onCreateOptionsMenu(Menu menu) {
-		getMenuInflater().inflate(R.menu.web_menu, menu);
-		if(!settings.allowsConfiguration()) {
-			menu.removeItem(R.id.mnuLogout);
-			menu.removeItem(R.id.mnuSettings);
+		if(settings.allowsConfiguration()) {
+			getMenuInflater().inflate(R.menu.unbranded_web_menu, menu);
+		} else {
+			getMenuInflater().inflate(R.menu.web_menu, menu);
 		}
 		return super.onCreateOptionsMenu(menu);
 	}
