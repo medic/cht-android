@@ -10,6 +10,7 @@ import android.util.*;
 import android.view.*;
 import android.view.inputmethod.*;
 import android.webkit.*;
+import android.widget.*;
 
 import java.io.File;
 
@@ -55,6 +56,10 @@ public class EmbeddedBrowserActivity extends Activity {
 		enableSmsAndCallHandling(container);
 
 		browseToRoot();
+
+		if(settings.allowsConfiguration()) {
+			toast(settings.getAppUrl());
+		}
 	}
 
 	public boolean onCreateOptionsMenu(Menu menu) {
@@ -184,6 +189,10 @@ public class EmbeddedBrowserActivity extends Activity {
 				return false;
 			}
 		});
+	}
+
+	private void toast(String message) {
+		Toast.makeText(container.getContext(), message, Toast.LENGTH_LONG).show();
 	}
 
 	private void log(String message, Object...extras) {
