@@ -18,6 +18,7 @@
 	<string name="btnQuit">Quit</string>
 
 	<string name="mnuSettings">Settings</string>
+	<string name="mnuLogout">Logout</string>
 	<string name="mnuHardRefresh">Home</string>
 
 	<string name="txtFreeSpaceWarning">Space is running low on this device.  Medic Mobile may not be able to start, or may perform strangely.</string>

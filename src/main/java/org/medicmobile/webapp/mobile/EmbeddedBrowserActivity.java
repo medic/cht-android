@@ -60,6 +60,7 @@ public class EmbeddedBrowserActivity extends Activity {
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate(R.menu.web_menu, menu);
 		if(!settings.allowsConfiguration()) {
+			menu.removeItem(R.id.mnuLogout);
 			menu.removeItem(R.id.mnuSettings);
 		}
 		return super.onCreateOptionsMenu(menu);
@@ -72,6 +73,9 @@ public class EmbeddedBrowserActivity extends Activity {
 				return true;
 			case R.id.mnuHardRefresh:
 				browseToRoot();
+				return true;
+			case R.id.mnuLogout:
+				evaluateJavascript("angular.element(document.body).scope().logout()");
 				return true;
 			default:
 				return super.onOptionsItemSelected(item);
