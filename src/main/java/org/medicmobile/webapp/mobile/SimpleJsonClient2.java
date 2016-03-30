@@ -16,6 +16,13 @@ import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
  * @see org.apache.http.impl.client.DefaultHttpClient
  */
 public class SimpleJsonClient2 {
+	static {
+		// HTTP connection reuse which was buggy pre-froyo
+		if (Integer.parseInt(Build.VERSION.SDK) < Build.VERSION_CODES.FROYO) {
+			System.setProperty("http.keepAlive", "false");
+		}
+	}
+
 	public JSONObject get(String url) throws MalformedURLException, JSONException, IOException {
 		if(DEBUG) traceMethod("get", "url", url);
 		return get(new URL(url));
@@ -72,7 +79,7 @@ public class SimpleJsonClient2 {
 	}
 
 	private static void log(String methodName, String message) {
-		if(DEBUG) System.err.println("LOG | SimpleJsonClient." +
+		if(DEBUG) System.err.println("LOG | SimpleJsonClient2." +
 				methodName + "()" +
 				message);
 	}
