@@ -6,6 +6,7 @@ import java.net.*;
 import org.json.*;
 
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
+import static android.os.Build.*;
 
 /**
  * <p>New and improved - SimpleJsonClient2 is SimpleJsonClient, but using <code>
@@ -18,7 +19,7 @@ import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 public class SimpleJsonClient2 {
 	static {
 		// HTTP connection reuse which was buggy pre-froyo
-		if (Integer.parseInt(Build.VERSION.SDK) < Build.VERSION_CODES.FROYO) {
+		if (VERSION.SDK_INT < VERSION_CODES.FROYO) {
 			System.setProperty("http.keepAlive", "false");
 		}
 	}
