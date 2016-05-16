@@ -94,5 +94,8 @@ android {
 		livinggoods {
 			applicationId = 'org.medicmobile.webapp.mobile.livinggoods'
 		}
+		bracuganda {
+			applicationId = 'org.medicmobile.webapp.mobile.bracuganda'
+		}
 	}
 }
