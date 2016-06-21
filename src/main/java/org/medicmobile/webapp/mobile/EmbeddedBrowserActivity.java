@@ -80,7 +80,7 @@ public class EmbeddedBrowserActivity extends Activity {
 				browseToRoot();
 				return true;
 			case R.id.mnuLogout:
-				evaluateJavascript("angular.element(document.body).scope().logout()");
+				evaluateJavascript("angular.element(document.body).injector().get('Session').logout()");
 				return true;
 			default:
 				return super.onOptionsItemSelected(item);
