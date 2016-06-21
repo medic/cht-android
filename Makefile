@@ -19,7 +19,7 @@ android-emulator:
 	${ADB} wait-for-device
 
 android-logs:
-	${ADB} shell logcat
+	${ADB} logcat MedicMobile:V AndroidRuntime:E '*:S' | tee android.log
 
 deploy-unbranded:
 	${GRADLEW} --daemon --parallel installUnbrandedDebug

@@ -134,9 +134,10 @@ public class EmbeddedBrowserActivity extends Activity {
 
 		container.setWebChromeClient(new WebChromeClient() {
 			public boolean onConsoleMessage(ConsoleMessage cm) {
-				Log.d("Medic Mobile", cm.message() + " -- From line "
-						+ cm.lineNumber() + " of "
-						+ cm.sourceId());
+				Log.d("MedicMobile", String.format("%s:%s | %s",
+						cm.sourceId(),
+						cm.lineNumber(),
+						cm.message()));
 				return true;
 			}
 
