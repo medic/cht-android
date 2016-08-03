@@ -80,7 +80,7 @@ public class EmbeddedBrowserActivity extends Activity {
 				browseToRoot();
 				return true;
 			case R.id.mnuLogout:
-				evaluateJavascript("angular.element(document.body).injector().get('Session').logout()");
+				evaluateJavascript("angular.element(document.body).injector().get('AndroidApi').v1.logout()");
 				return true;
 			default:
 				return super.onOptionsItemSelected(item);
@@ -92,7 +92,7 @@ public class EmbeddedBrowserActivity extends Activity {
 			super.onBackPressed();
 		} else {
 			container.evaluateJavascript(
-					"angular.element(document.body).scope().handleAndroidBack()",
+					"angular.element(document.body).injector().get('AndroidApi').v1.back()",
 					backButtonHandler);
 		}
 	}
