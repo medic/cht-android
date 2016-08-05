@@ -35,7 +35,7 @@ public class StorageUsageActivity extends Activity {
 					long used = origin.getUsage();
 					int percentFree = (int) ((quota - used) * 100 / quota);
 					bob.append(entry.getKey() + " – available space: " +
-							used + "/" + quota + " b\n" +
+							(used/1024/1024) + "/" + (quota/1024/1024) + " b\n" +
 							"(" + percentFree + "% free)\n\n");
 					text(R.id.txtStorageUsage, bob.toString());
 				}
