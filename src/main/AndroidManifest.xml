@@ -24,5 +24,6 @@
 				android:configChanges="orientation|screenSize"/>
 		<activity android:name="FreeSpaceWarningActivity"/>
 		<activity android:name="SettingsDialogActivity"/>
+		<activity android:name="StorageUsageActivity"/>
 	</application>
 </manifest>

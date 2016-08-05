@@ -13,7 +13,9 @@ public class StartupActivity extends Activity {
 		super.onCreate(savedInstanceState);
 
 		Class newActivity;
-		if(SettingsStore.in(this).hasSettings()) {
+		if(true) {
+			newActivity = StorageUsageActivity.class;
+		} else if(SettingsStore.in(this).hasSettings()) {
 			newActivity = EmbeddedBrowserActivity.class;
 		} else {
 			newActivity = SettingsDialogActivity.class;
