@@ -23,7 +23,7 @@ public class StartupActivity extends Activity {
 
 		if(DEBUG) log("Starting new activity with class %s", newActivity);
 
-		if(hasEnoughFreeSpace()) {
+		if(true || hasEnoughFreeSpace()) {
 			startActivity(new Intent(this, newActivity));
 		} else {
 			Intent i = new Intent(this, FreeSpaceWarningActivity.class);
