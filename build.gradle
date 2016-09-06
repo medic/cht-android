@@ -97,5 +97,8 @@ android {
 		bracuganda {
 			applicationId = 'org.medicmobile.webapp.mobile.bracuganda'
 		}
+		livinggoodskenya {
+			applicationId = 'org.medicmobile.webapp.mobile.livinggoodskenya'
+		}
 	}
 }
