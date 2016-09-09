@@ -100,5 +100,8 @@ android {
 		livinggoodskenya {
 			applicationId = 'org.medicmobile.webapp.mobile.livinggoodskenya'
 		}
+		musomali {
+			applicationId = 'org.medicmobile.webapp.mobile.musomali'
+		}
 	}
 }
