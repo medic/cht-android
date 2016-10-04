@@ -19,6 +19,15 @@ gradle.projectsEvaluated {
 repositories {
 	mavenLocal()
 	mavenCentral()
+	maven { url 'https://download.01.org/crosswalk/releases/crosswalk/android/maven2' }
+}
+
+// from https://stackoverflow.com/questions/28781803/embed-crosswalk-in-android-studio
+def xwalkVersion = '21.51.546.6'
+dependencies {
+	compile fileTree(dir: 'libs', include: ['*.jar'])
+	compile 'com.android.support:appcompat-v7:21.0.3'
+	compile "org.xwalk:xwalk_core_library:$xwalkVersion"
 }
 
 def isReleaseBuild = {
