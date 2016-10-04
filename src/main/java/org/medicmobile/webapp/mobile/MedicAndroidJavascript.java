@@ -1,20 +1,24 @@
 package org.medicmobile.webapp.mobile;
 
-import android.app.*;
-import android.content.*;
-import android.content.pm.*;
-import android.location.*;
+import android.app.DatePickerDialog;
+import android.location.Criteria;
+import android.location.Location;
+import android.location.LocationManager;
 import android.net.TrafficStats;
 import android.os.Process;
-import android.webkit.*;
-import android.widget.*;
+import android.widget.DatePicker;
 
-import java.text.*;
-import java.util.*;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 
-import org.json.*;
+import org.json.JSONException;
+import org.json.JSONObject;
 
-import static java.util.Calendar.*;
+import static java.util.Calendar.DAY_OF_MONTH;
+import static java.util.Calendar.MONTH;
+import static java.util.Calendar.YEAR;
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 
 public class MedicAndroidJavascript {
@@ -37,7 +41,8 @@ public class MedicAndroidJavascript {
 		this.locationManager = locationManager;
 	}
 
-	@JavascriptInterface
+	@org.xwalk.core.JavascriptInterface
+	@android.webkit.JavascriptInterface
 	public String getAppVersion() {
 		try {
 			return parent.getPackageManager()
@@ -48,12 +53,14 @@ public class MedicAndroidJavascript {
 		}
 	}
 
-	@JavascriptInterface
+	@org.xwalk.core.JavascriptInterface
+	@android.webkit.JavascriptInterface
 	public void playAlert() {
 		if(soundAlert != null) soundAlert.trigger();
 	}
 
-	@JavascriptInterface
+	@org.xwalk.core.JavascriptInterface
+	@android.webkit.JavascriptInterface
 	public String getDataUsage() {
 		int uid = Process.myUid();
 		try {
@@ -76,7 +83,8 @@ public class MedicAndroidJavascript {
 				.put("tx", tx);
 	}
 
-	@JavascriptInterface
+	@org.xwalk.core.JavascriptInterface
+	@android.webkit.JavascriptInterface
 	public String getLocation() {
 		try {
 			if(locationManager == null) return jsonError("LocationManager not set.  Cannot retrieve location.");
@@ -97,12 +105,14 @@ public class MedicAndroidJavascript {
 		}
 	}
 
-	@JavascriptInterface
+	@org.xwalk.core.JavascriptInterface
+	@android.webkit.JavascriptInterface
 	public void datePicker(final String targetElement) {
 		datePicker(targetElement, Calendar.getInstance());
 	}
 
-	@JavascriptInterface
+	@org.xwalk.core.JavascriptInterface
+	@android.webkit.JavascriptInterface
 	public void datePicker(final String targetElement, String initialDate) {
 		try {
 			Calendar c = Calendar.getInstance();

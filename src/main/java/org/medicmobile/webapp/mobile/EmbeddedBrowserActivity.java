@@ -14,6 +14,12 @@ import android.widget.*;
 
 import java.io.File;
 
+import org.xwalk.core.XWalkPreferences;
+import org.xwalk.core.XWalkResourceClient;
+import org.xwalk.core.XWalkSettings;
+import org.xwalk.core.XWalkUIClient;
+import org.xwalk.core.XWalkView;
+
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static org.medicmobile.webapp.mobile.BuildConfig.DISABLE_APP_URL_VALIDATION;
 
@@ -30,7 +36,7 @@ public class EmbeddedBrowserActivity extends Activity {
 		}
 	};
 
-	private WebView container;
+	private XWalkView container;
 	private SettingsStore settings;
 
 	public void onCreate(Bundle savedInstanceState) {
@@ -47,7 +53,7 @@ public class EmbeddedBrowserActivity extends Activity {
 			findViewById(R.id.lytWebView).setPadding(10, 10, 10, 10);
 		}
 
-		container = (WebView) findViewById(R.id.wbvMain);
+		container = (XWalkView) findViewById(R.id.wbvMain);
 
 		if(DEBUG) enableWebviewLoggingAndGeolocation(container);
 		enableRemoteChromeDebugging(container);
@@ -106,8 +112,9 @@ public class EmbeddedBrowserActivity extends Activity {
 				// confusing behaviour on Android 4.4+ when using `loadUrl()`
 				// to run JS, in which case we should switch to the second
 				// block.
+				// On switching to XWalkView, we assume the same applies.
 				if(true) {
-					container.loadUrl("javascript:" + js);
+					container.load("javascript:" + js, null);
 				} else {
 					container.evaluateJavascript(js, IGNORE_RESULT);
 				}
@@ -125,17 +132,15 @@ public class EmbeddedBrowserActivity extends Activity {
 		String url = settings.getAppUrl() + (DISABLE_APP_URL_VALIDATION ?
 				"" : "/medic/_design/medic/_rewrite/");
 		if(DEBUG) log("Pointing browser to %s", url);
-		container.loadUrl(url);
+		container.load(url, null);
 	}
 
-	private void enableRemoteChromeDebugging(WebView container) {
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-			container.setWebContentsDebuggingEnabled(true);
-		}
+	private void enableRemoteChromeDebugging(XWalkView container) {
+		XWalkPreferences.setValue(XWalkPreferences.REMOTE_DEBUGGING, true);
 	}
 
-	private void enableWebviewLoggingAndGeolocation(WebView container) {
-		container.setWebChromeClient(new WebChromeClient() {
+	private void enableWebviewLoggingAndGeolocation(XWalkView container) {
+		new XWalkUIClient(container) {
 			public boolean onConsoleMessage(ConsoleMessage cm) {
 				Log.d("MedicMobile", String.format("%s:%s | %s",
 						cm.sourceId(),
@@ -144,6 +149,8 @@ public class EmbeddedBrowserActivity extends Activity {
 				return true;
 			}
 
+			/*
+			 * TODO Crosswalk: re-enable this if required
 			public void onGeolocationPermissionsShowPrompt(
 					String origin,
 					GeolocationPermissions.Callback callback) {
@@ -156,10 +163,11 @@ public class EmbeddedBrowserActivity extends Activity {
 						callback);
 				callback.invoke(origin, true, true);
 			}
-		});
+			*/
+		};
 	}
 
-	private void enableJavascript(WebView container) {
+	private void enableJavascript(XWalkView container) {
 		container.getSettings().setJavaScriptEnabled(true);
 
 		MedicAndroidJavascript maj = new MedicAndroidJavascript(this);
@@ -170,21 +178,20 @@ public class EmbeddedBrowserActivity extends Activity {
 		container.addJavascriptInterface(maj, "medicmobile_android");
 	}
 
-	private void enableStorage(WebView container) {
-		WebSettings webSettings = container.getSettings();
-		webSettings.setDatabaseEnabled(true);
-		webSettings.setDomStorageEnabled(true);
-		File dir = getCacheDir();
-		if (!dir.exists()) {
-			dir.mkdirs();
-		}
-		webSettings.setAppCachePath(dir.getPath());
-		webSettings.setAppCacheEnabled(true);
+	private void enableStorage(XWalkView container) {
+		XWalkSettings settings = container.getSettings();
+
+		// N.B. in Crosswalk, database seems to be enabled by default
+
+		settings.setDomStorageEnabled(true);
+
+		// N.B. in Crosswalk, appcache seems to work by default, and
+		// there is no option to set the storage path.
 	}
 
-	private void enableSmsAndCallHandling(WebView container) {
-		container.setWebViewClient(new WebViewClient() {
-			public boolean shouldOverrideUrlLoading(WebView view, String url) {
+	private void enableSmsAndCallHandling(XWalkView container) {
+		new XWalkResourceClient(container) {
+			public boolean shouldOverrideUrlLoading(XWalkView view, String url) {
 				if(url.startsWith("tel:") || url.startsWith("sms:")) {
 					Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
 					view.getContext().startActivity(i);
@@ -192,7 +199,7 @@ public class EmbeddedBrowserActivity extends Activity {
 				}
 				return false;
 			}
-		});
+		};
 	}
 
 	private void toast(String message) {

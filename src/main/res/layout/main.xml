@@ -4,7 +4,7 @@
 		android:background="@drawable/warning_background"
 		android:layout_width="fill_parent"
 		android:layout_height="fill_parent">
-	<WebView android:id="@+id/wbvMain"
+	<org.xwalk.core.XWalkView android:id="@+id/wbvMain"
 			android:layout_width="fill_parent"
 			android:layout_height="fill_parent"/>
 </LinearLayout>
