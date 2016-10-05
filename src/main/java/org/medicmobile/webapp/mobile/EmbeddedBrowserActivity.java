@@ -17,6 +17,7 @@ import java.io.File;
 import org.xwalk.core.XWalkPreferences;
 import org.xwalk.core.XWalkResourceClient;
 import org.xwalk.core.XWalkSettings;
+import org.xwalk.core.XWalkUIClient;
 import org.xwalk.core.XWalkView;
 
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
@@ -139,9 +140,7 @@ public class EmbeddedBrowserActivity extends Activity {
 	}
 
 	private void enableWebviewLoggingAndGeolocation(XWalkView container) {
-		// TODO work out what we can do about this on Crosswalk
-		/*
-		container.setWebChromeClient(new WebChromeClient() {
+		new XWalkUIClient(container) {
 			public boolean onConsoleMessage(ConsoleMessage cm) {
 				Log.d("MedicMobile", String.format("%s:%s | %s",
 						cm.sourceId(),
@@ -150,6 +149,8 @@ public class EmbeddedBrowserActivity extends Activity {
 				return true;
 			}
 
+			/*
+			 * TODO Crosswalk: re-enable this if required
 			public void onGeolocationPermissionsShowPrompt(
 					String origin,
 					GeolocationPermissions.Callback callback) {
@@ -162,8 +163,8 @@ public class EmbeddedBrowserActivity extends Activity {
 						callback);
 				callback.invoke(origin, true, true);
 			}
-		});
-		*/
+			*/
+		};
 	}
 
 	private void enableJavascript(XWalkView container) {
