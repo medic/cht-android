@@ -15,6 +15,7 @@ import android.widget.*;
 import java.io.File;
 
 import org.xwalk.core.XWalkPreferences;
+import org.xwalk.core.XWalkResourceClient;
 import org.xwalk.core.XWalkSettings;
 import org.xwalk.core.XWalkView;
 
@@ -188,8 +189,7 @@ public class EmbeddedBrowserActivity extends Activity {
 	}
 
 	private void enableSmsAndCallHandling(XWalkView container) {
-		/* TODO: Crosswalk:
-		container.setWebViewClient(new WebViewClient() {
+		new XWalkResourceClient(container) {
 			public boolean shouldOverrideUrlLoading(XWalkView view, String url) {
 				if(url.startsWith("tel:") || url.startsWith("sms:")) {
 					Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
@@ -198,8 +198,7 @@ public class EmbeddedBrowserActivity extends Activity {
 				}
 				return false;
 			}
-		});
-		*/
+		};
 	}
 
 	private void toast(String message) {
