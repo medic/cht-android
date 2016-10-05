@@ -15,7 +15,6 @@ import java.util.Calendar;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.xwalk.core.JavascriptInterface;
 
 import static java.util.Calendar.DAY_OF_MONTH;
 import static java.util.Calendar.MONTH;
@@ -42,7 +41,8 @@ public class MedicAndroidJavascript {
 		this.locationManager = locationManager;
 	}
 
-	@JavascriptInterface
+	@org.xwalk.core.JavascriptInterface
+	@android.webkit.JavascriptInterface
 	public String getAppVersion() {
 		try {
 			return parent.getPackageManager()
@@ -53,12 +53,14 @@ public class MedicAndroidJavascript {
 		}
 	}
 
-	@JavascriptInterface
+	@org.xwalk.core.JavascriptInterface
+	@android.webkit.JavascriptInterface
 	public void playAlert() {
 		if(soundAlert != null) soundAlert.trigger();
 	}
 
-	@JavascriptInterface
+	@org.xwalk.core.JavascriptInterface
+	@android.webkit.JavascriptInterface
 	public String getDataUsage() {
 		int uid = Process.myUid();
 		try {
@@ -81,7 +83,8 @@ public class MedicAndroidJavascript {
 				.put("tx", tx);
 	}
 
-	@JavascriptInterface
+	@org.xwalk.core.JavascriptInterface
+	@android.webkit.JavascriptInterface
 	public String getLocation() {
 		try {
 			if(locationManager == null) return jsonError("LocationManager not set.  Cannot retrieve location.");
@@ -102,12 +105,14 @@ public class MedicAndroidJavascript {
 		}
 	}
 
-	@JavascriptInterface
+	@org.xwalk.core.JavascriptInterface
+	@android.webkit.JavascriptInterface
 	public void datePicker(final String targetElement) {
 		datePicker(targetElement, Calendar.getInstance());
 	}
 
-	@JavascriptInterface
+	@org.xwalk.core.JavascriptInterface
+	@android.webkit.JavascriptInterface
 	public void datePicker(final String targetElement, String initialDate) {
 		try {
 			Calendar c = Calendar.getInstance();
