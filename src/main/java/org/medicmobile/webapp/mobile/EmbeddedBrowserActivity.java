@@ -178,15 +178,13 @@ public class EmbeddedBrowserActivity extends Activity {
 
 	private void enableStorage(XWalkView container) {
 		XWalkSettings settings = container.getSettings();
-		// TODO Crosswalk: settings.setDatabaseEnabled(true);
+
+		// N.B. in Crosswalk, database seems to be enabled by default
+
 		settings.setDomStorageEnabled(true);
-		File dir = getCacheDir();
-		if (!dir.exists()) {
-			dir.mkdirs();
-		}
-		// TODO work out if we need to worry about AppCache settings in Crosswalk
-		// settings.setAppCachePath(dir.getPath());
-		// settings.setAppCacheEnabled(true);
+
+		// N.B. in Crosswalk, appcache seems to work by default, and
+		// there is no option to set the storage path.
 	}
 
 	private void enableSmsAndCallHandling(XWalkView container) {
