@@ -14,6 +14,7 @@ import android.widget.*;
 
 import java.io.File;
 
+import org.xwalk.core.XWalkPreferences;
 import org.xwalk.core.XWalkSettings;
 import org.xwalk.core.XWalkView;
 
@@ -133,10 +134,7 @@ public class EmbeddedBrowserActivity extends Activity {
 	}
 
 	private void enableRemoteChromeDebugging(XWalkView container) {
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-// TODO work out if we can enable this for Crosswalk
-//			container.setWebContentsDebuggingEnabled(true);
-		}
+		XWalkPreferences.setValue(XWalkPreferences.REMOTE_DEBUGGING, true);
 	}
 
 	private void enableWebviewLoggingAndGeolocation(XWalkView container) {
