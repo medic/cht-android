@@ -1,20 +1,25 @@
 package org.medicmobile.webapp.mobile;
 
-import android.app.*;
-import android.content.*;
-import android.content.pm.*;
-import android.location.*;
+import android.app.DatePickerDialog;
+import android.location.Criteria;
+import android.location.Location;
+import android.location.LocationManager;
 import android.net.TrafficStats;
 import android.os.Process;
-import android.webkit.*;
-import android.widget.*;
+import android.widget.DatePicker;
 
-import java.text.*;
-import java.util.*;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 
-import org.json.*;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.xwalk.core.JavascriptInterface;
 
-import static java.util.Calendar.*;
+import static java.util.Calendar.DAY_OF_MONTH;
+import static java.util.Calendar.MONTH;
+import static java.util.Calendar.YEAR;
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 
 public class MedicAndroidJavascript {
