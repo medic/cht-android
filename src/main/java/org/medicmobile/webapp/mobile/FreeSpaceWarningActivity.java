@@ -13,6 +13,7 @@ import static android.view.View.GONE;
  * Displayed when there's not enough free space on device. See free_space_warning.xml.
  */
 public class FreeSpaceWarningActivity extends Activity {
+	/** Key for passing the name of the activity to go to after FreeSpaceWarningActivity. */
 	static final String NEXT_ACTIVITY = "next-activity";
 
 	/** Recommended minimum free space on the device, in bytes */
