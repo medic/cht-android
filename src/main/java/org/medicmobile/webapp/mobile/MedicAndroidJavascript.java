@@ -21,6 +21,10 @@ import static java.util.Calendar.MONTH;
 import static java.util.Calendar.YEAR;
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 
+/**
+ * This class exposes android native functionality for the Javascript code in the WebView or crosswalk view to use.
+ * Exposed methods are tagged with JavascriptInterface.
+ */
 public class MedicAndroidJavascript {
 	private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
 

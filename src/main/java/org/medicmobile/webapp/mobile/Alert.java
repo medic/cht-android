@@ -4,6 +4,9 @@ import android.content.*;
 import android.media.*;
 import android.os.*;
 
+/**
+ * Native sound + vibration alert.
+ */
 public class Alert {
 	private final MediaPlayer m;
 	private final Vibrator v;

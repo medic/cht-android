@@ -7,6 +7,9 @@ import java.util.regex.*;
 
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 
+/**
+ * Stores the server url to use. For branded apps, it's immutable.
+ */
 public abstract class SettingsStore {
 	public static SettingsStore in(ContextWrapper ctx) {
 		if(DEBUG) log("Loading settings for context %s...", ctx);
