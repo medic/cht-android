@@ -12,6 +12,9 @@ import java.util.*;
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static android.view.View.GONE;
 
+/**
+ * Activity to select which medicmobile server to connect to.
+ */
 public class SettingsDialogActivity extends Activity {
 	private static final int STATE_LIST = 1;
 	private static final int STATE_FORM = 2;
@@ -62,6 +65,9 @@ public class SettingsDialogActivity extends Activity {
 	}
 
 //> EVENT HANDLERS
+	/**
+	 * Handler for saving the server name, defined in custom_server_from.xml.
+	 */
 	public void verifyAndSave(View view) {
 		if(DEBUG) log("verifyAndSave");
 
@@ -88,6 +94,10 @@ public class SettingsDialogActivity extends Activity {
 		}.execute(appUrl);
 	}
 
+    /**
+     * See https://developer.android.com/reference/android/app/Activity.html#onBackPressed()
+     */
+	@Override
 	public void onBackPressed() {
 		switch(state) {
 			case STATE_LIST:
@@ -103,6 +113,9 @@ public class SettingsDialogActivity extends Activity {
 		super.onBackPressed();
 	}
 
+	/**
+	 * Handler for canceling, defined in custom_server_from.xml.
+	 */
 	public void cancelSettingsEdit(View view) {
 		if(DEBUG) log("cancelSettingsEdit");
 		backToWebview();
@@ -179,6 +192,9 @@ public class SettingsDialogActivity extends Activity {
 	}
 
 //> INNER CLASSES
+	/**
+	 * Click listener for server_list_item.xml.
+	 */
 	class ServerClickListener implements OnItemClickListener {
 		private final List<ServerMetadata> servers;
 
@@ -217,6 +233,10 @@ class ServerMetadata {
 	}
 }
 
+/**
+ * Wrapper around SharedPreferences storing all the possible ServerMetadata,
+ * both hard-coded (alpha.dev.medicmobile.org) and custom.
+ */
 class ServerRepo {
 	private final SharedPreferences prefs;
 
@@ -247,6 +267,7 @@ class ServerRepo {
 		ed.apply();
 	}
 
+	// Extracts a name for the server from its url.
 	private static String friendly(String url) {
 		int slashes = url.indexOf("//");
 		if(slashes != -1) {

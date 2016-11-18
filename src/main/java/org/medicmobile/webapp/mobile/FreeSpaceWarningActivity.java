@@ -9,6 +9,9 @@ import android.widget.*;
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static android.view.View.GONE;
 
+/**
+ * Displayed when there's not enough free space on device. See free_space_warning.xml.
+ */
 public class FreeSpaceWarningActivity extends Activity {
 	static final String NEXT_ACTIVITY = "next-activity";
 
@@ -38,12 +41,18 @@ public class FreeSpaceWarningActivity extends Activity {
 	}
 
 //> EVENT HANDLERS
+	/**
+	 * Defined in free_space_warning.xml
+	 */
 	public void evtContinue(View view) {
 		Class next = (Class) getIntent().getSerializableExtra(NEXT_ACTIVITY);
 		startActivity(new Intent(this, next));
 		finish();
 	}
 
+	/**
+	 * Defined in free_space_warning.xml
+	 */
 	public void evtQuit(View view) {
 		finish();
 	}

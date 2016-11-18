@@ -5,6 +5,9 @@ import android.content.*;
 import android.webkit.*;
 import android.os.*;
 
+/**
+ * First activity to launch on startup. Will launch the appropriate activity and then shutdown.
+ */
 public class StartupActivity extends Activity {
 	private static final boolean DEBUG = BuildConfig.DEBUG;
 
