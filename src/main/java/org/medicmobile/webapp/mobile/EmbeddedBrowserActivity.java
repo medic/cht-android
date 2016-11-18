@@ -23,6 +23,18 @@ import org.xwalk.core.XWalkView;
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static org.medicmobile.webapp.mobile.BuildConfig.DISABLE_APP_URL_VALIDATION;
 
+/**
+ * Main activity container: it loads the medicmobile url and renders it like a Chrome browser.
+ * It also allows the javascript code to call specific native methods (see
+ * {@link org.medicmobile.webapp.mobile.MedicAndroidJavascript}).
+ *
+ * It uses Crosswalk as a container rather that the native android WebView because:
+ *  - it's more flexible on storage restrictions
+ *  - it allows running an updated version of Chrome regardless of the android API level.
+ *
+ * See https://crosswalk-project.org/
+ * and https://crosswalk-project.org/apis/embeddingapidocs_v3/org/xwalk/core/XWalkView.html
+ */
 public class EmbeddedBrowserActivity extends Activity {
 	private static final ValueCallback<String> IGNORE_RESULT = new ValueCallback<String>() {
 		public void onReceiveValue(String result) {}
@@ -69,6 +81,7 @@ public class EmbeddedBrowserActivity extends Activity {
 		}
 	}
 
+	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		if(settings.allowsConfiguration()) {
 			getMenuInflater().inflate(R.menu.unbranded_web_menu, menu);
@@ -78,6 +91,7 @@ public class EmbeddedBrowserActivity extends Activity {
 		return super.onCreateOptionsMenu(menu);
 	}
 
+	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch(item.getItemId()) {
 			case R.id.mnuSettings:
@@ -94,6 +108,7 @@ public class EmbeddedBrowserActivity extends Activity {
 		}
 	}
 
+	@Override
 	public void onBackPressed() {
 		if(container == null) {
 			super.onBackPressed();
