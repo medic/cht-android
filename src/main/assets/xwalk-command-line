@@ -1,1 +1,1 @@
-xwalk --unlimited-storage
+xwalk --unlimited-storage --enable-logging --v=1 --enable-logging=stderr --show-fps-counter
