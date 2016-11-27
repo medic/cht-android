@@ -9,6 +9,10 @@ import static org.medicmobile.webapp.mobile.R.string.*;
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static org.medicmobile.webapp.mobile.BuildConfig.DISABLE_APP_URL_VALIDATION;
 
+/**
+ * Calls the /setup/poll endpoint on the given appUrl, to check it's a medicmobile server
+ * and it's ready.
+ */
 public class AppUrlVerifier {
 	public AppUrlVerififcation verify(String appUrl) {
 		if(DISABLE_APP_URL_VALIDATION) {
