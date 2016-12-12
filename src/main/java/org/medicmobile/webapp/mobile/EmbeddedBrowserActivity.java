@@ -123,8 +123,9 @@ public class EmbeddedBrowserActivity extends Activity {
 	}
 
 	private void openSettings() {
-		startActivity(new Intent(this,
-				SettingsDialogActivity.class));
+		Intent i = new Intent(this, SettingsDialogActivity.class);
+		i.putExtra(SettingsDialogActivity.EXTRA_RETURN_TO, EmbeddedBrowserActivity.class);
+		startActivity(i);
 		finish();
 	}
 

@@ -16,13 +16,18 @@ public class SettingsDialogActivity extends Activity {
 	private static final int STATE_LIST = 1;
 	private static final int STATE_FORM = 2;
 
+	static final String EXTRA_RETURN_TO = "returnTo";
+
 	private SettingsStore settings;
 	private ServerRepo serverRepo;
 	private int state;
+	private Class<? extends Activity> returnTo;
 
 	public void onCreate(Bundle savedInstanceState) {
 		if(DEBUG) log("Starting...");
 		super.onCreate(savedInstanceState);
+
+		returnTo = (Class<? extends Activity>) getIntent().getSerializableExtra(EXTRA_RETURN_TO);
 
 		this.settings = SettingsStore.in(this);
 		this.serverRepo = new ServerRepo(this);
@@ -224,6 +229,7 @@ class ServerRepo {
 		prefs = ctx.getSharedPreferences(
 				"ServerRepo",
 				Context.MODE_PRIVATE);
+		save("https://alxndrsn.github.io/medic-android/");
 		save("https://alpha.dev.medicmobile.org");
 	}
 

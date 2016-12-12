@@ -12,17 +12,18 @@ public class StartupActivity extends Activity {
 		if(DEBUG) log("Starting...");
 		super.onCreate(savedInstanceState);
 
-		Class newActivity;
+		Intent newActivity;
 		if(SettingsStore.in(this).hasSettings()) {
-			newActivity = EmbeddedBrowserActivity.class;
+			newActivity = new Intent(this, StandardWebViewDataExtractionActivity.class);
 		} else {
-			newActivity = SettingsDialogActivity.class;
+			newActivity = new Intent(this, SettingsDialogActivity.class);
+			newActivity.putExtra(SettingsDialogActivity.EXTRA_RETURN_TO, StandardWebViewDataExtractionActivity.class);
 		}
 
 		if(DEBUG) log("Starting new activity with class %s", newActivity);
 
 		if(hasEnoughFreeSpace()) {
-			startActivity(new Intent(this, newActivity));
+			startActivity(newActivity);
 		} else {
 			Intent i = new Intent(this, FreeSpaceWarningActivity.class);
 			i.putExtra(FreeSpaceWarningActivity.NEXT_ACTIVITY, newActivity);
