@@ -49,7 +49,7 @@ public class StandardWebViewDataExtractionActivity extends Activity {
 		enableJavascript(container);
 		enableStorage(container);
 
-		enableSmsAndCallHandling(container);
+		enableUrlHandlers(container);
 
 		browseToRoot();
 
@@ -160,13 +160,18 @@ public class StandardWebViewDataExtractionActivity extends Activity {
 		webSettings.setAppCacheEnabled(true);
 	}
 
-	private void enableSmsAndCallHandling(WebView container) {
+	private void enableUrlHandlers(WebView container) {
 		container.setWebViewClient(new WebViewClient() {
 			public boolean shouldOverrideUrlLoading(WebView view, String url) {
+				// Enable SMS and call handling
 				if(url.startsWith("tel:") || url.startsWith("sms:")) {
 					Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
 					view.getContext().startActivity(i);
 					return true;
+//				} else if(url matches replication request...) {
+					// TODO deny downward replication
+					// TODO add SQLite handler for upward replication
+					// to save all docs locally
 				}
 				return false;
 			}

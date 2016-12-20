@@ -30,6 +30,8 @@ dependencies {
 	compile fileTree(dir: 'libs', include: ['*.jar'])
 	compile 'com.android.support:appcompat-v7:21.0.3'
 	compile xwalkVersion
+
+	testCompile 'junit:junit:4.12'
 }
 
 def isReleaseBuild = {
@@ -114,5 +116,9 @@ android {
 		musomali {
 			applicationId = 'org.medicmobile.webapp.mobile.musomali'
 		}
+	}
+
+	testOptions {
+		unitTests.returnDefaultValues = true
 	}
 }
