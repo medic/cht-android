@@ -12,7 +12,11 @@ import android.view.inputmethod.*;
 import android.webkit.*;
 import android.widget.*;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.InputStream;
+import java.util.Collections;
+import java.util.Map;
 
 import org.medicmobile.webapp.mobile.*;
 
@@ -27,6 +31,7 @@ public class StandardWebViewDataExtractionActivity extends Activity {
 
 	private WebView container;
 	private SettingsStore settings;
+	private FakeCouch fakeCouch;
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -64,6 +69,8 @@ public class StandardWebViewDataExtractionActivity extends Activity {
 
 		// TODO disableUserInteraction();
 
+		fakeCouch = new FakeCouch();
+
 		final ProgressDialog progress = showProgressDialog(this, "Doing important things…");
 
 		new AsyncTask<Void, Void, Void>() {
@@ -87,6 +94,16 @@ public class StandardWebViewDataExtractionActivity extends Activity {
 				StandardWebViewDataExtractionActivity.this.finish();
 			}
 		}.execute();
+	}
+
+	@Override public void onStart() {
+		super.onStart();
+		fakeCouch.start();
+	}
+
+	@Override public void onStop() {
+		super.onStop();
+		fakeCouch.stop();
 	}
 
 	public void evaluateJavascript(final String js) {
@@ -177,24 +194,38 @@ public class StandardWebViewDataExtractionActivity extends Activity {
 					Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
 					view.getContext().startActivity(i);
 					return true;
-				} else { // TODO if(url matches replication request...) {
-					// TODO deny downward replication
-					// TODO add SQLite handler for upward replication
-					// to save all docs locally
-					trace("shouldOverrideUrlLoading()::Could intercept url: %s", url);
 				}
 				return false;
 			}
 
 			public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
 				trace("shouldInterceptRequest():: [%s] %s", request.getMethod(), request.getUrl());
+				Uri url = request.getUrl();
+				if(url == null) return null;
 
-				try {
-					return couch.handle(request);
-				} catch(CouchReplicationTargetException ex) {
-					MedicLog.logException(ex, "Failed to handle %s request to %s - will use standard handling.", request.getMethod(), request.getUrl());
+				String host = url.getHost();
+				if(host == null) return null;
+
+				String configuredHost = Uri.parse(SettingsStore.in(StandardWebViewDataExtractionActivity.this).getAppUrl()).getHost();
+
+				trace("shouldInterceptRequest() :: comparing hosts: %s <-> %s", host, configuredHost);
+
+				// TODO safer just to block anything non-localhost?
+				if(host.equals(configuredHost)) {
+					// TODO don't let them talk to couch!
+					trace("shouldInterceptRequest() :: looks like we should block %s", request.getUrl());
+					Map<String, String> headers = Collections.emptyMap();
+					return new WebResourceResponse("text", "utf8", 503,
+							"Server blocked.  Local db replication will begin shortly.",
+							headers, emptyInputStream());
 				}
 				return null;
+// TODO once loading has completed successfully (presumably we can detect this...somehow), then
+// trigger replication from local pouch to local HTTP server
+			}
+
+			private InputStream emptyInputStream() {
+				return new ByteArrayInputStream(new byte[0]);
 			}
 		});
 	}

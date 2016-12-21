@@ -14,12 +14,6 @@ import static java.util.Collections.emptyMap;
 class CouchReplicationTarget {
 	private static final Map<String, String> NO_QUERY_PARAMS = emptyMap();
 
-//> General handler
-	public WebResourceResponse handle(WebResourceRequest req) throws CouchReplicationTargetException {
-		trace("handle() :: req=%s", req);
-		return null;
-	}
-
 //> JSON handlers
 	public JSONObject get(String requestPath) throws CouchReplicationTargetException {
 		return get(requestPath, NO_QUERY_PARAMS);
@@ -34,7 +28,7 @@ class CouchReplicationTarget {
 		throw new RuntimeException("Not yet implemented.");
 	}
 
-	public JSONObject post(String requestPath, JSONObject requestBody) throws CouchReplicationTargetException {
+	public JSONObject post(String requestPath, Map<String, String> queryParams, JSONObject requestBody) throws CouchReplicationTargetException {
 		if(matches(requestPath, "/_local")) {
 			throw new UnimplementedEndpointException();
 		} else if(matches(requestPath, "/_bulk_docs")) {
