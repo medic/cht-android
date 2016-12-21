@@ -5,6 +5,8 @@ import android.content.*;
 import android.webkit.*;
 import android.os.*;
 
+import org.medicmobile.webapp.mobile.migrate2crosswalk.StandardWebViewDataExtractionActivity;
+
 public class StartupActivity extends Activity {
 	private static final boolean DEBUG = BuildConfig.DEBUG;
 

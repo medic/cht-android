@@ -3,7 +3,7 @@ package org.medicmobile.webapp.mobile;
 import android.app.ProgressDialog;
 import android.content.Context;
 
-class Utils {
+public final class Utils {
 	public static ProgressDialog showProgressDialog(Context ctx, String message) {
 		ProgressDialog p = new ProgressDialog(ctx);
 		p.setProgressStyle(ProgressDialog.STYLE_SPINNER);

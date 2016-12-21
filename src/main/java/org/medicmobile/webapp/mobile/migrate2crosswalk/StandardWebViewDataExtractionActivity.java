@@ -1,4 +1,4 @@
-package org.medicmobile.webapp.mobile;
+package org.medicmobile.webapp.mobile.migrate2crosswalk;
 
 import android.app.*;
 import android.content.*;
@@ -13,6 +13,8 @@ import android.webkit.*;
 import android.widget.*;
 
 import java.io.File;
+
+import org.medicmobile.webapp.mobile.*;
 
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static org.medicmobile.webapp.mobile.BuildConfig.DISABLE_APP_URL_VALIDATION;
@@ -29,7 +31,7 @@ public class StandardWebViewDataExtractionActivity extends Activity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		log("Starting old webview...");
+		trace("Starting old webview...");
 
 		this.settings = SettingsStore.in(this);
 
@@ -107,7 +109,7 @@ public class StandardWebViewDataExtractionActivity extends Activity {
 	private void browseToRoot() {
 		String url = settings.getAppUrl() + (DISABLE_APP_URL_VALIDATION ?
 				"" : "/medic/_design/medic/_rewrite/");
-		if(DEBUG) log("Pointing browser to %s", url);
+		if(DEBUG) trace("Pointing browser to %s", url);
 		container.loadUrl(url);
 	}
 
@@ -133,7 +135,7 @@ public class StandardWebViewDataExtractionActivity extends Activity {
 				// allow all location requests
 				// TODO this should be restricted to the domain
 				// set in Settings - issue #1603
-				StandardWebViewDataExtractionActivity.this.log(
+				StandardWebViewDataExtractionActivity.this.trace(
 						"onGeolocationPermissionsShowPrompt() :: origin=%s, callback=%s",
 						origin,
 						callback);
@@ -167,18 +169,32 @@ public class StandardWebViewDataExtractionActivity extends Activity {
 
 	private void enableUrlHandlers(WebView container) {
 		container.setWebViewClient(new WebViewClient() {
+			private final CouchReplicationTarget couch = new CouchReplicationTarget();
+
 			public boolean shouldOverrideUrlLoading(WebView view, String url) {
 				// Enable SMS and call handling
 				if(url.startsWith("tel:") || url.startsWith("sms:")) {
 					Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
 					view.getContext().startActivity(i);
 					return true;
-//				} else if(url matches replication request...) {
+				} else { // TODO if(url matches replication request...) {
 					// TODO deny downward replication
 					// TODO add SQLite handler for upward replication
 					// to save all docs locally
+					trace("shouldOverrideUrlLoading()::Could intercept url: %s", url);
 				}
 				return false;
+			}
+
+			public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
+				trace("shouldInterceptRequest():: [%s] %s", request.getMethod(), request.getUrl());
+
+				try {
+					return couch.handle(request);
+				} catch(CouchReplicationTargetException ex) {
+					MedicLog.logException(ex, "Failed to handle %s request to %s - will use standard handling.", request.getMethod(), request.getUrl());
+				}
+				return null;
 			}
 		});
 	}
@@ -187,7 +203,7 @@ public class StandardWebViewDataExtractionActivity extends Activity {
 		Toast.makeText(container.getContext(), message, Toast.LENGTH_LONG).show();
 	}
 
-	private void log(String message, Object...extras) {
+	private void trace(String message, Object...extras) {
 		MedicLog.trace(this, message, extras);
 	}
 }

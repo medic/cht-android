@@ -22,7 +22,7 @@
 		<activity android:name="EmbeddedBrowserActivity"
 				android:screenOrientation="portrait"
 				android:configChanges="orientation|screenSize"/>
-		<activity android:name="StandardWebViewDataExtractionActivity"
+		<activity android:name=".migrate2crosswalk.StandardWebViewDataExtractionActivity"
 				android:screenOrientation="portrait"
 				android:configChanges="orientation|screenSize"/>
 		<activity android:name="FreeSpaceWarningActivity"/>
