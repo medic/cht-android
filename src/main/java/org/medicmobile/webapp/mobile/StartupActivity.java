@@ -40,7 +40,6 @@ public class StartupActivity extends Activity {
 	}
 
 	private void log(String message, Object...extras) {
-		if(DEBUG) System.err.println("LOG | StartupActivity :: " +
-				String.format(message, extras));
+		MedicLog.trace(this, message, extras);
 	}
 }

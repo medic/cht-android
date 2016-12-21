@@ -1,6 +1,7 @@
 package org.medicmobile.webapp.mobile;
 
 import android.app.DatePickerDialog;
+import android.content.Context;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
@@ -24,7 +25,7 @@ import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 public class MedicAndroidJavascript {
 	private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
 
-	private final EmbeddedBrowserActivity parent;
+	private final Context parent;
 
 	private LocationManager locationManager;
 	private Alert soundAlert;
@@ -136,7 +137,7 @@ public class MedicAndroidJavascript {
 				String dateString = String.format("%04d-%02d-%02d", year, month, day);
 				String setJs = String.format("$('%s').val('%s').trigger('change')",
 						safeTargetElement, dateString);
-				parent.evaluateJavascript(setJs);
+				((MedicJsEvaluator) parent).evaluateJavascript(setJs);
 			}
 		};
 
@@ -159,7 +160,10 @@ public class MedicAndroidJavascript {
 	}
 
 	private void log(String message, Object...extras) {
-		if(DEBUG) System.err.println("LOG | MedicAndroidJavascript::" +
-				String.format(message, extras));
+		MedicLog.trace(this, message, extras);
 	}
+}
+
+interface MedicJsEvaluator {
+	void evaluateJavascript(String js);
 }

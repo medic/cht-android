@@ -57,8 +57,7 @@ public class AppUrlVerifier {
 	}
 
 	private void log(String message, Object...extras) {
-		if(DEBUG) System.err.println("LOG | AppUrlVerifier::" +
-				String.format(message, extras));
+		MedicLog.trace(this, message, extras);
 	}
 }
 

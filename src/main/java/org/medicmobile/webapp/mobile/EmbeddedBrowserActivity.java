@@ -23,7 +23,7 @@ import org.xwalk.core.XWalkView;
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static org.medicmobile.webapp.mobile.BuildConfig.DISABLE_APP_URL_VALIDATION;
 
-public class EmbeddedBrowserActivity extends Activity {
+public class EmbeddedBrowserActivity extends Activity implements MedicJsEvaluator {
 	private static final ValueCallback<String> IGNORE_RESULT = new ValueCallback<String>() {
 		public void onReceiveValue(String result) {}
 	};
@@ -41,6 +41,9 @@ public class EmbeddedBrowserActivity extends Activity {
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+
+		log("Starting XWalk webview...");
+
 		this.settings = SettingsStore.in(this);
 
 		this.requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -208,7 +211,6 @@ public class EmbeddedBrowserActivity extends Activity {
 	}
 
 	private void log(String message, Object...extras) {
-		if(DEBUG) System.err.println("LOG | EmbeddedBrowserActivity::" +
-				String.format(message, extras));
+		MedicLog.trace(this, message, extras);
 	}
 }

@@ -28,6 +28,9 @@ public class StandardWebViewDataExtractionActivity extends Activity {
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+
+		log("Starting old webview...");
+
 		this.settings = SettingsStore.in(this);
 
 		setContentView(R.layout.data_extraction_webview);
@@ -74,6 +77,8 @@ public class StandardWebViewDataExtractionActivity extends Activity {
 
 			protected void onPostExecute(Void _) {
 				progress.dismiss();
+				// TODO implement the following once the migration is handled above
+				if(true) return;
 				startActivity(new Intent(
 						StandardWebViewDataExtractionActivity.this,
 						EmbeddedBrowserActivity.class));
@@ -183,7 +188,6 @@ public class StandardWebViewDataExtractionActivity extends Activity {
 	}
 
 	private void log(String message, Object...extras) {
-		if(DEBUG) System.err.println("LOG | StandardWebViewDataExtractionActivity::" +
-				String.format(message, extras));
+		MedicLog.trace(this, message, extras);
 	}
 }

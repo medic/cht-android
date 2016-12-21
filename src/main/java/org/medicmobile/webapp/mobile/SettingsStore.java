@@ -9,7 +9,7 @@ import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 
 public abstract class SettingsStore {
 	public static SettingsStore in(ContextWrapper ctx) {
-		if(DEBUG) log("Loading settings for context %s...", ctx);
+		if(DEBUG) MedicLog.log("Loading settings for context %s...", ctx);
 
 		String fixedAppUrl = ctx.getResources().
 				getString(R.string.fixed_app_url);
@@ -28,11 +28,6 @@ public abstract class SettingsStore {
 	public abstract boolean hasSettings();
 	public abstract void save(Settings s) throws SettingsException;
 	public abstract boolean allowsConfiguration();
-
-	private static void log(String message, Object...extras) {
-		if(DEBUG) System.err.println("LOG | SettingsStore :: " +
-				String.format(message, extras));
-	}
 }
 
 class BrandedSettingsStore extends SettingsStore {
@@ -98,7 +93,7 @@ class Settings {
 	public final String appUrl;
 
 	public Settings(String appUrl) {
-		if(DEBUG) log("Settings() appUrl=%s", appUrl);
+		if(DEBUG) trace("appUrl=%s", appUrl);
 		this.appUrl = appUrl;
 	}
 
@@ -122,9 +117,8 @@ class Settings {
 		return val != null && val.length() > 0;
 	}
 
-	private void log(String message, Object...extras) {
-		if(DEBUG) System.err.println("LOG | Settings :: " +
-				String.format(message, extras));
+	private void trace(String message, Object...extras) {
+		MedicLog.trace(this, message, extras);
 	}
 }
 

@@ -115,14 +115,14 @@ public class SettingsDialogActivity extends Activity {
 
 //> PRIVATE HELPERS
 	private void backToWebview() {
-		startActivity(new Intent(this, EmbeddedBrowserActivity.class));
+		startActivity(new Intent(this, returnTo));
 		finish();
 	}
 
 	private void saveSettings(Settings s) {
 		try {
 			settings.save(s);
-			startActivity(new Intent(this, EmbeddedBrowserActivity.class));
+			startActivity(new Intent(this, returnTo));
 			finish();
 		} catch(IllegalSettingsException ex) {
 			if(DEBUG) ex.printStackTrace();
@@ -179,8 +179,7 @@ public class SettingsDialogActivity extends Activity {
 	}
 
 	private void log(String message, Object...extras) {
-		if(DEBUG) System.err.println("LOG | SettingsDialogActivity :: " +
-				String.format(message, extras));
+		MedicLog.trace(this, message, extras);
 	}
 
 //> INNER CLASSES
@@ -217,8 +216,7 @@ class ServerMetadata {
 	}
 
 	private void log(String message, Object... extras) {
-		if(DEBUG) System.err.println("LOG | ServerMetadata :: " +
-				String.format(message, extras));
+		MedicLog.trace(this, message, extras);
 	}
 }
 

@@ -6,8 +6,8 @@ import android.os.*;
 import android.view.*;
 import android.widget.*;
 
-import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static android.view.View.GONE;
+import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 
 public class FreeSpaceWarningActivity extends Activity {
 	static final String NEXT_ACTIVITY = "next-activity";
@@ -54,7 +54,6 @@ public class FreeSpaceWarningActivity extends Activity {
 	}
 
 	private void log(String message, Object...extras) {
-		if(DEBUG) System.err.println("LOG | FreeSpaceWarningActivity :: " +
-				String.format(message, extras));
+		MedicLog.trace(this, message, extras);
 	}
 }
