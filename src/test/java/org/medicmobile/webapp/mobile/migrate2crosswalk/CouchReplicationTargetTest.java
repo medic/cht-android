@@ -1,4 +1,4 @@
-package org.medicmobile.webapp.mobile.webviewmigrate;
+package org.medicmobile.webapp.mobile.migrate2crosswalk;
 
 import java.util.*;
 
@@ -78,7 +78,22 @@ public class CouchReplicationTargetTest {
 
 	@Test
 	public void _bulk_docs_shouldSaveASingleDocument() throws Exception {
-		fail("Implement me.");
+		// when
+		JSONObject response = target.post("/_bulk_docs", json(
+				"docs", array(
+					json(
+						"_id", "abc-123",
+						"_rev", "1-xxx",
+						"val", "one"
+					)
+				),
+				"new_edits", false));
+
+		// then
+		assertSavedToDb(json(
+				"_id", "abc-123",
+				"_rev", "1-xxx",
+				"val", "one"));
 	}
 
 	@Test
@@ -102,6 +117,16 @@ public class CouchReplicationTargetTest {
 	}
 
 //> HELPERS
+	private static void assertSavedToDb(JSONObject... expectedSaved) {
+		// TODO assert count of DB objects == expectedSaved.length
+		fail("Implement me.");
+
+		for(JSONObject o : expectedSaved) {
+			// TODO assert that `o` is in the DB
+			fail("Implement me.");
+		}
+	}
+
 	private static JSONObject json(Object... args) throws JSONException {
 		if(args.length == 1) {
 			String json = (String) args[0];
@@ -114,6 +139,12 @@ public class CouchReplicationTargetTest {
 			o.put(key, val);
 		}
 		return o;
+	}
+
+	private static JSONArray array(Object... contents) {
+		JSONArray a = new JSONArray();
+		for(Object o : contents) a.put(o);
+		return a;
 	}
 
 	private static JSONObject emptyObject() {
