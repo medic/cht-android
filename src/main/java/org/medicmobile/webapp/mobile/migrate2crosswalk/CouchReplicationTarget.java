@@ -80,6 +80,7 @@ class CouchReplicationTarget {
 		if(matches(requestPath, "/_local")) {
 			throw new UnimplementedEndpointException();
 		} else if(matches(requestPath, "/_bulk_docs")) {
+			if(true) throw new RuntimeException("TODO handle request: " + requestBody);
 			throw new EmptyResponseException();
 		} else if(matches(requestPath,  "/_revs_diff")) {
 			return new JSONObject();
