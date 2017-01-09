@@ -5,6 +5,8 @@ import android.webkit.WebResourceResponse;
 
 import java.util.Map;
 
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import org.medicmobile.webapp.mobile.MedicLog;
@@ -67,7 +69,12 @@ class CouchReplicationTarget {
 		if(matches(requestPath, "/_local")) {
 			throw new UnimplementedEndpointException();
 		} else if(matches(requestPath, "/_changes")) {
-			return new JSONObject();
+			try {
+				return JSON.obj("results", JSON.array(),
+						"last_seq", 0);
+			} catch(JSONException ex) {
+				throw new RuntimeException(ex);
+			}
 		}
 		throw new RuntimeException("Not yet implemented.");
 	}
@@ -103,3 +110,25 @@ class CouchReplicationTargetException extends Exception {}
 class EmptyResponseException extends CouchReplicationTargetException {}
 
 class UnimplementedEndpointException extends CouchReplicationTargetException {}
+
+final class JSON {
+	static final JSONObject obj(Object... args) throws JSONException {
+		assert(args.length % 2 == 0): "Must supply an even number of args.";
+
+		JSONObject o = new JSONObject();
+
+		for(int i=0; i<args.length; i+=2) {
+			String key = (String) args[i];
+			Object val = args[i+1];
+			o.put(key, val);
+		}
+
+		return o;
+	}
+
+	static final JSONArray array(Object... contents) throws JSONException {
+		JSONArray a = new JSONArray();
+		for(Object o : contents) a.put(o);
+		return a;
+	}
+}

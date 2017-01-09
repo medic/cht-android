@@ -155,7 +155,7 @@ public class CouchReplicationTargetTest {
 		return new JSONArray();
 	}
 
-	private static void assertJson(JSONObject expected, JSONObject actual) {
+	private static void assertJson(JSONObject actual, JSONObject expected) {
 		assertEquals(expected.toString(), actual.toString());
 	}
 
