@@ -36,6 +36,9 @@ dependencies {
 
 	testCompile 'junit:junit:4.12'
 	testCompile 'org.robolectric:robolectric:3.2.1'
+
+	// include real JSON implementation in unit tests(!)
+	testCompile 'org.json:json:20160810'
 }
 
 def isReleaseBuild = {

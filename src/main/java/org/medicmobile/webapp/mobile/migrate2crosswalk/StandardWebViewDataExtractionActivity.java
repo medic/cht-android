@@ -186,7 +186,7 @@ public class StandardWebViewDataExtractionActivity extends Activity {
 
 	private void enableUrlHandlers(WebView container) {
 		container.setWebViewClient(new WebViewClient() {
-			private final CouchReplicationTarget couch = new CouchReplicationTarget();
+			private final CouchReplicationTarget couch = new CouchReplicationTarget(StandardWebViewDataExtractionActivity.this);
 
 			public boolean shouldOverrideUrlLoading(WebView view, String url) {
 				// Enable SMS and call handling

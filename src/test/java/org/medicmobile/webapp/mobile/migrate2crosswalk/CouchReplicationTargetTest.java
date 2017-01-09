@@ -4,15 +4,28 @@ import java.util.*;
 
 import org.json.*;
 import org.junit.*;
+import org.junit.runner.*;
+
+import org.robolectric.*;
+import org.robolectric.annotation.*;
 
 import static org.junit.Assert.*;
 
+@RunWith(RobolectricTestRunner.class)
+@Config(constants = org.medicmobile.webapp.mobile.BuildConfig.class)
 public class CouchReplicationTargetTest {
 	private CouchReplicationTarget target;
+	private DbTestHelper db;
 
 	@Before
 	public void setUp() throws Exception {
-		this.target = new CouchReplicationTarget();
+		this.target = new CouchReplicationTarget(RuntimeEnvironment.application);
+		this.db = new DbTestHelper(RuntimeEnvironment.application);
+	}
+
+	@After
+	public void tearDown() throws Exception {
+		db.tearDown();
 	}
 
 	@Test
@@ -90,10 +103,7 @@ public class CouchReplicationTargetTest {
 				"new_edits", false));
 
 		// then
-		assertSavedToDb(json(
-				"_id", "abc-123",
-				"_rev", "1-xxx",
-				"val", "one"));
+		assertDbContent("abc-123", "{ \"_id\":\"abc-123\", \"_rev\":\"1-xxx\", \"val\":\"one\" }");
 	}
 
 	@Test
@@ -116,15 +126,20 @@ public class CouchReplicationTargetTest {
 		fail("Implement me.");
 	}
 
-//> HELPERS
-	private static void assertSavedToDb(JSONObject... expectedSaved) {
-		// TODO assert count of DB objects == expectedSaved.length
-		fail("Implement me.");
+	@Test
+	public void _bulk_docs_shouldHandleMalformedRequests() throws Exception {
+		fail("Throw some sort of HTTP error, depending on what couch does.");
+	}
 
-		for(JSONObject o : expectedSaved) {
-			// TODO assert that `o` is in the DB
-			fail("Implement me.");
+//> HELPERS
+	private void assertDbContent(String... args) throws JSONException {
+		Object[] expectedContent = new Object[args.length];
+		for(int i=0; i<args.length; i+=2) {
+			expectedContent[i] = args[i];
+			// standardise ordering of object keys
+			expectedContent[i+1] = new JSONObject(args[i+1]).toString();
 		}
+		db.assertTable("medic", expectedContent);
 	}
 
 	private static JSONObject json(Object... args) throws JSONException {

@@ -1,5 +1,6 @@
 package org.medicmobile.webapp.mobile.migrate2crosswalk;
 
+import android.content.Context;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 
@@ -15,6 +16,13 @@ import static java.util.Collections.emptyMap;
 
 class CouchReplicationTarget {
 	private static final Map<String, String> NO_QUERY_PARAMS = emptyMap();
+
+	private TempCouchDb db;
+
+//> Constructor
+	public CouchReplicationTarget(Context ctx) {
+		this.db = TempCouchDb.getInstance(ctx);
+	}
 
 //> General handler
 	public WebResourceResponse handle(WebResourceRequest req) throws CouchReplicationTargetException {
@@ -87,14 +95,36 @@ class CouchReplicationTarget {
 		if(matches(requestPath, "/_local")) {
 			throw new UnimplementedEndpointException();
 		} else if(matches(requestPath, "/_bulk_docs")) {
-			throw new EmptyResponseException();
+			return _bulk_docs(requestPath, queryParams, requestBody);
 		} else if(matches(requestPath,  "/_revs_diff")) {
 			return new JSONObject();
 		}
 		throw new RuntimeException("Not yet implemented.");
 	}
 
+//> SPECIFIC REQUEST HANDLERS
+	private JSONObject _bulk_docs(String requestPath, Map<String, String> queryParams, JSONObject requestBody) throws CouchReplicationTargetException {
+		try {
+			JSONArray docs = requestBody.optJSONArray("docs");
+
+			if(docs == null) throw new EmptyResponseException();
+
+			for(int i=0; i<docs.length(); ++i) {
+				saveDoc(docs.getJSONObject(i));
+			}
+			return JSON.obj();
+		} catch(JSONException ex) {
+			// TODO this should be handled properly as per whatever
+			// couch does
+			throw new RuntimeException(ex);
+		}
+	}
+
 //> HELPERS
+	private void saveDoc(JSONObject o) throws JSONException {
+		db.store(o);
+	}
+
 	private static boolean matches(String requestPath, String dir) {
 		return requestPath.equals(dir) ||
 				requestPath.startsWith(dir + "/");
