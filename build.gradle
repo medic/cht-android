@@ -35,6 +35,9 @@ dependencies {
 	compile 'org.nanohttpd:nanohttpd:2.3.1'
 
 	testCompile 'junit:junit:4.12'
+
+	// include real JSON implementation in unit tests(!)
+	testCompile 'org.json:json:20160810'
 }
 
 def isReleaseBuild = {
