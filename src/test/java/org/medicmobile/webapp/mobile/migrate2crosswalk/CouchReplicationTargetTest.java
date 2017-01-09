@@ -138,7 +138,6 @@ public class CouchReplicationTargetTest {
 			Object val = args[i+1];
 			o.put(key, val);
 		}
-		if(true) throw new RuntimeException("Returning: " + o.keys());
 		return o;
 	}
 
