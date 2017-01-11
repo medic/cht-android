@@ -80,7 +80,7 @@ public class CouchReplicationTargetTest {
 	public void _bulk_docs_shouldIgnoreAnEmptyRequest() throws Exception {
 		// when
 		try {
-			JSONObject response = target.post("/_bulk_docs", json(
+			target.post("/_bulk_docs", json(
 					"docs", emptyObject(),
 					"new_edits", false));
 			fail("Expected exception.");
@@ -92,7 +92,7 @@ public class CouchReplicationTargetTest {
 	@Test
 	public void _bulk_docs_shouldSaveASingleDocument() throws Exception {
 		// when
-		JSONObject response = target.post("/_bulk_docs", json(
+		target.post("/_bulk_docs", json(
 				"docs", array(
 					json(
 						"_id", "abc-123",
@@ -108,17 +108,89 @@ public class CouchReplicationTargetTest {
 
 	@Test
 	public void _bulk_docs_shouldSaveMultipleDocumentsd() throws Exception {
-		fail("Implement me.");
+		// when
+		target.post("/_bulk_docs", json(
+				"docs", array(
+					json(
+						"_id", "abc-123",
+						"_rev", "1-xxx",
+						"val", "one"
+					),
+					json(
+						"_id", "def-456",
+						"_rev", "2-xxx",
+						"val", "two"
+					)
+				),
+				"new_edits", false));
+
+		// then
+		assertDbContent("abc-123", "{ \"_id\":\"abc-123\", \"_rev\":\"1-xxx\", \"val\":\"one\" }",
+				"def-456", "{ \"_id\":\"def-456\", \"_rev\":\"2-xxx\", \"val\":\"two\" }");
 	}
 
 	@Test
 	public void _bulk_docs_shouldIgnoreASingleDuplicateDocument() throws Exception {
-		fail("Implement me.");
+		// when
+		target.post("/_bulk_docs", json(
+				"docs", array(
+					json(
+						"_id", "abc-123",
+						"_rev", "1-xxx",
+						"val", "one"
+					),
+					json(
+						"_id", "abc-123",
+						"_rev", "1-xxx",
+						"val", "one"
+					)
+				),
+				"new_edits", false));
+
+		// then
+		assertDbContent("abc-123", "{ \"_id\":\"abc-123\", \"_rev\":\"1-xxx\", \"val\":\"one\" }");
+
+		// when
+		target.post("/_bulk_docs", json(
+				"docs", array(
+					json(
+						"_id", "abc-123",
+						"_rev", "1-xxx",
+						"val", "one"
+					)
+				),
+				"new_edits", false));
+
+		// then
+		assertDbContent("abc-123", "{ \"_id\":\"abc-123\", \"_rev\":\"1-xxx\", \"val\":\"one\" }");
 	}
 
 	@Test
 	public void _bulk_docs_shouldSaveMultipleDocumentsIgnoringDuplicates() throws Exception {
-		fail("Implement me.");
+		// when
+		target.post("/_bulk_docs", json(
+				"docs", array(
+					json(
+						"_id", "abc-123",
+						"_rev", "1-xxx",
+						"val", "one"
+					),
+					json(
+						"_id", "abc-123",
+						"_rev", "1-xxx",
+						"val", "one"
+					),
+					json(
+						"_id", "def-456",
+						"_rev", "2-xxx",
+						"val", "two"
+					)
+				),
+				"new_edits", false));
+
+		// then
+		assertDbContent("abc-123", "{ \"_id\":\"abc-123\", \"_rev\":\"1-xxx\", \"val\":\"one\" }",
+				"def-456", "{ \"_id\":\"def-456\", \"_rev\":\"2-xxx\", \"val\":\"two\" }");
 	}
 
 	@Test
@@ -128,7 +200,13 @@ public class CouchReplicationTargetTest {
 
 	@Test
 	public void _bulk_docs_shouldHandleMalformedRequests() throws Exception {
-		fail("Throw some sort of HTTP error, depending on what couch does.");
+		// when
+		try {
+			target.post("/_bulk_docs", json("nothing", null));
+			fail("Expected exception.");
+		} catch(EmptyResponseException ex) {
+			// expected
+		}
 	}
 
 //> HELPERS
