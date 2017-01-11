@@ -1,5 +1,7 @@
 package org.medicmobile.webapp.mobile.migrate2crosswalk;
 
+import android.content.Context;
+
 import fi.iki.elonen.NanoHTTPD;
 
 import org.medicmobile.webapp.mobile.MedicLog;
@@ -7,12 +9,12 @@ import org.medicmobile.webapp.mobile.MedicLog;
 class FakeCouch {
 	private FakeCouchDaemon server;
 
-	public void start() {
+	public void start(Context ctx) {
 		// TODO something with threads?
 		// TODO worry about finding a free port?
 		trace("Starting server...");
 		try {
-			server = new FakeCouchDaemon(8000);
+			server = new FakeCouchDaemon(ctx, 8000);
 			server.start(NanoHTTPD.SOCKET_READ_TIMEOUT, false);
 			trace("Server started.");
 		} catch(Exception ex) {
@@ -32,7 +34,15 @@ class FakeCouch {
 }
 
 class FakeCouchDaemon extends NanoHTTPD {
-	FakeCouchDaemon(int port) {
+	private final CouchReplicationTarget couch;
+
+	FakeCouchDaemon(Context ctx, int port) {
 		super(port);
+		this.couch = new CouchReplicationTarget(ctx);
+	}
+
+	@Override public Response serve(IHTTPSession session) {
+		// TODO link up to the CouchReplicationTarget
+		return newFixedLengthResponse("HUMBUG");
 	}
 }

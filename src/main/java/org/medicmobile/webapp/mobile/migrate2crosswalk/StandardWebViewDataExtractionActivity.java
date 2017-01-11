@@ -98,7 +98,7 @@ public class StandardWebViewDataExtractionActivity extends Activity {
 
 	@Override public void onStart() {
 		super.onStart();
-		fakeCouch.start();
+		fakeCouch.start(this);
 	}
 
 	@Override public void onStop() {
@@ -186,8 +186,6 @@ public class StandardWebViewDataExtractionActivity extends Activity {
 
 	private void enableUrlHandlers(WebView container) {
 		container.setWebViewClient(new WebViewClient() {
-			private final CouchReplicationTarget couch = new CouchReplicationTarget(StandardWebViewDataExtractionActivity.this);
-
 			public boolean shouldOverrideUrlLoading(WebView view, String url) {
 				// Enable SMS and call handling
 				if(url.startsWith("tel:") || url.startsWith("sms:")) {
@@ -221,7 +219,7 @@ public class StandardWebViewDataExtractionActivity extends Activity {
 				}
 				return null;
 // TODO once loading has completed successfully (presumably we can detect this...somehow), then
-// trigger replication from local pouch to local HTTP server
+// trigger replication from local pouch to local HTTP server.  For now, trigger this manually.
 			}
 
 			private InputStream emptyInputStream() {
