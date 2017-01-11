@@ -21,7 +21,7 @@ public final class MedicLog {
 		w(LOG_TAG, caller.getClass().getName() + " :: " + message);
 	}
 
-	public static void logException(Exception ex, String message, Object... extras) {
+	public static void warn(Exception ex, String message, Object... extras) {
 		message = String.format(message, extras);
 
 		w(LOG_TAG, message, ex);

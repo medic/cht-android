@@ -16,7 +16,8 @@ class FakeCouch {
 			server.start(NanoHTTPD.SOCKET_READ_TIMEOUT, false);
 			trace("Server started.");
 		} catch(Exception ex) {
-			MedicLog.logException(ex, "Failed to start server.");
+			// TODO perhaps this should be more than a warning!
+			MedicLog.warn(ex, "Failed to start server.");
 		}
 	}
 

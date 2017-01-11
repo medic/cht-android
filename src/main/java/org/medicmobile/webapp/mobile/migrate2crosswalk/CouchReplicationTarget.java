@@ -121,8 +121,14 @@ class CouchReplicationTarget {
 	}
 
 //> HELPERS
-	private void saveDoc(JSONObject o) throws JSONException {
-		db.store(o);
+	private void saveDoc(JSONObject doc) {
+		try {
+			db.store(doc);
+		} catch(Exception ex) {
+			MedicLog.warn(ex, "Exception thrown while trying to store doc in db: %s", doc);
+			// TODO remove this throw - it's just here for debugging tests
+			throw new RuntimeException(ex);
+		}
 	}
 
 	private static boolean matches(String requestPath, String dir) {

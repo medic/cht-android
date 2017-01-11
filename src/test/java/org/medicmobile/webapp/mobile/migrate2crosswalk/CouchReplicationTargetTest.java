@@ -219,7 +219,7 @@ public class CouchReplicationTargetTest {
 				"new_edits", false));
 
 		// then
-		assertDbContent("abc-123", "{ \"_id\":\"abc-123\", \"_rev\":\"1-xxx\", \"val\":\"two\" }");
+		assertDbContent("abc-123", "{ \"_id\":\"abc-123\", \"_rev\":\"2-xxx\", \"val\":\"two\" }");
 	}
 
 	@Test
