@@ -194,8 +194,90 @@ public class CouchReplicationTargetTest {
 	}
 
 	@Test
-	public void _bulk_docs_shouldUpdateExistingDocs() throws Exception {
-		fail("Implement me.");
+	public void _bulk_docs_shouldUpdateExistingDocs_ifRevIncreased() throws Exception {
+		// given
+		target.post("/_bulk_docs", json(
+				"docs", array(
+					json(
+						"_id", "abc-123",
+						"_rev", "1-xxx",
+						"val", "one"
+					)
+				),
+				"new_edits", false));
+		assertDbContent("abc-123", "{ \"_id\":\"abc-123\", \"_rev\":\"1-xxx\", \"val\":\"one\" }");
+
+		// when
+		target.post("/_bulk_docs", json(
+				"docs", array(
+					json(
+						"_id", "abc-123",
+						"_rev", "2-xxx",
+						"val", "two"
+					)
+				),
+				"new_edits", false));
+
+		// then
+		assertDbContent("abc-123", "{ \"_id\":\"abc-123\", \"_rev\":\"1-xxx\", \"val\":\"two\" }");
+	}
+
+	@Test
+	public void _bulk_docs_shouldNotUpdateExistingDocs_ifRevSame() throws Exception {
+		// given
+		target.post("/_bulk_docs", json(
+				"docs", array(
+					json(
+						"_id", "abc-123",
+						"_rev", "1-xxx",
+						"val", "one"
+					)
+				),
+				"new_edits", false));
+		assertDbContent("abc-123", "{ \"_id\":\"abc-123\", \"_rev\":\"1-xxx\", \"val\":\"one\" }");
+
+		// when
+		target.post("/_bulk_docs", json(
+				"docs", array(
+					json(
+						"_id", "abc-123",
+						"_rev", "1-yyy",
+						"val", "bad"
+					)
+				),
+				"new_edits", false));
+
+		// then
+		assertDbContent("abc-123", "{ \"_id\":\"abc-123\", \"_rev\":\"1-xxx\", \"val\":\"one\" }");
+	}
+
+	@Test
+	public void _bulk_docs_shouldNotUpdateExistingDocs_ifRevLess() throws Exception {
+		// given
+		target.post("/_bulk_docs", json(
+				"docs", array(
+					json(
+						"_id", "abc-123",
+						"_rev", "2-xxx",
+						"val", "one"
+					)
+				),
+				"new_edits", false));
+		assertDbContent("abc-123", "{ \"_id\":\"abc-123\", \"_rev\":\"2-xxx\", \"val\":\"one\" }");
+
+		// when
+		target.post("/_bulk_docs", json(
+				"docs", array(
+					json(
+						"_id", "abc-123",
+						"_rev", "1-yyy",
+						"val", "bad"
+					)
+				),
+				"new_edits", false));
+
+		// then
+		assertDbContent("abc-123", "{ \"_id\":\"abc-123\", \"_rev\":\"2-xxx\", \"val\":\"one\" }");
 	}
 
 	@Test
