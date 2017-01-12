@@ -49,6 +49,29 @@ public class CouchReplicationTargetTest {
 				"committed_update_seq", 0));
 	}
 
+//> unexpected internal paths
+	@Test
+	public void _unexpectedInternalPaths_GET_shouldThrowExceptions() throws Exception {
+		// when
+		try {
+			target.get("/_something");
+			fail("Expected exception.");
+		} catch(UnsupportedInternalPathException ex) {
+			// expected
+		}
+	}
+
+	@Test
+	public void _unexpectedInternalPaths_POST_shouldThrowExceptions() throws Exception {
+		// when
+		try {
+			target.post("/_something", json());
+			fail("Expected exception.");
+		} catch(UnsupportedInternalPathException ex) {
+			// expected
+		}
+	}
+
 //> _changes
 	@Test
 	public void _changes_GET_shouldReturnEmptyList() throws Exception {
@@ -314,6 +337,45 @@ public class CouchReplicationTargetTest {
 		} catch(EmptyResponseException ex) {
 			// expected
 		}
+	}
+
+//> Requesting docs
+	@Test
+	public void nonExistentDocRequest_shouldReturn404() throws Exception {
+		// given
+		// no docs exist
+
+		try {
+			// when
+			target.get("/abc-123", queryParams());
+			fail("Expected exception.");
+		} catch(DocNotFoundException ex) {
+			// expected
+		}
+	}
+
+	@Test
+	public void existingDocRequest_shouldReturnDoc() throws Exception {
+		// given
+		target.post("/_bulk_docs", json(
+				"docs", array(
+					json(
+						"_id", "abc-123",
+						"_rev", "1-xxx",
+						"val", "one"
+					)
+				),
+				"new_edits", false));
+		assertDbContent("abc-123", "{ \"_id\":\"abc-123\", \"_rev\":\"1-xxx\", \"val\":\"one\" }");
+
+		// when
+		JSONObject response = target.get("/abc-123", queryParams());
+
+		// expect
+		assertJson(response, json(
+				"_id", "abc-123",
+				"_rev", "1-xxx",
+				"val", "one"));
 	}
 
 //> HELPERS

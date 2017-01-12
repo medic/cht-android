@@ -112,9 +112,13 @@ class CouchReplicationTarget {
 
 class CouchReplicationTargetException extends Exception {}
 
+class DocNotFoundException extends CouchReplicationTargetException {}
+
 class EmptyResponseException extends CouchReplicationTargetException {}
 
 class UnimplementedEndpointException extends CouchReplicationTargetException {}
+
+class UnsupportedInternalPathException extends CouchReplicationTargetException {}
 
 final class JSON {
 	static final JSONObject obj(Object... args) throws JSONException {
