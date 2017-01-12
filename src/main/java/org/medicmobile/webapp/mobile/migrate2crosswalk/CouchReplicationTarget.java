@@ -4,6 +4,7 @@ import android.content.Context;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 
+import java.util.List;
 import java.util.Map;
 
 import org.json.JSONArray;
@@ -15,7 +16,7 @@ import org.medicmobile.webapp.mobile.MedicLog;
 import static java.util.Collections.emptyMap;
 
 class CouchReplicationTarget {
-	private static final Map<String, String> NO_QUERY_PARAMS = emptyMap();
+	private static final Map<String, List<String>> NO_QUERY_PARAMS = emptyMap();
 
 	private TempCouchDb db;
 
@@ -29,7 +30,7 @@ class CouchReplicationTarget {
 		return get(requestPath, NO_QUERY_PARAMS);
 	}
 
-	public JSONObject get(String requestPath, Map<String, String> queryParams) throws CouchReplicationTargetException {
+	public JSONObject get(String requestPath, Map<String, List<String>> queryParams) throws CouchReplicationTargetException {
 		if(matches(requestPath, "/_local")) {
 			throw new UnimplementedEndpointException();
 		} else if(matches(requestPath, "/_changes")) {
@@ -40,14 +41,14 @@ class CouchReplicationTarget {
 				throw new RuntimeException(ex);
 			}
 		}
-		throw new RuntimeException("Not yet implemented.");
+		throw new RuntimeException("Not yet implemented.  RequestPath: " + requestPath);
 	}
 
 	public JSONObject post(String requestPath, JSONObject requestBody) throws CouchReplicationTargetException {
 		return post(requestPath, NO_QUERY_PARAMS, requestBody);
 	}
 
-	public JSONObject post(String requestPath, Map<String, String> queryParams, JSONObject requestBody) throws CouchReplicationTargetException {
+	public JSONObject post(String requestPath, Map<String, List<String>> queryParams, JSONObject requestBody) throws CouchReplicationTargetException {
 		if(matches(requestPath, "/_local")) {
 			throw new UnimplementedEndpointException();
 		} else if(matches(requestPath, "/_bulk_docs")) {
@@ -59,7 +60,7 @@ class CouchReplicationTarget {
 	}
 
 //> SPECIFIC REQUEST HANDLERS
-	private JSONObject _bulk_docs(String requestPath, Map<String, String> queryParams, JSONObject requestBody) throws CouchReplicationTargetException {
+	private JSONObject _bulk_docs(String requestPath, Map<String, List<String>> queryParams, JSONObject requestBody) throws CouchReplicationTargetException {
 		try {
 			JSONArray docs = requestBody.optJSONArray("docs");
 
