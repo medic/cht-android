@@ -69,7 +69,7 @@ public class StandardWebViewDataExtractionActivity extends Activity {
 
 		// TODO disableUserInteraction();
 
-		fakeCouch = new FakeCouch();
+		fakeCouch = new FakeCouch(settings);
 
 		final ProgressDialog progress = showProgressDialog(this, "Doing important things…");
 
