@@ -52,6 +52,28 @@ class TempCouchDb extends SQLiteOpenHelper {
 		// be removed before the next major version.
 	}
 
+	JSONObject get(String docId) throws JSONException {
+		Cursor c = null;
+		try {
+			c = db.query(tblMEDIC,
+					cols(clmJSON),
+					"_id=?", cols(docId),
+					NO_GROUP, NO_GROUP,
+					DEFAULT_ORDERING,
+					Integer.toString(1));
+
+			boolean exists = c.getCount() == 1;
+			if(exists) {
+				c.moveToNext();
+				String json = c.getString(0);
+				return (JSONObject) new JSONTokener(json).nextValue();
+			}
+			return null;
+		} finally {
+			if(c != null) try { c.close(); } catch(Exception ex) {}
+		}
+	}
+
 	void store(JSONObject doc) throws IllegalDocException, JSONException {
 		String docId = doc.getString("_id");
 		if(docId.length() == 0) throw new IllegalDocException(doc);

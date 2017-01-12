@@ -1,6 +1,7 @@
 package org.medicmobile.webapp.mobile.migrate2crosswalk;
 
 import android.content.Context;
+import android.net.Uri;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 
@@ -32,28 +33,23 @@ class CouchReplicationTarget {
 
 	public JSONObject get(String requestPath, Map<String, List<String>> queryParams) throws CouchReplicationTargetException {
 		try {
-			if(matches(requestPath, "/")) {
-				return JSON.obj("db_name", "medic",
-						"doc_count", 0, // TODO calculate
-						"doc_del_count", 0, // TODO calculate
-						"update_seq", 0, // TODO calculate
-						"purge_seq", 0, // TODO calculate
-						"compact_running", false, // TODO what does this mean
-						"disk_size", 0, // TODO calculate this, if we really care
-						"data_size", 0, // TODO calculate this, if we really care
-						"instance_start_time", 0, // TODO is this important?
-						"disk_format_version", 0, // TODO what does this mean?
-						"committed_update_seq", 0 /* TODO calculate this */);
+			if("/".equals(requestPath)) {
+				return getDbDetails();
 			} else if(matches(requestPath, "/_local")) {
 				throw new UnimplementedEndpointException();
 			} else if(matches(requestPath, "/_changes")) {
 				return JSON.obj("results", JSON.array(),
 						"last_seq", 0);
 			}
+
+			if(requestPath.startsWith("/_")) {
+				throw new UnsupportedInternalPathException(requestPath);
+			}
+
+			return getDoc(requestPath);
 		} catch(JSONException ex) {
 			throw new RuntimeException(ex);
 		}
-		throw new RuntimeException("Not yet implemented.  RequestPath: " + requestPath);
 	}
 
 	public JSONObject post(String requestPath, JSONObject requestBody) throws CouchReplicationTargetException {
@@ -67,6 +63,10 @@ class CouchReplicationTarget {
 			return _bulk_docs(requestPath, queryParams, requestBody);
 		} else if(matches(requestPath,  "/_revs_diff")) {
 			return new JSONObject();
+		}
+
+		if(requestPath.startsWith("/_")) {
+			throw new UnsupportedInternalPathException(requestPath);
 		}
 		throw new RuntimeException("Not yet implemented.");
 	}
@@ -87,6 +87,27 @@ class CouchReplicationTarget {
 			// couch does
 			throw new RuntimeException(ex);
 		}
+	}
+
+	private JSONObject getDbDetails() throws JSONException {
+		return JSON.obj("db_name", "medic",
+				"doc_count", 0, // TODO calculate
+				"doc_del_count", 0, // TODO calculate
+				"update_seq", 0, // TODO calculate
+				"purge_seq", 0, // TODO calculate
+				"compact_running", false, // TODO what does this mean
+				"disk_size", 0, // TODO calculate this, if we really care
+				"data_size", 0, // TODO calculate this, if we really care
+				"instance_start_time", 0, // TODO is this important?
+				"disk_format_version", 0, // TODO what does this mean?
+				"committed_update_seq", 0 /* TODO calculate this */);
+	}
+
+	private JSONObject getDoc(String requestPath) throws DocNotFoundException, JSONException {
+		String id = Uri.parse(requestPath).getPath().substring(1);
+		JSONObject doc = db.get(id);
+		if(doc == null) throw new DocNotFoundException(id);
+		return doc;
 	}
 
 //> HELPERS
@@ -110,15 +131,22 @@ class CouchReplicationTarget {
 	}
 }
 
-class CouchReplicationTargetException extends Exception {}
+class CouchReplicationTargetException extends Exception {
+	CouchReplicationTargetException() {}
+	CouchReplicationTargetException(String message) { super(message); }
+}
 
-class DocNotFoundException extends CouchReplicationTargetException {}
+class DocNotFoundException extends CouchReplicationTargetException {
+	DocNotFoundException(String id) { super(id); }
+}
 
 class EmptyResponseException extends CouchReplicationTargetException {}
 
 class UnimplementedEndpointException extends CouchReplicationTargetException {}
 
-class UnsupportedInternalPathException extends CouchReplicationTargetException {}
+class UnsupportedInternalPathException extends CouchReplicationTargetException {
+	UnsupportedInternalPathException(String path) { super(path); }
+}
 
 final class JSON {
 	static final JSONObject obj(Object... args) throws JSONException {
