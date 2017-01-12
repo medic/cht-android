@@ -28,6 +28,28 @@ public class CouchReplicationTargetTest {
 		db.tearDown();
 	}
 
+//> / (root)
+	@Test
+	public void _root_GET_shouldReturnDbDetails() throws Exception {
+		// when
+		JSONObject response = target.get("/", queryParams());
+
+		// expect
+		assertJson(response, json(
+				"db_name", "medic",
+				"doc_count", 0,
+				"doc_del_count", 0,
+				"update_seq", 0,
+				"purge_seq", 0,
+				"compact_running", false,
+				"disk_size", 0,
+				"data_size", 0,
+				"instance_start_time", 0, // TODO is this important?
+				"disk_format_version", 0, // TODO what does this mean?
+				"committed_update_seq", 0));
+	}
+
+//> _changes
 	@Test
 	public void _changes_GET_shouldReturnEmptyList() throws Exception {
 		// when
@@ -42,6 +64,7 @@ public class CouchReplicationTargetTest {
 				);
 	}
 
+//> _local
 	@Test
 	public void _local_GET_shouldThrowUnimplementedEndpointException() throws Exception {
 		// when
@@ -65,6 +88,7 @@ public class CouchReplicationTargetTest {
 		}
 	}
 
+//> _revs_diff
 	@Test
 	public void _revs_diff_POST_shouldReturnEmptyObject() throws Exception {
 		// when
@@ -76,6 +100,7 @@ public class CouchReplicationTargetTest {
 		assertJson(response, emptyObject());
 	}
 
+//> _bulk_docs
 	@Test
 	public void _bulk_docs_shouldIgnoreAnEmptyRequest() throws Exception {
 		// when
@@ -334,10 +359,10 @@ public class CouchReplicationTargetTest {
 		assertEquals(expected.toString(), actual.toString());
 	}
 
-	private static Map<String, String> queryParams(String... params) {
-		Map<String, String> m = new HashMap<>();
+	private static Map<String, List<String>> queryParams(String... params) {
+		Map<String, List<String>> m = new HashMap<>();
 		for(int i=0; i<params.length; i+=2)
-			m.put(params[i], params[i+1]);
+			m.put(params[i], Arrays.asList(params[i+1]));
 		return m;
 	}
 }

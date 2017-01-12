@@ -31,15 +31,27 @@ class CouchReplicationTarget {
 	}
 
 	public JSONObject get(String requestPath, Map<String, List<String>> queryParams) throws CouchReplicationTargetException {
-		if(matches(requestPath, "/_local")) {
-			throw new UnimplementedEndpointException();
-		} else if(matches(requestPath, "/_changes")) {
-			try {
+		try {
+			if(matches(requestPath, "/")) {
+				return JSON.obj("db_name", "medic",
+						"doc_count", 0, // TODO calculate
+						"doc_del_count", 0, // TODO calculate
+						"update_seq", 0, // TODO calculate
+						"purge_seq", 0, // TODO calculate
+						"compact_running", false, // TODO what does this mean
+						"disk_size", 0, // TODO calculate this, if we really care
+						"data_size", 0, // TODO calculate this, if we really care
+						"instance_start_time", 0, // TODO is this important?
+						"disk_format_version", 0, // TODO what does this mean?
+						"committed_update_seq", 0 /* TODO calculate this */);
+			} else if(matches(requestPath, "/_local")) {
+				throw new UnimplementedEndpointException();
+			} else if(matches(requestPath, "/_changes")) {
 				return JSON.obj("results", JSON.array(),
 						"last_seq", 0);
-			} catch(JSONException ex) {
-				throw new RuntimeException(ex);
 			}
+		} catch(JSONException ex) {
+			throw new RuntimeException(ex);
 		}
 		throw new RuntimeException("Not yet implemented.  RequestPath: " + requestPath);
 	}
