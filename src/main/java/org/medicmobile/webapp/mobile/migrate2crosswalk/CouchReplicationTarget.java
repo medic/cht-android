@@ -24,50 +24,6 @@ class CouchReplicationTarget {
 		this.db = TempCouchDb.getInstance(ctx);
 	}
 
-//> General handler
-	public WebResourceResponse handle(WebResourceRequest req) throws CouchReplicationTargetException {
-		trace("handle() :: req=%s", req);
-
-		switch(req.getMethod()) {
-			case "GET":
-				// TODO extract query params
-				return jsonResponse(req, get(req));
-			case "POST":
-				// TODO extract query params
-				return jsonResponse(req, post(req));
-		}
-		return null;
-	}
-
-//> convenience TODO rename this 'block'
-	private WebResourceResponse jsonResponse(WebResourceRequest req, JSONObject responseBody) {
-		// TODO implement
-		return null;
-	}
-
-	private JSONObject get(WebResourceRequest req) throws CouchReplicationTargetException {
-		return get(pathFrom(req), paramsFrom(req));
-	}
-
-	private JSONObject post(WebResourceRequest req) throws CouchReplicationTargetException {
-		return post(pathFrom(req), paramsFrom(req), bodyFrom(req));
-	}
-
-	private String pathFrom(WebResourceRequest req) {
-		// TODO implement
-		return null;
-	}
-
-	private Map<String, String> paramsFrom(WebResourceRequest req) {
-		// TODO implement
-		return null;
-	}
-
-	private JSONObject bodyFrom(WebResourceRequest req) {
-		// TODO implement
-		return null;
-	}
-
 //> JSON handlers
 	public JSONObject get(String requestPath) throws CouchReplicationTargetException {
 		return get(requestPath, NO_QUERY_PARAMS);
