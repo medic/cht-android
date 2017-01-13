@@ -20,6 +20,7 @@ class TempCouchDb extends SQLiteOpenHelper {
 
 	private static final String tblMEDIC = "medic";
 	private static final String clmID = "_id";
+	private static final String clmREV = "_rev";
 	private static final String clmJSON = "json";
 
 	private static final Pattern REV = Pattern.compile("\\d+-\\w+");
@@ -43,13 +44,30 @@ class TempCouchDb extends SQLiteOpenHelper {
 	public void onCreate(SQLiteDatabase db) {
 		db.execSQL(String.format("CREATE TABLE %s (" +
 					"%s TEXT PRIMARY KEY, " +
+					"%s TEXT NOT NULL, " +
 					"%s TEXT NOT NULL)",
-				tblMEDIC, clmID, clmJSON));
+				tblMEDIC, clmID, clmREV, clmJSON));
 	}
 
 	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 		// Hopefully we'll never be versioning this database, as it should
 		// be removed before the next major version.
+	}
+
+	boolean exists(String docId, String rev) throws JSONException {
+		Cursor c = null;
+		try {
+			c = db.query(tblMEDIC,
+					cols(clmID),
+					"_id=? AND _rev=?", vals(docId, rev),
+					NO_GROUP, NO_GROUP,
+					DEFAULT_ORDERING,
+					Integer.toString(1));
+
+			return c.getCount() > 0;
+		} finally {
+			if(c != null) try { c.close(); } catch(Exception ex) {}
+		}
 	}
 
 	JSONObject get(String docId) throws JSONException {
@@ -109,24 +127,30 @@ class TempCouchDb extends SQLiteOpenHelper {
 	}
 
 //> STATIC HELPERS
-	private static ContentValues forInsert(String docId, JSONObject doc) {
+	private static ContentValues forInsert(String docId, JSONObject doc) throws JSONException {
 		ContentValues v = new ContentValues();
 
 		v.put(clmID, docId);
+		v.put(clmREV, doc.getString("_rev"));
 		v.put(clmJSON, doc.toString());
 
 		return v;
 	}
 
-	private static ContentValues forUpdate(JSONObject doc) {
+	private static ContentValues forUpdate(JSONObject doc) throws JSONException {
 		ContentValues v = new ContentValues();
 
+		v.put(clmREV, doc.getString("_rev"));
 		v.put(clmJSON, doc.toString());
 
 		return v;
 	}
 
 	private static String[] cols(String... args) {
+		return args;
+	}
+
+	private static String[] vals(String... args) {
 		return args;
 	}
 

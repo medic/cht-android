@@ -10,6 +10,7 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -23,6 +24,7 @@ import static fi.iki.elonen.NanoHTTPD.Method.GET;
 import static fi.iki.elonen.NanoHTTPD.Method.POST;
 import static fi.iki.elonen.NanoHTTPD.Response.Status.INTERNAL_ERROR;
 import static fi.iki.elonen.NanoHTTPD.Response.Status.METHOD_NOT_ALLOWED;
+import static fi.iki.elonen.NanoHTTPD.Response.Status.NOT_FOUND;
 import static fi.iki.elonen.NanoHTTPD.Response.Status.OK;
 
 class FakeCouch {
@@ -76,6 +78,8 @@ class FakeCouchDaemon extends NanoHTTPD {
 		String requestPath;
 		Map<String, List<String>> queryParams;
 
+		Map<String, String> additionalHeaders = new HashMap<String, String>();
+
 		Object responseBody;
 		Status responseStatus;
 		try {
@@ -83,6 +87,14 @@ class FakeCouchDaemon extends NanoHTTPD {
 			queryParams = getQueryParams(session);
 
 			switch(session.getMethod()) {
+				case OPTIONS:
+					responseBody = "";
+					responseStatus = OK;
+					// TODO in theory this should be responding differently
+					// depending on the path.  This hould be good enough for
+					// now, though.
+					additionalHeaders.put("Allow", "OPTIONS,GET,POST");
+					break;
 				case GET:
 					responseBody = couch.get(requestPath, queryParams);
 					responseStatus = OK;
@@ -101,6 +113,9 @@ class FakeCouchDaemon extends NanoHTTPD {
 							.put("reason", "Unsupported method: " + session.getMethod());
 					responseStatus = METHOD_NOT_ALLOWED;
 			}
+		} catch(DocNotFoundException ex) {
+			responseStatus = NOT_FOUND;
+			responseBody = "{\"error\":\"not_found\",\"reason\":\"missing\"}";
 		} catch(Exception ex) {
 			responseStatus = INTERNAL_ERROR;
 			try {
@@ -116,8 +131,12 @@ class FakeCouchDaemon extends NanoHTTPD {
 		// TODO link up to the CouchReplicationTarget
 		Response response = newFixedLengthResponse(responseBody.toString());
 		response.setStatus(responseStatus);
-		response.addHeader("Access-Control-Allow-Origin", appHost);
 		response.addHeader("Access-Control-Allow-Credentials", "true");
+		response.addHeader("Access-Control-Allow-Headers", "Content-Type");
+		response.addHeader("Access-Control-Allow-Origin", appHost);
+		for(Map.Entry<String, String> header : additionalHeaders.entrySet()) {
+			response.addHeader(header.getKey(), header.getValue());
+		}
 		return response;
 	}
 

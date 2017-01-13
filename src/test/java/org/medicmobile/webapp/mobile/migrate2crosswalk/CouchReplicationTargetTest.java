@@ -89,12 +89,12 @@ public class CouchReplicationTargetTest {
 
 //> _local
 	@Test
-	public void _local_GET_shouldThrowUnimplementedEndpointException() throws Exception {
+	public void _local_GET_shouldThrowDocNotFoundException() throws Exception {
 		// when
 		try {
 			target.get("/_local/some-random-doc-id");
 			fail("An exception should have been thrown.");
-		} catch(UnimplementedEndpointException ex) {
+		} catch(DocNotFoundException ex) {
 			// expected
 		}
 	}
@@ -113,7 +113,7 @@ public class CouchReplicationTargetTest {
 
 //> _revs_diff
 	@Test
-	public void _revs_diff_POST_shouldReturnEmptyObject() throws Exception {
+	public void _revs_diff_POST_shouldReturnEmptyObject_ifSuppliedWithEmptyList() throws Exception {
 		// when
 		JSONObject response = target.post(
 				"/_revs_diff",
@@ -121,6 +121,59 @@ public class CouchReplicationTargetTest {
 
 		// expect
 		assertJson(response, emptyObject());
+	}
+
+	@Test
+	public void _revs_diff_POST_shouldEchoCompleteList_ifNothingInDatabase() throws Exception {
+		// when
+		JSONObject response = target.post(
+				"/_revs_diff", json(
+				"abc-123", array("1-aaa"),
+				"def-456", array("2-bbb")));
+
+		// expect
+		assertJson(response, json(
+			"abc-123", json(
+				"missing", array("1-aaa")),
+			"def-456", json(
+				"missing", array("2-bbb"))
+		));
+	}
+
+	@Test
+	public void _revs_diff_POST_shouldNotIncludeItemsInDbWithMatchingIdAndRev() throws Exception {
+		// given
+		target.post("/_bulk_docs", json(
+				"docs", array(
+					json(
+						"_id", "abc-123",
+						"_rev", "1-aaa",
+						"val", "one"
+					),
+					json(
+						"_id", "def-456",
+						"_rev", "1-xxx",
+						"val", "two"
+					)
+				),
+				"new_edits", false));
+		assertDbContent("abc-123", "1-aaa", "{ \"_id\":\"abc-123\", \"_rev\":\"1-aaa\", \"val\":\"one\" }",
+				"def-456", "1-xxx", "{ \"_id\":\"def-456\", \"_rev\":\"1-xxx\", \"val\":\"two\" }");
+
+		// when
+		JSONObject response = target.post(
+				"/_revs_diff", json(
+				"abc-123", array("1-aaa"),
+				"def-456", array("2-bbb"),
+				"ghi-789", array("3-ccc")));
+
+		// expect
+		assertJson(response, json(
+			"def-456", json(
+				"missing", array("2-bbb")),
+			"ghi-789", json(
+				"missing", array("3-ccc"))
+		));
 	}
 
 //> _bulk_docs
@@ -151,7 +204,7 @@ public class CouchReplicationTargetTest {
 				"new_edits", false));
 
 		// then
-		assertDbContent("abc-123", "{ \"_id\":\"abc-123\", \"_rev\":\"1-xxx\", \"val\":\"one\" }");
+		assertDbContent("abc-123", "1-xxx", "{ \"_id\":\"abc-123\", \"_rev\":\"1-xxx\", \"val\":\"one\" }");
 	}
 
 	@Test
@@ -173,8 +226,8 @@ public class CouchReplicationTargetTest {
 				"new_edits", false));
 
 		// then
-		assertDbContent("abc-123", "{ \"_id\":\"abc-123\", \"_rev\":\"1-xxx\", \"val\":\"one\" }",
-				"def-456", "{ \"_id\":\"def-456\", \"_rev\":\"2-xxx\", \"val\":\"two\" }");
+		assertDbContent("abc-123", "1-xxx", "{ \"_id\":\"abc-123\", \"_rev\":\"1-xxx\", \"val\":\"one\" }",
+				"def-456", "2-xxx", "{ \"_id\":\"def-456\", \"_rev\":\"2-xxx\", \"val\":\"two\" }");
 	}
 
 	@Test
@@ -196,7 +249,7 @@ public class CouchReplicationTargetTest {
 				"new_edits", false));
 
 		// then
-		assertDbContent("abc-123", "{ \"_id\":\"abc-123\", \"_rev\":\"1-xxx\", \"val\":\"one\" }");
+		assertDbContent("abc-123", "1-xxx", "{ \"_id\":\"abc-123\", \"_rev\":\"1-xxx\", \"val\":\"one\" }");
 
 		// when
 		target.post("/_bulk_docs", json(
@@ -210,7 +263,7 @@ public class CouchReplicationTargetTest {
 				"new_edits", false));
 
 		// then
-		assertDbContent("abc-123", "{ \"_id\":\"abc-123\", \"_rev\":\"1-xxx\", \"val\":\"one\" }");
+		assertDbContent("abc-123", "1-xxx", "{ \"_id\":\"abc-123\", \"_rev\":\"1-xxx\", \"val\":\"one\" }");
 	}
 
 	@Test
@@ -237,8 +290,8 @@ public class CouchReplicationTargetTest {
 				"new_edits", false));
 
 		// then
-		assertDbContent("abc-123", "{ \"_id\":\"abc-123\", \"_rev\":\"1-xxx\", \"val\":\"one\" }",
-				"def-456", "{ \"_id\":\"def-456\", \"_rev\":\"2-xxx\", \"val\":\"two\" }");
+		assertDbContent("abc-123", "1-xxx", "{ \"_id\":\"abc-123\", \"_rev\":\"1-xxx\", \"val\":\"one\" }",
+				"def-456", "2-xxx", "{ \"_id\":\"def-456\", \"_rev\":\"2-xxx\", \"val\":\"two\" }");
 	}
 
 	@Test
@@ -253,7 +306,7 @@ public class CouchReplicationTargetTest {
 					)
 				),
 				"new_edits", false));
-		assertDbContent("abc-123", "{ \"_id\":\"abc-123\", \"_rev\":\"1-xxx\", \"val\":\"one\" }");
+		assertDbContent("abc-123", "1-xxx", "{ \"_id\":\"abc-123\", \"_rev\":\"1-xxx\", \"val\":\"one\" }");
 
 		// when
 		target.post("/_bulk_docs", json(
@@ -267,7 +320,7 @@ public class CouchReplicationTargetTest {
 				"new_edits", false));
 
 		// then
-		assertDbContent("abc-123", "{ \"_id\":\"abc-123\", \"_rev\":\"2-xxx\", \"val\":\"two\" }");
+		assertDbContent("abc-123", "2-xxx", "{ \"_id\":\"abc-123\", \"_rev\":\"2-xxx\", \"val\":\"two\" }");
 	}
 
 	@Test
@@ -282,7 +335,7 @@ public class CouchReplicationTargetTest {
 					)
 				),
 				"new_edits", false));
-		assertDbContent("abc-123", "{ \"_id\":\"abc-123\", \"_rev\":\"1-xxx\", \"val\":\"one\" }");
+		assertDbContent("abc-123", "1-xxx", "{ \"_id\":\"abc-123\", \"_rev\":\"1-xxx\", \"val\":\"one\" }");
 
 		// when
 		target.post("/_bulk_docs", json(
@@ -296,7 +349,7 @@ public class CouchReplicationTargetTest {
 				"new_edits", false));
 
 		// then
-		assertDbContent("abc-123", "{ \"_id\":\"abc-123\", \"_rev\":\"1-xxx\", \"val\":\"one\" }");
+		assertDbContent("abc-123", "1-xxx", "{ \"_id\":\"abc-123\", \"_rev\":\"1-xxx\", \"val\":\"one\" }");
 	}
 
 	@Test
@@ -311,7 +364,7 @@ public class CouchReplicationTargetTest {
 					)
 				),
 				"new_edits", false));
-		assertDbContent("abc-123", "{ \"_id\":\"abc-123\", \"_rev\":\"2-xxx\", \"val\":\"one\" }");
+		assertDbContent("abc-123", "2-xxx", "{ \"_id\":\"abc-123\", \"_rev\":\"2-xxx\", \"val\":\"one\" }");
 
 		// when
 		target.post("/_bulk_docs", json(
@@ -325,7 +378,7 @@ public class CouchReplicationTargetTest {
 				"new_edits", false));
 
 		// then
-		assertDbContent("abc-123", "{ \"_id\":\"abc-123\", \"_rev\":\"2-xxx\", \"val\":\"one\" }");
+		assertDbContent("abc-123", "2-xxx", "{ \"_id\":\"abc-123\", \"_rev\":\"2-xxx\", \"val\":\"one\" }");
 	}
 
 	@Test
@@ -366,7 +419,7 @@ public class CouchReplicationTargetTest {
 					)
 				),
 				"new_edits", false));
-		assertDbContent("abc-123", "{ \"_id\":\"abc-123\", \"_rev\":\"1-xxx\", \"val\":\"one\" }");
+		assertDbContent("abc-123", "1-xxx", "{ \"_id\":\"abc-123\", \"_rev\":\"1-xxx\", \"val\":\"one\" }");
 
 		// when
 		JSONObject response = target.get("/abc-123", queryParams());
@@ -381,10 +434,10 @@ public class CouchReplicationTargetTest {
 //> HELPERS
 	private void assertDbContent(String... args) throws JSONException {
 		Object[] expectedContent = new Object[args.length];
-		for(int i=0; i<args.length; i+=2) {
+		for(int i=0; i<args.length; i+=3) {
 			expectedContent[i] = args[i];
-			// standardise ordering of object keys
-			expectedContent[i+1] = new JSONObject(args[i+1]).toString();
+			expectedContent[i+1] = args[i+1];
+			expectedContent[i+2] = new JSONObject(args[i+2]).toString();
 		}
 		db.assertTable("medic", expectedContent);
 	}

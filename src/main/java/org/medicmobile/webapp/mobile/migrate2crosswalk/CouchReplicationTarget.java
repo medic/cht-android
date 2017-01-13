@@ -5,6 +5,7 @@ import android.net.Uri;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -36,7 +37,7 @@ class CouchReplicationTarget {
 			if("/".equals(requestPath)) {
 				return getDbDetails();
 			} else if(matches(requestPath, "/_local")) {
-				throw new UnimplementedEndpointException();
+				throw new DocNotFoundException(requestPath);
 			} else if(matches(requestPath, "/_changes")) {
 				return JSON.obj("results", JSON.array(),
 						"last_seq", 0);
@@ -57,12 +58,16 @@ class CouchReplicationTarget {
 	}
 
 	public JSONObject post(String requestPath, Map<String, List<String>> queryParams, JSONObject requestBody) throws CouchReplicationTargetException {
-		if(matches(requestPath, "/_local")) {
-			throw new UnimplementedEndpointException();
-		} else if(matches(requestPath, "/_bulk_docs")) {
-			return _bulk_docs(requestPath, queryParams, requestBody);
-		} else if(matches(requestPath,  "/_revs_diff")) {
-			return new JSONObject();
+		try {
+			if(matches(requestPath, "/_local")) {
+				throw new UnimplementedEndpointException();
+			} else if(matches(requestPath, "/_bulk_docs")) {
+				return _bulk_docs(requestPath, queryParams, requestBody);
+			} else if(matches(requestPath,  "/_revs_diff")) {
+				return _revs_diff(requestBody);
+			}
+		} catch(JSONException ex) {
+			throw new RuntimeException(ex);
 		}
 
 		if(requestPath.startsWith("/_")) {
@@ -72,6 +77,26 @@ class CouchReplicationTarget {
 	}
 
 //> SPECIFIC REQUEST HANDLERS
+	private JSONObject _revs_diff(JSONObject requestBody) throws JSONException {
+		JSONObject response = new JSONObject();
+
+		Iterator<String> docIds = requestBody.keys();
+		while(docIds.hasNext()) {
+			String docId = docIds.next();
+			JSONArray revs = requestBody.getJSONArray(docId);
+			JSONArray missing = new JSONArray();
+			for(int i=0; i<revs.length(); ++i) {
+				String rev = revs.getString(i);
+				if(!db.exists(docId, rev))
+					missing.put(rev);
+			}
+			if(missing.length() > 0) {
+				response.put(docId, new JSONObject().put("missing", missing));
+			}
+		}
+		return response;
+	}
+
 	private JSONObject _bulk_docs(String requestPath, Map<String, List<String>> queryParams, JSONObject requestBody) throws CouchReplicationTargetException {
 		try {
 			JSONArray docs = requestBody.optJSONArray("docs");
