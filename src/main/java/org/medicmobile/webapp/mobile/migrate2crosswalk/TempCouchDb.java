@@ -19,10 +19,13 @@ class TempCouchDb extends SQLiteOpenHelper {
 	private static final String DEFAULT_ORDERING = null, NO_GROUP = null;
 	private static final String[] NO_ARGS = {};
 
+	private static final String tblLOCAL = "local";
 	private static final String tblMEDIC = "medic";
 	private static final String clmID = "_id";
 	private static final String clmREV = "_rev";
 	private static final String clmJSON = "json";
+
+	private static final String[] DOC_TABLES = { tblLOCAL, tblMEDIC };
 
 	private static final Pattern REV = Pattern.compile("\\d+-\\w+");
 
@@ -43,11 +46,13 @@ class TempCouchDb extends SQLiteOpenHelper {
 	}
 
 	public void onCreate(SQLiteDatabase db) {
-		db.execSQL(String.format("CREATE TABLE %s (" +
-					"%s TEXT PRIMARY KEY, " +
-					"%s TEXT NOT NULL, " +
-					"%s TEXT NOT NULL)",
-				tblMEDIC, clmID, clmREV, clmJSON));
+		for(String tableName : DOC_TABLES) {
+			db.execSQL(String.format("CREATE TABLE %s (" +
+						"%s TEXT PRIMARY KEY, " +
+						"%s TEXT NOT NULL, " +
+						"%s TEXT NOT NULL)",
+					tableName, clmID, clmREV, clmJSON));
+		}
 	}
 
 	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
@@ -94,6 +99,14 @@ class TempCouchDb extends SQLiteOpenHelper {
 	}
 
 	void store(JSONObject doc) throws IllegalDocException, JSONException {
+		store(tblMEDIC, doc);
+	}
+
+	void store_local(JSONObject doc) throws IllegalDocException, JSONException {
+		store(tblLOCAL, doc);
+	}
+
+	private void store(String dbName, JSONObject doc) throws IllegalDocException, JSONException {
 		trace("store", "doc=%s", doc);
 		String docId = doc.getString("_id");
 		if(docId.length() == 0) throw new IllegalDocException(doc);
@@ -103,7 +116,7 @@ class TempCouchDb extends SQLiteOpenHelper {
 
 		Cursor c = null;
 		try {
-			c = db.query(tblMEDIC,
+			c = db.query(dbName,
 					cols(clmJSON),
 					"_id=?", cols(docId),
 					NO_GROUP, NO_GROUP,
@@ -118,10 +131,10 @@ class TempCouchDb extends SQLiteOpenHelper {
 				String oldRev = oldDoc.getString("_rev");
 
 				if(getRevNumber(newRev) > getRevNumber(oldRev)) {
-					db.update(tblMEDIC, forUpdate(doc), "_id=?", cols(docId));
+					db.update(dbName, forUpdate(doc), "_id=?", cols(docId));
 				} // else ignore the old version
 			} else {
-				db.insert(tblMEDIC, null, forInsert(docId, doc));
+				db.insert(dbName, null, forInsert(docId, doc));
 			}
 		} finally {
 			if(c != null) try { c.close(); } catch(Exception ex) {}

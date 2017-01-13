@@ -70,7 +70,7 @@ public class StandardWebViewDataExtractionActivity extends Activity {
 
 		// TODO disableUserInteraction();
 
-		allowServerComms = false; //true; // TODO we need this for first run when debugging, so we
+		allowServerComms = true; // TODO we need this for first run when debugging, so we
 		// actually have some data to debug.  After that, this option can likely be removed
 		// permanently.
 

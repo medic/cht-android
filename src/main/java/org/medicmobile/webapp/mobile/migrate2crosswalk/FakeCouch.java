@@ -95,27 +95,33 @@ class FakeCouchDaemon extends NanoHTTPD {
 			trace("serve", "Handling request to path: %s", requestPath);
 
 			switch(session.getMethod()) {
-				case OPTIONS:
+				case OPTIONS: {
 					responseBody = "";
 					responseStatus = OK;
 					// TODO in theory this should be responding differently
 					// depending on the path.  This hould be good enough for
 					// now, though.
 					additionalHeaders.put("Allow", ALLOWED_METHODS);
-					break;
-				case GET:
+				} break;
+				case GET: {
 					responseBody = couch.get(requestPath, queryParams);
 					responseStatus = OK;
-					break;
-				case POST:
+				} break;
+				case POST: {
 					JSONObject requestBody = getBody(session);
 					responseBody = couch.post(requestPath, queryParams, requestBody);
 					responseStatus = OK;
-					break;
-				default:
+				} break;
+				case PUT: {
+					JSONObject requestBody = getBody(session);
+					responseBody = couch.put(requestPath, queryParams, requestBody);
+					responseStatus = OK;
+				} break;
+				default: {
 					responseStatus = METHOD_NOT_ALLOWED;
 					responseBody = error("unsupported_method",
 							"Unsupported method: " + session.getMethod());
+				}
 			}
 		} catch(DocNotFoundException ex) {
 			responseStatus = NOT_FOUND;

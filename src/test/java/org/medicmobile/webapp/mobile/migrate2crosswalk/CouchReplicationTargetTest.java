@@ -1,6 +1,7 @@
 package org.medicmobile.webapp.mobile.migrate2crosswalk;
 
 import java.util.*;
+import java.util.regex.*;
 
 import org.json.*;
 import org.junit.*;
@@ -14,6 +15,10 @@ import static org.junit.Assert.*;
 @RunWith(RobolectricTestRunner.class)
 @Config(constants = org.medicmobile.webapp.mobile.BuildConfig.class)
 public class CouchReplicationTargetTest {
+	/** A very rough regex for matching JSON */
+	private static final Pattern ANY_JSON = Pattern.compile("\\{.*\\}");
+	private static final Pattern ANY_REV = Pattern.compile("\\d+-\\w+");
+
 	private CouchReplicationTarget target;
 	private DbTestHelper db;
 
@@ -103,12 +108,24 @@ public class CouchReplicationTargetTest {
 	public void _local_POST_shouldThrowUnimplementedEndpointException() throws Exception {
 		// when
 		try {
-			target.post("/_local/some-random-doc-id",
+			target.post("/_local",
 					emptyObject());
 			fail("An exception should have been thrown.");
 		} catch(UnimplementedEndpointException ex) {
 			// expected
 		}
+	}
+
+	@Test
+	public void _local_PUT_shouldStoreLocalDocument() throws Exception {
+		// when
+		target.put("/_local/some-id", json(
+				"val", "one"));
+
+		// then
+		assertDbContent("medic");
+		assertDbContent("local",
+				"_local/some-id", ANY_REV, ANY_JSON);
 	}
 
 //> _revs_diff
@@ -157,7 +174,8 @@ public class CouchReplicationTargetTest {
 					)
 				),
 				"new_edits", false));
-		assertDbContent("abc-123", "1-aaa", "{ \"_id\":\"abc-123\", \"_rev\":\"1-aaa\", \"val\":\"one\" }",
+		assertDbContent("medic",
+				"abc-123", "1-aaa", "{ \"_id\":\"abc-123\", \"_rev\":\"1-aaa\", \"val\":\"one\" }",
 				"def-456", "1-xxx", "{ \"_id\":\"def-456\", \"_rev\":\"1-xxx\", \"val\":\"two\" }");
 
 		// when
@@ -204,7 +222,8 @@ public class CouchReplicationTargetTest {
 				"new_edits", false));
 
 		// then
-		assertDbContent("abc-123", "1-xxx", "{ \"_id\":\"abc-123\", \"_rev\":\"1-xxx\", \"val\":\"one\" }");
+		assertDbContent("medic",
+				"abc-123", "1-xxx", "{ \"_id\":\"abc-123\", \"_rev\":\"1-xxx\", \"val\":\"one\" }");
 	}
 
 	@Test
@@ -226,7 +245,8 @@ public class CouchReplicationTargetTest {
 				"new_edits", false));
 
 		// then
-		assertDbContent("abc-123", "1-xxx", "{ \"_id\":\"abc-123\", \"_rev\":\"1-xxx\", \"val\":\"one\" }",
+		assertDbContent("medic",
+				"abc-123", "1-xxx", "{ \"_id\":\"abc-123\", \"_rev\":\"1-xxx\", \"val\":\"one\" }",
 				"def-456", "2-xxx", "{ \"_id\":\"def-456\", \"_rev\":\"2-xxx\", \"val\":\"two\" }");
 	}
 
@@ -249,7 +269,8 @@ public class CouchReplicationTargetTest {
 				"new_edits", false));
 
 		// then
-		assertDbContent("abc-123", "1-xxx", "{ \"_id\":\"abc-123\", \"_rev\":\"1-xxx\", \"val\":\"one\" }");
+		assertDbContent("medic",
+				"abc-123", "1-xxx", "{ \"_id\":\"abc-123\", \"_rev\":\"1-xxx\", \"val\":\"one\" }");
 
 		// when
 		target.post("/_bulk_docs", json(
@@ -263,7 +284,8 @@ public class CouchReplicationTargetTest {
 				"new_edits", false));
 
 		// then
-		assertDbContent("abc-123", "1-xxx", "{ \"_id\":\"abc-123\", \"_rev\":\"1-xxx\", \"val\":\"one\" }");
+		assertDbContent("medic",
+				"abc-123", "1-xxx", "{ \"_id\":\"abc-123\", \"_rev\":\"1-xxx\", \"val\":\"one\" }");
 	}
 
 	@Test
@@ -290,7 +312,8 @@ public class CouchReplicationTargetTest {
 				"new_edits", false));
 
 		// then
-		assertDbContent("abc-123", "1-xxx", "{ \"_id\":\"abc-123\", \"_rev\":\"1-xxx\", \"val\":\"one\" }",
+		assertDbContent("medic",
+				"abc-123", "1-xxx", "{ \"_id\":\"abc-123\", \"_rev\":\"1-xxx\", \"val\":\"one\" }",
 				"def-456", "2-xxx", "{ \"_id\":\"def-456\", \"_rev\":\"2-xxx\", \"val\":\"two\" }");
 	}
 
@@ -306,7 +329,8 @@ public class CouchReplicationTargetTest {
 					)
 				),
 				"new_edits", false));
-		assertDbContent("abc-123", "1-xxx", "{ \"_id\":\"abc-123\", \"_rev\":\"1-xxx\", \"val\":\"one\" }");
+		assertDbContent("medic",
+				"abc-123", "1-xxx", "{ \"_id\":\"abc-123\", \"_rev\":\"1-xxx\", \"val\":\"one\" }");
 
 		// when
 		target.post("/_bulk_docs", json(
@@ -320,7 +344,8 @@ public class CouchReplicationTargetTest {
 				"new_edits", false));
 
 		// then
-		assertDbContent("abc-123", "2-xxx", "{ \"_id\":\"abc-123\", \"_rev\":\"2-xxx\", \"val\":\"two\" }");
+		assertDbContent("medic",
+				"abc-123", "2-xxx", "{ \"_id\":\"abc-123\", \"_rev\":\"2-xxx\", \"val\":\"two\" }");
 	}
 
 	@Test
@@ -335,7 +360,8 @@ public class CouchReplicationTargetTest {
 					)
 				),
 				"new_edits", false));
-		assertDbContent("abc-123", "1-xxx", "{ \"_id\":\"abc-123\", \"_rev\":\"1-xxx\", \"val\":\"one\" }");
+		assertDbContent("medic",
+				"abc-123", "1-xxx", "{ \"_id\":\"abc-123\", \"_rev\":\"1-xxx\", \"val\":\"one\" }");
 
 		// when
 		target.post("/_bulk_docs", json(
@@ -349,7 +375,8 @@ public class CouchReplicationTargetTest {
 				"new_edits", false));
 
 		// then
-		assertDbContent("abc-123", "1-xxx", "{ \"_id\":\"abc-123\", \"_rev\":\"1-xxx\", \"val\":\"one\" }");
+		assertDbContent("medic",
+				"abc-123", "1-xxx", "{ \"_id\":\"abc-123\", \"_rev\":\"1-xxx\", \"val\":\"one\" }");
 	}
 
 	@Test
@@ -364,7 +391,8 @@ public class CouchReplicationTargetTest {
 					)
 				),
 				"new_edits", false));
-		assertDbContent("abc-123", "2-xxx", "{ \"_id\":\"abc-123\", \"_rev\":\"2-xxx\", \"val\":\"one\" }");
+		assertDbContent("medic",
+				"abc-123", "2-xxx", "{ \"_id\":\"abc-123\", \"_rev\":\"2-xxx\", \"val\":\"one\" }");
 
 		// when
 		target.post("/_bulk_docs", json(
@@ -378,7 +406,8 @@ public class CouchReplicationTargetTest {
 				"new_edits", false));
 
 		// then
-		assertDbContent("abc-123", "2-xxx", "{ \"_id\":\"abc-123\", \"_rev\":\"2-xxx\", \"val\":\"one\" }");
+		assertDbContent("medic",
+				"abc-123", "2-xxx", "{ \"_id\":\"abc-123\", \"_rev\":\"2-xxx\", \"val\":\"one\" }");
 	}
 
 	@Test
@@ -419,7 +448,8 @@ public class CouchReplicationTargetTest {
 					)
 				),
 				"new_edits", false));
-		assertDbContent("abc-123", "1-xxx", "{ \"_id\":\"abc-123\", \"_rev\":\"1-xxx\", \"val\":\"one\" }");
+		assertDbContent("medic",
+				"abc-123", "1-xxx", "{ \"_id\":\"abc-123\", \"_rev\":\"1-xxx\", \"val\":\"one\" }");
 
 		// when
 		JSONObject response = target.get("/abc-123", queryParams());
@@ -432,14 +462,21 @@ public class CouchReplicationTargetTest {
 	}
 
 //> HELPERS
-	private void assertDbContent(String... args) throws JSONException {
+	private void assertDbContent(String dbName, Object... args) throws JSONException {
 		Object[] expectedContent = new Object[args.length];
 		for(int i=0; i<args.length; i+=3) {
 			expectedContent[i] = args[i];
 			expectedContent[i+1] = args[i+1];
-			expectedContent[i+2] = new JSONObject(args[i+2]).toString();
+
+			Object jsonContent = args[i+2];
+			if(jsonContent instanceof String) {
+				// Convert to JSON and back to ensure consistent ordering
+				expectedContent[i+2] = new JSONObject((String) jsonContent).toString();
+			} else if(jsonContent instanceof Pattern) {
+				expectedContent[i+2] = jsonContent;
+			} else throw new RuntimeException("Don't know how to match object of class " + jsonContent.getClass());
 		}
-		db.assertTable("medic", expectedContent);
+		db.assertTable(dbName, expectedContent);
 	}
 
 	private static JSONObject json(Object... args) throws JSONException {

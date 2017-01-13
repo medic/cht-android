@@ -8,6 +8,7 @@ import android.webkit.WebResourceResponse;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -76,7 +77,42 @@ class CouchReplicationTarget {
 		throw new RuntimeException("Not yet implemented.");
 	}
 
+	public JSONObject put(String requestPath, JSONObject requestBody) throws CouchReplicationTargetException {
+		return put(requestPath, NO_QUERY_PARAMS, requestBody);
+	}
+
+	public JSONObject put(String requestPath, Map<String, List<String>> queryParams, JSONObject requestBody) throws CouchReplicationTargetException {
+		try {
+			if(matches(requestPath, "/_local")) {
+				return _local_PUT(requestPath, requestBody);
+			}
+		} catch(Exception ex) {
+			throw new RuntimeException(ex);
+		}
+
+		if(requestPath.startsWith("/_")) {
+			throw new UnsupportedInternalPathException(requestPath);
+		}
+		throw new RuntimeException("Not yet implemented.");
+	}
+
 //> SPECIFIC REQUEST HANDLERS
+	private JSONObject _local_PUT(String requestPath, JSONObject doc) throws IllegalDocException, JSONException {
+		String docId = requestPath.substring(1);
+
+		String internalDocId = docId.split("/")[1];
+
+		String docRev = "1-" + Math.abs(new Random().nextInt());
+
+		doc.put("_id", docId);
+		doc.put("_rev", docRev);
+		db.store_local(doc);
+
+		return JSON.obj("ok", true,
+				"id", docId,
+				"rev", docRev);
+	}
+
 	private JSONObject _revs_diff(JSONObject requestBody) throws JSONException {
 		JSONObject response = new JSONObject();
 
