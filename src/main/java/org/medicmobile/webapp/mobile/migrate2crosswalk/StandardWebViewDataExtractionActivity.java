@@ -32,6 +32,7 @@ public class StandardWebViewDataExtractionActivity extends Activity {
 	private WebView container;
 	private SettingsStore settings;
 	private FakeCouch fakeCouch;
+	private boolean allowServerComms;
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -68,6 +69,10 @@ public class StandardWebViewDataExtractionActivity extends Activity {
 		}
 
 		// TODO disableUserInteraction();
+
+		allowServerComms = false; //true; // TODO we need this for first run when debugging, so we
+		// actually have some data to debug.  After that, this option can likely be removed
+		// permanently.
 
 		fakeCouch = new FakeCouch(settings);
 		fakeCouch.start(this);
@@ -119,6 +124,11 @@ public class StandardWebViewDataExtractionActivity extends Activity {
 		});
 	}
 
+//> JAVASCRIPT BINDINGS
+	void disableServerComms() { this.allowServerComms = false; }
+	void enableServerComms() { this.allowServerComms = true; }
+
+//> INTERNAL HELPERS
 	private void browseToRoot() {
 		String url = settings.getAppUrl() + (DISABLE_APP_URL_VALIDATION ?
 				"" : "/medic/_design/medic/_rewrite/");
@@ -160,6 +170,10 @@ public class StandardWebViewDataExtractionActivity extends Activity {
 	private void enableJavascript(WebView container) {
 		container.getSettings().setJavaScriptEnabled(true);
 
+		WebViewDataExtractionJavascriptBinding wvDataExtractionJs =
+				new WebViewDataExtractionJavascriptBinding(this);
+		container.addJavascriptInterface(wvDataExtractionJs, "medicmobile_webview_data_extraction");
+
 		//MedicAndroidJavascript maj = new MedicAndroidJavascript(this);
 		//maj.setAlert(new Alert(this));
 
@@ -194,6 +208,8 @@ public class StandardWebViewDataExtractionActivity extends Activity {
 
 			public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
 				//trace("shouldInterceptRequest():: [%s] %s", request.getMethod(), request.getUrl());
+				if(allowServerComms) return null;
+
 				Uri url = request.getUrl();
 				if(url == null) return null;
 

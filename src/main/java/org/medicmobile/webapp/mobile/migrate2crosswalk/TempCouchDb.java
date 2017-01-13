@@ -11,6 +11,7 @@ import java.util.regex.Pattern;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+import org.medicmobile.webapp.mobile.MedicLog;
 
 class TempCouchDb extends SQLiteOpenHelper {
 	private static final int VERSION = 1;
@@ -93,6 +94,7 @@ class TempCouchDb extends SQLiteOpenHelper {
 	}
 
 	void store(JSONObject doc) throws IllegalDocException, JSONException {
+		trace("store", "doc=%s", doc);
 		String docId = doc.getString("_id");
 		if(docId.length() == 0) throw new IllegalDocException(doc);
 
@@ -159,6 +161,10 @@ class TempCouchDb extends SQLiteOpenHelper {
 		assert parts.length == 2: "Rev should be split into 2 parts exactly!";
 
 		return Integer.parseInt(parts[0]);
+	}
+
+	private void trace(String methodName, String message, Object... args) {
+		MedicLog.trace(this, methodName + "(): " + message, args);
 	}
 }
 
