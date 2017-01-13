@@ -7,6 +7,8 @@ import fi.iki.elonen.NanoHTTPD;
 import static fi.iki.elonen.NanoHTTPD.Response.Status;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.IOException;
@@ -43,11 +45,12 @@ class FakeCouch {
 	public void start(Context ctx) {
 		// TODO something with threads?
 		// TODO worry about finding a free port?
-		trace("Starting server...");
+		trace("start", "Starting server...");
+		//System.setProperty("http.keepAlive", "false");
 		try {
 			server = new FakeCouchDaemon(ctx, 8000, appHost);
 			server.start(NanoHTTPD.SOCKET_READ_TIMEOUT, false);
-			trace("Server started.");
+			trace("start", "Server started.");
 		} catch(Exception ex) {
 			// TODO perhaps this should be more than a warning!
 			MedicLog.warn(ex, "Failed to start server.");
@@ -59,12 +62,14 @@ class FakeCouch {
 		server = null;
 	}
 
-	private void trace(String message, String... extras) {
-		MedicLog.trace(this, message, extras);
+	private void trace(String method, String message, String... extras) {
+		MedicLog.trace(this, method + "(): " + message, extras);
 	}
 }
 
 class FakeCouchDaemon extends NanoHTTPD {
+	private static final String MIME_JSON = "application/json";
+
 	private final CouchReplicationTarget couch;
 	private final String appHost;
 
@@ -86,6 +91,8 @@ class FakeCouchDaemon extends NanoHTTPD {
 			requestPath = getRequestPath(session);
 			queryParams = getQueryParams(session);
 
+			trace("serve", "Handling request to path: %s", requestPath);
+
 			switch(session.getMethod()) {
 				case OPTIONS:
 					responseBody = "";
@@ -98,46 +105,66 @@ class FakeCouchDaemon extends NanoHTTPD {
 				case GET:
 					responseBody = couch.get(requestPath, queryParams);
 					responseStatus = OK;
-					MedicLog.log("GET handled.  responseBody=%s", responseBody);
 					break;
 				case POST:
 					JSONObject requestBody = getBody(session);
-					MedicLog.log("POST body read.  requestBody=%s", requestBody);
 					responseBody = couch.post(requestPath, queryParams, requestBody);
-					MedicLog.log("POST handled.  responseBody=%s", responseBody);
 					responseStatus = OK;
 					break;
 				default:
-					responseBody = new JSONObject()
-							.put("error", "unsupported_method")
-							.put("reason", "Unsupported method: " + session.getMethod());
 					responseStatus = METHOD_NOT_ALLOWED;
+					responseBody = error("unsupported_method",
+							"Unsupported method: " + session.getMethod());
 			}
 		} catch(DocNotFoundException ex) {
 			responseStatus = NOT_FOUND;
-			responseBody = "{\"error\":\"not_found\",\"reason\":\"missing\"}";
+			responseBody = error("not_found", "missing");
 		} catch(Exception ex) {
 			responseStatus = INTERNAL_ERROR;
-			try {
-				responseBody = new JSONObject()
-						.put("error", "error")
-						.put("reason", "Exception when trying to handle request: " + ex);
-			} catch(Exception _) {
-				// TODO log this
-				responseBody = "{ \"error\":\"error\", \"reason\":\"unknown\" }";
-			}
+			responseBody = error("error", "Exception when trying to handle request: %s", ex);
 		}
 
-		// TODO link up to the CouchReplicationTarget
-		Response response = newFixedLengthResponse(responseBody.toString());
-		response.setStatus(responseStatus);
-		response.addHeader("Access-Control-Allow-Credentials", "true");
-		response.addHeader("Access-Control-Allow-Headers", "Content-Type");
-		response.addHeader("Access-Control-Allow-Origin", appHost);
+		byte[] responseBodyBytes = responseBodyBytes(responseBody);
+		Response response = newFixedLengthResponse(responseStatus, MIME_JSON,
+				new ByteArrayInputStream(responseBodyBytes), responseBodyBytes.length);
+
+		addStandardHeadersTo(response);
+		addAdditionalHeaders(response, additionalHeaders);
+
+		return response;
+	}
+
+	private String error(String error, String reason, Object... args) {
+		try {
+			return new JSONObject()
+					.put("error", "error")
+					.put("reason", String.format(reason, args))
+					.toString();
+		} catch(JSONException ex) {
+			return "{ \"error\":\"error\", \"reason\":\"unknown\" }";
+		}
+	}
+
+	private void addAdditionalHeaders(Response response, Map<String, String> additionalHeaders) {
 		for(Map.Entry<String, String> header : additionalHeaders.entrySet()) {
 			response.addHeader(header.getKey(), header.getValue());
 		}
-		return response;
+	}
+
+	private void addStandardHeadersTo(Response response) {
+		response.addHeader("Access-Control-Allow-Credentials", "true");
+		response.addHeader("Access-Control-Allow-Headers", "Content-Type");
+		response.addHeader("Access-Control-Allow-Origin", appHost);
+	}
+
+	private byte[] responseBodyBytes(Object responseBody) {
+		try {
+			// TODO maybe we should be supporting other charsets
+			return responseBody.toString().getBytes("UTF-8");
+		} catch(Exception ex) {
+			// Everyone supports UTF-8!
+			throw new RuntimeException(ex);
+		}
 	}
 
 	private static String getRequestPath(IHTTPSession session) {
@@ -155,28 +182,44 @@ class FakeCouchDaemon extends NanoHTTPD {
 		return session.getParameters();
 	}
 
+	/**
+	 * @throws RuntimeException if {@code Content-Length} header is not set or not an integer
+	 * @throws java.net.SocketTimeoutException if content is less than Content-Length
+	 */
 	private JSONObject getBody(IHTTPSession session) throws IOException, JSONException {
-		InputStream inputStream = session.getInputStream();
-		try {
-			BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"), 8); // TODO check what the default encoding for couch is, check if the encoding in use is sent in a request header, etc.
-			StringBuilder bob = new StringBuilder();
+		trace("getBody", "ENTRY");
 
-			String line = null;
-			while((line = reader.readLine()) != null) {
-				bob.append(line + "\n");
-			}
-			String jsonString = bob.toString();
-			return new JSONObject(jsonString);
-		} finally {
-			if(inputStream != null) try {
-				inputStream.close();
-			} catch(Exception ex) {
-				// TODO log it!
-			}
+		InputStream inputStream = session.getInputStream();
+
+		int contentLength = Integer.parseInt(session.getHeaders().get("content-length"));
+
+		ByteArrayOutputStream buffer = readFully(inputStream, contentLength);
+
+		trace("getBody", "Read complete.");
+
+		String jsonString = buffer.toString("UTF-8"); // should probably get the encoding from request headers
+		trace("getBody", "Buffer content: %s", jsonString);
+		return new JSONObject(jsonString);
+
+		// N.B. do NOT close InputStream here under any circumstances -
+		// it will be managed by underlying NanoHTTPD.
+	}
+
+	private ByteArrayOutputStream readFully(InputStream inputStream, int contentLength) throws IOException {
+		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+		int r, readCount = 0;
+		while((readCount++ < contentLength) && ((r = inputStream.read()) != -1)) {
+			trace("readFully", "Read byte: %s [%s/%s]", ((char) r), readCount, contentLength);
+			buffer.write(r);
 		}
+		return buffer;
 	}
 
 	private JSONObject asJson(String jsonString) throws JSONException {
 		return (JSONObject) new JSONTokener(jsonString).nextValue();
+	}
+
+	private void trace(String methodName, String message, Object... args) {
+		MedicLog.trace(this, methodName + "(): " + message, args);
 	}
 }

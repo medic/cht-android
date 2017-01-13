@@ -151,8 +151,8 @@ class CouchReplicationTarget {
 				requestPath.startsWith(dir + "/");
 	}
 
-	private void trace(String message, Object... extras) {
-		MedicLog.trace(this, message, extras);
+	private void trace(String method, String message, Object... extras) {
+		MedicLog.trace(this, method + "(): " + message, extras);
 	}
 }
 

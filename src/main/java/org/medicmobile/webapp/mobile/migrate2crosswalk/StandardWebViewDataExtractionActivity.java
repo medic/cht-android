@@ -70,6 +70,7 @@ public class StandardWebViewDataExtractionActivity extends Activity {
 		// TODO disableUserInteraction();
 
 		fakeCouch = new FakeCouch(settings);
+		fakeCouch.start(this);
 
 		final ProgressDialog progress = showProgressDialog(this, "Doing important things…");
 
@@ -96,13 +97,8 @@ public class StandardWebViewDataExtractionActivity extends Activity {
 		}.execute();
 	}
 
-	@Override public void onStart() {
-		super.onStart();
-		fakeCouch.start(this);
-	}
-
-	@Override public void onStop() {
-		super.onStop();
+	@Override public void onDestroy() {
+		super.onDestroy();
 		fakeCouch.stop();
 	}
 
@@ -197,21 +193,21 @@ public class StandardWebViewDataExtractionActivity extends Activity {
 			}
 
 			public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
-				trace("shouldInterceptRequest():: [%s] %s", request.getMethod(), request.getUrl());
+				//trace("shouldInterceptRequest():: [%s] %s", request.getMethod(), request.getUrl());
 				Uri url = request.getUrl();
 				if(url == null) return null;
 
 				String host = url.getHost();
 				if(host == null) return null;
 
-				String configuredHost = Uri.parse(SettingsStore.in(StandardWebViewDataExtractionActivity.this).getAppUrl()).getHost();
+				String configuredHost = Uri.parse(settings.getAppUrl()).getHost();
 
-				trace("shouldInterceptRequest() :: comparing hosts: %s <-> %s", host, configuredHost);
+				//trace("shouldInterceptRequest() :: comparing hosts: %s <-> %s", host, configuredHost);
 
 				// TODO safer just to block anything non-localhost?
 				if(host.equals(configuredHost)) {
 					// TODO don't let them talk to couch!
-					trace("shouldInterceptRequest() :: looks like we should block %s", request.getUrl());
+					//trace("shouldInterceptRequest() :: looks like we should block %s", request.getUrl());
 					Map<String, String> headers = Collections.emptyMap();
 					return new WebResourceResponse("text", "utf8", 503,
 							"Server blocked.  Local db replication will begin shortly.",
