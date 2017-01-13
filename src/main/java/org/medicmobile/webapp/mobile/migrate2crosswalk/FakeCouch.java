@@ -211,7 +211,6 @@ class FakeCouchDaemon extends NanoHTTPD {
 		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 		int r, readCount = 0;
 		while((readCount++ < contentLength) && ((r = inputStream.read()) != -1)) {
-			trace("readFully", "Read byte: %s [%s/%s]", ((char) r), readCount, contentLength);
 			buffer.write(r);
 		}
 		return buffer;
