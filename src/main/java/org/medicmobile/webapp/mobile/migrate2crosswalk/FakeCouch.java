@@ -69,6 +69,7 @@ class FakeCouch {
 
 class FakeCouchDaemon extends NanoHTTPD {
 	private static final String MIME_JSON = "application/json";
+	private static final String ALLOWED_METHODS = "OPTIONS,GET,POST,PUT";
 
 	private final CouchReplicationTarget couch;
 	private final String appHost;
@@ -100,7 +101,7 @@ class FakeCouchDaemon extends NanoHTTPD {
 					// TODO in theory this should be responding differently
 					// depending on the path.  This hould be good enough for
 					// now, though.
-					additionalHeaders.put("Allow", "OPTIONS,GET,POST");
+					additionalHeaders.put("Allow", ALLOWED_METHODS);
 					break;
 				case GET:
 					responseBody = couch.get(requestPath, queryParams);
@@ -154,6 +155,7 @@ class FakeCouchDaemon extends NanoHTTPD {
 	private void addStandardHeadersTo(Response response) {
 		response.addHeader("Access-Control-Allow-Credentials", "true");
 		response.addHeader("Access-Control-Allow-Headers", "Content-Type");
+		response.addHeader("Access-Control-Allow-Methods", ALLOWED_METHODS);
 		response.addHeader("Access-Control-Allow-Origin", appHost);
 	}
 
