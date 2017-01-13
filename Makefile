@@ -9,7 +9,7 @@ ifdef ComSpec	 # Windows
   GRADLEW := $(subst /,\,${GRADLEW})
 endif
 
-default: deploy-unbranded android-logs
+default: deploy-unbranded forward-fake-couch-port android-logs
 branded: clean-apks assemble-all deploy-all android-logs
 branded-debug: clean-apks assemble-all-debug deploy-all android-logs
 clean: clean-apks
@@ -23,6 +23,9 @@ android-logs:
 
 deploy-unbranded:
 	${GRADLEW} --daemon --parallel installUnbrandedDebug
+
+forward-fake-couch-port:
+	adb forward tcp:8000 tcp:8000
 
 kill:
 	pkill -9 emulator64-arm
