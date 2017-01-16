@@ -10,6 +10,7 @@ import android.util.*;
 import android.view.*;
 import android.view.inputmethod.*;
 import android.webkit.*;
+import android.webkit.CookieManager;
 import android.widget.*;
 
 import java.io.ByteArrayInputStream;
@@ -37,7 +38,7 @@ public class StandardWebViewDataExtractionActivity extends Activity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		trace("Starting old webview...");
+		trace("onCreate", "Starting old webview...");
 
 		this.settings = SettingsStore.in(this);
 
@@ -127,17 +128,25 @@ public class StandardWebViewDataExtractionActivity extends Activity {
 	void enableServerComms() { this.allowServerComms = true; }
 
 	void replicationComplete() {
-		startActivity(new Intent(
+		String url = settings.getAppUrl();
+		String cookies = CookieManager.getInstance().getCookie(url);
+		trace("replicationComplete", "Got cookies for %s: %s", url, cookies);
+
+		Intent xwalkStarter = new Intent(
 				StandardWebViewDataExtractionActivity.this,
-				EmbeddedBrowserActivity.class));
-		StandardWebViewDataExtractionActivity.this.finish();
+				EmbeddedBrowserActivity.class);
+		xwalkStarter.putExtra(EmbeddedBrowserActivity.EXTRA_COOKIES, cookies);
+		startActivity(xwalkStarter);
+
+		this.finish();
+		// TODO this doesn't actually appear to destroy the webview - still visible in the chrome tools thingy
 	}
 
 //> INTERNAL HELPERS
 	private void browseToRoot() {
 		String url = settings.getAppUrl() + (DISABLE_APP_URL_VALIDATION ?
 				"" : "/medic/_design/medic/_rewrite/");
-		if(DEBUG) trace("Pointing browser to %s", url);
+		if(DEBUG) trace("browseToRoot", "Pointing browser to %s", url);
 		container.loadUrl(url);
 	}
 
@@ -164,9 +173,9 @@ public class StandardWebViewDataExtractionActivity extends Activity {
 				// TODO this should be restricted to the domain
 				// set in Settings - issue #1603
 				StandardWebViewDataExtractionActivity.this.trace(
-						"onGeolocationPermissionsShowPrompt() :: origin=%s, callback=%s",
-						origin,
-						callback);
+						"onGeolocationPermissionsShowPrompt",
+						"origin=%s, callback=%s",
+						origin, callback);
 				callback.invoke(origin, true, true);
 			}
 		});
@@ -212,7 +221,7 @@ public class StandardWebViewDataExtractionActivity extends Activity {
 			}
 
 			public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
-				//trace("shouldInterceptRequest():: [%s] %s", request.getMethod(), request.getUrl());
+				//trace("shouldInterceptRequest", "[%s] %s", request.getMethod(), request.getUrl());
 				if(allowServerComms) return null;
 
 				Uri url = request.getUrl();
@@ -223,12 +232,12 @@ public class StandardWebViewDataExtractionActivity extends Activity {
 
 				String configuredHost = Uri.parse(settings.getAppUrl()).getHost();
 
-				//trace("shouldInterceptRequest() :: comparing hosts: %s <-> %s", host, configuredHost);
+				//trace("shouldInterceptRequest", "comparing hosts: %s <-> %s", host, configuredHost);
 
 				// TODO safer just to block anything non-localhost?
 				if(host.equals(configuredHost)) {
 					// TODO don't let them talk to couch!
-					//trace("shouldInterceptRequest() :: looks like we should block %s", request.getUrl());
+					//trace("shouldInterceptRequest", "looks like we should block %s", request.getUrl());
 					Map<String, String> headers = Collections.emptyMap();
 					return new WebResourceResponse("text", "utf8", 503,
 							"Server blocked.  Local db replication will begin shortly.",
@@ -249,7 +258,7 @@ public class StandardWebViewDataExtractionActivity extends Activity {
 		Toast.makeText(container.getContext(), message, Toast.LENGTH_LONG).show();
 	}
 
-	private void trace(String message, Object...extras) {
-		MedicLog.trace(this, message, extras);
+	private void trace(String method, String message, Object...extras) {
+		MedicLog.trace(this, method + "() :: " + message, extras);
 	}
 }

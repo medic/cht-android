@@ -25,7 +25,7 @@ import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 public class MedicAndroidJavascript {
 	private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
 
-	private final Context parent;
+	private final EmbeddedBrowserActivity parent; // TODO should be able to change this back to Context once the migration stuff is removed
 
 	private LocationManager locationManager;
 	private Alert soundAlert;
@@ -124,6 +124,14 @@ public class MedicAndroidJavascript {
 		}
 	}
 
+//> TODO these are migration-only JS hooks, so should be in a class of their own
+	@org.xwalk.core.JavascriptInterface
+	@android.webkit.JavascriptInterface
+	public void setCookies() {
+		parent.setCookies();
+	}
+
+//> PRIVATE HELPERS
 	private void datePicker(String targetElement, Calendar initialDate) {
 		// Remove single-quotes from the `targetElement` CSS selecter, as
 		// we'll be using these to enclose the entire string in JS.  We

@@ -24,6 +24,8 @@ import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static org.medicmobile.webapp.mobile.BuildConfig.DISABLE_APP_URL_VALIDATION;
 
 public class EmbeddedBrowserActivity extends Activity implements MedicJsEvaluator {
+	public static final String EXTRA_COOKIES = "medic.cookies";
+
 	private static final ValueCallback<String> IGNORE_RESULT = new ValueCallback<String>() {
 		public void onReceiveValue(String result) {}
 	};
@@ -38,6 +40,7 @@ public class EmbeddedBrowserActivity extends Activity implements MedicJsEvaluato
 
 	private XWalkView container;
 	private SettingsStore settings;
+	private String cookies;
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -57,6 +60,11 @@ public class EmbeddedBrowserActivity extends Activity implements MedicJsEvaluato
 		}
 
 		container = (XWalkView) findViewById(R.id.wbvMain);
+
+		// TODO get the cookies from the intent, and inject them into
+		// the webview
+		String cookies = getIntent().getStringExtra(EXTRA_COOKIES);
+		this.cookies = cookies;
 
 		if(DEBUG) enableWebviewLoggingAndGeolocation(container);
 		enableRemoteChromeDebugging(container);
@@ -125,6 +133,19 @@ public class EmbeddedBrowserActivity extends Activity implements MedicJsEvaluato
 		});
 	}
 
+//> MIGRATION-SPECIFIC METHODS
+	void setCookies() {
+		StringBuilder jsBuilder = new StringBuilder();
+		for(String cookie : cookies.split(";")) {
+			jsBuilder.append(String.format("document.cookie='%s'; ", cookie));
+		}
+
+		jsBuilder.append("window.location.reload()");
+
+		evaluateJavascript(jsBuilder.toString());
+	}
+
+//> PRIVATE HELPERS
 	private void openSettings() {
 		Intent i = new Intent(this, SettingsDialogActivity.class);
 		i.putExtra(SettingsDialogActivity.EXTRA_RETURN_TO, EmbeddedBrowserActivity.class);
@@ -208,6 +229,10 @@ public class EmbeddedBrowserActivity extends Activity implements MedicJsEvaluato
 
 	private void toast(String message) {
 		Toast.makeText(container.getContext(), message, Toast.LENGTH_LONG).show();
+	}
+
+	private void trace(String methodName, String message, Object...extras) {
+		MedicLog.trace(this, methodName + "() :: " + message, extras);
 	}
 
 	private void log(String message, Object...extras) {
