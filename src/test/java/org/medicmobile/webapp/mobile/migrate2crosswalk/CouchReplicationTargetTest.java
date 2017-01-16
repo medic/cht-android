@@ -94,7 +94,7 @@ public class CouchReplicationTargetTest {
 
 //> _local
 	@Test
-	public void _local_GET_shouldThrowDocNotFoundException() throws Exception {
+	public void _local_GET_shouldThrowDocNotFoundException_ifDocDoesNotExist() throws Exception {
 		// when
 		try {
 			target.get("/_local/some-random-doc-id");
@@ -126,6 +126,23 @@ public class CouchReplicationTargetTest {
 		assertDbContent("medic");
 		assertDbContent("local",
 				"_local/some-id", ANY_REV, ANY_JSON);
+	}
+
+	@Test
+	public void _local_GET_shouldReturnDoc_ifDocExists() throws Exception {
+		// given
+		target.put("/_local/some-id", json(
+				"val", "one"));
+		assertDbContent("local",
+				"_local/some-id", ANY_REV, ANY_JSON);
+
+		// when
+		JsonEntity response = target.get("/_local/some-id");
+
+		// then
+		assertJson(response, json("_id", "_local/some-id",
+				"_rev", ANY_REV,
+				"val", "one"));
 	}
 
 //> _revs_diff
@@ -533,12 +550,57 @@ public class CouchReplicationTargetTest {
 		return new JSONArray();
 	}
 
-	private static void assertJson(JsonEntity actual, JSONArray expected) {
-		assertEquals(expected.toString(), actual.toString());
+	private static void assertJson(JsonEntity actual, JSONArray expected) throws JSONException {
+		assertJson(actual.asArray(), expected);
 	}
 
-	private static void assertJson(JsonEntity actual, JSONObject expected) {
-		assertEquals(expected.toString(), actual.toString());
+	private static void assertJson(JSONArray actual, JSONArray expected) throws JSONException {
+		if(actual == null && expected == null) return;
+
+		String failMessage = String.format("Expected arrays are not equal: %s vs. %s", expected.toString(), actual.toString());
+
+		assertEquals(failMessage, expected.length(), actual.length());
+		for(int i=0; i<actual.length(); ++i) {
+			aEq(expected.get(i), expected.get(i), failMessage);
+		}
+	}
+
+	private static void assertJson(JsonEntity actual, JSONObject expected) throws JSONException {
+		assertJson(actual.asObject(), expected);
+	}
+
+	private static void assertJson(JSONObject actual, JSONObject expected) throws JSONException {
+		String failMessage = String.format("Expected JSON objects are not equal: %s vs %s", expected.toString(), actual.toString());
+
+		assertJson(actual.names(), expected.names());
+
+		Iterator<String> keys = expected.keys();
+		while(keys.hasNext()) {
+			String key = keys.next();
+			aEq(expected.get(key), actual.get(key), failMessage);
+		}
+	}
+
+	private static void aEq(Object e, Object a, String failMessage) throws JSONException {
+		if(e instanceof Pattern && a instanceof String) {
+			assertTrue(((Pattern) e).matcher((String) a).matches());
+			return;
+		}
+
+		if(!a.getClass().equals(e.getClass()))
+			fail(String.format("Objects are of different class: %s vs %s (%s)", e.getClass(), a.getClass(), failMessage));
+
+		if(e instanceof JSONObject) {
+			assertJson((JSONObject) a, (JSONObject) e);
+		} else if(e instanceof JSONArray) {
+			assertEquals(failMessage, (JSONArray) a, (JSONArray) e);
+		} else if(e instanceof String) {
+			assertEquals(failMessage, (String) a, (String) e);
+		} else if(e instanceof Integer) {
+			assertEquals(failMessage, (int) a, (int) a);
+		} else if(e instanceof Boolean) {
+			assertEquals(failMessage, (boolean) a, (boolean) a);
+		} else fail(String.format("Don't know how to compare objects of type %s & %s.", e.getClass(), a.getClass()));
 	}
 
 	private static Map<String, List<String>> queryParams(String... params) {

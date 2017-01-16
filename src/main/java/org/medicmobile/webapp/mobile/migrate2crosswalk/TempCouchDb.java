@@ -77,9 +77,17 @@ class TempCouchDb extends SQLiteOpenHelper {
 	}
 
 	JSONObject get(String docId) throws JSONException {
+		return get(tblMEDIC, docId);
+	}
+
+	JSONObject get_local(String docId) throws JSONException {
+		return get(tblLOCAL, docId);
+	}
+
+	private JSONObject get(String tableName, String docId) throws JSONException {
 		Cursor c = null;
 		try {
-			c = db.query(tblMEDIC,
+			c = db.query(tableName,
 					cols(clmJSON),
 					"_id=?", cols(docId),
 					NO_GROUP, NO_GROUP,
@@ -106,7 +114,7 @@ class TempCouchDb extends SQLiteOpenHelper {
 		store(tblLOCAL, doc);
 	}
 
-	private void store(String dbName, JSONObject doc) throws IllegalDocException, JSONException {
+	private void store(String tableName, JSONObject doc) throws IllegalDocException, JSONException {
 		trace("store", "doc=%s", doc);
 		String docId = doc.getString("_id");
 		if(docId.length() == 0) throw new IllegalDocException(doc);
@@ -116,7 +124,7 @@ class TempCouchDb extends SQLiteOpenHelper {
 
 		Cursor c = null;
 		try {
-			c = db.query(dbName,
+			c = db.query(tableName,
 					cols(clmJSON),
 					"_id=?", cols(docId),
 					NO_GROUP, NO_GROUP,
@@ -131,10 +139,10 @@ class TempCouchDb extends SQLiteOpenHelper {
 				String oldRev = oldDoc.getString("_rev");
 
 				if(getRevNumber(newRev) > getRevNumber(oldRev)) {
-					db.update(dbName, forUpdate(doc), "_id=?", cols(docId));
+					db.update(tableName, forUpdate(doc), "_id=?", cols(docId));
 				} // else ignore the old version
 			} else {
-				db.insert(dbName, null, forInsert(docId, doc));
+				db.insert(tableName, null, forInsert(docId, doc));
 			}
 		} finally {
 			if(c != null) try { c.close(); } catch(Exception ex) {}

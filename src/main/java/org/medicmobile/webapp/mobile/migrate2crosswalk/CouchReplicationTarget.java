@@ -38,7 +38,7 @@ class CouchReplicationTarget {
 			if("/".equals(requestPath)) {
 				return JsonEntity.of(getDbDetails());
 			} else if(matches(requestPath, "/_local")) {
-				throw new DocNotFoundException(requestPath);
+				return JsonEntity.of(_local_GET(requestPath));
 			} else if(matches(requestPath, "/_changes")) {
 				return JsonEntity.of(
 						JSON.obj("results", JSON.array(),
@@ -98,6 +98,13 @@ class CouchReplicationTarget {
 	}
 
 //> SPECIFIC REQUEST HANDLERS
+	private JSONObject _local_GET(String requestPath) throws DocNotFoundException, JSONException {
+		String id = Uri.parse(requestPath).getPath().substring(1);
+		JSONObject doc = db.get_local(id);
+		if(doc == null) throw new DocNotFoundException(id);
+		return doc;
+	}
+
 	private JsonEntity _local_PUT(String requestPath, JSONObject doc) throws IllegalDocException, JSONException {
 		String docId = requestPath.substring(1);
 
@@ -244,5 +251,7 @@ class JsonEntity {
 	private JsonEntity(Object entity) { this.entity = entity; }
 	static JsonEntity of(JSONObject obj) { return new JsonEntity(obj); }
 	static JsonEntity of(JSONArray arr) { return new JsonEntity(arr); }
+	public JSONArray asArray() { return (JSONArray) entity; }
+	public JSONObject asObject() { return (JSONObject) entity; }
 	public String toString() { return entity.toString(); }
 }
