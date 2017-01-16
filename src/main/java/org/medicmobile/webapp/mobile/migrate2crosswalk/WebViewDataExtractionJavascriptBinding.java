@@ -16,4 +16,9 @@ public class WebViewDataExtractionJavascriptBinding {
 	public void enableServerComms() {
 		webView.enableServerComms();
 	}
+
+	@android.webkit.JavascriptInterface
+	public void replicationComplete() {
+		webView.replicationComplete();
+	}
 }

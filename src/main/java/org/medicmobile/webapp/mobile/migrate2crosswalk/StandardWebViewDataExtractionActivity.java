@@ -77,6 +77,7 @@ public class StandardWebViewDataExtractionActivity extends Activity {
 		fakeCouch = new FakeCouch(settings);
 		fakeCouch.start(this);
 
+/*
 		final ProgressDialog progress = showProgressDialog(this, "Doing important things…");
 
 		new AsyncTask<Void, Void, Void>() {
@@ -94,12 +95,9 @@ public class StandardWebViewDataExtractionActivity extends Activity {
 				progress.dismiss();
 				// TODO implement the following once the migration is handled above
 				if(true) return;
-				startActivity(new Intent(
-						StandardWebViewDataExtractionActivity.this,
-						EmbeddedBrowserActivity.class));
-				StandardWebViewDataExtractionActivity.this.finish();
 			}
 		}.execute();
+		*/
 	}
 
 	@Override public void onDestroy() {
@@ -127,6 +125,13 @@ public class StandardWebViewDataExtractionActivity extends Activity {
 //> JAVASCRIPT BINDINGS
 	void disableServerComms() { this.allowServerComms = false; }
 	void enableServerComms() { this.allowServerComms = true; }
+
+	void replicationComplete() {
+		startActivity(new Intent(
+				StandardWebViewDataExtractionActivity.this,
+				EmbeddedBrowserActivity.class));
+		StandardWebViewDataExtractionActivity.this.finish();
+	}
 
 //> INTERNAL HELPERS
 	private void browseToRoot() {
