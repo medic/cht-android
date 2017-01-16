@@ -27,6 +27,9 @@ deploy-unbranded:
 forward-fake-couch-port:
 	adb forward tcp:8000 tcp:8000
 
+test:
+	${GRADLEW} clean testUnbrandedDebug
+
 kill:
 	pkill -9 emulator64-arm
 
