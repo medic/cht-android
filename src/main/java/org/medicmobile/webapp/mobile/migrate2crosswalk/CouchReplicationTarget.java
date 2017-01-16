@@ -29,36 +29,37 @@ class CouchReplicationTarget {
 	}
 
 //> JSON handlers
-	public JSONObject get(String requestPath) throws CouchReplicationTargetException {
+	public JsonEntity get(String requestPath) throws CouchReplicationTargetException {
 		return get(requestPath, NO_QUERY_PARAMS);
 	}
 
-	public JSONObject get(String requestPath, Map<String, List<String>> queryParams) throws CouchReplicationTargetException {
+	public JsonEntity get(String requestPath, Map<String, List<String>> queryParams) throws CouchReplicationTargetException {
 		try {
 			if("/".equals(requestPath)) {
-				return getDbDetails();
+				return JsonEntity.of(getDbDetails());
 			} else if(matches(requestPath, "/_local")) {
 				throw new DocNotFoundException(requestPath);
 			} else if(matches(requestPath, "/_changes")) {
-				return JSON.obj("results", JSON.array(),
-						"last_seq", 0);
+				return JsonEntity.of(
+						JSON.obj("results", JSON.array(),
+								"last_seq", 0));
 			}
 
 			if(requestPath.startsWith("/_")) {
 				throw new UnsupportedInternalPathException(requestPath);
 			}
 
-			return getDoc(requestPath);
+			return JsonEntity.of(getDoc(requestPath));
 		} catch(JSONException ex) {
 			throw new RuntimeException(ex);
 		}
 	}
 
-	public JSONObject post(String requestPath, JSONObject requestBody) throws CouchReplicationTargetException {
+	public JsonEntity post(String requestPath, JSONObject requestBody) throws CouchReplicationTargetException {
 		return post(requestPath, NO_QUERY_PARAMS, requestBody);
 	}
 
-	public JSONObject post(String requestPath, Map<String, List<String>> queryParams, JSONObject requestBody) throws CouchReplicationTargetException {
+	public JsonEntity post(String requestPath, Map<String, List<String>> queryParams, JSONObject requestBody) throws CouchReplicationTargetException {
 		try {
 			if(matches(requestPath, "/_local")) {
 				throw new UnimplementedEndpointException();
@@ -77,11 +78,11 @@ class CouchReplicationTarget {
 		throw new RuntimeException("Not yet implemented.");
 	}
 
-	public JSONObject put(String requestPath, JSONObject requestBody) throws CouchReplicationTargetException {
+	public JsonEntity put(String requestPath, JSONObject requestBody) throws CouchReplicationTargetException {
 		return put(requestPath, NO_QUERY_PARAMS, requestBody);
 	}
 
-	public JSONObject put(String requestPath, Map<String, List<String>> queryParams, JSONObject requestBody) throws CouchReplicationTargetException {
+	public JsonEntity put(String requestPath, Map<String, List<String>> queryParams, JSONObject requestBody) throws CouchReplicationTargetException {
 		try {
 			if(matches(requestPath, "/_local")) {
 				return _local_PUT(requestPath, requestBody);
@@ -97,7 +98,7 @@ class CouchReplicationTarget {
 	}
 
 //> SPECIFIC REQUEST HANDLERS
-	private JSONObject _local_PUT(String requestPath, JSONObject doc) throws IllegalDocException, JSONException {
+	private JsonEntity _local_PUT(String requestPath, JSONObject doc) throws IllegalDocException, JSONException {
 		String docId = requestPath.substring(1);
 
 		String internalDocId = docId.split("/")[1];
@@ -108,12 +109,13 @@ class CouchReplicationTarget {
 		doc.put("_rev", docRev);
 		db.store_local(doc);
 
-		return JSON.obj("ok", true,
+		return JsonEntity.of(JSON.obj(
+				"ok", true,
 				"id", docId,
-				"rev", docRev);
+				"rev", docRev));
 	}
 
-	private JSONObject _revs_diff(JSONObject requestBody) throws JSONException {
+	private JsonEntity _revs_diff(JSONObject requestBody) throws JSONException {
 		JSONObject response = new JSONObject();
 
 		Iterator<String> docIds = requestBody.keys();
@@ -130,19 +132,25 @@ class CouchReplicationTarget {
 				response.put(docId, new JSONObject().put("missing", missing));
 			}
 		}
-		return response;
+		return JsonEntity.of(response);
 	}
 
-	private JSONObject _bulk_docs(String requestPath, Map<String, List<String>> queryParams, JSONObject requestBody) throws CouchReplicationTargetException {
+	private JsonEntity _bulk_docs(String requestPath, Map<String, List<String>> queryParams, JSONObject requestBody) throws CouchReplicationTargetException {
 		try {
 			JSONArray docs = requestBody.optJSONArray("docs");
 
 			if(docs == null) throw new EmptyResponseException();
 
+			JSONArray saved = new JSONArray();
 			for(int i=0; i<docs.length(); ++i) {
-				saveDoc(docs.getJSONObject(i));
+				JSONObject doc = docs.getJSONObject(i);
+				saveDoc(doc);
+				saved.put(JSON.obj("ok", true,
+						"id", doc.getString("_id"),
+						"rev", doc.getString("_rev")));
 			}
-			return JSON.obj();
+
+			return JsonEntity.of(saved);
 		} catch(JSONException ex) {
 			// TODO this should be handled properly as per whatever
 			// couch does
@@ -229,4 +237,12 @@ final class JSON {
 		for(Object o : contents) a.put(o);
 		return a;
 	}
+}
+
+class JsonEntity {
+	private Object entity;
+	private JsonEntity(Object entity) { this.entity = entity; }
+	static JsonEntity of(JSONObject obj) { return new JsonEntity(obj); }
+	static JsonEntity of(JSONArray arr) { return new JsonEntity(arr); }
+	public String toString() { return entity.toString(); }
 }

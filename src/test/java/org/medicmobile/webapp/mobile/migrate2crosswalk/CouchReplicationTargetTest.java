@@ -37,7 +37,7 @@ public class CouchReplicationTargetTest {
 	@Test
 	public void _root_GET_shouldReturnDbDetails() throws Exception {
 		// when
-		JSONObject response = target.get("/", queryParams());
+		JsonEntity response = target.get("/", queryParams());
 
 		// expect
 		assertJson(response, json(
@@ -81,7 +81,7 @@ public class CouchReplicationTargetTest {
 	@Test
 	public void _changes_GET_shouldReturnEmptyList() throws Exception {
 		// when
-		JSONObject response = target.get("/_changes", queryParams(
+		JsonEntity response = target.get("/_changes", queryParams(
 				"a", "1",
 				"b", "2"));
 
@@ -132,7 +132,7 @@ public class CouchReplicationTargetTest {
 	@Test
 	public void _revs_diff_POST_shouldReturnEmptyObject_ifSuppliedWithEmptyList() throws Exception {
 		// when
-		JSONObject response = target.post(
+		JsonEntity response = target.post(
 				"/_revs_diff",
 				emptyObject());
 
@@ -143,7 +143,7 @@ public class CouchReplicationTargetTest {
 	@Test
 	public void _revs_diff_POST_shouldEchoCompleteList_ifNothingInDatabase() throws Exception {
 		// when
-		JSONObject response = target.post(
+		JsonEntity response = target.post(
 				"/_revs_diff", json(
 				"abc-123", array("1-aaa"),
 				"def-456", array("2-bbb")));
@@ -179,7 +179,7 @@ public class CouchReplicationTargetTest {
 				"def-456", "1-xxx", "{ \"_id\":\"def-456\", \"_rev\":\"1-xxx\", \"val\":\"two\" }");
 
 		// when
-		JSONObject response = target.post(
+		JsonEntity response = target.post(
 				"/_revs_diff", json(
 				"abc-123", array("1-aaa"),
 				"def-456", array("2-bbb"),
@@ -211,7 +211,7 @@ public class CouchReplicationTargetTest {
 	@Test
 	public void _bulk_docs_shouldSaveASingleDocument() throws Exception {
 		// when
-		target.post("/_bulk_docs", json(
+		JsonEntity response = target.post("/_bulk_docs", json(
 				"docs", array(
 					json(
 						"_id", "abc-123",
@@ -224,12 +224,21 @@ public class CouchReplicationTargetTest {
 		// then
 		assertDbContent("medic",
 				"abc-123", "1-xxx", "{ \"_id\":\"abc-123\", \"_rev\":\"1-xxx\", \"val\":\"one\" }");
+
+		// and
+		assertJson(response, array(
+			json(
+				"ok", true,
+				"id", "abc-123",
+				"rev", "1-xxx"
+			)
+		));
 	}
 
 	@Test
 	public void _bulk_docs_shouldSaveMultipleDocumentsd() throws Exception {
 		// when
-		target.post("/_bulk_docs", json(
+		JsonEntity response = target.post("/_bulk_docs", json(
 				"docs", array(
 					json(
 						"_id", "abc-123",
@@ -248,6 +257,20 @@ public class CouchReplicationTargetTest {
 		assertDbContent("medic",
 				"abc-123", "1-xxx", "{ \"_id\":\"abc-123\", \"_rev\":\"1-xxx\", \"val\":\"one\" }",
 				"def-456", "2-xxx", "{ \"_id\":\"def-456\", \"_rev\":\"2-xxx\", \"val\":\"two\" }");
+
+		// and
+		assertJson(response, array(
+			json(
+				"ok", true,
+				"id", "abc-123",
+				"rev", "1-xxx"
+			),
+			json(
+				"ok", true,
+				"id", "def-456",
+				"rev", "2-xxx"
+			)
+		));
 	}
 
 	@Test
@@ -286,6 +309,9 @@ public class CouchReplicationTargetTest {
 		// then
 		assertDbContent("medic",
 				"abc-123", "1-xxx", "{ \"_id\":\"abc-123\", \"_rev\":\"1-xxx\", \"val\":\"one\" }");
+
+		// and
+		// TODO test the response contents
 	}
 
 	@Test
@@ -452,7 +478,7 @@ public class CouchReplicationTargetTest {
 				"abc-123", "1-xxx", "{ \"_id\":\"abc-123\", \"_rev\":\"1-xxx\", \"val\":\"one\" }");
 
 		// when
-		JSONObject response = target.get("/abc-123", queryParams());
+		JsonEntity response = target.get("/abc-123", queryParams());
 
 		// expect
 		assertJson(response, json(
@@ -507,7 +533,11 @@ public class CouchReplicationTargetTest {
 		return new JSONArray();
 	}
 
-	private static void assertJson(JSONObject actual, JSONObject expected) {
+	private static void assertJson(JsonEntity actual, JSONArray expected) {
+		assertEquals(expected.toString(), actual.toString());
+	}
+
+	private static void assertJson(JsonEntity actual, JSONObject expected) {
 		assertEquals(expected.toString(), actual.toString());
 	}
 
