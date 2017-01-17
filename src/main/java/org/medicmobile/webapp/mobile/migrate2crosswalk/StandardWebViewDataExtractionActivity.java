@@ -77,6 +77,7 @@ public class StandardWebViewDataExtractionActivity extends Activity {
 
 		fakeCouch = new FakeCouch(settings);
 		fakeCouch.start(this);
+		container.getSettings().setMixedContentMode(WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE);
 
 /*
 		final ProgressDialog progress = showProgressDialog(this, "Doing important things…");
@@ -103,7 +104,7 @@ public class StandardWebViewDataExtractionActivity extends Activity {
 
 	@Override public void onDestroy() {
 		super.onDestroy();
-		fakeCouch.stop();
+		stopFakeCouch();
 	}
 
 	public void evaluateJavascript(final String js) {
@@ -132,17 +133,25 @@ public class StandardWebViewDataExtractionActivity extends Activity {
 		String cookies = CookieManager.getInstance().getCookie(url);
 		trace("replicationComplete", "Got cookies for %s: %s", url, cookies);
 
+		stopFakeCouch();
+
 		Intent xwalkStarter = new Intent(
 				StandardWebViewDataExtractionActivity.this,
 				EmbeddedBrowserActivity.class);
 		xwalkStarter.putExtra(EmbeddedBrowserActivity.EXTRA_COOKIES, cookies);
 		startActivity(xwalkStarter);
 
-		this.finish();
 		// TODO this doesn't actually appear to destroy the webview - still visible in the chrome tools thingy
+		this.finish();
 	}
 
 //> INTERNAL HELPERS
+	private synchronized void stopFakeCouch() {
+		if(fakeCouch == null) return;
+		fakeCouch.stop();
+		fakeCouch = null;
+	}
+
 	private void browseToRoot() {
 		String url = settings.getAppUrl() + (DISABLE_APP_URL_VALIDATION ?
 				"" : "/medic/_design/medic/_rewrite/");
@@ -210,7 +219,7 @@ public class StandardWebViewDataExtractionActivity extends Activity {
 
 	private void enableUrlHandlers(WebView container) {
 		container.setWebViewClient(new WebViewClient() {
-			public boolean shouldOverrideUrlLoading(WebView view, String url) {
+			@Override public boolean shouldOverrideUrlLoading(WebView view, String url) {
 				// Enable SMS and call handling
 				if(url.startsWith("tel:") || url.startsWith("sms:")) {
 					Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
@@ -220,7 +229,7 @@ public class StandardWebViewDataExtractionActivity extends Activity {
 				return false;
 			}
 
-			public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
+			@Override public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
 				//trace("shouldInterceptRequest", "[%s] %s", request.getMethod(), request.getUrl());
 				if(allowServerComms) return null;
 

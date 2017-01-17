@@ -13,6 +13,12 @@ import android.webkit.*;
 import android.widget.*;
 
 import java.io.File;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.util.Collections;
+import java.util.Map;
+
+import org.medicmobile.webapp.mobile.migrate2crosswalk.FakeCouch;
 
 import org.xwalk.core.XWalkPreferences;
 import org.xwalk.core.XWalkResourceClient;
@@ -40,9 +46,11 @@ public class EmbeddedBrowserActivity extends Activity implements MedicJsEvaluato
 
 	private XWalkView container;
 	private SettingsStore settings;
+	private FakeCouch fakeCouch;
 	private String cookies;
+	private boolean allowServerComms;
 
-	public void onCreate(Bundle savedInstanceState) {
+	@Override public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
 		log("Starting XWalk webview...");
@@ -61,17 +69,28 @@ public class EmbeddedBrowserActivity extends Activity implements MedicJsEvaluato
 
 		container = (XWalkView) findViewById(R.id.wbvMain);
 
-		// TODO get the cookies from the intent, and inject them into
-		// the webview
+		// Get the cookies from the intent, and inject them into the webview
 		String cookies = getIntent().getStringExtra(EXTRA_COOKIES);
-		this.cookies = cookies;
+
+		// Only allow communication with the server if this view has not
+		// been triggered from the StandardWebViewDataExtractionActivity
+		if(cookies == null) {
+			allowServerComms = true;
+		} else {
+			this.cookies = cookies;
+
+			allowServerComms = false;
+
+			fakeCouch = new FakeCouch(settings);
+			fakeCouch.start(this);
+		}
 
 		if(DEBUG) enableWebviewLoggingAndGeolocation(container);
 		enableRemoteChromeDebugging(container);
 		enableJavascript(container);
 		enableStorage(container);
 
-		enableSmsAndCallHandling(container);
+		enableUrlHandlers(container);
 
 		browseToRoot();
 
@@ -80,7 +99,7 @@ public class EmbeddedBrowserActivity extends Activity implements MedicJsEvaluato
 		}
 	}
 
-	public boolean onCreateOptionsMenu(Menu menu) {
+	@Override public boolean onCreateOptionsMenu(Menu menu) {
 		if(settings.allowsConfiguration()) {
 			getMenuInflater().inflate(R.menu.unbranded_web_menu, menu);
 		} else {
@@ -89,7 +108,7 @@ public class EmbeddedBrowserActivity extends Activity implements MedicJsEvaluato
 		return super.onCreateOptionsMenu(menu);
 	}
 
-	public boolean onOptionsItemSelected(MenuItem item) {
+	@Override public boolean onOptionsItemSelected(MenuItem item) {
 		switch(item.getItemId()) {
 			case R.id.mnuSettings:
 				openSettings();
@@ -105,7 +124,7 @@ public class EmbeddedBrowserActivity extends Activity implements MedicJsEvaluato
 		}
 	}
 
-	public void onBackPressed() {
+	@Override public void onBackPressed() {
 		if(container == null) {
 			super.onBackPressed();
 		} else {
@@ -113,6 +132,11 @@ public class EmbeddedBrowserActivity extends Activity implements MedicJsEvaluato
 					"angular.element(document.body).injector().get('AndroidApi').v1.back()",
 					backButtonHandler);
 		}
+	}
+
+	@Override public void onDestroy() {
+		super.onDestroy();
+		if(fakeCouch != null) fakeCouch.stop();
 	}
 
 	public void evaluateJavascript(final String js) {
@@ -143,6 +167,8 @@ public class EmbeddedBrowserActivity extends Activity implements MedicJsEvaluato
 		jsBuilder.append("window.location.reload()");
 
 		evaluateJavascript(jsBuilder.toString());
+
+		cookies = null;
 	}
 
 //> PRIVATE HELPERS
@@ -214,9 +240,9 @@ public class EmbeddedBrowserActivity extends Activity implements MedicJsEvaluato
 		// there is no option to set the storage path.
 	}
 
-	private void enableSmsAndCallHandling(XWalkView container) {
-		new XWalkResourceClient(container) {
-			public boolean shouldOverrideUrlLoading(XWalkView view, String url) {
+	private void enableUrlHandlers(XWalkView container) {
+		container.setResourceClient(new XWalkResourceClient(container) {
+			@Override public boolean shouldOverrideUrlLoading(XWalkView view, String url) {
 				if(url.startsWith("tel:") || url.startsWith("sms:")) {
 					Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
 					view.getContext().startActivity(i);
@@ -224,7 +250,81 @@ public class EmbeddedBrowserActivity extends Activity implements MedicJsEvaluato
 				}
 				return false;
 			}
-		};
+
+			@Override public WebResourceResponse shouldInterceptLoadRequest(XWalkView view, String urlString) {
+				trace("shouldInterceptLoadRequest", "%s", urlString);
+				if(allowServerComms) return null;
+
+				if(urlString == null) return null;
+
+				Uri url = Uri.parse(urlString);
+
+				String host = url.getHost();
+				if(host == null) return null;
+
+				String configuredHost = Uri.parse(settings.getAppUrl()).getHost();
+
+				//trace("shouldInterceptRequest", "comparing hosts: %s <-> %s", host, configuredHost);
+
+				// TODO safer just to block anything non-localhost?
+				// No!  We need to be a bit cleverer than this in this instance -
+				// We need to allow the user to:
+				//   1. authenticate (although they should already have auth cookies)
+				//   2. get the app cache
+				//   3. get all the stuff in the app cache
+				// I.E. all we should block is comms with couchdb, excepting auth messages!
+				if(host.equals(configuredHost)) {
+					trace("shouldInterceptLoadRequest", "Should we block %s?", url.getPath());
+					if(url.getPath().startsWith("/medic/_design/medic/_rewrite/static/dist/")) {
+						return null;
+					}
+					switch(url.getPath()) {
+						case "/medic/_design/medic/_rewrite/":
+							return null;
+						case "/medic/login":
+							if(cookies == null) {
+								allowServerComms = true;
+								return null;
+							} else {
+								setCookies();
+								break;
+							}
+						case "/medic/_changes":
+							// TODO trigger the replication
+							evaluateJavascript(
+									"var localDbName = 'medic-user-' + JSON.parse(unescape(decodeURI(" +
+									"    document.cookie.split(';').map(function(e) {" +
+									"      return e.trim();" +
+									"    }).find(function(e) {" +
+									"      return e.startsWith('userCtx=');" +
+									"    }).split('=', 2)[1]))).name;" +
+									"console.log('Replicating local db:', localDbName);" +
+									"PouchDB.replicate('http://localhost:8000/medic', localDbName)" +
+									"    .then(function() {" +
+									"      console.log('Replication complete!  TODO now disable URL blocking and reload the page.');" +
+									"    })" +
+									"    .catch(function(err) {" +
+									"      console.log('Error during replication', err);" +
+									"    });");
+							break;
+					}
+
+					// TODO don't let them talk to couch!
+					trace("shouldInterceptLoadRequest", "looks like we should block %s", url);
+					Map<String, String> headers = Collections.emptyMap();
+					return new WebResourceResponse("text", "utf8", 503,
+							"Server blocked.  Local db replication will begin shortly.",
+							headers, emptyInputStream());
+				}
+				return null;
+// TODO once loading has completed successfully (presumably we can detect this...somehow), then
+// trigger replication from local HTTP server to local pouch.  For now, trigger this manually.
+			}
+
+			private InputStream emptyInputStream() {
+				return new ByteArrayInputStream(new byte[0]);
+			}
+		});
 	}
 
 	private void toast(String message) {

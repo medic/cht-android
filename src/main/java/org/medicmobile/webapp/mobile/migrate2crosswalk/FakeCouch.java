@@ -29,7 +29,7 @@ import static fi.iki.elonen.NanoHTTPD.Response.Status.METHOD_NOT_ALLOWED;
 import static fi.iki.elonen.NanoHTTPD.Response.Status.NOT_FOUND;
 import static fi.iki.elonen.NanoHTTPD.Response.Status.OK;
 
-class FakeCouch {
+public class FakeCouch {
 	private final String appHost;
 
 	private FakeCouchDaemon server;

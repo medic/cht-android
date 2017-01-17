@@ -1,1 +1,1 @@
-xwalk --unlimited-storage
+xwalk --unlimited-storage --allow-running-insecure-content
