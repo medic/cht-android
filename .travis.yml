@@ -6,6 +6,8 @@ android:
   components:
   - build-tools-22.0.1
   - android-22
+jdk:
+  - oraclejdk8
 before_script:
   - export MEDIC_VERSION_NAME="0.1.$TRAVIS_BUILD_NUMBER"
 script:
