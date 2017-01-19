@@ -40,9 +40,7 @@ class CouchReplicationTarget {
 			} else if(matches(requestPath, "/_local")) {
 				return JsonEntity.of(_local_GET(requestPath));
 			} else if(matches(requestPath, "/_changes")) {
-				return JsonEntity.of(
-						JSON.obj("results", JSON.array(),
-								"last_seq", 0));
+				return JsonEntity.of(_changes_GET(queryParams));
 			}
 
 			if(requestPath.startsWith("/_")) {
@@ -98,6 +96,10 @@ class CouchReplicationTarget {
 	}
 
 //> SPECIFIC REQUEST HANDLERS
+	private JSONObject _changes_GET(Map<String, List<String>> queryParams) throws JSONException {
+		return db.getAllChanges().get();
+	}
+
 	private JSONObject _local_GET(String requestPath) throws DocNotFoundException, JSONException {
 		String id = Uri.parse(requestPath).getPath().substring(1);
 		JSONObject doc = db.get_local(id);
@@ -222,36 +224,4 @@ class UnimplementedEndpointException extends CouchReplicationTargetException {}
 
 class UnsupportedInternalPathException extends CouchReplicationTargetException {
 	UnsupportedInternalPathException(String path) { super(path); }
-}
-
-final class JSON {
-	static final JSONObject obj(Object... args) throws JSONException {
-		assert(args.length % 2 == 0): "Must supply an even number of args.";
-
-		JSONObject o = new JSONObject();
-
-		for(int i=0; i<args.length; i+=2) {
-			String key = (String) args[i];
-			Object val = args[i+1];
-			o.put(key, val);
-		}
-
-		return o;
-	}
-
-	static final JSONArray array(Object... contents) throws JSONException {
-		JSONArray a = new JSONArray();
-		for(Object o : contents) a.put(o);
-		return a;
-	}
-}
-
-class JsonEntity {
-	private Object entity;
-	private JsonEntity(Object entity) { this.entity = entity; }
-	static JsonEntity of(JSONObject obj) { return new JsonEntity(obj); }
-	static JsonEntity of(JSONArray arr) { return new JsonEntity(arr); }
-	public JSONArray asArray() { return (JSONArray) entity; }
-	public JSONObject asObject() { return (JSONObject) entity; }
-	public String toString() { return entity.toString(); }
 }

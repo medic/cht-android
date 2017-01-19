@@ -18,10 +18,13 @@ class TempCouchDb extends SQLiteOpenHelper {
 
 	private static final String DEFAULT_ORDERING = null, NO_GROUP = null;
 	private static final String[] NO_ARGS = {};
+	private static final String SELECT_ALL = null;
+	private static final String[] NO_SELECTION_ARGS = null;
 
 	private static final String tblLOCAL = "local";
 	private static final String tblMEDIC = "medic";
 	private static final String clmID = "_id";
+	private static final String clmSEQ = "seq";
 	private static final String clmREV = "_rev";
 	private static final String clmJSON = "json";
 
@@ -45,21 +48,24 @@ class TempCouchDb extends SQLiteOpenHelper {
 		db = getWritableDatabase();
 	}
 
-	public void onCreate(SQLiteDatabase db) {
+//> EVENT HANDLERS
+	@Override public void onCreate(SQLiteDatabase db) {
 		for(String tableName : DOC_TABLES) {
 			db.execSQL(String.format("CREATE TABLE %s (" +
-						"%s TEXT PRIMARY KEY, " +
+						"%s INTEGER PRIMARY KEY AUTOINCREMENT, " +
+						"%s TEXT KEY, " +
 						"%s TEXT NOT NULL, " +
 						"%s TEXT NOT NULL)",
-					tableName, clmID, clmREV, clmJSON));
+					tableName, clmSEQ, clmID, clmREV, clmJSON));
 		}
 	}
 
-	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+	@Override public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 		// Hopefully we'll never be versioning this database, as it should
 		// be removed before the next major version.
 	}
 
+//> DATA ACCESSORS
 	boolean exists(String docId, String rev) throws JSONException {
 		Cursor c = null;
 		try {
@@ -144,6 +150,29 @@ class TempCouchDb extends SQLiteOpenHelper {
 			} else {
 				db.insert(tableName, null, forInsert(docId, doc));
 			}
+		} finally {
+			if(c != null) try { c.close(); } catch(Exception ex) {}
+		}
+	}
+
+	public CouchChangesFeed getAllChanges() throws JSONException {
+		CouchChangesFeed changes = new CouchChangesFeed();
+
+		Cursor c = null;
+		try {
+			c = db.query(tblMEDIC,
+					cols(clmSEQ, clmJSON),
+					SELECT_ALL, NO_SELECTION_ARGS,
+					NO_GROUP, NO_GROUP,
+					DEFAULT_ORDERING);
+
+			while(c.moveToNext()) {
+				int seq = c.getInt(0);
+				JSONObject json = (JSONObject) new JSONTokener(c.getString(1)).nextValue();
+				changes.addDoc(seq, json);
+			}
+		
+			return changes;
 		} finally {
 			if(c != null) try { c.close(); } catch(Exception ex) {}
 		}

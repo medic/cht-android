@@ -18,6 +18,7 @@ public class CouchReplicationTargetTest {
 	/** A very rough regex for matching JSON */
 	private static final Pattern ANY_JSON = Pattern.compile("\\{.*\\}");
 	private static final Pattern ANY_REV = Pattern.compile("\\d+-\\w+");
+	public static final Pattern ANY_NATURAL_NUMBER = Pattern.compile("\\d+");
 
 	private CouchReplicationTarget target;
 	private DbTestHelper db;
@@ -79,7 +80,7 @@ public class CouchReplicationTargetTest {
 
 //> _changes
 	@Test
-	public void _changes_GET_shouldReturnEmptyList() throws Exception {
+	public void _changes_GET_shouldReturnEmptyList_ifThereAreNoDocsInDb() throws Exception {
 		// when
 		JsonEntity response = target.get("/_changes", queryParams(
 				"a", "1",
@@ -90,6 +91,131 @@ public class CouchReplicationTargetTest {
 				"results", emptyArray(),
 				"last_seq", 0)
 				);
+	}
+
+	@Test
+	public void _changes_GET_shouldReturnDocs() throws Exception {
+		// given
+		target.post("/_bulk_docs", json(
+				"docs", array(
+					json(
+						"_id", "aaa-111",
+						"_rev", "1-xxx",
+						"val", "one"
+					),
+					json(
+						"_id", "bbb-222",
+						"_rev", "1-yyy",
+						"val", "two"
+					)
+				),
+				"new_edits", false));
+
+		// when
+		JsonEntity response = target.get("/_changes", queryParams(
+				"a", "1",
+				"b", "2"));
+
+		// then
+		assertJson(response, json(
+				"results", array(
+					json(
+						"changes", array(
+							json("rev", ANY_REV)
+						),
+						"id", "aaa-111",
+						"seq", 1
+					),
+					json(
+						"changes", array(
+							json("rev", ANY_REV)
+						),
+						"id", "bbb-222",
+						"seq", 2
+					)
+				),
+				"last_seq", 2)
+		);
+	}
+
+	@Test
+	public void _changes_GET_shouldRespectLimit() throws Exception {
+		// given
+		target.post("/_bulk_docs", json(
+				"docs", array(
+					json(
+						"_id", "aaa-111",
+						"_rev", "1-xxx",
+						"val", "one"
+					),
+					json(
+						"_id", "bbb-222",
+						"_rev", "1-yyy",
+						"val", "two"
+					)
+				),
+				"new_edits", false));
+
+		// when
+		JsonEntity response = target.get("/_changes", queryParams(
+				"limit", "1"));
+
+		// then
+		assertJson(response, json(
+				"results", array(
+					json(
+						"changes", array(
+							json("rev", ANY_REV)
+						),
+						"id", "aaa-111",
+						"seq", 1
+					)
+				),
+				"last_seq", 1)
+		);
+	}
+
+	@Test
+	public void _changes_GET_shouldRespectSince() throws Exception {
+		// given
+		target.post("/_bulk_docs", json(
+				"docs", array(
+					json(
+						"_id", "aaa-111",
+						"_rev", "1-xxx",
+						"val", "one"
+					),
+					json(
+						"_id", "bbb-222",
+						"_rev", "1-yyy",
+						"val", "two"
+					)
+				),
+				"new_edits", false));
+
+		// when
+		JsonEntity response = target.get("/_changes", queryParams(
+				"limit", "1",
+				"since", "1"));
+
+		// then
+		assertJson(response, json(
+				"results", array(
+					json(
+						"changes", array(
+							json("rev", ANY_REV)
+						),
+						"id", "bbb-222",
+						"seq", 2
+					)
+				),
+				"last_seq", 1)
+		);
+	}
+
+	@Test
+	public void _changes_GET_shouldRespectDeletedFlag() throws Exception {
+		// TODO do we need this?
 	}
 
 //> _local
@@ -506,17 +632,24 @@ public class CouchReplicationTargetTest {
 
 //> HELPERS
 	private void assertDbContent(String dbName, Object... args) throws JSONException {
-		Object[] expectedContent = new Object[args.length];
-		for(int i=0; i<args.length; i+=3) {
-			expectedContent[i] = args[i];
-			expectedContent[i+1] = args[i+1];
+		Object[] expectedContent = new Object[args.length + (args.length / 3)];
 
-			Object jsonContent = args[i+2];
+		for(int row=0; row<args.length / 3; ++row) {
+			int x = row * 4;
+			int a = row * 3;
+
+			// Unlikely any test will care what the seq value is
+			expectedContent[x] = ANY_NATURAL_NUMBER;
+
+			expectedContent[x+1] = args[a];
+			expectedContent[x+2] = args[a+1];
+
+			Object jsonContent = args[a+2];
 			if(jsonContent instanceof String) {
 				// Convert to JSON and back to ensure consistent ordering
-				expectedContent[i+2] = new JSONObject((String) jsonContent).toString();
+				expectedContent[x+3] = new JSONObject((String) jsonContent).toString();
 			} else if(jsonContent instanceof Pattern) {
-				expectedContent[i+2] = jsonContent;
+				expectedContent[x+3] = jsonContent;
 			} else throw new RuntimeException("Don't know how to match object of class " + jsonContent.getClass());
 		}
 		db.assertTable(dbName, expectedContent);
@@ -561,7 +694,7 @@ public class CouchReplicationTargetTest {
 
 		assertEquals(failMessage, expected.length(), actual.length());
 		for(int i=0; i<actual.length(); ++i) {
-			aEq(expected.get(i), expected.get(i), failMessage);
+			aEq(expected.get(i), actual.get(i), failMessage);
 		}
 	}
 
@@ -583,7 +716,7 @@ public class CouchReplicationTargetTest {
 
 	private static void aEq(Object e, Object a, String failMessage) throws JSONException {
 		if(e instanceof Pattern && a instanceof String) {
-			assertTrue(((Pattern) e).matcher((String) a).matches());
+			assertTrue("Expected " + a + " to match regex " + e, ((Pattern) e).matcher((String) a).matches());
 			return;
 		}
 
@@ -591,16 +724,20 @@ public class CouchReplicationTargetTest {
 			fail(String.format("Objects are of different class: %s vs %s (%s)", e.getClass(), a.getClass(), failMessage));
 
 		if(e instanceof JSONObject) {
-			assertJson((JSONObject) a, (JSONObject) e);
+			assertJson((JSONObject) e, (JSONObject) a);
 		} else if(e instanceof JSONArray) {
-			assertEquals(failMessage, (JSONArray) a, (JSONArray) e);
+			assertJson((JSONArray) e, (JSONArray) a);
 		} else if(e instanceof String) {
-			assertEquals(failMessage, (String) a, (String) e);
+			assertEquals(failMessage, (String) e, (String) a);
 		} else if(e instanceof Integer) {
-			assertEquals(failMessage, (int) a, (int) a);
+			assertEquals(failMessage, (int) e, (int) a);
 		} else if(e instanceof Boolean) {
-			assertEquals(failMessage, (boolean) a, (boolean) a);
+			assertEquals(failMessage, (boolean) e, (boolean) a);
 		} else fail(String.format("Don't know how to compare objects of type %s & %s.", e.getClass(), a.getClass()));
+	}
+
+	private static Map<String, List<String>> noQueryParams() {
+		return queryParams();
 	}
 
 	private static Map<String, List<String>> queryParams(String... params) {
