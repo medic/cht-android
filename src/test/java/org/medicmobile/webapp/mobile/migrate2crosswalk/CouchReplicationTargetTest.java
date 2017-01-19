@@ -209,7 +209,7 @@ public class CouchReplicationTargetTest {
 						"seq", 2
 					)
 				),
-				"last_seq", 1)
+				"last_seq", 2)
 		);
 	}
 

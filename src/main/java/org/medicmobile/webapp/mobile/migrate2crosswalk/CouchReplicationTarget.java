@@ -16,6 +16,7 @@ import org.json.JSONObject;
 
 import org.medicmobile.webapp.mobile.MedicLog;
 
+import static java.lang.Integer.parseInt;
 import static java.util.Collections.emptyMap;
 
 class CouchReplicationTarget {
@@ -97,6 +98,13 @@ class CouchReplicationTarget {
 
 //> SPECIFIC REQUEST HANDLERS
 	private JSONObject _changes_GET(Map<String, List<String>> queryParams) throws JSONException {
+		CouchChangesFeed changes;
+
+		if(queryParams.containsKey("since") || queryParams.containsKey("limit")) {
+			return db.getChanges(getFirstInt(queryParams, "since"),
+					getFirstInt(queryParams, "limit")).get();
+		}
+
 		return db.getAllChanges().get();
 	}
 
@@ -202,6 +210,14 @@ class CouchReplicationTarget {
 	private static boolean matches(String requestPath, String dir) {
 		return requestPath.equals(dir) ||
 				requestPath.startsWith(dir + "/");
+	}
+
+	private static Integer getFirstInt(Map<String, List<String>> queryParams, String key) {
+		try {
+			return parseInt(queryParams.get(key).get(0));
+		} catch(Exception _) {
+			return null;
+		}
 	}
 
 	private void trace(String method, String message, Object... extras) {

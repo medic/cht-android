@@ -171,7 +171,36 @@ class TempCouchDb extends SQLiteOpenHelper {
 				JSONObject json = (JSONObject) new JSONTokener(c.getString(1)).nextValue();
 				changes.addDoc(seq, json);
 			}
-		
+
+			return changes;
+		} finally {
+			if(c != null) try { c.close(); } catch(Exception ex) {}
+		}
+	}
+
+	public CouchChangesFeed getChanges(Integer since, Integer limit) throws JSONException {
+		if(since == null && limit == null) return getAllChanges();
+
+		String selecter = since == null ? SELECT_ALL : gt(clmSEQ);
+		String[] selectionArgs = since == null ? NO_SELECTION_ARGS : vals(since);
+
+		CouchChangesFeed changes = new CouchChangesFeed();
+
+		Cursor c = null;
+		try {
+			c = db.query(tblMEDIC,
+					cols(clmSEQ, clmJSON),
+					selecter, selectionArgs,
+					NO_GROUP, NO_GROUP,
+					DEFAULT_ORDERING,
+					limit == null ? null : limit.toString());
+
+			while(c.moveToNext()) {
+				int seq = c.getInt(0);
+				JSONObject json = (JSONObject) new JSONTokener(c.getString(1)).nextValue();
+				changes.addDoc(seq, json);
+			}
+
 			return changes;
 		} finally {
 			if(c != null) try { c.close(); } catch(Exception ex) {}
@@ -202,8 +231,14 @@ class TempCouchDb extends SQLiteOpenHelper {
 		return args;
 	}
 
-	private static String[] vals(String... args) {
-		return args;
+	private static String[] vals(Object... args) {
+		String[] vals = new String[args.length];
+		for(int i=vals.length-1; i>=0; --i) vals[i] = args[i].toString();
+		return vals;
+	}
+
+	private static String gt(String columnName) {
+		return columnName + ">?";
 	}
 
 	private static int getRevNumber(String rev) {
