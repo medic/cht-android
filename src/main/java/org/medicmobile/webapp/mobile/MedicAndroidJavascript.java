@@ -124,7 +124,33 @@ public class MedicAndroidJavascript {
 		}
 	}
 
+	@org.xwalk.core.JavascriptInterface
+	@android.webkit.JavascriptInterface
+	public void replicateFromLocal() {
+		parent.evaluateJavascript(
+				"alDbName = 'medic-user-' + JSON.parse(unescape(decodeURI(" +
+				"    document.cookie.split(';').map(function(e) {" +
+				"      return e.trim();" +
+				"    }).find(function(e) {" +
+				"      return e.startsWith('userCtx=');" +
+				"    }).split('=', 2)[1]))).name;" +
+				"console.log('Replicating local db:', localDbName);" +
+				"PouchDB.replicate('http://localhost:8000/medic', localDbName)" +
+				"    .then(function() {" +
+				"      console.log('Replication complete!  TODO now disable URL blocking and reload the page.');" +
+				"    })" +
+				"    .catch(function(err) {" +
+				"      console.log('Error during replication', err);" +
+				"    });");
+	}
+
 //> TODO these are migration-only JS hooks, so should be in a class of their own
+	@org.xwalk.core.JavascriptInterface
+	@android.webkit.JavascriptInterface
+	public void replicationComplete() {
+		parent.replicationComplete();
+	}
+
 	@org.xwalk.core.JavascriptInterface
 	@android.webkit.JavascriptInterface
 	public void setCookies() {

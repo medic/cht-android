@@ -78,6 +78,218 @@ public class CouchReplicationTargetTest {
 		}
 	}
 
+//> _all_docs
+	@Test
+	public void _all_docs_GET_shouldReturnAllDocs() throws Exception {
+		// given
+		target.post("/_bulk_docs", json(
+				"docs", array(
+					json(
+						"_id", "aaa-111",
+						"_rev", "1-xxx",
+						"val", "one"
+					),
+					json(
+						"_id", "bbb-222",
+						"_rev", "1-yyy",
+						"val", "two"
+					)
+				),
+				"new_edits", false));
+
+		// when
+		JsonEntity response = target.get("/_all_docs", noQueryParams());
+		
+		// then
+		assertJson(response, json(
+				"total_rows", 3,
+				"offset", 0,
+				"rows", array(
+					json(
+						"id", "aaa-111",
+						"key", "aaa-111",
+						"value", json("rev", "1-xxx")
+						"doc", json(
+							"_id", "aaa-111",
+							"_rev", "1-xxx",
+							"val", "one"
+						)
+					),
+					json(
+						"id", "bbb-222",
+						"key", "bbb-222",
+						"value", json("rev", "1-yyy")
+						"doc", json(
+							"_id", "bbb-222",
+							"_rev", "1-yyy",
+							"val", "two"
+						)
+					)
+				)
+			)
+		);
+	}
+
+	@Test
+	public void _all_docs_GET_shouldReturnDocRequestedInQueryParams() throws Exception {
+		// given
+		target.post("/_bulk_docs", json(
+				"docs", array(
+					json(
+						"_id", "aaa-111",
+						"_rev", "1-xxx",
+						"val", "one"
+					),
+					json(
+						"_id", "bbb-222",
+						"_rev", "1-yyy",
+						"val", "two"
+					),
+					json(
+						"_id", "ccc-333",
+						"_rev", "1-zzz",
+						"val", "three"
+					)
+				),
+				"new_edits", false));
+
+		// when
+		JsonEntity response = target.get("/_all_docs", queryParams("key", "%22bbb-222%22"));
+		
+		// then
+		assertJson(response, json(
+				"total_rows", 3,
+				"offset", 0,
+				"rows", array(
+					json(
+						"id", "bbb-222",
+						"key", "bbb-222",
+						"value", json("rev", "1-yyy")
+						"doc", json(
+							"_id", "bbb-222",
+							"_rev", "1-yyy",
+							"val", "two"
+						)
+					)
+				)
+			)
+		);
+	}
+
+	@Test
+	public void _all_docs_GET_shouldReturnAllDocsRequestedInQueryParams() throws Exception {
+		// given
+		target.post("/_bulk_docs", json(
+				"docs", array(
+					json(
+						"_id", "aaa-111",
+						"_rev", "1-xxx",
+						"val", "one"
+					),
+					json(
+						"_id", "bbb-222",
+						"_rev", "1-yyy",
+						"val", "two"
+					),
+					json(
+						"_id", "ccc-333",
+						"_rev", "1-zzz",
+						"val", "three"
+					)
+				),
+				"new_edits", false));
+
+		// when
+		JsonEntity response = target.get("/_all_docs", queryParams("keys", "%5B%22aaa-111%22,%22ccc-333%22%5D"));
+		
+		// then
+		assertJson(response, json(
+				"total_rows", 3,
+				"offset", 0,
+				"rows", array(
+					json(
+						"id", "aaa-111",
+						"key", "aaa-111",
+						"value", json("rev", "1-xxx")
+						"doc", json(
+							"_id", "aaa-111",
+							"_rev", "1-xxx",
+							"val", "one"
+						)
+					),
+					json(
+						"id", "ccc-333",
+						"key", "ccc-333",
+						"value", json("rev", "1-zzz")
+						"doc", json(
+							"_id", "ccc-333",
+							"_rev", "1-zzz",
+							"val", "three"
+						)
+					)
+				)
+			)
+		);
+	}
+
+	@Test
+	public void _all_docs_POST_shouldReturnAllDocsRequestedInBody() throws Exception {
+		// given
+		target.post("/_bulk_docs", json(
+				"docs", array(
+					json(
+						"_id", "aaa-111",
+						"_rev", "1-xxx",
+						"val", "one"
+					),
+					json(
+						"_id", "bbb-222",
+						"_rev", "1-yyy",
+						"val", "two"
+					),
+					json(
+						"_id", "ccc-333",
+						"_rev", "1-zzz",
+						"val", "three"
+					)
+				),
+				"new_edits", false));
+
+		// when
+		JsonEntity response = target.post("/_all_docs", json(
+					"keys", array("aaa-111", "ccc-333")
+				));
+		
+		// then
+		assertJson(response, json(
+				"total_rows", 3,
+				"offset", 0,
+				"rows", array(
+					json(
+						"id", "aaa-111",
+						"key", "aaa-111",
+						"value", json("rev", "1-xxx")
+						"doc", json(
+							"_id", "aaa-111",
+							"_rev", "1-xxx",
+							"val", "one"
+						)
+					),
+					json(
+						"id", "ccc-333",
+						"key", "ccc-333",
+						"value", json("rev", "1-zzz")
+						"doc", json(
+							"_id", "ccc-333",
+							"_rev", "1-zzz",
+							"val", "three"
+						)
+					)
+				)
+			)
+		);
+	}
+
 //> _changes
 	@Test
 	public void _changes_GET_shouldReturnEmptyList_ifThereAreNoDocsInDb() throws Exception {

@@ -77,7 +77,8 @@ public class StandardWebViewDataExtractionActivity extends Activity {
 
 		fakeCouch = new FakeCouch(settings);
 		fakeCouch.start(this);
-		container.getSettings().setMixedContentMode(WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE);
+		// This seems to make things worse...
+		//container.getSettings().setMixedContentMode(WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE);
 
 /*
 		final ProgressDialog progress = showProgressDialog(this, "Doing important things…");

@@ -161,6 +161,7 @@ public class EmbeddedBrowserActivity extends Activity implements MedicJsEvaluato
 	void setCookies() {
 		StringBuilder jsBuilder = new StringBuilder();
 		for(String cookie : cookies.split(";")) {
+			trace("setCookies", "setting cookie: %s", cookie);
 			jsBuilder.append(String.format("document.cookie='%s'; ", cookie));
 		}
 
@@ -169,6 +170,13 @@ public class EmbeddedBrowserActivity extends Activity implements MedicJsEvaluato
 		evaluateJavascript(jsBuilder.toString());
 
 		cookies = null;
+	}
+
+	void replicationComplete() {
+		trace("replicationComplete", "Setting allowServerComms to true...");
+		allowServerComms = true;
+		//evaluateJavascript(String.format("window.location = '%s'", settings.getAppUrl()));
+		evaluateJavascript(String.format("window.location = '%s/api/info'", settings.getAppUrl()));
 	}
 
 //> PRIVATE HELPERS
@@ -252,7 +260,8 @@ public class EmbeddedBrowserActivity extends Activity implements MedicJsEvaluato
 			}
 
 			@Override public WebResourceResponse shouldInterceptLoadRequest(XWalkView view, String urlString) {
-				trace("shouldInterceptLoadRequest", "%s", urlString);
+				trace("shouldInterceptLoadRequest", "ENTRY :: [allowServerComms=%s] %s", allowServerComms, urlString);
+
 				if(allowServerComms) return null;
 
 				if(urlString == null) return null;
@@ -275,15 +284,23 @@ public class EmbeddedBrowserActivity extends Activity implements MedicJsEvaluato
 				// I.E. all we should block is comms with couchdb, excepting auth messages!
 				if(host.equals(configuredHost)) {
 					trace("shouldInterceptLoadRequest", "Should we block %s?", url.getPath());
-					if(url.getPath().startsWith("/medic/_design/medic/_rewrite/static/dist/")) {
+					if(url.getPath().startsWith("/medic/_design/medic/_rewrite/static/dist/") ||
+							url.getPath().startsWith("/api/")) {
+						trace("shouldInterceptLoadRequest", "Not blocking %s", url);
 						return null;
 					}
 					switch(url.getPath()) {
+						case "/_session":
+						case "/api":
 						case "/medic/_design/medic/_rewrite/":
+							trace("shouldInterceptLoadRequest", "Not blocking %s", url);
 							return null;
 						case "/medic/login":
 							if(cookies == null) {
-								allowServerComms = true;
+								//allowServerComms = true;
+								trace("shouldInterceptLoadRequest", "No cookies set.");
+								//trace("shouldInterceptLoadRequest", "No cookies set.  Will enable all server comms.");
+								//trace("shouldInterceptLoadRequest", "Not blocking %s", url);
 								return null;
 							} else {
 								setCookies();
@@ -302,6 +319,7 @@ public class EmbeddedBrowserActivity extends Activity implements MedicJsEvaluato
 									"PouchDB.replicate('http://localhost:8000/medic', localDbName)" +
 									"    .then(function() {" +
 									"      console.log('Replication complete!  TODO now disable URL blocking and reload the page.');" +
+									"      medicmobile_android.replicationComplete();" +
 									"    })" +
 									"    .catch(function(err) {" +
 									"      console.log('Error during replication', err);" +
@@ -316,6 +334,7 @@ public class EmbeddedBrowserActivity extends Activity implements MedicJsEvaluato
 							"Server blocked.  Local db replication will begin shortly.",
 							headers, emptyInputStream());
 				}
+				trace("shouldInterceptLoadRequest", "Not blocking %s", url);
 				return null;
 // TODO once loading has completed successfully (presumably we can detect this...somehow), then
 // trigger replication from local HTTP server to local pouch.  For now, trigger this manually.
