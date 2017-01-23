@@ -426,6 +426,35 @@ public class CouchReplicationTargetTest {
 	}
 
 	@Test
+	public void _changes_GET_shouldReturnCorrect_last_seq_whenNoResults() throws Exception {
+		// given
+		target.post("/_bulk_docs", json(
+				"docs", array(
+					json(
+						"_id", "aaa-111",
+						"_rev", "1-xxx",
+						"val", "one"
+					),
+					json(
+						"_id", "bbb-222",
+						"_rev", "1-yyy",
+						"val", "two"
+					)
+				),
+				"new_edits", false));
+
+		// when
+		JsonEntity response = target.get("/_changes", queryParams(
+				"since", "2"));
+
+		// then
+		assertJson(response, json(
+				"results", emptyArray(),
+				"last_seq", 2)
+		);
+	}
+
+	@Test
 	public void _changes_GET_shouldRespectDeletedFlag() throws Exception {
 		// TODO do we need this?
 	}

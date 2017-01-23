@@ -247,7 +247,7 @@ class TempCouchDb extends SQLiteOpenHelper {
 		String selecter = since == null ? SELECT_ALL : gt(clmSEQ);
 		String[] selectionArgs = since == null ? NO_SELECTION_ARGS : vals(since);
 
-		CouchChangesFeed changes = new CouchChangesFeed();
+		CouchChangesFeed changes = new CouchChangesFeed(since);
 
 		Cursor c = null;
 		try {
@@ -325,6 +325,11 @@ class IllegalDocException extends Exception {
 class CouchChangesFeed {
 	private int last_seq;
 	private JSONArray results = new JSONArray();
+
+	CouchChangesFeed() {}
+	CouchChangesFeed(Integer since) {
+		this.last_seq = since == null ? 0 : since;
+	}
 
 	public void addDoc(int seq, JSONObject doc) throws JSONException {
 		last_seq = Math.max(seq, last_seq);
