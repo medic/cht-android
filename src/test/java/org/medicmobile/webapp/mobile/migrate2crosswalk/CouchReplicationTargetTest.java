@@ -102,13 +102,13 @@ public class CouchReplicationTargetTest {
 		
 		// then
 		assertJson(response, json(
-				"total_rows", 3,
+				"total_rows", 2,
 				"offset", 0,
 				"rows", array(
 					json(
 						"id", "aaa-111",
 						"key", "aaa-111",
-						"value", json("rev", "1-xxx")
+						"value", json("rev", "1-xxx"),
 						"doc", json(
 							"_id", "aaa-111",
 							"_rev", "1-xxx",
@@ -118,7 +118,7 @@ public class CouchReplicationTargetTest {
 					json(
 						"id", "bbb-222",
 						"key", "bbb-222",
-						"value", json("rev", "1-yyy")
+						"value", json("rev", "1-yyy"),
 						"doc", json(
 							"_id", "bbb-222",
 							"_rev", "1-yyy",
@@ -164,7 +164,7 @@ public class CouchReplicationTargetTest {
 					json(
 						"id", "bbb-222",
 						"key", "bbb-222",
-						"value", json("rev", "1-yyy")
+						"value", json("rev", "1-yyy"),
 						"doc", json(
 							"_id", "bbb-222",
 							"_rev", "1-yyy",
@@ -210,7 +210,7 @@ public class CouchReplicationTargetTest {
 					json(
 						"id", "aaa-111",
 						"key", "aaa-111",
-						"value", json("rev", "1-xxx")
+						"value", json("rev", "1-xxx"),
 						"doc", json(
 							"_id", "aaa-111",
 							"_rev", "1-xxx",
@@ -220,7 +220,7 @@ public class CouchReplicationTargetTest {
 					json(
 						"id", "ccc-333",
 						"key", "ccc-333",
-						"value", json("rev", "1-zzz")
+						"value", json("rev", "1-zzz"),
 						"doc", json(
 							"_id", "ccc-333",
 							"_rev", "1-zzz",
@@ -268,7 +268,7 @@ public class CouchReplicationTargetTest {
 					json(
 						"id", "aaa-111",
 						"key", "aaa-111",
-						"value", json("rev", "1-xxx")
+						"value", json("rev", "1-xxx"),
 						"doc", json(
 							"_id", "aaa-111",
 							"_rev", "1-xxx",
@@ -278,7 +278,7 @@ public class CouchReplicationTargetTest {
 					json(
 						"id", "ccc-333",
 						"key", "ccc-333",
-						"value", json("rev", "1-zzz")
+						"value", json("rev", "1-zzz"),
 						"doc", json(
 							"_id", "ccc-333",
 							"_rev", "1-zzz",
@@ -936,9 +936,9 @@ public class CouchReplicationTargetTest {
 			fail(String.format("Objects are of different class: %s vs %s (%s)", e.getClass(), a.getClass(), failMessage));
 
 		if(e instanceof JSONObject) {
-			assertJson((JSONObject) e, (JSONObject) a);
+			assertJson((JSONObject) a, (JSONObject) e);
 		} else if(e instanceof JSONArray) {
-			assertJson((JSONArray) e, (JSONArray) a);
+			assertJson((JSONArray) a, (JSONArray) e);
 		} else if(e instanceof String) {
 			assertEquals(failMessage, (String) e, (String) a);
 		} else if(e instanceof Integer) {

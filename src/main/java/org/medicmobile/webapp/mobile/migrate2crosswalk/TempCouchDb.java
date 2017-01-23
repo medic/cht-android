@@ -3,16 +3,24 @@ package org.medicmobile.webapp.mobile.migrate2crosswalk;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteCursor;
+import android.database.sqlite.SQLiteCursorDriver;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteDatabase.CursorFactory;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.database.sqlite.SQLiteQuery;
 
 import java.util.regex.Pattern;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.medicmobile.webapp.mobile.MedicLog;
 
+import static android.database.DatabaseUtils.appendEscapedSQLString;
+
+// TODO rename this class as e.g. TempCouchBackingDb
 class TempCouchDb extends SQLiteOpenHelper {
 	private static final int VERSION = 1;
 
@@ -44,7 +52,7 @@ class TempCouchDb extends SQLiteOpenHelper {
 	private final SQLiteDatabase db;
 
 	private TempCouchDb(Context ctx) {
-		super(ctx, "migrate2crosswalk", null, VERSION);
+		super(ctx, "migrate2crosswalk", new CursorDebugFactory(), VERSION);
 		db = getWritableDatabase();
 	}
 
@@ -155,6 +163,61 @@ class TempCouchDb extends SQLiteOpenHelper {
 		}
 	}
 
+	public CouchViewResult getAllDocs(String... ids) throws JSONException {
+		int total;
+		CouchViewResult docs;
+
+		{
+			Cursor c = null;
+			try {
+				c = db.query(tblMEDIC,
+						cols(clmSEQ, clmJSON),
+						SELECT_ALL, NO_SELECTION_ARGS,
+						NO_GROUP, NO_GROUP,
+						DEFAULT_ORDERING);
+
+				docs = new CouchViewResult(c.getCount(), 0); // TODO we can do a proper count here if we care
+			} finally {
+				if(c != null) try { c.close(); } catch(Exception ex) {}
+			}
+		}
+
+		{
+			Cursor c = null;
+			try {
+				final String selecter;
+
+				if(ids.length == 0) {
+					selecter = SELECT_ALL;
+				} else {
+					StringBuilder bob = new StringBuilder();
+					for(String id : ids) {
+						bob.append(',');
+						appendEscapedSQLString(bob, id);
+					}
+
+					selecter = clmID + " in (" + bob.substring(1) + ")";
+				}
+
+				c = db.query(tblMEDIC,
+						cols(clmSEQ, clmJSON, clmID),
+						selecter, NO_SELECTION_ARGS,
+						NO_GROUP, NO_GROUP,
+						DEFAULT_ORDERING);
+
+				while(c.moveToNext()) {
+					int seq = c.getInt(0);
+					JSONObject json = (JSONObject) new JSONTokener(c.getString(1)).nextValue();
+					docs.addDoc(seq, json);
+				}
+
+				return docs;
+			} finally {
+				if(c != null) try { c.close(); } catch(Exception ex) {}
+			}
+		}
+	}
+
 	public CouchChangesFeed getAllChanges() throws JSONException {
 		CouchChangesFeed changes = new CouchChangesFeed();
 
@@ -256,5 +319,69 @@ class TempCouchDb extends SQLiteOpenHelper {
 class IllegalDocException extends Exception {
 	public IllegalDocException(JSONObject doc) {
 		super("Badly formed doc: " + doc);
+	}
+}
+
+class CouchChangesFeed {
+	private int last_seq;
+	private JSONArray results = new JSONArray();
+
+	public void addDoc(int seq, JSONObject doc) throws JSONException {
+		last_seq = Math.max(seq, last_seq);
+		results.put(JSON.obj(
+			"changes", JSON.array(
+				JSON.obj("rev", doc.getString("_rev"))
+			),
+			"id", doc.getString("_id"),
+			"seq", seq
+		));
+	}
+
+	public JSONObject get() throws JSONException {
+		return JSON.obj("results", results,
+				"last_seq", last_seq);
+	}
+}
+
+class CouchViewResult {
+	private final int totalRows;
+	private final int offset;
+	private JSONArray docs = new JSONArray();
+
+	CouchViewResult(int totalRows, int offset) {
+		this.totalRows = totalRows;
+		this.offset = offset;
+	}
+
+	public void addDoc(int seq, JSONObject doc) throws JSONException {
+		docs.put(JSON.obj(
+			"id", doc.getString("_id"),
+			"key", doc.getString("_id"),
+			"value", JSON.obj("rev", doc.getString("_rev")),
+			"doc", doc
+		));
+	}
+
+	public JSONObject get() throws JSONException {
+		return JSON.obj("offset", offset,
+				"total_rows", totalRows,
+				"rows", docs);
+	}
+}
+
+class CursorDebugFactory implements CursorFactory {
+int queryCount = 0;
+
+	@Override
+	public Cursor newCursor(SQLiteDatabase db, SQLiteCursorDriver masterQuery, String editTable, SQLiteQuery query) {
+		MedicLog.trace(this, query.toString());
+
+		if(false && ++queryCount > 4) {
+			throw new RuntimeException(String.format(
+					"masterQuery=%s; editTable=%s; query=%s",
+					masterQuery, editTable, query));
+		}
+
+		return new SQLiteCursor(masterQuery, editTable, query);
 	}
 }

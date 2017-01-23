@@ -5,6 +5,8 @@ import android.net.Uri;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +42,8 @@ class CouchReplicationTarget {
 				return JsonEntity.of(getDbDetails());
 			} else if(matches(requestPath, "/_local")) {
 				return JsonEntity.of(_local_GET(requestPath));
+			} else if(matches(requestPath, "/_all_docs")) {
+				return JsonEntity.of(_all_docs_GET(queryParams));
 			} else if(matches(requestPath, "/_changes")) {
 				return JsonEntity.of(_changes_GET(queryParams));
 			}
@@ -62,6 +66,8 @@ class CouchReplicationTarget {
 		try {
 			if(matches(requestPath, "/_local")) {
 				throw new UnimplementedEndpointException();
+			} else if(matches(requestPath, "/_all_docs")) {
+				return JsonEntity.of(_all_docs_POST(queryParams, requestBody));
 			} else if(matches(requestPath, "/_bulk_docs")) {
 				return _bulk_docs(requestPath, queryParams, requestBody);
 			} else if(matches(requestPath,  "/_revs_diff")) {
@@ -97,6 +103,31 @@ class CouchReplicationTarget {
 	}
 
 //> SPECIFIC REQUEST HANDLERS
+	private JSONObject _all_docs_GET(Map<String, List<String>> queryParams) throws JSONException {
+		String key = getFirstString(queryParams, "key");
+		if(key != null) {
+			key = urlDecode(key);
+			if(key.length() > 2 && key.charAt(0) == '"' && key.charAt(key.length()-1) == '"') {
+				key = key.substring(1, key.length()-1);
+				return db.getAllDocs(key).get();
+			}
+		}
+
+		String keys = getFirstString(queryParams, "keys");
+		if(keys != null) {
+			keys = urlDecode(keys);
+
+			return db.getAllDocs(asStrings(new JSONArray(keys))).get();
+		}
+
+		return db.getAllDocs().get();
+	}
+
+	private JSONObject _all_docs_POST(Map<String, List<String>> queryParams, JSONObject requestBody) throws JSONException {
+		JSONArray keys = requestBody.getJSONArray("keys");
+		return db.getAllDocs(asStrings(keys)).get();
+	}
+
 	private JSONObject _changes_GET(Map<String, List<String>> queryParams) throws JSONException {
 		CouchChangesFeed changes;
 
@@ -218,6 +249,33 @@ class CouchReplicationTarget {
 		} catch(Exception _) {
 			return null;
 		}
+	}
+
+	private static String getFirstString(Map<String, List<String>> queryParams, String key) {
+		List<String> values = queryParams.get(key);
+		if(values == null || values.size() == 0) return null;
+
+		String value = values.get(0).trim();
+		if(value.length() == 0) return null;
+
+		return value;
+	}
+
+	private static String urlDecode(String encodedString) {
+		try {
+			return URLDecoder.decode(encodedString, "UTF-8");
+		} catch(UnsupportedEncodingException ex) {
+			// everyone supports UTF-8, surely?!
+			throw new RuntimeException(ex);
+		}
+	}
+
+	private static String[] asStrings(JSONArray json) throws JSONException {
+		String[] strings = new String[json.length()];
+		for(int i=0; i<strings.length; ++i) {
+			strings[i] = json.getString(i);
+		}
+		return strings;
 	}
 
 	private void trace(String method, String message, Object... extras) {
