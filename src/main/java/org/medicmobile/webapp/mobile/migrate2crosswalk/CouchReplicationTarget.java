@@ -52,7 +52,7 @@ class CouchReplicationTarget {
 				throw new UnsupportedInternalPathException(requestPath);
 			}
 
-			return JsonEntity.of(getDoc(requestPath));
+			return getDoc(requestPath, queryParams);
 		} catch(JSONException ex) {
 			throw new RuntimeException(ex);
 		}
@@ -220,11 +220,17 @@ class CouchReplicationTarget {
 				"committed_update_seq", 0 /* TODO calculate this */);
 	}
 
-	private JSONObject getDoc(String requestPath) throws DocNotFoundException, JSONException {
+	private JsonEntity getDoc(String requestPath, Map<String, List<String>> queryParams) throws DocNotFoundException, JSONException {
 		String id = Uri.parse(requestPath).getPath().substring(1);
 		JSONObject doc = db.get(id);
 		if(doc == null) throw new DocNotFoundException(id);
-		return doc;
+
+		if(getFirstString(queryParams, "open_revs") != null) {
+			return JsonEntity.of(JSON.array(JSON.obj(
+				"ok", doc)));
+		}
+
+		return JsonEntity.of(doc);
 	}
 
 //> HELPERS
