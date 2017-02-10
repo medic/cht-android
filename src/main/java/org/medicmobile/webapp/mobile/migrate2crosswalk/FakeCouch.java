@@ -124,6 +124,7 @@ class FakeCouchDaemon extends NanoHTTPD {
 		} catch(DocNotFoundException ex) {
 			fcResponse = FcResponse.error(NOT_FOUND, "not_found", "missing");
 		} catch(Exception ex) {
+			MedicLog.warn(ex, "Returning JSON-encoded error to client.");
 			fcResponse = FcResponse.error(INTERNAL_ERROR, "error", "Exception when trying to handle request: %s", ex);
 		}
 
@@ -161,7 +162,7 @@ class FakeCouchDaemon extends NanoHTTPD {
 	}
 
 	private static String getRequestPath(IHTTPSession session) {
-		String path = Uri.parse(session.getUri()).getPath();
+		String path = session.getUri();
 		String[] pathParts = path.split("/", 3);
 
 		if(pathParts.length != 3) throw new RuntimeException("Path too short: " + path);

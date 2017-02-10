@@ -144,7 +144,7 @@ class CouchReplicationTarget {
 	}
 
 	private JSONObject _local_GET(String requestPath) throws DocNotFoundException, JSONException {
-		String id = Uri.parse(requestPath).getPath().substring(1);
+		String id = requestPath.substring(1);
 		JSONObject doc = db.get_local(id);
 		if(doc == null) throw new DocNotFoundException(id);
 		return doc;
@@ -225,7 +225,7 @@ class CouchReplicationTarget {
 	}
 
 	private FcResponse getDoc(String requestPath, Map<String, List<String>> queryParams) throws DocNotFoundException, JSONException {
-		String id = Uri.parse(requestPath).getPath().substring(1);
+		String id = requestPath.substring(1);
 		JSONObject doc = db.get(id);
 		if(doc == null) throw new DocNotFoundException(id);
 
