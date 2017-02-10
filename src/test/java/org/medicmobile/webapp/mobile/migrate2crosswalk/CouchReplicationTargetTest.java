@@ -38,7 +38,7 @@ public class CouchReplicationTargetTest {
 	@Test
 	public void _root_GET_shouldReturnDbDetails() throws Exception {
 		// when
-		JsonEntity response = target.get("/", queryParams());
+		FcResponse response = target.get("/", queryParams());
 
 		// expect
 		assertJson(response, json(
@@ -98,8 +98,8 @@ public class CouchReplicationTargetTest {
 				"new_edits", false));
 
 		// when
-		JsonEntity response = target.get("/_all_docs", noQueryParams());
-		
+		FcResponse response = target.get("/_all_docs", noQueryParams());
+
 		// then
 		assertJson(response, json(
 				"total_rows", 2,
@@ -154,8 +154,8 @@ public class CouchReplicationTargetTest {
 				"new_edits", false));
 
 		// when
-		JsonEntity response = target.get("/_all_docs", queryParams("key", "%22bbb-222%22"));
-		
+		FcResponse response = target.get("/_all_docs", queryParams("key", "%22bbb-222%22"));
+
 		// then
 		assertJson(response, json(
 				"total_rows", 3,
@@ -200,8 +200,8 @@ public class CouchReplicationTargetTest {
 				"new_edits", false));
 
 		// when
-		JsonEntity response = target.get("/_all_docs", queryParams("keys", "%5B%22aaa-111%22,%22ccc-333%22%5D"));
-		
+		FcResponse response = target.get("/_all_docs", queryParams("keys", "%5B%22aaa-111%22,%22ccc-333%22%5D"));
+
 		// then
 		assertJson(response, json(
 				"total_rows", 3,
@@ -256,10 +256,10 @@ public class CouchReplicationTargetTest {
 				"new_edits", false));
 
 		// when
-		JsonEntity response = target.post("/_all_docs", json(
+		FcResponse response = target.post("/_all_docs", json(
 					"keys", array("aaa-111", "ccc-333")
 				));
-		
+
 		// then
 		assertJson(response, json(
 				"total_rows", 3,
@@ -294,7 +294,7 @@ public class CouchReplicationTargetTest {
 	@Test
 	public void _changes_GET_shouldReturnEmptyList_ifThereAreNoDocsInDb() throws Exception {
 		// when
-		JsonEntity response = target.get("/_changes", queryParams(
+		FcResponse response = target.get("/_changes", queryParams(
 				"a", "1",
 				"b", "2"));
 
@@ -324,7 +324,7 @@ public class CouchReplicationTargetTest {
 				"new_edits", false));
 
 		// when
-		JsonEntity response = target.get("/_changes", queryParams(
+		FcResponse response = target.get("/_changes", queryParams(
 				"a", "1",
 				"b", "2"));
 
@@ -369,7 +369,7 @@ public class CouchReplicationTargetTest {
 				"new_edits", false));
 
 		// when
-		JsonEntity response = target.get("/_changes", queryParams(
+		FcResponse response = target.get("/_changes", queryParams(
 				"limit", "1"));
 
 		// then
@@ -406,7 +406,7 @@ public class CouchReplicationTargetTest {
 				"new_edits", false));
 
 		// when
-		JsonEntity response = target.get("/_changes", queryParams(
+		FcResponse response = target.get("/_changes", queryParams(
 				"limit", "1",
 				"since", "1"));
 
@@ -444,7 +444,7 @@ public class CouchReplicationTargetTest {
 				"new_edits", false));
 
 		// when
-		JsonEntity response = target.get("/_changes", queryParams(
+		FcResponse response = target.get("/_changes", queryParams(
 				"since", "2"));
 
 		// then
@@ -504,7 +504,7 @@ public class CouchReplicationTargetTest {
 				"_local/some-id", ANY_REV, ANY_JSON);
 
 		// when
-		JsonEntity response = target.get("/_local/some-id");
+		FcResponse response = target.get("/_local/some-id");
 
 		// then
 		assertJson(response, json("_id", "_local/some-id",
@@ -516,7 +516,7 @@ public class CouchReplicationTargetTest {
 	@Test
 	public void _revs_diff_POST_shouldReturnEmptyObject_ifSuppliedWithEmptyList() throws Exception {
 		// when
-		JsonEntity response = target.post(
+		FcResponse response = target.post(
 				"/_revs_diff",
 				emptyObject());
 
@@ -527,7 +527,7 @@ public class CouchReplicationTargetTest {
 	@Test
 	public void _revs_diff_POST_shouldEchoCompleteList_ifNothingInDatabase() throws Exception {
 		// when
-		JsonEntity response = target.post(
+		FcResponse response = target.post(
 				"/_revs_diff", json(
 				"abc-123", array("1-aaa"),
 				"def-456", array("2-bbb")));
@@ -563,7 +563,7 @@ public class CouchReplicationTargetTest {
 				"def-456", "1-xxx", "{ \"_id\":\"def-456\", \"_rev\":\"1-xxx\", \"val\":\"two\" }");
 
 		// when
-		JsonEntity response = target.post(
+		FcResponse response = target.post(
 				"/_revs_diff", json(
 				"abc-123", array("1-aaa"),
 				"def-456", array("2-bbb"),
@@ -595,7 +595,7 @@ public class CouchReplicationTargetTest {
 	@Test
 	public void _bulk_docs_shouldSaveASingleDocument() throws Exception {
 		// when
-		JsonEntity response = target.post("/_bulk_docs", json(
+		FcResponse response = target.post("/_bulk_docs", json(
 				"docs", array(
 					json(
 						"_id", "abc-123",
@@ -622,7 +622,7 @@ public class CouchReplicationTargetTest {
 	@Test
 	public void _bulk_docs_shouldSaveMultipleDocumentsd() throws Exception {
 		// when
-		JsonEntity response = target.post("/_bulk_docs", json(
+		FcResponse response = target.post("/_bulk_docs", json(
 				"docs", array(
 					json(
 						"_id", "abc-123",
@@ -862,7 +862,7 @@ public class CouchReplicationTargetTest {
 				"abc-123", "1-xxx", "{ \"_id\":\"abc-123\", \"_rev\":\"1-xxx\", \"val\":\"one\" }");
 
 		// when
-		JsonEntity response = target.get("/abc-123", noQueryParams());
+		FcResponse response = target.get("/abc-123", noQueryParams());
 
 		// expect
 		assertJson(response, json(
@@ -887,7 +887,7 @@ public class CouchReplicationTargetTest {
 				"abc-123", "1-xxx", "{ \"_id\":\"abc-123\", \"_rev\":\"1-xxx\", \"val\":\"one\" }");
 
 		// when
-		JsonEntity response = target.get("/abc-123", queryParams("open_revs", "%5B%221-xxx%22%5D"));
+		FcResponse response = target.get("/abc-123", queryParams("open_revs", "%5B%221-xxx%22%5D"));
 
 		// expect
 		assertJson(response, array(
@@ -896,6 +896,78 @@ public class CouchReplicationTargetTest {
 					"_rev", "1-xxx",
 					"val", "one"))
 				));
+	}
+
+	@Test
+	public void attachmentRequest_shouldReturn404_ifDocDoesNotExist() throws Exception {
+		// given
+		// no docs exist
+
+		try {
+			// when
+			target.get("/abc-123/attachment-1", queryParams());
+			fail("Expected exception.");
+		} catch(DocNotFoundException ex) {
+			// expected
+		}
+	}
+
+	@Test
+	public void attachmentRequest_shouldReturn404_ifAttachmentDoesNotExist() throws Exception {
+		// given
+		target.post("/_bulk_docs", json(
+				"docs", array(
+					json(
+						"_id", "abc-123",
+						"_rev", "1-xxx",
+						"val", "one"
+					)
+				),
+				"new_edits", false));
+		assertDbContent("medic",
+				"abc-123", "1-xxx", "{ \"_id\":\"abc-123\", \"_rev\":\"1-xxx\", \"val\":\"one\" }");
+
+		try {
+			// when
+			target.get("/abc-123/attachment-2", queryParams());
+			fail("Expected exception.");
+		} catch(AttachmentNotFoundException ex) {
+			// expected
+		}
+	}
+
+	@Test
+	public void attachmentRequest_shouldReturnExistingAttachment() throws Exception {
+		// given
+		target.post("/_bulk_docs", json(
+				"docs", array(
+					json(
+						"_id", "abc-123",
+						"_rev", "1-xxx",
+						"val", "one",
+						"_attachments", json(
+							"attachment-1", json(
+								"data", "aGk=", // 'hi', base64-encoded
+								"digest", "NzY0ZWZhODgzZGRhMWUxMWRiNDc2NzFjNGEzYmJkOWU=",
+								"content_type", "text/plain",
+								"revpos", "1"
+							)
+						)
+					)
+				),
+				"new_edits", false));
+		assertDbContent("medic",
+				"abc-123", "1-xxx", "{ \"_id\":\"abc-123\", \"_rev\":\"1-xxx\", \"val\":\"one\", \"_attachments\":{ \"attachment-1\":{" +
+						"\"data\":\"aGk=\", \"digest\":\"NzY0ZWZhODgzZGRhMWUxMWRiNDc2NzFjNGEzYmJkOWU=\", \"content_type\":\"text/plain\", \"revpos\":\"1\" } } }");
+
+		// when
+		FcResponse response = target.get("/abc-123/attachment-1", queryParams());
+
+		// then
+		assertEquals("text/plain", response.contentType);
+
+		// and
+		assertEquals("hi", new String(response.bodyAsBytes(), "UTF-8"));
 	}
 
 //> HELPERS
@@ -951,7 +1023,7 @@ public class CouchReplicationTargetTest {
 		return new JSONArray();
 	}
 
-	private static void assertJson(JsonEntity actual, JSONArray expected) throws JSONException {
+	private static void assertJson(FcResponse actual, JSONArray expected) throws JSONException {
 		assertJson(actual.asArray(), expected);
 	}
 
@@ -966,7 +1038,7 @@ public class CouchReplicationTargetTest {
 		}
 	}
 
-	private static void assertJson(JsonEntity actual, JSONObject expected) throws JSONException {
+	private static void assertJson(FcResponse actual, JSONObject expected) throws JSONException {
 		assertJson(actual.asObject(), expected);
 	}
 

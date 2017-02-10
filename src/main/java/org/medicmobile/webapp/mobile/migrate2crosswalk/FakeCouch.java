@@ -2,6 +2,7 @@ package org.medicmobile.webapp.mobile.migrate2crosswalk;
 
 import android.content.Context;
 import android.net.Uri;
+import android.util.Base64;
 
 import fi.iki.elonen.NanoHTTPD;
 import static fi.iki.elonen.NanoHTTPD.Response.Status;
@@ -12,10 +13,12 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -86,8 +89,7 @@ class FakeCouchDaemon extends NanoHTTPD {
 
 		Map<String, String> additionalHeaders = new HashMap<String, String>();
 
-		Object responseBody;
-		Status responseStatus;
+		FcResponse fcResponse;
 		try {
 			requestPath = getRequestPath(session);
 			queryParams = getQueryParams(session);
@@ -96,60 +98,43 @@ class FakeCouchDaemon extends NanoHTTPD {
 
 			switch(session.getMethod()) {
 				case OPTIONS: {
-					responseBody = "";
-					responseStatus = OK;
+					fcResponse = FcResponse.of("");
 					// TODO in theory this should be responding differently
 					// depending on the path.  This hould be good enough for
 					// now, though.
 					additionalHeaders.put("Allow", ALLOWED_METHODS);
 				} break;
 				case GET: {
-					responseBody = couch.get(requestPath, queryParams);
-					responseStatus = OK;
+					fcResponse = couch.get(requestPath, queryParams);
 				} break;
 				case POST: {
 					JSONObject requestBody = getBody(session);
-					responseBody = couch.post(requestPath, queryParams, requestBody);
-					responseStatus = OK;
+					fcResponse = couch.post(requestPath, queryParams, requestBody);
 				} break;
 				case PUT: {
 					JSONObject requestBody = getBody(session);
-					responseBody = couch.put(requestPath, queryParams, requestBody);
-					responseStatus = OK;
+					fcResponse = couch.put(requestPath, queryParams, requestBody);
 				} break;
 				default: {
-					responseStatus = METHOD_NOT_ALLOWED;
-					responseBody = error("unsupported_method",
+					fcResponse = FcResponse.error(METHOD_NOT_ALLOWED,
+							"unsupported_method",
 							"Unsupported method: " + session.getMethod());
 				}
 			}
 		} catch(DocNotFoundException ex) {
-			responseStatus = NOT_FOUND;
-			responseBody = error("not_found", "missing");
+			fcResponse = FcResponse.error(NOT_FOUND, "not_found", "missing");
 		} catch(Exception ex) {
-			responseStatus = INTERNAL_ERROR;
-			responseBody = error("error", "Exception when trying to handle request: %s", ex);
+			fcResponse = FcResponse.error(INTERNAL_ERROR, "error", "Exception when trying to handle request: %s", ex);
 		}
 
-		byte[] responseBodyBytes = responseBodyBytes(responseBody);
-		Response response = newFixedLengthResponse(responseStatus, MIME_JSON,
+		byte[] responseBodyBytes = fcResponse.bodyAsBytes();
+		Response response = newFixedLengthResponse(fcResponse.status, fcResponse.contentType,
 				new ByteArrayInputStream(responseBodyBytes), responseBodyBytes.length);
 
 		addStandardHeadersTo(response);
 		addAdditionalHeaders(response, additionalHeaders);
 
 		return response;
-	}
-
-	private String error(String error, String reason, Object... args) {
-		try {
-			return new JSONObject()
-					.put("error", "error")
-					.put("reason", String.format(reason, args))
-					.toString();
-		} catch(JSONException ex) {
-			return "{ \"error\":\"error\", \"reason\":\"unknown\" }";
-		}
 	}
 
 	private void addAdditionalHeaders(Response response, Map<String, String> additionalHeaders) {
@@ -228,5 +213,55 @@ class FakeCouchDaemon extends NanoHTTPD {
 
 	private void trace(String methodName, String message, Object... args) {
 		MedicLog.trace(this, methodName + "(): " + message, args);
+	}
+}
+
+class FcResponse {
+	private static final String MIME_TEXT = "text/plain";
+	private static final String MIME_JSON = "application/json";
+
+	final Status status;
+	final String contentType;
+	private final Object body;
+
+	FcResponse(Status status, String contentType, Object body) {
+		this.status = status;
+		this.contentType = contentType;
+		this.body = body;
+	}
+
+	static FcResponse of(String str) { return new FcResponse(OK, MIME_TEXT, str); }
+	static FcResponse of(JSONObject obj) { return new FcResponse(OK, MIME_JSON, obj); }
+	static FcResponse of(JSONArray arr) { return new FcResponse(OK, MIME_JSON, arr); }
+	static FcResponse of(String contentType, String base64body) {
+		byte[] binaryData = Base64.decode(base64body, Base64.DEFAULT);
+		return new FcResponse(OK, contentType, binaryData);
+	}
+
+	static FcResponse error(Status status, String error, String reason, Object... args) {
+		Object body;
+		try {
+			body = new JSONObject()
+					.put("error", "error")
+					.put("reason", String.format(reason, args))
+					.toString();
+		} catch(JSONException ex) {
+			body = "{ \"error\":\"error\", \"reason\":\"unknown\" }";
+		}
+		return new FcResponse(status, FcResponse.MIME_JSON, body);
+	}
+
+	public JSONArray asArray() { return (JSONArray) body; }
+	public JSONObject asObject() { return (JSONObject) body; }
+
+	public byte[] bodyAsBytes() {
+		if(body instanceof byte[]) return (byte[]) body;
+
+		try {
+			return body.toString().getBytes("UTF-8");
+		} catch(UnsupportedEncodingException ex) {
+			// surely everyone supports UTF-8?!
+			throw new RuntimeException(ex);
+		}
 	}
 }

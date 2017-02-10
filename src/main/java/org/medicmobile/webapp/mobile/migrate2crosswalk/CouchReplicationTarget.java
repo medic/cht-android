@@ -32,24 +32,28 @@ class CouchReplicationTarget {
 	}
 
 //> JSON handlers
-	public JsonEntity get(String requestPath) throws CouchReplicationTargetException {
+	public FcResponse get(String requestPath) throws CouchReplicationTargetException {
 		return get(requestPath, NO_QUERY_PARAMS);
 	}
 
-	public JsonEntity get(String requestPath, Map<String, List<String>> queryParams) throws CouchReplicationTargetException {
+	public FcResponse get(String requestPath, Map<String, List<String>> queryParams) throws CouchReplicationTargetException {
 		try {
 			if("/".equals(requestPath)) {
-				return JsonEntity.of(getDbDetails());
+				return FcResponse.of(getDbDetails());
 			} else if(matches(requestPath, "/_local")) {
-				return JsonEntity.of(_local_GET(requestPath));
+				return FcResponse.of(_local_GET(requestPath));
 			} else if(matches(requestPath, "/_all_docs")) {
-				return JsonEntity.of(_all_docs_GET(queryParams));
+				return FcResponse.of(_all_docs_GET(queryParams));
 			} else if(matches(requestPath, "/_changes")) {
-				return JsonEntity.of(_changes_GET(queryParams));
+				return FcResponse.of(_changes_GET(queryParams));
 			}
 
 			if(requestPath.startsWith("/_")) {
 				throw new UnsupportedInternalPathException(requestPath);
+			}
+
+			if(requestPath.substring(1).contains("/")) {
+				return getAttachment(requestPath);
 			}
 
 			return getDoc(requestPath, queryParams);
@@ -58,16 +62,16 @@ class CouchReplicationTarget {
 		}
 	}
 
-	public JsonEntity post(String requestPath, JSONObject requestBody) throws CouchReplicationTargetException {
+	public FcResponse post(String requestPath, JSONObject requestBody) throws CouchReplicationTargetException {
 		return post(requestPath, NO_QUERY_PARAMS, requestBody);
 	}
 
-	public JsonEntity post(String requestPath, Map<String, List<String>> queryParams, JSONObject requestBody) throws CouchReplicationTargetException {
+	public FcResponse post(String requestPath, Map<String, List<String>> queryParams, JSONObject requestBody) throws CouchReplicationTargetException {
 		try {
 			if(matches(requestPath, "/_local")) {
 				throw new UnimplementedEndpointException();
 			} else if(matches(requestPath, "/_all_docs")) {
-				return JsonEntity.of(_all_docs_POST(queryParams, requestBody));
+				return FcResponse.of(_all_docs_POST(queryParams, requestBody));
 			} else if(matches(requestPath, "/_bulk_docs")) {
 				return _bulk_docs(requestPath, queryParams, requestBody);
 			} else if(matches(requestPath,  "/_revs_diff")) {
@@ -83,11 +87,11 @@ class CouchReplicationTarget {
 		throw new RuntimeException("Not yet implemented.");
 	}
 
-	public JsonEntity put(String requestPath, JSONObject requestBody) throws CouchReplicationTargetException {
+	public FcResponse put(String requestPath, JSONObject requestBody) throws CouchReplicationTargetException {
 		return put(requestPath, NO_QUERY_PARAMS, requestBody);
 	}
 
-	public JsonEntity put(String requestPath, Map<String, List<String>> queryParams, JSONObject requestBody) throws CouchReplicationTargetException {
+	public FcResponse put(String requestPath, Map<String, List<String>> queryParams, JSONObject requestBody) throws CouchReplicationTargetException {
 		try {
 			if(matches(requestPath, "/_local")) {
 				return _local_PUT(requestPath, requestBody);
@@ -146,7 +150,7 @@ class CouchReplicationTarget {
 		return doc;
 	}
 
-	private JsonEntity _local_PUT(String requestPath, JSONObject doc) throws IllegalDocException, JSONException {
+	private FcResponse _local_PUT(String requestPath, JSONObject doc) throws IllegalDocException, JSONException {
 		String docId = requestPath.substring(1);
 
 		String internalDocId = docId.split("/")[1];
@@ -157,13 +161,13 @@ class CouchReplicationTarget {
 		doc.put("_rev", docRev);
 		db.store_local(doc);
 
-		return JsonEntity.of(JSON.obj(
+		return FcResponse.of(JSON.obj(
 				"ok", true,
 				"id", docId,
 				"rev", docRev));
 	}
 
-	private JsonEntity _revs_diff(JSONObject requestBody) throws JSONException {
+	private FcResponse _revs_diff(JSONObject requestBody) throws JSONException {
 		JSONObject response = new JSONObject();
 
 		Iterator<String> docIds = requestBody.keys();
@@ -180,10 +184,10 @@ class CouchReplicationTarget {
 				response.put(docId, new JSONObject().put("missing", missing));
 			}
 		}
-		return JsonEntity.of(response);
+		return FcResponse.of(response);
 	}
 
-	private JsonEntity _bulk_docs(String requestPath, Map<String, List<String>> queryParams, JSONObject requestBody) throws CouchReplicationTargetException {
+	private FcResponse _bulk_docs(String requestPath, Map<String, List<String>> queryParams, JSONObject requestBody) throws CouchReplicationTargetException {
 		try {
 			JSONArray docs = requestBody.optJSONArray("docs");
 
@@ -198,7 +202,7 @@ class CouchReplicationTarget {
 						"rev", doc.getString("_rev")));
 			}
 
-			return JsonEntity.of(saved);
+			return FcResponse.of(saved);
 		} catch(JSONException ex) {
 			// TODO this should be handled properly as per whatever
 			// couch does
@@ -220,17 +224,35 @@ class CouchReplicationTarget {
 				"committed_update_seq", 0 /* TODO calculate this */);
 	}
 
-	private JsonEntity getDoc(String requestPath, Map<String, List<String>> queryParams) throws DocNotFoundException, JSONException {
+	private FcResponse getDoc(String requestPath, Map<String, List<String>> queryParams) throws DocNotFoundException, JSONException {
 		String id = Uri.parse(requestPath).getPath().substring(1);
 		JSONObject doc = db.get(id);
 		if(doc == null) throw new DocNotFoundException(id);
 
 		if(getFirstString(queryParams, "open_revs") != null) {
-			return JsonEntity.of(JSON.array(JSON.obj(
+			return FcResponse.of(JSON.array(JSON.obj(
 				"ok", doc)));
 		}
 
-		return JsonEntity.of(doc);
+		return FcResponse.of(doc);
+	}
+
+	private FcResponse getAttachment(String requestPath) throws CouchReplicationTargetException, JSONException {
+		String[] pathParts = requestPath.substring(1).split("/", 2);
+		if(pathParts.length != 2 || pathParts[0].length() == 00 || pathParts[1].length() == 1)
+			throw new CouchReplicationTargetException("Bad doc or attachment path: " + requestPath);
+
+		String id = pathParts[0];
+		JSONObject doc = db.get(id);
+		if(doc == null) throw new DocNotFoundException(id);
+
+		String attachmentName = pathParts[1];
+		JSONObject attachments = doc.optJSONObject("_attachments");
+		if(attachments == null) throw new AttachmentNotFoundException(requestPath);
+		JSONObject attachment = attachments.getJSONObject(attachmentName);
+		if(attachment == null) throw new AttachmentNotFoundException(requestPath);
+
+		return FcResponse.of(attachment.getString("content_type"), attachment.getString("data"));
 	}
 
 //> HELPERS
@@ -291,11 +313,17 @@ class CouchReplicationTarget {
 
 class CouchReplicationTargetException extends Exception {
 	CouchReplicationTargetException() {}
-	CouchReplicationTargetException(String message) { super(message); }
+	CouchReplicationTargetException(String message, Object... args) { super(String.format(message, args)); }
 }
 
 class DocNotFoundException extends CouchReplicationTargetException {
-	DocNotFoundException(String id) { super(id); }
+	DocNotFoundException(String id) { super("_id='%s'", id); }
+}
+
+class AttachmentNotFoundException extends CouchReplicationTargetException {
+	AttachmentNotFoundException(String requestPath) {
+		super(requestPath);
+	}
 }
 
 class EmptyResponseException extends CouchReplicationTargetException {}

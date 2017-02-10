@@ -26,13 +26,3 @@ final class JSON {
 		return a;
 	}
 }
-
-class JsonEntity {
-	private Object entity;
-	private JsonEntity(Object entity) { this.entity = entity; }
-	static JsonEntity of(JSONObject obj) { return new JsonEntity(obj); }
-	static JsonEntity of(JSONArray arr) { return new JsonEntity(arr); }
-	public JSONArray asArray() { return (JSONArray) entity; }
-	public JSONObject asObject() { return (JSONObject) entity; }
-	public String toString() { return entity.toString(); }
-}
