@@ -831,6 +831,32 @@ public class CouchReplicationTargetTest {
 		}
 	}
 
+//> _design
+	@Test
+	public void existingDdocRequest_shouldReturnDdoc() throws Exception {
+		// given
+		target.post("/_bulk_docs", json(
+				"docs", array(
+					json(
+						"_id", "_design/my_ddoc",
+						"_rev", "1-xxx",
+						"val", "one"
+					)
+				),
+				"new_edits", false));
+		assertDbContent("medic",
+				"_design/my_ddoc", "1-xxx", "{ \"_id\":\"_design/my_ddoc\", \"_rev\":\"1-xxx\", \"val\":\"one\" }");
+
+		// when
+		FcResponse response = target.get("/_design/my_ddoc", noQueryParams());
+
+		// expect
+		assertJson(response, json(
+				"_id", "_design/my_ddoc",
+				"_rev", "1-xxx",
+				"val", "one"));
+	}
+
 //> Requesting docs
 	@Test
 	public void nonExistentDocRequest_shouldReturn404() throws Exception {

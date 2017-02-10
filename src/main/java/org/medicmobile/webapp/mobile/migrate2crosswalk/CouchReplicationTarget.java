@@ -49,6 +49,9 @@ class CouchReplicationTarget {
 			}
 
 			if(requestPath.startsWith("/_")) {
+				if(requestPath.startsWith("/_design/")) {
+					return getDoc(requestPath, queryParams);
+				}
 				throw new UnsupportedInternalPathException(requestPath);
 			}
 
