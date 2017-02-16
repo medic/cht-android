@@ -15,7 +15,12 @@ import android.widget.*;
 import java.io.File;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.medicmobile.webapp.mobile.migrate2crosswalk.FakeCouch;
@@ -48,6 +53,7 @@ public class EmbeddedBrowserActivity extends Activity implements MedicJsEvaluato
 	private SettingsStore settings;
 	private FakeCouch fakeCouch;
 	private String cookies;
+	private String cookies2;
 	private boolean allowServerComms;
 
 	@Override public void onCreate(Bundle savedInstanceState) {
@@ -77,7 +83,7 @@ public class EmbeddedBrowserActivity extends Activity implements MedicJsEvaluato
 		if(cookies == null) {
 			allowServerComms = true;
 		} else {
-			this.cookies = cookies;
+			this.cookies = this.cookies2 = cookies;
 
 			allowServerComms = false;
 
@@ -139,6 +145,10 @@ public class EmbeddedBrowserActivity extends Activity implements MedicJsEvaluato
 		if(fakeCouch != null) fakeCouch.stop();
 	}
 
+	private void evaluateJavascript(JsBuilder jsb) {
+		evaluateJavascript(jsb.toString());
+	}
+
 	public void evaluateJavascript(final String js) {
 		container.post(new Runnable() {
 			public void run() {
@@ -159,24 +169,130 @@ public class EmbeddedBrowserActivity extends Activity implements MedicJsEvaluato
 
 //> MIGRATION-SPECIFIC METHODS
 	void setCookies() {
-		StringBuilder jsBuilder = new StringBuilder();
-		for(String cookie : cookies.split(";")) {
-			trace("setCookies", "setting cookie: %s", cookie);
-			jsBuilder.append(String.format("document.cookie='%s'; ", cookie));
-		}
+		JsBuilder jsBuilder = new JsBuilder("var oldLocation = window.location");
 
+		setCookies(jsBuilder, cookies);
+
+		jsBuilder.append("window.location = '%s/_session'", settings.getAppUrl());
+		setCookies(jsBuilder, cookies);
+
+		jsBuilder.append("window.location = '%s/'", settings.getAppUrl());
+		setCookies(jsBuilder, cookies);
+
+		jsBuilder.logVar("window.location");
+		jsBuilder.log("Reloading page...");
 		jsBuilder.append("window.location.reload()");
+		jsBuilder.logVar("document.cookie");
+	//	jsBuilder.append("window.location = oldLocation");
 
-		evaluateJavascript(jsBuilder.toString());
+		evaluateJavascript(jsBuilder);
 
 		cookies = null;
 	}
 
+	void allowServerComms() {
+		allowServerComms = true;
+	}
+
 	void replicationComplete() {
 		trace("replicationComplete", "Setting allowServerComms to true...");
-		allowServerComms = true;
-		//evaluateJavascript(String.format("window.location = '%s'", settings.getAppUrl()));
-		evaluateJavascript(String.format("window.location = '%s/api/info'", settings.getAppUrl()));
+	//	allowServerComms = true;
+
+		if(true) {
+			evaluateJavascript("window.location = '/_session?setCookies=true'");
+			return;
+		}
+
+// TODO delete everything after this - it ain't doing nothing - in fact the whole method can be folded into the parent JS
+
+		if(true) {
+			evaluateJavascript(String.format("window.location = '%s'", settings.getAppUrl()));
+		} else {
+			evaluateJavascript("console.log('replicationComplete() :: setting URL to /_session?nonce=123 ...');");
+			evaluateJavascript(String.format("window.location = '%s/_session?nonce=123'", settings.getAppUrl()));
+			evaluateJavascript("console.log('replicationComplete() :: set URL to /_session?nonce=123');");
+		}
+//		setCookies();
+//		evaluateJavascript(String.format("window.location = '%s'", settings.getAppUrl()));
+
+		if(false && cookies2 != null) {
+			JsBuilder jsBuilder = new JsBuilder();
+			jsBuilder.log("replicationComplete() :: setting cookies to %s", cookies2);
+
+			setCookies(jsBuilder, cookies2);
+
+			jsBuilder.append("window.location = '%s'", "https://alpha.dev.medicmobile.org/");
+			setCookies(jsBuilder, cookies2);
+
+			jsBuilder.append("medicmobile_android.allowServerComms()");
+			jsBuilder.append("window.location = '%s'", "https://alpha.dev.medicmobile.org/");
+
+			evaluateJavascript(jsBuilder.toString());
+		} else if(true) {
+			JsBuilder jsBuilder = new JsBuilder();
+			jsBuilder.append("window.location = 'https://alpha.dev.medicmobile.org/_session'");
+			jsBuilder.logVar("window.location");
+			jsBuilder.logVar("document.cookie");
+
+			setCookies(jsBuilder, cookies2);
+			jsBuilder.logVar("document.cookie");
+
+//			jsBuilder.append("window.location = 'https://alpha.dev.medicmobile.org/'");
+//			jsBuilder.logVar("window.location");
+//			jsBuilder.logVar("document.cookie");
+
+//			jsBuilder.append("window.location = 'https://alpha.dev.medicmobile.org/medic/login'");
+//			jsBuilder.logVar("window.location");
+//			jsBuilder.logVar("document.cookie");
+
+			evaluateJavascript(jsBuilder.toString());
+		} else evaluateJavascript("console.log('replicationComplete() :: no cookies to set.');");
+
+		try {
+			Thread.sleep(1000);
+		} catch(Exception ex) {
+			// hahaha
+		}
+		{
+			JsBuilder jsBuilder = new JsBuilder("console.log('I done a sleeeeeeep.....');");
+			jsBuilder.append("window.location = 'https://alpha.dev.medicmobile.org/_session'");
+			jsBuilder.logVar("window.location");
+			jsBuilder.logVar("document.cookie");
+
+			setCookies(jsBuilder, cookies2);
+			jsBuilder.logVar("document.cookie");
+
+			evaluateJavascript(jsBuilder.toString());
+		}
+	}
+
+	private void setCookies(JsBuilder jsBuilder, String cookies) {
+		trace("setCookies", "setting cookies to: %s", cookies);
+		jsBuilder.logVar("document.location");
+		for(String cookie : cookies.split(";")) {
+			cookie = cookie.trim();
+
+			trace("setCookies", "setting cookie: %s", cookie);
+			jsBuilder.logVar("document.cookie");
+
+			String[] cookieParts = cookie.split("=", 2);
+			if(cookieParts.length == 2) {
+				try {
+					String cookieName = cookieParts[0];
+					String cookieValue = java.net.URLEncoder.encode(cookieParts[1], "UTF-8");
+					jsBuilder.append("document.cookie='%s=%s'", cookieName, cookieValue);
+				} catch(UnsupportedEncodingException ex) {
+					// everyone supports UTF-8, surely!
+					MedicLog.warn(ex, "Cannot set cookie: " + cookie);
+				}
+			} else {
+				jsBuilder.log("Cannot set cookie as value does not make sense [%s].", cookie);
+			}
+
+			jsBuilder.logVar("document.cookie");
+		}
+		jsBuilder.logVar("document.cookie");
+		jsBuilder.logVar("document.location");
 	}
 
 //> PRIVATE HELPERS
@@ -259,6 +375,42 @@ public class EmbeddedBrowserActivity extends Activity implements MedicJsEvaluato
 				return false;
 			}
 
+			@Override public void onLoadFinished(XWalkView view, String urlString) {
+				Uri url = Uri.parse(urlString);
+				trace("onLoadFinished", "ENTRY :: url=%s, path=%s", urlString, url.getPath());
+				if("/_session".equals(url.getPath())) {
+					trace("onLoadFinished", "Checking _session query params for setCookies...");
+					Map<String, List<String>> queryParams = queryParamsAsMap(url);
+
+					if(queryParams.containsKey("setCookies")) {
+						trace("onLoadFinished", "setCookies found");
+
+						JsBuilder jsBuilder = new JsBuilder();
+
+						jsBuilder.log("Welcome to setCookiesOnSessionPage()");
+
+						jsBuilder.logVar("document.cookies");
+						setCookies(jsBuilder, cookies2);
+						jsBuilder.logVar("document.cookies");
+
+						jsBuilder.to("/_session?startAppForReal=true");
+						
+						evaluateJavascript(jsBuilder);
+					} else if(queryParams.containsKey("startAppForReal")) {
+						trace("onLoadFinished", "startAppForReal found");
+
+						allowServerComms = true;
+
+						JsBuilder jsBuilder = new JsBuilder();
+
+						jsBuilder.log("Starting the app for real...");
+						jsBuilder.to("/");
+
+						evaluateJavascript(jsBuilder);
+					}
+				}
+			}
+
 			@Override public WebResourceResponse shouldInterceptLoadRequest(XWalkView view, String urlString) {
 				trace("shouldInterceptLoadRequest", "ENTRY :: [allowServerComms=%s] %s", allowServerComms, urlString);
 
@@ -303,7 +455,7 @@ public class EmbeddedBrowserActivity extends Activity implements MedicJsEvaluato
 								//trace("shouldInterceptLoadRequest", "Not blocking %s", url);
 								return null;
 							} else {
-								setCookies();
+								setCookies(); // TODO i don't think this is doing anything
 								break;
 							}
 						case "/medic/_changes":
@@ -346,6 +498,36 @@ public class EmbeddedBrowserActivity extends Activity implements MedicJsEvaluato
 		});
 	}
 
+	private Map<String, List<String>> queryParamsAsMap(Uri url) {
+		String queryParams = url.getQuery();
+		if(queryParams == null) return Collections.emptyMap();
+
+		Map<String, List<String>> map = new HashMap();
+
+		for(String pair : queryParams.split("&")) {
+			String key, val;
+			if(pair.contains("=")) {
+				String[] parts = pair.split("=", 2);
+				key = parts[0];
+				val = parts[1].length() > 0 ? parts[1] : null;
+			} else {
+				key = pair;
+				val = null;
+			}
+
+			List<String> list;
+			if(map.containsKey(key)) {
+				list = map.get(key);
+			} else {
+				list = new ArrayList(1);
+				map.put(key, list);
+			}
+			list.add(val);
+		}
+
+		return map;
+	}
+
 	private void toast(String message) {
 		Toast.makeText(container.getContext(), message, Toast.LENGTH_LONG).show();
 	}
@@ -356,5 +538,41 @@ public class EmbeddedBrowserActivity extends Activity implements MedicJsEvaluato
 
 	private void log(String message, Object...extras) {
 		MedicLog.trace(this, message, extras);
+	}
+}
+
+class JsBuilder {
+	private final StringBuilder bob = new StringBuilder();
+
+	private boolean finalised;
+
+	public JsBuilder() {}
+
+	public JsBuilder(String command, Object... args) {
+		append(command, args);
+	}
+
+	void append(String command, Object... args) {
+		if(finalised) throw new RuntimeException("Cannot execute more JS commands after a page change.");
+
+		bob.append(String.format(command, args) + ";\n");
+	}
+
+	void logVar(String varName) {
+		append("console.log('%s = ' + %s)", varName, varName);
+	}
+
+	void log(String text, Object... args) {
+		append("console.log('" + text + "')", args);
+	}
+
+	void to(String url) {
+		append("window.location = '%s'", url);
+		finalised = true;
+	}
+
+	public String toString() {
+		MedicLog.trace(this, "toString() :: %s", bob);
+		return bob.toString();
 	}
 }

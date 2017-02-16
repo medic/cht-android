@@ -131,7 +131,7 @@ public class StandardWebViewDataExtractionActivity extends Activity {
 
 	void replicationComplete() {
 		String url = settings.getAppUrl();
-		String cookies = CookieManager.getInstance().getCookie(url);
+		String cookies = getCookies(url);
 		trace("replicationComplete", "Got cookies for %s: %s", url, cookies);
 
 		stopFakeCouch();
@@ -147,6 +147,30 @@ public class StandardWebViewDataExtractionActivity extends Activity {
 	}
 
 //> INTERNAL HELPERS
+	/** @return the encoded cookie string for the given url */
+	String getCookies(String url) {
+		try {
+			CookieManager cm = CookieManager.getInstance();
+
+			java.lang.reflect.Field ccm = cm.getClass().getDeclaredField("mChromeCookieManager");
+			ccm.setAccessible(true);
+			Object acm = ccm.get(cm);
+
+			java.lang.reflect.Method getCookie = acm.getClass().getDeclaredMethod("nativeGetCookie", String.class);
+			getCookie.setAccessible(true);
+
+			Object cookie = getCookie.invoke(acm, url);
+
+			trace("shouldInterceptRequest", "Cookie: [%s] %s", cookie.getClass(), cookie);
+
+			return cookie.toString();
+		} catch(Exception ex) {
+			MedicLog.warn(ex, "getCookie");
+		}
+
+		return CookieManager.getInstance().getCookie(url);
+	}
+
 	private synchronized void stopFakeCouch() {
 		if(fakeCouch == null) return;
 		fakeCouch.stop();
@@ -231,7 +255,11 @@ public class StandardWebViewDataExtractionActivity extends Activity {
 			}
 
 			@Override public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
-				//trace("shouldInterceptRequest", "[%s] %s", request.getMethod(), request.getUrl());
+				trace("shouldInterceptRequest", "[%s] %s", request.getMethod(), request.getUrl());
+				for(Map.Entry e : request.getRequestHeaders().entrySet()) {
+					trace("shouldInterceptRequest", "–%s: %s", e.getKey(), e.getValue());
+				}
+				trace("shouldInterceptRequest", "–––––––––––– headers end");
 				if(allowServerComms) return null;
 
 				Uri url = request.getUrl();
@@ -246,6 +274,7 @@ public class StandardWebViewDataExtractionActivity extends Activity {
 
 				// TODO safer just to block anything non-localhost?
 				if(host.equals(configuredHost)) {
+
 					// TODO don't let them talk to couch!
 					//trace("shouldInterceptRequest", "looks like we should block %s", request.getUrl());
 					Map<String, String> headers = Collections.emptyMap();

@@ -153,6 +153,12 @@ public class MedicAndroidJavascript {
 
 	@org.xwalk.core.JavascriptInterface
 	@android.webkit.JavascriptInterface
+	public void allowServerComms() {
+		parent.allowServerComms();
+	}
+
+	@org.xwalk.core.JavascriptInterface
+	@android.webkit.JavascriptInterface
 	public void setCookies() {
 		parent.setCookies();
 	}
