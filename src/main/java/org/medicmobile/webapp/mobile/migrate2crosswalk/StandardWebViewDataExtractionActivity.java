@@ -79,28 +79,6 @@ public class StandardWebViewDataExtractionActivity extends Activity {
 		fakeCouch.start(this);
 		// This seems to make things worse...
 		//container.getSettings().setMixedContentMode(WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE);
-
-/*
-		final ProgressDialog progress = showProgressDialog(this, "Doing important things…");
-
-		new AsyncTask<Void, Void, Void>() {
-			protected Void doInBackground(Void..._) {
-				// TODO get the number of docs or some other
-				// measure of total work to do from the db
-
-				// TODO begin the migration.  When each new doc
-				// arrives, chalk up some more progress.
-
-				return null;
-			}
-
-			protected void onPostExecute(Void _) {
-				progress.dismiss();
-				// TODO implement the following once the migration is handled above
-				if(true) return;
-			}
-		}.execute();
-		*/
 	}
 
 	@Override public void onDestroy() {
@@ -148,6 +126,7 @@ public class StandardWebViewDataExtractionActivity extends Activity {
 
 //> INTERNAL HELPERS
 	/** @return the encoded cookie string for the given url */
+	// TODO the reflection method below needs testing on the tecno and other in-use handsets
 	String getCookies(String url) {
 		try {
 			CookieManager cm = CookieManager.getInstance();
@@ -274,9 +253,7 @@ public class StandardWebViewDataExtractionActivity extends Activity {
 
 				// TODO safer just to block anything non-localhost?
 				if(host.equals(configuredHost)) {
-
-					// TODO don't let them talk to couch!
-					//trace("shouldInterceptRequest", "looks like we should block %s", request.getUrl());
+					// don't let the webview talk to remote couchdb
 					Map<String, String> headers = Collections.emptyMap();
 					return new WebResourceResponse("text", "utf8", 503,
 							"Server blocked.  Local db replication will begin shortly.",
