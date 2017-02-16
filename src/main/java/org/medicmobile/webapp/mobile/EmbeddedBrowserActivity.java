@@ -169,21 +169,21 @@ public class EmbeddedBrowserActivity extends Activity implements MedicJsEvaluato
 
 //> MIGRATION-SPECIFIC METHODS
 	void setCookies() {
-		JsBuilder jsBuilder = new JsBuilder("var oldLocation = window.location");
+		//JsBuilder jsBuilder = new JsBuilder("var oldLocation = window.location");
+		JsBuilder jsBuilder = new JsBuilder();
 
 		setCookies(jsBuilder, cookies);
 
-		jsBuilder.append("window.location = '%s/_session'", settings.getAppUrl());
-		setCookies(jsBuilder, cookies);
+	//	jsBuilder.append("window.location = '%s/_session'", settings.getAppUrl());
+//		setCookies(jsBuilder, cookies);
 
-		jsBuilder.append("window.location = '%s/'", settings.getAppUrl());
-		setCookies(jsBuilder, cookies);
+	//	jsBuilder.append("window.location = '%s/'", settings.getAppUrl());
+//		setCookies(jsBuilder, cookies);
 
-		jsBuilder.logVar("window.location");
-		jsBuilder.log("Reloading page...");
+//		jsBuilder.logVar("window.location");
+//		jsBuilder.log("Reloading page...");
 		jsBuilder.append("window.location.reload()");
-		jsBuilder.logVar("document.cookie");
-	//	jsBuilder.append("window.location = oldLocation");
+//		jsBuilder.logVar("document.cookie");
 
 		evaluateJavascript(jsBuilder);
 
@@ -195,75 +195,8 @@ public class EmbeddedBrowserActivity extends Activity implements MedicJsEvaluato
 	}
 
 	void replicationComplete() {
-		trace("replicationComplete", "Setting allowServerComms to true...");
-	//	allowServerComms = true;
-
-		if(true) {
-			evaluateJavascript("window.location = '/_session?setCookies=true'");
-			return;
-		}
-
-// TODO delete everything after this - it ain't doing nothing - in fact the whole method can be folded into the parent JS
-
-		if(true) {
-			evaluateJavascript(String.format("window.location = '%s'", settings.getAppUrl()));
-		} else {
-			evaluateJavascript("console.log('replicationComplete() :: setting URL to /_session?nonce=123 ...');");
-			evaluateJavascript(String.format("window.location = '%s/_session?nonce=123'", settings.getAppUrl()));
-			evaluateJavascript("console.log('replicationComplete() :: set URL to /_session?nonce=123');");
-		}
-//		setCookies();
-//		evaluateJavascript(String.format("window.location = '%s'", settings.getAppUrl()));
-
-		if(false && cookies2 != null) {
-			JsBuilder jsBuilder = new JsBuilder();
-			jsBuilder.log("replicationComplete() :: setting cookies to %s", cookies2);
-
-			setCookies(jsBuilder, cookies2);
-
-			jsBuilder.append("window.location = '%s'", "https://alpha.dev.medicmobile.org/");
-			setCookies(jsBuilder, cookies2);
-
-			jsBuilder.append("medicmobile_android.allowServerComms()");
-			jsBuilder.append("window.location = '%s'", "https://alpha.dev.medicmobile.org/");
-
-			evaluateJavascript(jsBuilder.toString());
-		} else if(true) {
-			JsBuilder jsBuilder = new JsBuilder();
-			jsBuilder.append("window.location = 'https://alpha.dev.medicmobile.org/_session'");
-			jsBuilder.logVar("window.location");
-			jsBuilder.logVar("document.cookie");
-
-			setCookies(jsBuilder, cookies2);
-			jsBuilder.logVar("document.cookie");
-
-//			jsBuilder.append("window.location = 'https://alpha.dev.medicmobile.org/'");
-//			jsBuilder.logVar("window.location");
-//			jsBuilder.logVar("document.cookie");
-
-//			jsBuilder.append("window.location = 'https://alpha.dev.medicmobile.org/medic/login'");
-//			jsBuilder.logVar("window.location");
-//			jsBuilder.logVar("document.cookie");
-
-			evaluateJavascript(jsBuilder.toString());
-		} else evaluateJavascript("console.log('replicationComplete() :: no cookies to set.');");
-
-		try {
-			Thread.sleep(1000);
-		} catch(Exception ex) {
-			// hahaha
-		}
-		{
-			JsBuilder jsBuilder = new JsBuilder("console.log('I done a sleeeeeeep.....');");
-			jsBuilder.append("window.location = 'https://alpha.dev.medicmobile.org/_session'");
-			jsBuilder.logVar("window.location");
-			jsBuilder.logVar("document.cookie");
-
-			setCookies(jsBuilder, cookies2);
-			jsBuilder.logVar("document.cookie");
-
-			evaluateJavascript(jsBuilder.toString());
-		}
+		trace("replicationComplete", "Forwarding to /_session?setCookies=true");
+		evaluateJavascript("window.location = '/_session?setCookies=true'");
 	}
 
 	private void setCookies(JsBuilder jsBuilder, String cookies) {
