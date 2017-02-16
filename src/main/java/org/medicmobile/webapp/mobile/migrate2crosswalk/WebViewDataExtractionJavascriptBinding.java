@@ -8,16 +8,6 @@ public class WebViewDataExtractionJavascriptBinding {
 	}
 
 	@android.webkit.JavascriptInterface
-	public void disableServerComms() {
-		webView.disableServerComms();
-	}
-
-	@android.webkit.JavascriptInterface
-	public void enableServerComms() {
-		webView.enableServerComms();
-	}
-
-	@android.webkit.JavascriptInterface
 	public void replicationComplete() {
 		webView.replicationComplete();
 	}

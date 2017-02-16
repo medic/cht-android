@@ -104,9 +104,6 @@ public class StandardWebViewDataExtractionActivity extends Activity {
 	}
 
 //> JAVASCRIPT BINDINGS
-	void disableServerComms() { this.allowServerComms = false; }
-	void enableServerComms() { this.allowServerComms = true; }
-
 	void replicationComplete() {
 		String url = settings.getAppUrl();
 		String cookies = getCookies(url);
