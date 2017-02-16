@@ -17,11 +17,10 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.medicmobile.webapp.mobile.migrate2crosswalk.FakeCouch;
 
@@ -281,9 +280,9 @@ public class EmbeddedBrowserActivity extends Activity implements MedicJsEvaluato
 				trace("onLoadFinished", "ENTRY :: url=%s, path=%s", urlString, url.getPath());
 				if("/_session".equals(url.getPath())) {
 					trace("onLoadFinished", "Checking _session query params for setCookies...");
-					Map<String, List<String>> queryParams = queryParamsAsMap(url);
+					Set<String> queryParams = queryParamNames(url);
 
-					if(queryParams.containsKey("setCookies")) {
+					if(queryParams.contains("setCookies")) {
 						trace("onLoadFinished", "setCookies found");
 
 						JsBuilder jsBuilder = new JsBuilder();
@@ -295,7 +294,7 @@ public class EmbeddedBrowserActivity extends Activity implements MedicJsEvaluato
 						jsBuilder.to("/_session?startAppForReal=true");
 						
 						evaluateJavascript(jsBuilder);
-					} else if(queryParams.containsKey("startAppForReal")) {
+					} else if(queryParams.contains("startAppForReal")) {
 						trace("onLoadFinished", "startAppForReal found");
 
 						allowServerComms = true;
@@ -326,13 +325,11 @@ public class EmbeddedBrowserActivity extends Activity implements MedicJsEvaluato
 
 				//trace("shouldInterceptRequest", "comparing hosts: %s <-> %s", host, configuredHost);
 
-				// TODO safer just to block anything non-localhost?
-				// No!  We need to be a bit cleverer than this in this instance -
 				// We need to allow the user to:
 				//   1. authenticate (although they should already have auth cookies)
-				//   2. get the app cache
+				//   2. get the app cache manifest
 				//   3. get all the stuff in the app cache
-				// I.E. all we should block is comms with couchdb, excepting auth messages!
+				// I.E. all we should block is comms with couchdb, except auth messages!
 				if(host.equals(configuredHost)) {
 					trace("shouldInterceptLoadRequest", "Should we block %s?", url.getPath());
 					if(url.getPath().startsWith("/medic/_design/medic/_rewrite/static/dist/") ||
@@ -354,7 +351,7 @@ public class EmbeddedBrowserActivity extends Activity implements MedicJsEvaluato
 								JsBuilder jsBuilder = new JsBuilder();
 
 								setCookies(jsBuilder);
-								jsBuilder.append("window.location.reload()");
+								jsBuilder.reloadPage();
 
 								evaluateJavascript(jsBuilder);
 
@@ -363,7 +360,7 @@ public class EmbeddedBrowserActivity extends Activity implements MedicJsEvaluato
 								break;
 							}
 						case "/medic/_changes":
-							// TODO trigger the replication
+							// trigger the replication from localhost server
 							evaluateJavascript(
 									"var localDbName = 'medic-user-' + JSON.parse(unescape(decodeURI(" +
 									"    document.cookie.split(';').map(function(e) {" +
@@ -383,7 +380,7 @@ public class EmbeddedBrowserActivity extends Activity implements MedicJsEvaluato
 							break;
 					}
 
-					// TODO don't let them talk to couch!
+					// don't let them talk to couch!
 					trace("shouldInterceptLoadRequest", "looks like we should block %s", url);
 					Map<String, String> headers = Collections.emptyMap();
 					return new WebResourceResponse("text", "utf8", 503,
@@ -392,8 +389,6 @@ public class EmbeddedBrowserActivity extends Activity implements MedicJsEvaluato
 				}
 				trace("shouldInterceptLoadRequest", "Not blocking %s", url);
 				return null;
-// TODO once loading has completed successfully (presumably we can detect this...somehow), then
-// trigger replication from local HTTP server to local pouch.  For now, trigger this manually.
 			}
 
 			private InputStream emptyInputStream() {
@@ -402,34 +397,15 @@ public class EmbeddedBrowserActivity extends Activity implements MedicJsEvaluato
 		});
 	}
 
-	private Map<String, List<String>> queryParamsAsMap(Uri url) {
+	private Set<String> queryParamNames(Uri url) {
 		String queryParams = url.getQuery();
-		if(queryParams == null) return Collections.emptyMap();
+		if(queryParams == null) return Collections.emptySet();
 
-		Map<String, List<String>> map = new HashMap();
-
+		Set<String> params = new HashSet();
 		for(String pair : queryParams.split("&")) {
-			String key, val;
-			if(pair.contains("=")) {
-				String[] parts = pair.split("=", 2);
-				key = parts[0];
-				val = parts[1].length() > 0 ? parts[1] : null;
-			} else {
-				key = pair;
-				val = null;
-			}
-
-			List<String> list;
-			if(map.containsKey(key)) {
-				list = map.get(key);
-			} else {
-				list = new ArrayList(1);
-				map.put(key, list);
-			}
-			list.add(val);
+			params.add(pair.contains("=") ?  pair.split("=", 2)[0] : pair);
 		}
-
-		return map;
+		return params;
 	}
 
 	private void toast(String message) {
@@ -472,6 +448,11 @@ class JsBuilder {
 
 	void to(String url) {
 		append("window.location = '%s'", url);
+		finalised = true;
+	}
+
+	void reloadPage() {
+		append("window.location.reload()");
 		finalised = true;
 	}
 
