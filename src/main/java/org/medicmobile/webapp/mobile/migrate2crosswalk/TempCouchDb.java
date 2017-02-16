@@ -10,6 +10,8 @@ import android.database.sqlite.SQLiteDatabase.CursorFactory;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteQuery;
 
+import java.util.LinkedList;
+import java.util.List;
 import java.util.regex.Pattern;
 
 import org.json.JSONArray;
@@ -21,7 +23,7 @@ import org.medicmobile.webapp.mobile.MedicLog;
 import static android.database.DatabaseUtils.appendEscapedSQLString;
 
 // TODO rename this class as e.g. TempCouchBackingDb
-class TempCouchDb extends SQLiteOpenHelper {
+public class TempCouchDb extends SQLiteOpenHelper {
 	private static final int VERSION = 1;
 
 	private static final String DEFAULT_ORDERING = null, NO_GROUP = null;
@@ -29,6 +31,7 @@ class TempCouchDb extends SQLiteOpenHelper {
 	private static final String SELECT_ALL = null;
 	private static final String[] NO_SELECTION_ARGS = null;
 
+	private static final String tblDELETED = "deleted_docs";
 	private static final String tblLOCAL = "local";
 	private static final String tblMEDIC = "medic";
 	private static final String clmID = "_id";
@@ -58,6 +61,11 @@ class TempCouchDb extends SQLiteOpenHelper {
 
 //> EVENT HANDLERS
 	@Override public void onCreate(SQLiteDatabase db) {
+		db.execSQL(String.format("CREATE TABLE %s (" +
+					"id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+					"%s TEXT KEY, " +
+					"%s TEXT NOT NULL)",
+				tblDELETED, clmID, clmREV));
 		for(String tableName : DOC_TABLES) {
 			db.execSQL(String.format("CREATE TABLE %s (" +
 						"%s INTEGER PRIMARY KEY AUTOINCREMENT, " +
@@ -158,6 +166,55 @@ class TempCouchDb extends SQLiteOpenHelper {
 			} else {
 				db.insert(tableName, null, forInsert(docId, doc));
 			}
+		} finally {
+			if(c != null) try { c.close(); } catch(Exception ex) {}
+		}
+	}
+
+	void storeDeleted(JSONObject doc) throws IllegalDocException, JSONException {
+		trace("storeDeleted", "doc=%s", doc);
+
+		String id = doc.optString("_id");
+		String rev = doc.optString("_rev");
+
+		if(id == null || id.length() == 0 ||
+				rev == null || rev.length() == 0 ||
+				!doc.optBoolean("_deleted", false))
+			throw new IllegalDocException(doc);
+
+		Cursor c = null;
+		try {
+			ContentValues v = new ContentValues();
+			v.put(clmID, id);
+			v.put(clmREV, rev);
+
+			db.insert(tblDELETED, null, v);
+		} finally {
+			if(c != null) try { c.close(); } catch(Exception ex) {}
+		}
+	}
+
+	public List<JSONObject> getDeletedRevs(String id) throws JSONException {
+		List<JSONObject> revs = new LinkedList();
+
+		Cursor c = null;
+		try {
+			c = db.query(tblDELETED,
+					cols(clmREV),
+					"_id=?", vals(id),
+					NO_GROUP, NO_GROUP,
+					DEFAULT_ORDERING);
+
+			while(c.moveToNext()) {
+				String rev = c.getString(0);
+				revs.add(JSON.obj(
+					"_id", id,
+					"_rev", rev,
+					"_deleted", true
+				));
+			}
+
+			return revs;
 		} finally {
 			if(c != null) try { c.close(); } catch(Exception ex) {}
 		}
@@ -267,6 +324,33 @@ class TempCouchDb extends SQLiteOpenHelper {
 			return changes;
 		} finally {
 			if(c != null) try { c.close(); } catch(Exception ex) {}
+		}
+	}
+
+//> DEBUG METHODS
+	public String executeRaw(String sql) {
+		Cursor c = null;
+		try {
+			c = db.rawQuery(sql, NO_ARGS);
+			int resultCount = c.getCount();
+
+			StringBuilder bob = new StringBuilder();
+			while(c.moveToNext()) {
+				MedicLog.log("executeRaw() next row");
+				int count = c.getColumnCount();
+				for(int i=0; i<count; ++i) {
+					if(i > 0) bob.append(" | ");
+					String val = c.getString(i);
+						MedicLog.log("executeRaw() %s: %s", i, val);
+					bob.append(val);
+				}
+				bob.append('\n');
+			}
+			MedicLog.log("executeRaw() ----- cursor read fully.");
+			if(resultCount > 1 && bob.length() > 640) return bob.substring(0, 639) + "...";
+			return bob.toString();
+		} finally {
+			if(c != null) try { c.close(); } catch(Exception _) { /* ignore */ }
 		}
 	}
 

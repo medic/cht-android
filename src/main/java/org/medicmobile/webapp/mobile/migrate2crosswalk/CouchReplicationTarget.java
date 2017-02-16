@@ -199,7 +199,10 @@ class CouchReplicationTarget {
 			JSONArray saved = new JSONArray();
 			for(int i=0; i<docs.length(); ++i) {
 				JSONObject doc = docs.getJSONObject(i);
-				saveDoc(doc);
+
+				if(doc.optBoolean("_deleted", false)) storeDeleted(doc);
+				else saveDoc(doc);
+
 				saved.put(JSON.obj("ok", true,
 						"id", doc.getString("_id"),
 						"rev", doc.getString("_rev")));
@@ -233,8 +236,12 @@ class CouchReplicationTarget {
 		if(doc == null) throw new DocNotFoundException(id);
 
 		if(getFirstString(queryParams, "open_revs") != null) {
-			return FcResponse.of(JSON.array(JSON.obj(
-				"ok", doc)));
+			JSONArray array = new JSONArray();
+			array.put(JSON.obj("ok", doc));
+			for(JSONObject deletedRev : db.getDeletedRevs(id)) {
+				array.put(JSON.obj("ok", deletedRev));
+			}
+			return FcResponse.of(array);
 		}
 
 		return FcResponse.of(doc);
@@ -262,6 +269,16 @@ class CouchReplicationTarget {
 	private void saveDoc(JSONObject doc) {
 		try {
 			db.store(doc);
+		} catch(Exception ex) {
+			MedicLog.warn(ex, "Exception thrown while trying to store doc in db: %s", doc);
+			// TODO remove this throw - it's just here for debugging tests
+			throw new RuntimeException(ex);
+		}
+	}
+
+	private void storeDeleted(JSONObject doc) {
+		try {
+			db.storeDeleted(doc);
 		} catch(Exception ex) {
 			MedicLog.warn(ex, "Exception thrown while trying to store doc in db: %s", doc);
 			// TODO remove this throw - it's just here for debugging tests

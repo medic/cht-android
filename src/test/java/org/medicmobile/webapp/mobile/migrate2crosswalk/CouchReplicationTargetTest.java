@@ -620,6 +620,37 @@ public class CouchReplicationTargetTest {
 	}
 
 	@Test
+	public void _bulk_docs_shouldNotSaveADeletedDocumentInNormalDb() throws Exception {
+		// when
+		FcResponse response = target.post("/_bulk_docs", json(
+				"docs", array(
+					json(
+						"_id", "abc-123",
+						"_rev", "1-xxx",
+						"_deleted", true,
+						"val", "one"
+					)
+				),
+				"new_edits", false));
+
+		// then
+		assertDbEmpty("medic");
+
+		// and
+		db.assertTable("deleted_docs",
+				"1", "abc-123", "1-xxx");
+
+		// and
+		assertJson(response, array(
+			json(
+				"ok", true,
+				"id", "abc-123",
+				"rev", "1-xxx"
+			)
+		));
+	}
+
+	@Test
 	public void _bulk_docs_shouldSaveMultipleDocumentsd() throws Exception {
 		// when
 		FcResponse response = target.post("/_bulk_docs", json(
@@ -950,6 +981,50 @@ public class CouchReplicationTargetTest {
 	}
 
 	@Test
+	public void existingDocRequest_withOpenRevs_shouldReturnDeletedRevs() throws Exception {
+		// given
+		target.post("/_bulk_docs", json(
+				"docs", array(
+					json(
+						"_id", "abc-123",
+						"_rev", "2-yyy",
+						"val", "two"
+					),
+					json(
+						"_id", "abc-123",
+						"_rev", "1-xxx",
+						"_deleted", true,
+						"val", "one"
+					)
+				),
+				"new_edits", false));
+		assertDbContent("medic",
+				"abc-123", "2-yyy", "{ \"_id\":\"abc-123\", \"_rev\":\"2-yyy\", \"val\":\"two\" }");
+		db.assertTable("deleted_docs",
+				"1", "abc-123", "1-xxx");
+
+		// when
+		FcResponse response = target.get("/abc-123", queryParams("open_revs", "%5B%221-xxx%22%5D"));
+
+		// expect
+		assertJson(response, array(
+				json("ok",
+					json(
+						"_id", "abc-123",
+						"_rev", "2-yyy",
+						"val", "two"
+					)
+				),
+				json("ok",
+					json(
+						"_id", "abc-123",
+						"_rev", "1-xxx",
+						"_deleted", true)
+					)
+				));
+	}
+
+	@Test
 	public void attachmentRequest_shouldReturn404_ifDocDoesNotExist() throws Exception {
 		// given
 		// no docs exist
@@ -1022,6 +1097,10 @@ public class CouchReplicationTargetTest {
 	}
 
 //> HELPERS
+	private void assertDbEmpty(String dbName) throws JSONException {
+		assertDbContent(dbName);
+	}
+
 	private void assertDbContent(String dbName, Object... args) throws JSONException {
 		Object[] expectedContent = new Object[args.length + (args.length / 3)];
 
