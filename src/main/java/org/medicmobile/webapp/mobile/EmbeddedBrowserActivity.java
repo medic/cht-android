@@ -52,8 +52,8 @@ public class EmbeddedBrowserActivity extends Activity implements MedicJsEvaluato
 	private XWalkView container;
 	private SettingsStore settings;
 	private FakeCouch fakeCouch;
+	private boolean cookiesSetForLoginPage;
 	private String cookies;
-	private String cookies2;
 	private boolean allowServerComms;
 
 	@Override public void onCreate(Bundle savedInstanceState) {
@@ -83,7 +83,7 @@ public class EmbeddedBrowserActivity extends Activity implements MedicJsEvaluato
 		if(cookies == null) {
 			allowServerComms = true;
 		} else {
-			this.cookies = this.cookies2 = cookies;
+			this.cookies = cookies;
 
 			allowServerComms = false;
 
@@ -168,45 +168,14 @@ public class EmbeddedBrowserActivity extends Activity implements MedicJsEvaluato
 	}
 
 //> MIGRATION-SPECIFIC METHODS
-	void setCookies() {
-		//JsBuilder jsBuilder = new JsBuilder("var oldLocation = window.location");
-		JsBuilder jsBuilder = new JsBuilder();
-
-		setCookies(jsBuilder, cookies);
-
-	//	jsBuilder.append("window.location = '%s/_session'", settings.getAppUrl());
-//		setCookies(jsBuilder, cookies);
-
-	//	jsBuilder.append("window.location = '%s/'", settings.getAppUrl());
-//		setCookies(jsBuilder, cookies);
-
-//		jsBuilder.logVar("window.location");
-//		jsBuilder.log("Reloading page...");
-		jsBuilder.append("window.location.reload()");
-//		jsBuilder.logVar("document.cookie");
-
-		evaluateJavascript(jsBuilder);
-
-		cookies = null;
-	}
-
-	void allowServerComms() {
-		allowServerComms = true;
-	}
-
-	void replicationComplete() {
-		trace("replicationComplete", "Forwarding to /_session?setCookies=true");
-		evaluateJavascript("window.location = '/_session?setCookies=true'");
-	}
-
-	private void setCookies(JsBuilder jsBuilder, String cookies) {
+	private void setCookies(JsBuilder jsBuilder) {
 		trace("setCookies", "setting cookies to: %s", cookies);
 		jsBuilder.logVar("document.location");
+		jsBuilder.logVar("document.cookie");
 		for(String cookie : cookies.split(";")) {
 			cookie = cookie.trim();
 
 			trace("setCookies", "setting cookie: %s", cookie);
-			jsBuilder.logVar("document.cookie");
 
 			String[] cookieParts = cookie.split("=", 2);
 			if(cookieParts.length == 2) {
@@ -222,7 +191,6 @@ public class EmbeddedBrowserActivity extends Activity implements MedicJsEvaluato
 				jsBuilder.log("Cannot set cookie as value does not make sense [%s].", cookie);
 			}
 
-			jsBuilder.logVar("document.cookie");
 		}
 		jsBuilder.logVar("document.cookie");
 		jsBuilder.logVar("document.location");
@@ -320,11 +288,9 @@ public class EmbeddedBrowserActivity extends Activity implements MedicJsEvaluato
 
 						JsBuilder jsBuilder = new JsBuilder();
 
-						jsBuilder.log("Welcome to setCookiesOnSessionPage()");
+						jsBuilder.log("Setting cookies on the session page...");
 
-						jsBuilder.logVar("document.cookies");
-						setCookies(jsBuilder, cookies2);
-						jsBuilder.logVar("document.cookies");
+						setCookies(jsBuilder);
 
 						jsBuilder.to("/_session?startAppForReal=true");
 						
@@ -381,14 +347,19 @@ public class EmbeddedBrowserActivity extends Activity implements MedicJsEvaluato
 							trace("shouldInterceptLoadRequest", "Not blocking %s", url);
 							return null;
 						case "/medic/login":
-							if(cookies == null) {
-								//allowServerComms = true;
+							if(cookiesSetForLoginPage) {
 								trace("shouldInterceptLoadRequest", "No cookies set.");
-								//trace("shouldInterceptLoadRequest", "No cookies set.  Will enable all server comms.");
-								//trace("shouldInterceptLoadRequest", "Not blocking %s", url);
 								return null;
 							} else {
-								setCookies(); // TODO i don't think this is doing anything
+								JsBuilder jsBuilder = new JsBuilder();
+
+								setCookies(jsBuilder);
+								jsBuilder.append("window.location.reload()");
+
+								evaluateJavascript(jsBuilder);
+
+								cookiesSetForLoginPage = true;
+
 								break;
 							}
 						case "/medic/_changes":
@@ -404,7 +375,7 @@ public class EmbeddedBrowserActivity extends Activity implements MedicJsEvaluato
 									"PouchDB.replicate('http://localhost:8000/medic', localDbName)" +
 									"    .then(function() {" +
 									"      console.log('Replication complete!  TODO now disable URL blocking and reload the page.');" +
-									"      medicmobile_android.replicationComplete();" +
+									"      window.location = '/_session?setCookies=true'" +
 									"    })" +
 									"    .catch(function(err) {" +
 									"      console.log('Error during replication', err);" +

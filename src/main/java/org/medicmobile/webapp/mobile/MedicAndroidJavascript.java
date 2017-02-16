@@ -144,25 +144,6 @@ public class MedicAndroidJavascript {
 				"    });");
 	}
 
-//> TODO these are migration-only JS hooks, so should be in a class of their own
-	@org.xwalk.core.JavascriptInterface
-	@android.webkit.JavascriptInterface
-	public void replicationComplete() {
-		parent.replicationComplete();
-	}
-
-	@org.xwalk.core.JavascriptInterface
-	@android.webkit.JavascriptInterface
-	public void allowServerComms() {
-		parent.allowServerComms();
-	}
-
-	@org.xwalk.core.JavascriptInterface
-	@android.webkit.JavascriptInterface
-	public void setCookies() {
-		parent.setCookies();
-	}
-
 //> PRIVATE HELPERS
 	private void datePicker(String targetElement, Calendar initialDate) {
 		// Remove single-quotes from the `targetElement` CSS selecter, as
