@@ -327,7 +327,7 @@ public class TempCouchDb extends SQLiteOpenHelper {
 		}
 	}
 
-//> DEBUG METHODS
+//> DEBUG METHODS TODO remove these before merging with master
 	public String executeRaw(String sql) {
 		Cursor c = null;
 		try {
