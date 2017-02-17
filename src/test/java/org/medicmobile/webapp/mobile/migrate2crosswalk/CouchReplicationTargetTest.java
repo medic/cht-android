@@ -759,21 +759,8 @@ public class CouchReplicationTargetTest {
 	}
 
 	@Test
-	public void _bulk_docs_shouldUpdateExistingDocs_ifRevIncreased() throws Exception {
+	public void _bulk_docs_shouldStoreMultipleVersionsWithSameRev() throws Exception {
 		// given
-		target.post("/_bulk_docs", json(
-				"docs", array(
-					json(
-						"_id", "abc-123",
-						"_rev", "1-xxx",
-						"val", "one"
-					)
-				),
-				"new_edits", false));
-		assertDbContent("medic",
-				"abc-123", "1-xxx", "{ \"_id\":\"abc-123\", \"_rev\":\"1-xxx\", \"val\":\"one\" }");
-
-		// when
 		target.post("/_bulk_docs", json(
 				"docs", array(
 					json(
@@ -783,26 +770,8 @@ public class CouchReplicationTargetTest {
 					)
 				),
 				"new_edits", false));
-
-		// then
 		assertDbContent("medic",
 				"abc-123", "2-xxx", "{ \"_id\":\"abc-123\", \"_rev\":\"2-xxx\", \"val\":\"two\" }");
-	}
-
-	@Test
-	public void _bulk_docs_shouldNotUpdateExistingDocs_ifRevSame() throws Exception {
-		// given
-		target.post("/_bulk_docs", json(
-				"docs", array(
-					json(
-						"_id", "abc-123",
-						"_rev", "1-xxx",
-						"val", "one"
-					)
-				),
-				"new_edits", false));
-		assertDbContent("medic",
-				"abc-123", "1-xxx", "{ \"_id\":\"abc-123\", \"_rev\":\"1-xxx\", \"val\":\"one\" }");
 
 		// when
 		target.post("/_bulk_docs", json(
@@ -810,45 +779,15 @@ public class CouchReplicationTargetTest {
 					json(
 						"_id", "abc-123",
 						"_rev", "1-yyy",
-						"val", "bad"
+						"val", "old"
 					)
 				),
 				"new_edits", false));
 
 		// then
 		assertDbContent("medic",
-				"abc-123", "1-xxx", "{ \"_id\":\"abc-123\", \"_rev\":\"1-xxx\", \"val\":\"one\" }");
-	}
-
-	@Test
-	public void _bulk_docs_shouldNotUpdateExistingDocs_ifRevLess() throws Exception {
-		// given
-		target.post("/_bulk_docs", json(
-				"docs", array(
-					json(
-						"_id", "abc-123",
-						"_rev", "2-xxx",
-						"val", "one"
-					)
-				),
-				"new_edits", false));
-		assertDbContent("medic",
-				"abc-123", "2-xxx", "{ \"_id\":\"abc-123\", \"_rev\":\"2-xxx\", \"val\":\"one\" }");
-
-		// when
-		target.post("/_bulk_docs", json(
-				"docs", array(
-					json(
-						"_id", "abc-123",
-						"_rev", "1-yyy",
-						"val", "bad"
-					)
-				),
-				"new_edits", false));
-
-		// then
-		assertDbContent("medic",
-				"abc-123", "2-xxx", "{ \"_id\":\"abc-123\", \"_rev\":\"2-xxx\", \"val\":\"one\" }");
+				"abc-123", "2-xxx", "{ \"_id\":\"abc-123\", \"_rev\":\"2-xxx\", \"val\":\"two\" }",
+				"abc-123", "1-yyy", "{ \"_id\":\"abc-123\", \"_rev\":\"1-yyy\", \"val\":\"old\" }");
 	}
 
 	@Test
@@ -981,7 +920,88 @@ public class CouchReplicationTargetTest {
 	}
 
 	@Test
-	public void existingDocRequest_withOpenRevs_shouldReturnDeletedRevs() throws Exception {
+	public void existingDocRequest_withOpenRevs_shouldReturnDeletedRevs_ifRequested() throws Exception {
+		// given
+		target.post("/_bulk_docs", json(
+				"docs", array(
+					json(
+						"_id", "abc-123",
+						"_rev", "2-yyy",
+						"val", "two"
+					),
+					json(
+						"_id", "abc-123",
+						"_rev", "1-xxx",
+						"_deleted", true,
+						"val", "one"
+					)
+				),
+				"new_edits", false));
+		assertDbContent("medic",
+				"abc-123", "2-yyy", "{ \"_id\":\"abc-123\", \"_rev\":\"2-yyy\", \"val\":\"two\" }");
+		db.assertTable("deleted_docs",
+				"1", "abc-123", "1-xxx");
+
+		// when
+		FcResponse response = target.get("/abc-123", queryParams("open_revs", "%5B%221-xxx%22%2C%222-yyy%22%5D"));
+
+		// then
+		assertJson(response, array(
+				json("ok",
+					json(
+						"_id", "abc-123",
+						"_rev", "2-yyy",
+						"val", "two"
+					)
+				),
+				json("ok",
+					json(
+						"_id", "abc-123",
+						"_rev", "1-xxx",
+						"_deleted", true)
+					)
+				));
+	}
+
+	@Test
+	public void existingDocRequest_withOpenRevs_shouldNotReturnDeletedRevs_ifNotRequested() throws Exception {
+		// given
+		target.post("/_bulk_docs", json(
+				"docs", array(
+					json(
+						"_id", "abc-123",
+						"_rev", "2-yyy",
+						"val", "two"
+					),
+					json(
+						"_id", "abc-123",
+						"_rev", "1-xxx",
+						"_deleted", true,
+						"val", "one"
+					)
+				),
+				"new_edits", false));
+		assertDbContent("medic",
+				"abc-123", "2-yyy", "{ \"_id\":\"abc-123\", \"_rev\":\"2-yyy\", \"val\":\"two\" }");
+		db.assertTable("deleted_docs",
+				"1", "abc-123", "1-xxx");
+
+		// when
+		FcResponse response = target.get("/abc-123", queryParams("open_revs", "%5B%222-yyy%22%5D"));
+
+		// then
+		assertJson(response, array(
+				json("ok",
+					json(
+						"_id", "abc-123",
+						"_rev", "2-yyy",
+						"val", "two"
+					)
+				)));
+	}
+
+	@Test
+	public void existingDocRequest_withOpenRevs_shouldNotReturnRevs_ifNotRequested() throws Exception {
 		// given
 		target.post("/_bulk_docs", json(
 				"docs", array(
@@ -1006,6 +1026,116 @@ public class CouchReplicationTargetTest {
 		// when
 		FcResponse response = target.get("/abc-123", queryParams("open_revs", "%5B%221-xxx%22%5D"));
 
+		// then
+		assertJson(response, array(
+				json("ok",
+					json(
+						"_id", "abc-123",
+						"_rev", "1-xxx",
+						"_deleted", true)
+					)
+				));
+	}
+
+	@Test
+	public void existingDocRequest_withMultipleRevs_shouldReturnMostRecent() throws Exception {
+		// given
+		target.post("/_bulk_docs", json(
+				"docs", array(
+					json(
+						"_id", "abc-123",
+						"_rev", "2-yyy",
+						"val", "two"
+					),
+					json(
+						"_id", "abc-123",
+						"_rev", "3-zzz",
+						"val", "three"
+					),
+					json(
+						"_id", "abc-123",
+						"_rev", "1-xxx",
+						"val", "one"
+					)
+				),
+				"new_edits", false));
+		assertDbContent("medic",
+				"abc-123", "2-yyy", "{ \"_id\":\"abc-123\", \"_rev\":\"2-yyy\", \"val\":\"two\" }",
+				"abc-123", "3-zzz", "{ \"_id\":\"abc-123\", \"_rev\":\"3-zzz\", \"val\":\"three\" }",
+				"abc-123", "1-xxx", "{ \"_id\":\"abc-123\", \"_rev\":\"1-xxx\", \"val\":\"one\" }");
+		db.assertTable("deleted_docs");
+
+		// when
+		FcResponse response = target.get("/abc-123", noQueryParams());
+
+		// expect
+		assertJson(response, json(
+				"_id", "abc-123",
+				"_rev", "3-zzz",
+				"val", "three"));
+	}
+
+	@Test
+	public void existingDocRequest_withOpenRevs_shouldReturnSingleRevIfAsked() throws Exception {
+		// given
+		target.post("/_bulk_docs", json(
+				"docs", array(
+					json(
+						"_id", "abc-123",
+						"_rev", "2-yyy",
+						"val", "two"
+					),
+					json(
+						"_id", "abc-123",
+						"_rev", "1-xxx",
+						"val", "one"
+					)
+				),
+				"new_edits", false));
+		assertDbContent("medic",
+				"abc-123", "2-yyy", "{ \"_id\":\"abc-123\", \"_rev\":\"2-yyy\", \"val\":\"two\" }",
+				"abc-123", "1-xxx", "{ \"_id\":\"abc-123\", \"_rev\":\"1-xxx\", \"val\":\"one\" }");
+		db.assertTable("deleted_docs");
+
+		// when
+		FcResponse response = target.get("/abc-123", queryParams("open_revs", "%5B%221-xxx%22%5D"));
+
+		// expect
+		assertJson(response, array(
+				json("ok",
+					json(
+						"_id", "abc-123",
+						"_rev", "1-xxx",
+						"val", "one")
+					)
+				));
+	}
+
+	@Test
+	public void existingDocRequest_withOpenRevs_shouldReturnMultipleRevs() throws Exception {
+		// given
+		target.post("/_bulk_docs", json(
+				"docs", array(
+					json(
+						"_id", "abc-123",
+						"_rev", "2-yyy",
+						"val", "two"
+					),
+					json(
+						"_id", "abc-123",
+						"_rev", "1-xxx",
+						"val", "one"
+					)
+				),
+				"new_edits", false));
+		assertDbContent("medic",
+				"abc-123", "2-yyy", "{ \"_id\":\"abc-123\", \"_rev\":\"2-yyy\", \"val\":\"two\" }",
+				"abc-123", "1-xxx", "{ \"_id\":\"abc-123\", \"_rev\":\"1-xxx\", \"val\":\"one\" }");
+		db.assertTable("deleted_docs");
+
+		// when
+		FcResponse response = target.get("/abc-123", queryParams("open_revs", "%5B%221-xxx%22%2C%222-yyy%22%5D"));
+
 		// expect
 		assertJson(response, array(
 				json("ok",
@@ -1019,7 +1149,7 @@ public class CouchReplicationTargetTest {
 					json(
 						"_id", "abc-123",
 						"_rev", "1-xxx",
-						"_deleted", true)
+						"val", "one")
 					)
 				));
 	}

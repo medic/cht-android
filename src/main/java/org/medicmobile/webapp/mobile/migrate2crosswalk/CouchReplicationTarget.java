@@ -7,10 +7,12 @@ import android.webkit.WebResourceResponse;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -232,19 +234,30 @@ class CouchReplicationTarget {
 
 	private FcResponse getDoc(String requestPath, Map<String, List<String>> queryParams) throws DocNotFoundException, JSONException {
 		String id = requestPath.substring(1);
-		JSONObject doc = db.get(id);
-		if(doc == null) throw new DocNotFoundException(id);
 
-		if(getFirstString(queryParams, "open_revs") != null) {
+		String openRevs = getFirstString(queryParams, "open_revs");
+
+		if(openRevs != null) {
+			Set<String> revs = getRevs(openRevs);
+
 			JSONArray array = new JSONArray();
-			array.put(JSON.obj("ok", doc));
+
+			for(JSONObject doc : db.getRevs(id)) {
+				if(revs.contains(doc.optString("_rev")))
+					array.put(JSON.obj("ok", doc));
+			}
+
 			for(JSONObject deletedRev : db.getDeletedRevs(id)) {
-				array.put(JSON.obj("ok", deletedRev));
+				if(revs.contains(deletedRev.optString("_rev")))
+					array.put(JSON.obj("ok", deletedRev));
 			}
 			return FcResponse.of(array);
-		}
+		} else {
+			JSONObject doc = db.get(id);
+			if(doc == null) throw new DocNotFoundException(id);
 
-		return FcResponse.of(doc);
+			return FcResponse.of(doc);
+		}
 	}
 
 	private FcResponse getAttachment(String requestPath) throws CouchReplicationTargetException, JSONException {
@@ -284,6 +297,15 @@ class CouchReplicationTarget {
 			// TODO remove this throw - it's just here for debugging tests
 			throw new RuntimeException(ex);
 		}
+	}
+
+	private static Set<String> getRevs(String encodedRevsJsonString) throws JSONException {
+		Set<String> revs = new HashSet();
+
+		JSONArray a = new JSONArray(urlDecode(encodedRevsJsonString));
+		for(int i=a.length()-1; i>=0; --i) revs.add(a.getString(i));
+
+		return revs;
 	}
 
 	private static boolean matches(String requestPath, String dir) {

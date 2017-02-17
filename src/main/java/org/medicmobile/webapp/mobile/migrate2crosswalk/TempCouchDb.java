@@ -10,8 +10,8 @@ import android.database.sqlite.SQLiteDatabase.CursorFactory;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteQuery;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.json.JSONArray;
@@ -30,6 +30,7 @@ public class TempCouchDb extends SQLiteOpenHelper {
 	private static final String[] NO_ARGS = {};
 	private static final String SELECT_ALL = null;
 	private static final String[] NO_SELECTION_ARGS = null;
+	private static final String NO_LIMIT = null;
 
 	private static final String tblDELETED = "deleted_docs";
 	private static final String tblLOCAL = "local";
@@ -110,19 +111,52 @@ public class TempCouchDb extends SQLiteOpenHelper {
 		Cursor c = null;
 		try {
 			c = db.query(tableName,
+					cols(clmREV, clmJSON),
+					"_id=?", cols(docId),
+					NO_GROUP, NO_GROUP,
+					DEFAULT_ORDERING,
+					NO_LIMIT);
+
+			String latestRev = null;
+			String json = null;
+
+			while(c.moveToNext()) {
+				String newRev = c.getString(0);
+				if(latestRev == null || getRevNumber(newRev) > getRevNumber(latestRev)) {
+					latestRev = newRev;
+					json = c.getString(1);
+				}
+			}
+
+			return latestRev == null ? null : (JSONObject) new JSONTokener(json).nextValue();
+		} finally {
+			if(c != null) try { c.close(); } catch(Exception ex) {}
+		}
+	}
+
+	/** Get all revs which have not been deleted. */
+	Set<JSONObject> getRevs(String docId) throws JSONException {
+		return getRevs(tblMEDIC, docId);
+	}
+
+	private Set<JSONObject> getRevs(String tableName, String docId) throws JSONException {
+		Cursor c = null;
+		try {
+			HashSet<JSONObject> docs = new HashSet();
+
+			c = db.query(tableName,
 					cols(clmJSON),
 					"_id=?", cols(docId),
 					NO_GROUP, NO_GROUP,
 					DEFAULT_ORDERING,
-					Integer.toString(1));
+					NO_LIMIT);
 
-			boolean exists = c.getCount() == 1;
-			if(exists) {
-				c.moveToNext();
+			while(c.moveToNext()) {
 				String json = c.getString(0);
-				return (JSONObject) new JSONTokener(json).nextValue();
+				docs.add((JSONObject) new JSONTokener(json).nextValue());
 			}
-			return null;
+
+			return docs;
 		} finally {
 			if(c != null) try { c.close(); } catch(Exception ex) {}
 		}
@@ -138,32 +172,25 @@ public class TempCouchDb extends SQLiteOpenHelper {
 
 	private void store(String tableName, JSONObject doc) throws IllegalDocException, JSONException {
 		trace("store", "doc=%s", doc);
+
 		String docId = doc.getString("_id");
 		if(docId.length() == 0) throw new IllegalDocException(doc);
 
-		String newRev = doc.getString("_rev");
-		if(!REV.matcher(newRev).matches()) throw new IllegalDocException(doc);
+		String rev = doc.getString("_rev");
+		if(!REV.matcher(rev).matches()) throw new IllegalDocException(doc);
 
 		Cursor c = null;
 		try {
 			c = db.query(tableName,
 					cols(clmJSON),
-					"_id=?", cols(docId),
+					"_id=? AND _rev=?", cols(docId, rev),
 					NO_GROUP, NO_GROUP,
 					DEFAULT_ORDERING,
 					Integer.toString(1));
 			boolean exists = c.getCount() == 1;
 
-			if(exists) {
-				c.moveToNext();
-				String json = c.getString(0);
-				JSONObject oldDoc = (JSONObject) new JSONTokener(json).nextValue();
-				String oldRev = oldDoc.getString("_rev");
-
-				if(getRevNumber(newRev) > getRevNumber(oldRev)) {
-					db.update(tableName, forUpdate(doc), "_id=?", cols(docId));
-				} // else ignore the old version
-			} else {
+			if(exists) return;
+			else {
 				db.insert(tableName, null, forInsert(docId, doc));
 			}
 		} finally {
@@ -194,8 +221,8 @@ public class TempCouchDb extends SQLiteOpenHelper {
 		}
 	}
 
-	public List<JSONObject> getDeletedRevs(String id) throws JSONException {
-		List<JSONObject> revs = new LinkedList();
+	public Set<JSONObject> getDeletedRevs(String id) throws JSONException {
+		Set<JSONObject> revs = new HashSet();
 
 		Cursor c = null;
 		try {
