@@ -360,23 +360,7 @@ public class EmbeddedBrowserActivity extends Activity implements MedicJsEvaluato
 								break;
 							}
 						case "/medic/_changes":
-							// trigger the replication from localhost server
-							evaluateJavascript(
-									"var localDbName = 'medic-user-' + JSON.parse(unescape(decodeURI(" +
-									"    document.cookie.split(';').map(function(e) {" +
-									"      return e.trim();" +
-									"    }).find(function(e) {" +
-									"      return e.startsWith('userCtx=');" +
-									"    }).split('=', 2)[1]))).name;" +
-									"console.log('Replicating local db:', localDbName);" +
-									"PouchDB.replicate('http://localhost:8000/medic', localDbName)" +
-									"    .then(function() {" +
-									"      console.log('Replication complete!  TODO now disable URL blocking and reload the page.');" +
-									"      window.location = '/_session?setCookies=true'" +
-									"    })" +
-									"    .catch(function(err) {" +
-									"      console.log('Error during replication', err);" +
-									"    });");
+							evaluateJavascript("medicmobile_android.replicateFromLocal()");
 							break;
 					}
 
