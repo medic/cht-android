@@ -455,8 +455,66 @@ public class CouchReplicationTargetTest {
 	}
 
 	@Test
-	public void _changes_GET_shouldRespectDeletedFlag() throws Exception {
-		// TODO do we need this?
+	public void _changes_GET_shouldIncludeDeletedDocsAndRevisions() throws Exception {
+		// given
+		target.post("/_bulk_docs", json(
+				"docs", array(
+					json(
+						"_id", "aaa-111",
+						"_rev", "2-xxx",
+						"val", "one"
+					),
+					json(
+						"_id", "aaa-111",
+						"_rev", "1-xxx",
+						"val", "unus",
+						"_deleted", true
+					),
+					json(
+						"_id", "bbb-222",
+						"_rev", "1-yyy",
+						"val", "two"
+					),
+					json(
+						"_id", "ccc-333",
+						"_rev", "1-zzz",
+						"val", "three",
+						"_deleted", true
+					)
+				),
+				"new_edits", false));
+
+		// when
+		FcResponse response = target.get("/_changes", noQueryParams());
+
+		// then
+		assertJson(response, json(
+				"results", array(
+					json(
+						"changes", array(
+							json("rev", "2-xxx"),
+							json("rev", "1-xxx")
+						),
+						"id", "aaa-111",
+						"seq", 1
+					),
+					json(
+						"changes", array(
+							json("rev", ANY_REV)
+						),
+						"id", "bbb-222",
+						"seq", 2
+					),
+					json(
+						"changes", array(
+							json("rev", ANY_REV)
+						),
+						"id", "ccc-333",
+						"seq", 3
+					)
+				),
+				"last_seq", 3)
+		);
 	}
 
 //> _local
