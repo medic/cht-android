@@ -128,14 +128,14 @@ public class MedicAndroidJavascript {
 	@android.webkit.JavascriptInterface
 	public void replicateFromLocal() {
 		parent.evaluateJavascript(
-				"alDbName = 'medic-user-' + JSON.parse(unescape(decodeURI(" +
+				"var localCouchName = 'medic-user-' + JSON.parse(unescape(decodeURI(" +
 				"    document.cookie.split(';').map(function(e) {" +
 				"      return e.trim();" +
 				"    }).find(function(e) {" +
 				"      return e.startsWith('userCtx=');" +
 				"    }).split('=', 2)[1]))).name;" +
-				"console.log('Replicating local db:', localDbName);" +
-				"PouchDB.replicate('http://localhost:8000/medic', localDbName)" +
+				"console.log('Replicating local db:', localCouchName);" +
+				"PouchDB.replicate('http://localhost:8000/medic', localCouchName)" +
 				"    .then(function() {" +
 				"      console.log('Replication complete!  TODO now disable URL blocking and reload the page.');" +
 				"    })" +
