@@ -651,7 +651,7 @@ public class CouchReplicationTargetTest {
 	}
 
 	@Test
-	public void _bulk_docs_shouldSaveMultipleDocumentsd() throws Exception {
+	public void _bulk_docs_shouldSaveMultipleDocuments() throws Exception {
 		// when
 		FcResponse response = target.post("/_bulk_docs", json(
 				"docs", array(
