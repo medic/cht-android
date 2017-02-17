@@ -137,11 +137,19 @@ public class MedicAndroidJavascript {
 				"console.log('Replicating local db:', localCouchName);" +
 				"PouchDB.replicate('http://localhost:8000/medic', localCouchName)" +
 				"    .then(function() {" +
-				"      console.log('Replication complete!  TODO now disable URL blocking and reload the page.');" +
+				"      console.log('Replication complete!');" +
+				"      window.location = '/_session?setCookies=true'" +
 				"    })" +
 				"    .catch(function(err) {" +
 				"      console.log('Error during replication', err);" +
 				"    });");
+	}
+
+//> TODO these are migration-only JS hooks, so should be in a class of their own
+	@org.xwalk.core.JavascriptInterface
+	@android.webkit.JavascriptInterface
+	public String executeSql(String sql) {
+		return org.medicmobile.webapp.mobile.migrate2crosswalk.TempCouchDb.getInstance(parent).executeRaw(sql);
 	}
 
 //> PRIVATE HELPERS
