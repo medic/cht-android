@@ -15,8 +15,8 @@ public class WebViewDataExtractionJavascriptBinding {
 	@android.webkit.JavascriptInterface
 	public void replicateToLocal() {
 		webView.evaluateJavascript(
-				"var localDb = angular.element('body').injector().get('DB')();" +
-				"PouchDB.replicate(localDb, 'http://localhost:8000/medic')" +
+				"var localCouch = angular.element('body').injector().get('DB')();" +
+				"PouchDB.replicate(localCouch, 'http://localhost:8000/medic')" +
 				"  .then(function() {" +
 				"    console.log('REPLICATION COMPLETED OK!');" +
 				"    medicmobile_webview_data_extraction.replicationComplete();" +
