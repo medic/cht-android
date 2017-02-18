@@ -32,12 +32,14 @@ public class TempCouchDb extends SQLiteOpenHelper {
 	private static final String[] NO_SELECTION_ARGS = null;
 	private static final String NO_LIMIT = null;
 
-	private static final String tblDELETED = "deleted_docs";
+	private static final int FALSE = 0, TRUE = 1;
+
 	private static final String tblLOCAL = "local";
 	private static final String tblMEDIC = "medic";
-	private static final String clmID = "_id";
 	private static final String clmSEQ = "seq";
+	private static final String clmID = "_id";
 	private static final String clmREV = "_rev";
+	private static final String clmDELETED = "_deleted";
 	private static final String clmJSON = "json";
 
 	private static final String[] DOC_TABLES = { tblLOCAL, tblMEDIC };
@@ -62,18 +64,14 @@ public class TempCouchDb extends SQLiteOpenHelper {
 
 //> EVENT HANDLERS
 	@Override public void onCreate(SQLiteDatabase db) {
-		db.execSQL(String.format("CREATE TABLE %s (" +
-					"id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-					"%s TEXT KEY, " +
-					"%s TEXT NOT NULL)",
-				tblDELETED, clmID, clmREV));
 		for(String tableName : DOC_TABLES) {
 			db.execSQL(String.format("CREATE TABLE %s (" +
 						"%s INTEGER PRIMARY KEY AUTOINCREMENT, " +
 						"%s TEXT KEY, " +
 						"%s TEXT NOT NULL, " +
+						"%s INTEGER NOT NULL, " +
 						"%s TEXT NOT NULL)",
-					tableName, clmSEQ, clmID, clmREV, clmJSON));
+					tableName, clmSEQ, clmID, clmREV, clmDELETED, clmJSON));
 		}
 	}
 
@@ -193,55 +191,6 @@ public class TempCouchDb extends SQLiteOpenHelper {
 			else {
 				db.insert(tableName, null, forInsert(docId, doc));
 			}
-		} finally {
-			if(c != null) try { c.close(); } catch(Exception ex) {}
-		}
-	}
-
-	void storeDeleted(JSONObject doc) throws IllegalDocException, JSONException {
-		trace("storeDeleted", "doc=%s", doc);
-
-		String id = doc.optString("_id");
-		String rev = doc.optString("_rev");
-
-		if(id == null || id.length() == 0 ||
-				rev == null || rev.length() == 0 ||
-				!doc.optBoolean("_deleted", false))
-			throw new IllegalDocException(doc);
-
-		Cursor c = null;
-		try {
-			ContentValues v = new ContentValues();
-			v.put(clmID, id);
-			v.put(clmREV, rev);
-
-			db.insert(tblDELETED, null, v);
-		} finally {
-			if(c != null) try { c.close(); } catch(Exception ex) {}
-		}
-	}
-
-	public Set<JSONObject> getDeletedRevs(String id) throws JSONException {
-		Set<JSONObject> revs = new HashSet();
-
-		Cursor c = null;
-		try {
-			c = db.query(tblDELETED,
-					cols(clmREV),
-					"_id=?", vals(id),
-					NO_GROUP, NO_GROUP,
-					DEFAULT_ORDERING);
-
-			while(c.moveToNext()) {
-				String rev = c.getString(0);
-				revs.add(JSON.obj(
-					"_id", id,
-					"_rev", rev,
-					"_deleted", true
-				));
-			}
-
-			return revs;
 		} finally {
 			if(c != null) try { c.close(); } catch(Exception ex) {}
 		}
@@ -387,6 +336,7 @@ public class TempCouchDb extends SQLiteOpenHelper {
 
 		v.put(clmID, docId);
 		v.put(clmREV, doc.getString("_rev"));
+		v.put(clmDELETED, doc.optBoolean("_deleted", false));
 		v.put(clmJSON, doc.toString());
 
 		return v;
