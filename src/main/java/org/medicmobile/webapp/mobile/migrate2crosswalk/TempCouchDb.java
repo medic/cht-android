@@ -425,13 +425,20 @@ class CouchChangesFeed {
 
 	public void addDoc(int seq, JSONObject doc) throws JSONException {
 		last_seq = Math.max(seq, last_seq);
-		results.put(JSON.obj(
+
+		JSONObject change = JSON.obj(
 			"changes", JSON.array(
 				JSON.obj("rev", doc.getString("_rev"))
 			),
 			"id", doc.getString("_id"),
 			"seq", seq
-		));
+		);
+
+		if(doc.optBoolean("_deleted", false)) {
+			change.put("deleted", true);
+		}
+
+		results.put(change);
 	}
 
 	public JSONObject get() throws JSONException {

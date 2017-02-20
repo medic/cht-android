@@ -1,5 +1,6 @@
 package org.medicmobile.webapp.mobile.migrate2crosswalk;
 
+import java.lang.AssertionError;
 import java.util.*;
 import java.util.regex.*;
 
@@ -467,7 +468,6 @@ public class CouchReplicationTargetTest {
 					json(
 						"_id", "aaa-111",
 						"_rev", "1-xxx",
-						"val", "unus",
 						"_deleted", true
 					),
 					json(
@@ -500,6 +500,7 @@ public class CouchReplicationTargetTest {
 						"changes", array(
 							json("rev", "1-xxx")
 						),
+						"deleted", true,
 						"id", "aaa-111",
 						"seq", 2
 					),
@@ -514,6 +515,7 @@ public class CouchReplicationTargetTest {
 						"changes", array(
 							json("rev", ANY_REV)
 						),
+						"deleted", true,
 						"id", "ccc-333",
 						"seq", 4
 					)
@@ -1403,7 +1405,11 @@ public class CouchReplicationTargetTest {
 
 		assertEquals(failMessage, expected.length(), actual.length());
 		for(int i=0; i<actual.length(); ++i) {
-			aEq(expected.get(i), actual.get(i), failMessage);
+			try {
+				aEq(expected.get(i), actual.get(i), failMessage);
+			} catch(AssertionError ex) {
+				throw new AssertionError(String.format("JSON arrays are not equal: %s vs %s", expected, actual), ex);
+			}
 		}
 	}
 
@@ -1419,7 +1425,11 @@ public class CouchReplicationTargetTest {
 		Iterator<String> keys = expected.keys();
 		while(keys.hasNext()) {
 			String key = keys.next();
-			aEq(expected.get(key), actual.get(key), failMessage);
+			try {
+				aEq(expected.get(key), actual.get(key), failMessage);
+			} catch(AssertionError ex) {
+				throw new AssertionError(String.format("JSON objects are not equal: %s vs %s", expected, actual), ex);
+			}
 		}
 	}
 
