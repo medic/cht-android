@@ -10,7 +10,7 @@ import android.database.sqlite.SQLiteDatabase.CursorFactory;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteQuery;
 
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -98,19 +98,50 @@ public class TempCouchDb extends SQLiteOpenHelper {
 	}
 
 	JSONObject get(String docId) throws JSONException {
-		return get(tblMEDIC, docId);
+		return _get(tblMEDIC, docId);
+	}
+
+	JSONObject get(String docId, String rev) throws JSONException {
+		return _get(tblMEDIC, docId, rev);
 	}
 
 	JSONObject get_local(String docId) throws JSONException {
-		return get(tblLOCAL, docId);
+		return _get(tblLOCAL, docId);
 	}
 
-	private JSONObject get(String tableName, String docId) throws JSONException {
+	private JSONObject _get(String tableName, String docId) throws JSONException {
 		Cursor c = null;
 		try {
 			c = db.query(tableName,
 					cols(clmREV, clmJSON),
 					"_id=?", cols(docId),
+					NO_GROUP, NO_GROUP,
+					DEFAULT_ORDERING,
+					NO_LIMIT);
+
+			String latestRev = null;
+			String json = null;
+
+			while(c.moveToNext()) {
+				String newRev = c.getString(0);
+				if(latestRev == null || getRevNumber(newRev) > getRevNumber(latestRev)) {
+					latestRev = newRev;
+					json = c.getString(1);
+				}
+			}
+
+			return latestRev == null ? null : (JSONObject) new JSONTokener(json).nextValue();
+		} finally {
+			if(c != null) try { c.close(); } catch(Exception ex) {}
+		}
+	}
+
+	private JSONObject _get(String tableName, String docId, String rev) throws JSONException {
+		Cursor c = null;
+		try {
+			c = db.query(tableName,
+					cols(clmREV, clmJSON),
+					"_id=? AND _rev=?", cols(docId, rev),
 					NO_GROUP, NO_GROUP,
 					DEFAULT_ORDERING,
 					NO_LIMIT);
@@ -140,7 +171,7 @@ public class TempCouchDb extends SQLiteOpenHelper {
 	private Set<JSONObject> getRevs(String tableName, String docId) throws JSONException {
 		Cursor c = null;
 		try {
-			HashSet<JSONObject> docs = new HashSet();
+			Set<JSONObject> docs = new LinkedHashSet();
 
 			c = db.query(tableName,
 					cols(clmJSON),

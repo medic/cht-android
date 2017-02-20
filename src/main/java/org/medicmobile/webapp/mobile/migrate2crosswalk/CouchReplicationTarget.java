@@ -7,7 +7,7 @@ import android.webkit.WebResourceResponse;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -58,7 +58,7 @@ class CouchReplicationTarget {
 			}
 
 			if(requestPath.substring(1).contains("/")) {
-				return getAttachment(requestPath);
+				return getAttachment(requestPath, queryParams);
 			}
 
 			return getDoc(requestPath, queryParams);
@@ -255,13 +255,14 @@ class CouchReplicationTarget {
 		}
 	}
 
-	private FcResponse getAttachment(String requestPath) throws CouchReplicationTargetException, JSONException {
+	private FcResponse getAttachment(String requestPath, Map<String, List<String>> queryParams) throws CouchReplicationTargetException, JSONException {
 		String[] pathParts = requestPath.substring(1).split("/", 2);
-		if(pathParts.length != 2 || pathParts[0].length() == 00 || pathParts[1].length() == 1)
+		if(pathParts.length != 2 || pathParts[0].length() == 0 || pathParts[1].length() == 1)
 			throw new CouchReplicationTargetException("Bad doc or attachment path: " + requestPath);
 
 		String id = pathParts[0];
-		JSONObject doc = db.get(id);
+		String rev = getFirstString(queryParams, "rev");
+		JSONObject doc = rev == null ? db.get(id) : db.get(id, rev);
 		if(doc == null) throw new DocNotFoundException(id);
 
 		String attachmentName = pathParts[1];
@@ -285,7 +286,7 @@ class CouchReplicationTarget {
 	}
 
 	private static Set<String> getRevs(String encodedRevsJsonString) throws JSONException {
-		Set<String> revs = new HashSet();
+		Set<String> revs = new LinkedHashSet();
 
 		JSONArray a = new JSONArray(urlDecode(encodedRevsJsonString));
 		for(int i=a.length()-1; i>=0; --i) revs.add(a.getString(i));

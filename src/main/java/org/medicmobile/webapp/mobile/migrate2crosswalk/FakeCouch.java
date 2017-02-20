@@ -121,7 +121,7 @@ class FakeCouchDaemon extends NanoHTTPD {
 							"Unsupported method: " + session.getMethod());
 				}
 			}
-		} catch(DocNotFoundException ex) {
+		} catch(DocNotFoundException | AttachmentNotFoundException ex) {
 			fcResponse = FcResponse.error(NOT_FOUND, "not_found", "missing");
 		} catch(Exception ex) {
 			MedicLog.warn(ex, "Returning JSON-encoded error to client.");

@@ -1191,15 +1191,15 @@ public class CouchReplicationTargetTest {
 				json("ok",
 					json(
 						"_id", "abc-123",
-						"_rev", "1-xxx",
-						"val", "one"
+						"_rev", "2-yyy",
+						"val", "two"
 					)
 				),
 				json("ok",
 					json(
 						"_id", "abc-123",
-						"_rev", "2-yyy",
-						"val", "two"
+						"_rev", "1-xxx",
+						"val", "one"
 					)
 				)));
 	}
@@ -1274,6 +1274,64 @@ public class CouchReplicationTargetTest {
 
 		// and
 		assertEquals("hi", new String(response.bodyAsBytes(), "UTF-8"));
+	}
+
+	@Test
+	public void attachmentRequest_shouldReturnAttachmentForRequestedRev() throws Exception {
+		// given
+		target.post("/_bulk_docs", json(
+				"docs", array(
+					json(
+						"_id", "abc-123",
+						"_rev", "1-xxx",
+						"val", "one",
+						"_attachments", json(
+							"attachment-1", json(
+								"data", "aGkx", // 'hi1', base64-encoded
+								"content_type", "text/plain"
+							)
+						)
+					),
+					json(
+						"_id", "abc-123",
+						"_rev", "2-yyy",
+						"val", "two",
+						"_attachments", json(
+							"attachment-1", json(
+								"data", "aGky", // 'hi2', base64-encoded
+								"content_type", "text/plain"
+							)
+						)
+					),
+					json(
+						"_id", "abc-123",
+						"_rev", "3-zzz",
+						"val", "three",
+						"_attachments", json(
+							"attachment-1", json(
+								"data", "aGkz", // 'hi3', base64-encoded
+								"content_type", "text/plain"
+							)
+						)
+					)
+				),
+				"new_edits", false));
+		assertDbContent("medic",
+				"abc-123", "1-xxx", false, "{ \"_id\":\"abc-123\", \"_rev\":\"1-xxx\", \"val\":\"one\", \"_attachments\":{ \"attachment-1\":{" +
+						"\"data\":\"aGkx\", \"content_type\":\"text/plain\" } } }",
+				"abc-123", "2-yyy", false, "{ \"_id\":\"abc-123\", \"_rev\":\"2-yyy\", \"val\":\"two\", \"_attachments\":{ \"attachment-1\":{" +
+						"\"data\":\"aGky\", \"content_type\":\"text/plain\" } } }",
+				"abc-123", "3-zzz", false, "{ \"_id\":\"abc-123\", \"_rev\":\"3-zzz\", \"val\":\"three\", \"_attachments\":{ \"attachment-1\":{" +
+						"\"data\":\"aGkz\", \"content_type\":\"text/plain\" } } }");
+
+		// when
+		FcResponse response = target.get("/abc-123/attachment-1", queryParams("rev", "2-yyy"));
+
+		// then
+		assertEquals("text/plain", response.contentType);
+
+		// and
+		assertEquals("hi2", new String(response.bodyAsBytes(), "UTF-8"));
 	}
 
 //> HELPERS
