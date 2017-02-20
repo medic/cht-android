@@ -456,28 +456,13 @@ public class CouchReplicationTargetTest {
 	}
 
 	@Test
-	public void _changes_GET_shouldIncludeDeletedDocsAndRevisions() throws Exception {
+	public void _changes_GET_shouldIncludeDeletedDocs() throws Exception {
 		// given
 		target.post("/_bulk_docs", json(
 				"docs", array(
 					json(
 						"_id", "aaa-111",
-						"_rev", "2-xxx",
-						"val", "one"
-					),
-					json(
-						"_id", "aaa-111",
 						"_rev", "1-xxx",
-						"_deleted", true
-					),
-					json(
-						"_id", "bbb-222",
-						"_rev", "1-yyy",
-						"val", "two"
-					),
-					json(
-						"_id", "ccc-333",
-						"_rev", "1-zzz",
 						"_deleted", true
 					)
 				),
@@ -491,36 +476,51 @@ public class CouchReplicationTargetTest {
 				"results", array(
 					json(
 						"changes", array(
-							json("rev", "2-xxx")
-						),
-						"id", "aaa-111",
-						"seq", 1
-					),
-					json(
-						"changes", array(
 							json("rev", "1-xxx")
 						),
 						"deleted", true,
 						"id", "aaa-111",
-						"seq", 2
-					),
-					json(
-						"changes", array(
-							json("rev", ANY_REV)
-						),
-						"id", "bbb-222",
-						"seq", 3
-					),
-					json(
-						"changes", array(
-							json("rev", ANY_REV)
-						),
-						"deleted", true,
-						"id", "ccc-333",
-						"seq", 4
+						"seq", 1
 					)
 				),
-				"last_seq", 4)
+				"last_seq", 1)
+		);
+	}
+
+	@Test
+	public void _changes_GET_shouldBundleChangesForASingleDoc() throws Exception {
+		// given
+		target.post("/_bulk_docs", json(
+				"docs", array(
+					json(
+						"_id", "aaa-111",
+						"_rev", "2-xxx",
+						"val", "one"
+					),
+					json(
+						"_id", "aaa-111",
+						"_rev", "1-xxx",
+						"_deleted", true
+					)
+				),
+				"new_edits", false));
+
+		// when
+		FcResponse response = target.get("/_changes", noQueryParams());
+
+		// then
+		assertJson(response, json(
+				"results", array(
+					json(
+						"changes", array(
+							json("rev", "2-xxx"),
+							json("rev", "1-xxx")
+						),
+						"id", "aaa-111",
+						"seq", 2
+					)
+				),
+				"last_seq", 2)
 		);
 	}
 

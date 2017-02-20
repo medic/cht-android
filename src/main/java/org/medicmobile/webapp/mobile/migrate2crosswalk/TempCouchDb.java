@@ -10,8 +10,14 @@ import android.database.sqlite.SQLiteDatabase.CursorFactory;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteQuery;
 
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.regex.Pattern;
 
 import org.json.JSONArray;
@@ -416,7 +422,8 @@ class IllegalDocException extends Exception {
 
 class CouchChangesFeed {
 	private int last_seq;
-	private JSONArray results = new JSONArray();
+
+	private Map<String, CouchChangesFeedItem> changes = new HashMap();
 
 	CouchChangesFeed() {}
 	CouchChangesFeed(Integer since) {
@@ -425,25 +432,70 @@ class CouchChangesFeed {
 
 	public void addDoc(int seq, JSONObject doc) throws JSONException {
 		last_seq = Math.max(seq, last_seq);
+		String id = doc.getString("_id");
 
-		JSONObject change = JSON.obj(
-			"changes", JSON.array(
-				JSON.obj("rev", doc.getString("_rev"))
-			),
-			"id", doc.getString("_id"),
-			"seq", seq
-		);
-
-		if(doc.optBoolean("_deleted", false)) {
-			change.put("deleted", true);
+		CouchChangesFeedItem change;
+		if(changes.containsKey(id)) {
+			change = changes.get(id);
+		} else {
+			change = new CouchChangesFeedItem(seq, id, doc);
+			changes.put(id, change);
 		}
-
-		results.put(change);
+		change.add(seq, doc);
 	}
 
 	public JSONObject get() throws JSONException {
+		JSONArray results = new JSONArray();
+
+		TreeMap<Integer, CouchChangesFeedItem> sortedChanges = new TreeMap();
+		for(CouchChangesFeedItem change : changes.values())
+			sortedChanges.put(change.getLastSeq(), change);
+
+		for(CouchChangesFeedItem i : sortedChanges.values()) {
+			results.put(i.asJson());
+		}
+
 		return JSON.obj("results", results,
 				"last_seq", last_seq);
+	}
+}
+
+class CouchChangesFeedItem {
+	private final String id;
+	private int lastSeq = 0;
+	private boolean deleted = true;
+	private List<String> revs = new LinkedList<String>();
+
+	CouchChangesFeedItem(int seq, String id, JSONObject doc) {
+		this.id = id;
+	}
+
+	int getLastSeq() {  return lastSeq; }
+
+	void add(int seq, JSONObject doc) throws JSONException {
+		revs.add(doc.getString("_rev"));
+		deleted = deleted && doc.optBoolean("_deleted", false);
+		lastSeq = Math.max(lastSeq, seq);
+	}
+
+	JSONObject asJson() throws JSONException {
+		JSONArray changes = new JSONArray();
+
+		for(String rev : revs) {
+			changes.put(JSON.obj("rev", rev));
+		}
+
+		JSONObject json = JSON.obj(
+			"changes", changes,
+			"id", id,
+			"seq", lastSeq
+		);
+
+		if(deleted) {
+			json.put("deleted", true);
+		}
+
+		return json;
 	}
 }
 
