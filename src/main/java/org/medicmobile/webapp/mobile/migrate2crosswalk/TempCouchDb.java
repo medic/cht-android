@@ -473,18 +473,11 @@ class CouchViewResult {
 	}
 }
 
+// FIXME remove this cursor factory when dev is finished on this ticket
 class CursorDebugFactory implements CursorFactory {
-int queryCount = 0;
-
 	@Override
 	public Cursor newCursor(SQLiteDatabase db, SQLiteCursorDriver masterQuery, String editTable, SQLiteQuery query) {
 		MedicLog.trace(this, query.toString());
-
-		if(false && ++queryCount > 4) {
-			throw new RuntimeException(String.format(
-					"masterQuery=%s; editTable=%s; query=%s",
-					masterQuery, editTable, query));
-		}
 
 		return new SQLiteCursor(masterQuery, editTable, query);
 	}
