@@ -81,7 +81,6 @@ android {
 	}
 
 	applicationVariants.all {
-		buildConfigField "String", "ICON_CHANGER", "\"${System.env.ICON_CHANGER}\"";
 		buildConfigField "boolean", "DISABLE_APP_URL_VALIDATION", "Boolean.parseBoolean(\"${System.env.DISABLE_APP_URL_VALIDATION}\")";
 	}
 
