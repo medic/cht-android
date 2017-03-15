@@ -11,14 +11,14 @@ public final class MedicLog {
 	public static void log(String message, Object... extras) {
 		message = String.format(message, extras);
 
-		w(LOG_TAG, message);
+		i(LOG_TAG, message);
 	}
 
 	public static void trace(Object caller, String message, Object... extras) {
 		if(!DEBUG) return;
 
 		message = String.format(message, extras);
-		w(LOG_TAG, caller.getClass().getName() + " :: " + message);
+		d(LOG_TAG, caller.getClass().getName() + " :: " + message);
 	}
 
 	public static void warn(Exception ex, String message, Object... extras) {

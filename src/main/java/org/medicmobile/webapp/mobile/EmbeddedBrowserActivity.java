@@ -1,16 +1,19 @@
 package org.medicmobile.webapp.mobile;
 
-import android.app.*;
-import android.content.*;
-import android.graphics.*;
-import android.location.*;
-import android.net.*;
-import android.os.*;
-import android.util.*;
-import android.view.*;
+import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
+import android.location.LocationManager;
+import android.net.Uri;
+import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.Window;
 import android.view.inputmethod.*;
-import android.webkit.*;
-import android.widget.*;
+import android.webkit.ConsoleMessage;
+import android.webkit.ValueCallback;
+import android.widget.Toast;
 
 import java.io.File;
 
@@ -22,6 +25,7 @@ import org.xwalk.core.XWalkView;
 
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static org.medicmobile.webapp.mobile.BuildConfig.DISABLE_APP_URL_VALIDATION;
+import static org.medicmobile.webapp.mobile.MedicLog.trace;
 
 public class EmbeddedBrowserActivity extends Activity {
 	private static final ValueCallback<String> IGNORE_RESULT = new ValueCallback<String>() {
@@ -145,10 +149,10 @@ public class EmbeddedBrowserActivity extends Activity {
 	private void enableWebviewLoggingAndGeolocation(XWalkView container) {
 		new XWalkUIClient(container) {
 			public boolean onConsoleMessage(ConsoleMessage cm) {
-				Log.d("MedicMobile", String.format("%s:%s | %s",
+				trace("%s:%s | %s",
 						cm.sourceId(),
 						cm.lineNumber(),
-						cm.message()));
+						cm.message());
 				return true;
 			}
 
@@ -170,6 +174,7 @@ public class EmbeddedBrowserActivity extends Activity {
 		};
 	}
 
+	@SuppressLint("SetJavaScriptEnabled")
 	private void enableJavascript(XWalkView container) {
 		container.getSettings().setJavaScriptEnabled(true);
 

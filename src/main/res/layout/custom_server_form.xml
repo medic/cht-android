@@ -18,7 +18,7 @@
 			android:paddingLeft="16dp"
 			android:paddingRight="16dp"
 			android:layout_alignParentBottom="true"
-			android:layout_toLeftOf="@+id/btnSaveSettings"/>
+			android:layout_toStartOf="@+id/btnSaveSettings"/>
 	<Button android:id="@+id/btnSaveSettings"
 			android:text="@string/btnSave"
 			android:onClick="verifyAndSave"
@@ -26,6 +26,6 @@
 			android:layout_width="wrap_content"
 			android:paddingLeft="16dp"
 			android:paddingRight="16dp"
-			android:layout_alignParentRight="true"
+			android:layout_alignParentEnd="true"
 			android:layout_alignParentBottom="true"/>
 </RelativeLayout>

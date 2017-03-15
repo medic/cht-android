@@ -1,13 +1,26 @@
 package org.medicmobile.webapp.mobile;
 
-import android.app.*;
-import android.content.*;
-import android.os.*;
-import android.view.*;
-import android.widget.*;
+import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ListView;
+import android.widget.SimpleAdapter;
+import android.widget.TextView;
 import android.widget.AdapterView.OnItemClickListener;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static android.view.View.GONE;
@@ -72,7 +85,7 @@ public class SettingsDialogActivity extends Activity {
 
 		new AsyncTask<String, Void, AppUrlVerififcation>() {
 			protected AppUrlVerififcation doInBackground(String... appUrl) {
-				assert appUrl.length == 1;
+				if(DEBUG && appUrl.length == 1) throw new IllegalArgumentException();
 				return new AppUrlVerifier().verify(appUrl[0]);
 			}
 			protected void onPostExecute(AppUrlVerififcation result) {
@@ -247,6 +260,7 @@ class ServerRepo {
 		ed.apply();
 	}
 
+	@SuppressLint("DefaultLocale")
 	private static String friendly(String url) {
 		int slashes = url.indexOf("//");
 		if(slashes != -1) {

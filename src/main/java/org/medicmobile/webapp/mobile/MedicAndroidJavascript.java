@@ -19,10 +19,11 @@ import org.json.JSONObject;
 import static java.util.Calendar.DAY_OF_MONTH;
 import static java.util.Calendar.MONTH;
 import static java.util.Calendar.YEAR;
+import static java.util.Locale.UK;
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 
 public class MedicAndroidJavascript {
-	private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
+	private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd", UK);
 
 	private final EmbeddedBrowserActivity parent;
 
@@ -133,7 +134,7 @@ public class MedicAndroidJavascript {
 		DatePickerDialog.OnDateSetListener listener = new DatePickerDialog.OnDateSetListener() {
 			public void onDateSet(DatePicker view, int year, int month, int day) {
 				++month;
-				String dateString = String.format("%04d-%02d-%02d", year, month, day);
+				String dateString = String.format(UK, "%04d-%02d-%02d", year, month, day);
 				String setJs = String.format("$('%s').val('%s').trigger('change')",
 						safeTargetElement, dateString);
 				parent.evaluateJavascript(setJs);
