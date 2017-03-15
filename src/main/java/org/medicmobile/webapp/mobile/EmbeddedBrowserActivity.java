@@ -39,8 +39,11 @@ public class EmbeddedBrowserActivity extends Activity {
 	private XWalkView container;
 	private SettingsStore settings;
 
-	public void onCreate(Bundle savedInstanceState) {
+	@Override public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+
+		log("Starting XWalk webview...");
+
 		this.settings = SettingsStore.in(this);
 
 		this.requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -60,7 +63,7 @@ public class EmbeddedBrowserActivity extends Activity {
 		enableJavascript(container);
 		enableStorage(container);
 
-		enableSmsAndCallHandling(container);
+		enableUrlHandlers(container);
 
 		browseToRoot();
 
@@ -69,7 +72,7 @@ public class EmbeddedBrowserActivity extends Activity {
 		}
 	}
 
-	public boolean onCreateOptionsMenu(Menu menu) {
+	@Override public boolean onCreateOptionsMenu(Menu menu) {
 		if(settings.allowsConfiguration()) {
 			getMenuInflater().inflate(R.menu.unbranded_web_menu, menu);
 		} else {
@@ -78,7 +81,7 @@ public class EmbeddedBrowserActivity extends Activity {
 		return super.onCreateOptionsMenu(menu);
 	}
 
-	public boolean onOptionsItemSelected(MenuItem item) {
+	@Override public boolean onOptionsItemSelected(MenuItem item) {
 		switch(item.getItemId()) {
 			case R.id.mnuSettings:
 				openSettings();
@@ -94,7 +97,7 @@ public class EmbeddedBrowserActivity extends Activity {
 		}
 	}
 
-	public void onBackPressed() {
+	@Override public void onBackPressed() {
 		if(container == null) {
 			super.onBackPressed();
 		} else {
@@ -189,9 +192,9 @@ public class EmbeddedBrowserActivity extends Activity {
 		// there is no option to set the storage path.
 	}
 
-	private void enableSmsAndCallHandling(XWalkView container) {
-		new XWalkResourceClient(container) {
-			public boolean shouldOverrideUrlLoading(XWalkView view, String url) {
+	private void enableUrlHandlers(XWalkView container) {
+		container.setResourceClient(new XWalkResourceClient(container) {
+			@Override public boolean shouldOverrideUrlLoading(XWalkView view, String url) {
 				if(url.startsWith("tel:") || url.startsWith("sms:")) {
 					Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
 					view.getContext().startActivity(i);
@@ -199,15 +202,18 @@ public class EmbeddedBrowserActivity extends Activity {
 				}
 				return false;
 			}
-		};
+		});
 	}
 
 	private void toast(String message) {
 		Toast.makeText(container.getContext(), message, Toast.LENGTH_LONG).show();
 	}
 
+	private void trace(String methodName, String message, Object...extras) {
+		MedicLog.trace(this, methodName + "() :: " + message, extras);
+	}
+
 	private void log(String message, Object...extras) {
-		if(DEBUG) System.err.println("LOG | EmbeddedBrowserActivity::" +
-				String.format(message, extras));
+		MedicLog.trace(this, message, extras);
 	}
 }

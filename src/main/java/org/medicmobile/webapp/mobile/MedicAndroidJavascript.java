@@ -159,7 +159,6 @@ public class MedicAndroidJavascript {
 	}
 
 	private void log(String message, Object...extras) {
-		if(DEBUG) System.err.println("LOG | MedicAndroidJavascript::" +
-				String.format(message, extras));
+		MedicLog.trace(this, message, extras);
 	}
 }
