@@ -85,7 +85,7 @@ public class SettingsDialogActivity extends Activity {
 
 		new AsyncTask<String, Void, AppUrlVerififcation>() {
 			protected AppUrlVerififcation doInBackground(String... appUrl) {
-				if(DEBUG && appUrl.length == 1) throw new IllegalArgumentException();
+				if(DEBUG && appUrl.length != 1) throw new IllegalArgumentException();
 				return new AppUrlVerifier().verify(appUrl[0]);
 			}
 			protected void onPostExecute(AppUrlVerififcation result) {
