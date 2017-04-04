@@ -5,11 +5,15 @@ import android.content.Intent;
 import android.os.Bundle;
 
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
+import static org.medicmobile.webapp.mobile.BuildConfig.APPLICATION_ID;
+import static org.medicmobile.webapp.mobile.BuildConfig.VERSION_NAME;
 
 public class StartupActivity extends Activity {
 	public void onCreate(Bundle savedInstanceState) {
 		if(DEBUG) log("Starting...");
 		super.onCreate(savedInstanceState);
+
+		configureHttpUseragent();
 
 		Class newActivity;
 		if(SettingsStore.in(this).hasSettings()) {
@@ -35,6 +39,13 @@ public class StartupActivity extends Activity {
 		long freeSpace = getFilesDir().getFreeSpace();
 
 		return freeSpace > FreeSpaceWarningActivity.MINIMUM_SPACE;
+	}
+
+	private void configureHttpUseragent() {
+		String current = System.getProperty("http.agent");
+		if(current.contains(APPLICATION_ID)) return;
+		System.setProperty("http.agent", String.format("%s %s/%s",
+				current, APPLICATION_ID, VERSION_NAME));
 	}
 
 	private void log(String message, Object...extras) {
