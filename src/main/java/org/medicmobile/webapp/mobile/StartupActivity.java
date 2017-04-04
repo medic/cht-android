@@ -1,13 +1,12 @@
 package org.medicmobile.webapp.mobile;
 
-import android.app.*;
-import android.content.*;
-import android.webkit.*;
-import android.os.*;
+import android.app.Activity;
+import android.content.Intent;
+import android.os.Bundle;
+
+import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 
 public class StartupActivity extends Activity {
-	private static final boolean DEBUG = BuildConfig.DEBUG;
-
 	public void onCreate(Bundle savedInstanceState) {
 		if(DEBUG) log("Starting...");
 		super.onCreate(savedInstanceState);
