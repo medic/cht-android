@@ -13,6 +13,8 @@ android:
 
     # The SDK version used to compile your project
     - android-22
+env:
+  - GRADLE_OPTS="-XX:MaxPermSize=512m"
 before_script:
   - export MEDIC_VERSION_NAME="0.1.$TRAVIS_BUILD_NUMBER"
 script:
