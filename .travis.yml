@@ -9,7 +9,7 @@ android:
 before_script:
   - export MEDIC_VERSION_NAME="0.1.$TRAVIS_BUILD_NUMBER"
 script:
-  - ./gradlew test check assembleDebug
+  - ./gradlew test check assemble
 after_success:
   - git config --global user.email "dev@medicmobile.org"
   - git config --global user.name "Travis CI"
