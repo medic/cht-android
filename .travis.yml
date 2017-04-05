@@ -12,8 +12,6 @@ android:
     - android-22
 env:
   - GRADLE_OPTS="-XX:MaxPermSize=512m"
-before_script:
-  - export VERSION_TO_BUILD="$TRAVIS_TAG"
 script:
   - make travis
 after_success:
@@ -21,19 +19,10 @@ after_success:
   - git config --global user.name "Travis CI"
   - git tag "v${MEDIC_VERSION_NAME}"
   - git push --tags "https://${github_auth}@github.com/${TRAVIS_REPO_SLUG}" >/dev/null 2>/dev/null
-before_deploy:
-  - export MEDIC_PUBLISH_DIR="build/publish/${VERSION_TO_BUILD}"
-  - mkdir -p "$MEDIC_PUBLISH_DIR"
-  - cp build/outputs/apk/*-debug.apk "$MEDIC_PUBLISH_DIR"
 deploy:
+  provider: releases
+  api_key: $GITHUB_OAUTH_TOKEN
+  file: build/outputs/apk/*-release.apk
+  skip_cleanup: true
   on:
     tags: true
-  skip_cleanup: true
-  provider: s3
-  access_key_id: ${s3_access_id}
-  secret_access_key:
-    secure: ${s3_access_secret}
-  bucket: medic-mobile
-  local_dir: build/publish
-  upload-dir: builds/medic-android
-  acl: public_read
