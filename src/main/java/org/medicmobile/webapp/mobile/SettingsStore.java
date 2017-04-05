@@ -7,12 +7,13 @@ import java.util.regex.*;
 
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static org.medicmobile.webapp.mobile.SimpleJsonClient2.redactUrl;
+import static org.medicmobile.webapp.mobile.MedicLog.log;
 import static org.medicmobile.webapp.mobile.MedicLog.trace;
 
 @SuppressWarnings("PMD.ShortMethodName")
 public abstract class SettingsStore {
 	public static SettingsStore in(ContextWrapper ctx) {
-		if(DEBUG) trace(this, "Loading settings for context %s...", ctx);
+		if(DEBUG) log("Loading settings for context %s...", ctx);
 
 		String fixedAppUrl = ctx.getResources().
 				getString(R.string.fixed_app_url);

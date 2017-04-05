@@ -1,6 +1,5 @@
 package org.medicmobile.webapp.mobile;
 
-import android.os.Build;
 import android.util.Base64;
 import android.util.Log;
 
@@ -9,7 +8,6 @@ import java.io.Closeable;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -102,9 +100,9 @@ public class SimpleJsonClient2 {
 		StringBuilder bob = new StringBuilder();
 		for(int i=0; i<args.length; i+=2) {
 			bob.append(args[i]);
-			bob.append("=");
+			bob.append('=');
 			bob.append(args[i+1]);
-			bob.append(";");
+			bob.append(';');
 		}
 		log(methodName, bob.toString());
 	}
@@ -126,6 +124,7 @@ public class SimpleJsonClient2 {
 	}
 
 //> STATIC HELPERS
+	@SuppressWarnings("PMD.PreserveStackTrace")
 	private static HttpURLConnection openConnection(URL url) throws IOException {
 		HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 
@@ -150,6 +149,7 @@ public class SimpleJsonClient2 {
 	 *
 	 * @see https://tools.ietf.org/html/rfc2617#section-2
 	 */
+	@SuppressWarnings("PMD.PreserveStackTrace")
 	private static String encodeCredentials(String normal) {
 		try {
 			return Base64.encodeToString(normal.getBytes("ISO-8859-1"), Base64.NO_WRAP);
