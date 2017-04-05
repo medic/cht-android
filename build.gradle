@@ -1,13 +1,16 @@
 buildscript {
 	repositories {
 		mavenCentral()
+		maven { url "https://jitpack.io" }
 	}
 	dependencies {
 		classpath 'com.android.tools.build:gradle:1.2.3'
+		classpath 'com.github.alxndrsn:android-check:1f87548c0686d823e5f1490a2053b70bd9f5022e'
 	}
 }
 
 apply plugin: 'com.android.application'
+apply plugin: 'com.noveogroup.android.check'
 
 // enable verbose lint warnings
 gradle.projectsEvaluated {
@@ -74,9 +77,9 @@ android {
 	signingConfigs {
 		release {
 			storeFile file(System.env.ANDROID_KEYSTORE_PATH ?: signingConfigs.debug.storeFile)
-			storePassword System.env.ANDROID_KEYSTORE_PASSWORD
-			keyAlias System.env.ANDROID_KEY_ALIAS
-			keyPassword System.env.ANDROID_KEY_PASSWORD
+			storePassword System.env.ANDROID_KEYSTORE_PASSWORD ?: signingConfigs.debug.storePassword
+			keyAlias System.env.ANDROID_KEY_ALIAS ?: signingConfigs.debug.keyAlias
+			keyPassword System.env.ANDROID_KEY_PASSWORD ?: signingConfigs.debug.keyPassword
 		}
 	}
 
@@ -86,6 +89,10 @@ android {
 			proguardFile getDefaultProguardFile('proguard-android.txt')
 			signingConfig signingConfigs.release
 		}
+	}
+
+	check {
+		abortOnError true
 	}
 
 	productFlavors {

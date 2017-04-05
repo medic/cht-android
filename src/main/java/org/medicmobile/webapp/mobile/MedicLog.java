@@ -8,6 +8,8 @@ import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 public final class MedicLog {
 	private static final String LOG_TAG = "MedicMobile";
 
+	private MedicLog() {}
+
 	public static void log(String message, Object... extras) {
 		message = String.format(message, extras);
 
