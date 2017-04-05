@@ -16,8 +16,10 @@ script:
   - make travis
 deploy:
   provider: releases
-  api_key: $GITHUB_OAUTH_TOKEN
+  api_key:
+    secure: qgWMVwIw3/F+lRvSCr3Q8yAcSmz5sGnkLMIJJ/ilQxTIgP/0JuhQar7/v1JA2Dla2ePwy2BRiD9btSPeGwKvmPKLvCiEemPJu6hltqqK19Bt/NGus5GlArpiwiS0//jFiOem/t2U7FFhvyZpZ6evPAqNGKWiiuRNA+M2rHqBXEAO3XEsE4t83kk6dlT5CvCacuitaC8zjgbaR/bFkcH3w+xp228pv7CDAZ97xn35vhZlSnGLslvYlZHQd/dYdpiaBq/n/3FwHN4t2cnTRtHh2tZV5C80Jr2kYGr7ZvNVDgOB0Cb3f+f57rpZSZa9kGG5cW10E07LKkE5+yYC8yMZX68UbybO8paLMSVTOHHLRxgctBtkO8pKdaev0aLlRfBu/OhfUpC/qxTDDooivyX5rLDlH8a/9eP7CiXF84BiPx9i8CesY1pcZO3co8Zwle/uvvrbvhyWZzdPn0ciT9/MeclZRSXFOgQ1wBGXTX7PO2lujCpLo1WBmIOkPFznOWwSeMzT8VZVWvlcSIK/pELi1Md1F3DJ0IXSr2ulnXRkyMrRpuklSZF5OacjNd44YlXD6bsthAD7aj6rCePXaLWP5BZuxLdwi6wj6gmttQaqzvoNCR7eUWc7nybMk/mcfTXoHqXyznGURY0gmB27bEETo0ONAIypaM+kCDqzdKrdUuk=
   file: build/outputs/apk/*-release.apk
   skip_cleanup: true
   on:
     tags: true
+    repo: medic/medic-android
