@@ -22,8 +22,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static android.view.View.GONE;
+import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
+import static org.medicmobile.webapp.mobile.SimpleJsonClient2.redactUrl;
 
 public class SettingsDialogActivity extends Activity {
 	private static final int STATE_LIST = 1;
@@ -219,7 +220,7 @@ class ServerMetadata {
 	}
 
 	ServerMetadata(String name, String url) {
-		if(DEBUG) log("ServerMetadata() :: name:%s, url:%s", name, url);
+		if(DEBUG) log("ServerMetadata() :: name:%s, url:%s", name, redactUrl(url));
 		this.name = name;
 		this.url = url;
 	}

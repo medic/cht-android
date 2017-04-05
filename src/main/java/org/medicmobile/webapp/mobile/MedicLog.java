@@ -4,10 +4,9 @@ import static android.util.Log.d;
 import static android.util.Log.i;
 import static android.util.Log.w;
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
+import static org.medicmobile.webapp.mobile.BuildConfig.LOG_TAG;
 
 public final class MedicLog {
-	private static final String LOG_TAG = "MedicMobile";
-
 	public static void log(String message, Object... extras) {
 		message = String.format(message, extras);
 
