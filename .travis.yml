@@ -4,7 +4,7 @@ branches:
       - /^v.*/
 android:
   components:
-  - build-tools-22.0.1
+  - build-tools-23.0.3
   - android-22
 before_script:
   - export MEDIC_VERSION_NAME="0.1.$TRAVIS_BUILD_NUMBER"
