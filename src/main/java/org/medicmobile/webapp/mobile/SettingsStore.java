@@ -6,6 +6,7 @@ import java.util.*;
 import java.util.regex.*;
 
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
+import static org.medicmobile.webapp.mobile.SimpleJsonClient2.redactUrl;
 
 public abstract class SettingsStore {
 	public static SettingsStore in(ContextWrapper ctx) {
@@ -98,7 +99,7 @@ class Settings {
 	public final String appUrl;
 
 	public Settings(String appUrl) {
-		if(DEBUG) log("Settings() appUrl=%s", appUrl);
+		if(DEBUG) log("Settings() appUrl=%s", redactUrl(appUrl));
 		this.appUrl = appUrl;
 	}
 
