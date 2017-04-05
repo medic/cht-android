@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.ArrayMap;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -17,14 +18,13 @@ import android.widget.TextView;
 import android.widget.AdapterView.OnItemClickListener;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import static android.view.View.GONE;
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static org.medicmobile.webapp.mobile.SimpleJsonClient2.redactUrl;
+import static org.medicmobile.webapp.mobile.MedicLog.trace;
 
 public class SettingsDialogActivity extends Activity {
 	private static final int STATE_LIST = 1;
@@ -35,8 +35,8 @@ public class SettingsDialogActivity extends Activity {
 	private int state;
 
 	public void onCreate(Bundle savedInstanceState) {
-		if(DEBUG) log("Starting...");
 		super.onCreate(savedInstanceState);
+		if(DEBUG) trace(this, "Starting...");
 
 		this.settings = SettingsStore.in(this);
 		this.serverRepo = new ServerRepo(this);
@@ -77,7 +77,7 @@ public class SettingsDialogActivity extends Activity {
 
 //> EVENT HANDLERS
 	public void verifyAndSave(View view) {
-		if(DEBUG) log("verifyAndSave");
+		if(DEBUG) trace(this, "verifyAndSave");
 
 		submitButton().setEnabled(false);
 		cancelButton().setEnabled(false);
@@ -118,7 +118,7 @@ public class SettingsDialogActivity extends Activity {
 	}
 
 	public void cancelSettingsEdit(View view) {
-		if(DEBUG) log("cancelSettingsEdit");
+		if(DEBUG) trace(this, "cancelSettingsEdit");
 		backToWebview();
 	}
 
@@ -134,12 +134,12 @@ public class SettingsDialogActivity extends Activity {
 			startActivity(new Intent(this, EmbeddedBrowserActivity.class));
 			finish();
 		} catch(IllegalSettingsException ex) {
-			if(DEBUG) ex.printStackTrace();
+			if(DEBUG) trace(ex, "Tried to save illegal setting.");
 			for(IllegalSetting error : ex.errors) {
 				showError(error);
 			}
 		} catch(SettingsException ex) {
-			if(DEBUG) ex.printStackTrace();
+			if(DEBUG) trace(ex, "Problem savung settings.");
 			submitButton().setError(ex.getMessage());
 		}
 	}
@@ -162,11 +162,6 @@ public class SettingsDialogActivity extends Activity {
 		field.setText(value);
 	}
 
-	private void removeError(int componentId) {
-		EditText field = (EditText) findViewById(componentId);
-		field.setError(null);
-	}
-
 	private void showError(IllegalSetting error) {
 		showError(error.componentId, error.errorStringId);
 	}
@@ -176,20 +171,16 @@ public class SettingsDialogActivity extends Activity {
 		field.setError(getString(stringId));
 	}
 
+	@SuppressWarnings("PMD.UseConcurrentHashMap")
 	private List<Map<String, ?>> adapt(List<ServerMetadata> servers) {
 		List adapted = new ArrayList(servers.size());
 		for(ServerMetadata md : servers) {
-			Map<String, String> m = new HashMap();
+			Map<String, String> m = new ArrayMap(2);
 			m.put("name", md.name);
 			m.put("url", md.url);
 			adapted.add(m);
 		}
 		return adapted;
-	}
-
-	private void log(String message, Object...extras) {
-		if(DEBUG) System.err.println("LOG | SettingsDialogActivity :: " +
-				String.format(message, extras));
 	}
 
 //> INNER CLASSES
@@ -201,7 +192,6 @@ public class SettingsDialogActivity extends Activity {
 		}
 
 		public void onItemClick(AdapterView<?> parent, final View view, int position, long id) {
-			ServerMetadata md = servers.get(position);
 			if(position == 0) {
 				displayCustomServerForm();
 			} else {
@@ -220,14 +210,9 @@ class ServerMetadata {
 	}
 
 	ServerMetadata(String name, String url) {
-		if(DEBUG) log("ServerMetadata() :: name:%s, url:%s", name, redactUrl(url));
+		if(DEBUG) trace(this, "constructor :: name:%s, url:%s", name, redactUrl(url));
 		this.name = name;
 		this.url = url;
-	}
-
-	private void log(String message, Object... extras) {
-		if(DEBUG) System.err.println("LOG | ServerMetadata :: " +
-				String.format(message, extras));
 	}
 }
 
@@ -250,7 +235,7 @@ class ServerRepo {
 			servers.add(new ServerMetadata(
 					e.getValue().toString(),
 					e.getKey()));
-		};
+		}
 
 		return servers;
 	}
