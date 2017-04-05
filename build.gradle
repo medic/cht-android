@@ -64,13 +64,14 @@ def getVersionName = {
 	return 'SNAPSHOT'
 }
 
-connectedCheck.doLast {
+task coverageReport(dependsOn: 'createUnbrandedDebugCoverageReport')
+coverageReport.doLast {
 	// Add CLI report for Jacoco coverage
 	def slurper = new XmlSlurper()
 	slurper.setFeature("http://apache.org/xml/features/disallow-doctype-decl", false) 
 	slurper.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
 
-	['generic', 'medic'].each { flavour ->
+	['unbranded'].each { flavour ->
 		def report = slurper.parse("./build/reports/coverage/${flavour}/debug/report.xml")
 
 		println "------ Code Coverage (flavour: $flavour)) ------"
