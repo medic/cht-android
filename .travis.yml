@@ -14,11 +14,6 @@ env:
   - GRADLE_OPTS="-XX:MaxPermSize=512m"
 script:
   - make travis
-after_success:
-  - git config --global user.email "dev@medicmobile.org"
-  - git config --global user.name "Travis CI"
-  - git tag "v${MEDIC_VERSION_NAME}"
-  - git push --tags "https://${github_auth}@github.com/${TRAVIS_REPO_SLUG}" >/dev/null 2>/dev/null
 deploy:
   provider: releases
   api_key: $GITHUB_OAUTH_TOKEN
