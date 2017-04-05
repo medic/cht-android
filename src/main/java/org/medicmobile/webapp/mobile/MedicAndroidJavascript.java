@@ -1,5 +1,6 @@
 package org.medicmobile.webapp.mobile;
 
+import android.annotation.SuppressLint;
 import android.app.DatePickerDialog;
 import android.location.Criteria;
 import android.location.Location;
@@ -20,10 +21,9 @@ import static java.util.Calendar.DAY_OF_MONTH;
 import static java.util.Calendar.MONTH;
 import static java.util.Calendar.YEAR;
 import static java.util.Locale.UK;
-import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 
 public class MedicAndroidJavascript {
-	private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd", UK);
+	private static final String DATE_FORMAT = "yyyy-MM-dd";
 
 	private final EmbeddedBrowserActivity parent;
 
@@ -86,6 +86,7 @@ public class MedicAndroidJavascript {
 
 	@org.xwalk.core.JavascriptInterface
 	@android.webkit.JavascriptInterface
+	@SuppressLint("MissingPermission") // handled by catch(Exception)
 	public String getLocation() {
 		try {
 			if(locationManager == null) return jsonError("LocationManager not set.  Cannot retrieve location.");
@@ -116,8 +117,9 @@ public class MedicAndroidJavascript {
 	@android.webkit.JavascriptInterface
 	public void datePicker(final String targetElement, String initialDate) {
 		try {
+			DateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT, UK);
 			Calendar c = Calendar.getInstance();
-			c.setTime(DATE_FORMAT.parse(initialDate));
+			c.setTime(dateFormat.parse(initialDate));
 			datePicker(targetElement, c);
 		} catch(ParseException ex) {
 			datePicker(targetElement);
@@ -157,9 +159,5 @@ public class MedicAndroidJavascript {
 
 	private static String jsonEscape(String s) {
 		return s.replaceAll("\"", "'");
-	}
-
-	private void log(String message, Object...extras) {
-		MedicLog.trace(this, message, extras);
 	}
 }

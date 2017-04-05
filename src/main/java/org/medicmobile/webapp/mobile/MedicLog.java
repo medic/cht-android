@@ -7,17 +7,31 @@ import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static org.medicmobile.webapp.mobile.BuildConfig.LOG_TAG;
 
 public final class MedicLog {
-	public static void log(String message, Object... extras) {
-		message = String.format(message, extras);
-
-		i(LOG_TAG, message);
-	}
+	private MedicLog() {}
 
 	public static void trace(Object caller, String message, Object... extras) {
 		if(!DEBUG) return;
 
 		message = String.format(message, extras);
 		d(LOG_TAG, caller.getClass().getName() + " :: " + message);
+	}
+
+	public static void log(String message, Object... extras) {
+		message = String.format(message, extras);
+
+		i(LOG_TAG, message);
+	}
+
+	public static void trace(Exception ex, String message, Object... extras) {
+		message = String.format(message, extras);
+
+		d(LOG_TAG, message, ex);
+	}
+
+	public static void log(Exception ex, String message, Object... extras) {
+		message = String.format(message, extras);
+
+		i(LOG_TAG, message, ex);
 	}
 
 	public static void warn(Exception ex, String message, Object... extras) {

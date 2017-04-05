@@ -10,12 +10,10 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Window;
-import android.view.inputmethod.*;
 import android.webkit.ConsoleMessage;
 import android.webkit.ValueCallback;
 import android.widget.Toast;
 
-import java.io.File;
 
 import org.xwalk.core.XWalkPreferences;
 import org.xwalk.core.XWalkResourceClient;
@@ -30,7 +28,7 @@ import static org.medicmobile.webapp.mobile.SimpleJsonClient2.redactUrl;
 
 public class EmbeddedBrowserActivity extends Activity {
 	private static final ValueCallback<String> IGNORE_RESULT = new ValueCallback<String>() {
-		public void onReceiveValue(String result) {}
+		public void onReceiveValue(String result) { /* ignore */ }
 	};
 
 	private final ValueCallback<String> backButtonHandler = new ValueCallback<String>() {
@@ -47,7 +45,7 @@ public class EmbeddedBrowserActivity extends Activity {
 	@Override public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		log("Starting XWalk webview...");
+		trace(this, "Starting XWalk webview...");
 
 		this.settings = SettingsStore.in(this);
 
@@ -64,7 +62,7 @@ public class EmbeddedBrowserActivity extends Activity {
 		container = (XWalkView) findViewById(R.id.wbvMain);
 
 		if(DEBUG) enableWebviewLoggingAndGeolocation(container);
-		enableRemoteChromeDebugging(container);
+		enableRemoteChromeDebugging();
 		enableJavascript(container);
 		enableStorage(container);
 
@@ -121,7 +119,7 @@ public class EmbeddedBrowserActivity extends Activity {
 				// to run JS, in which case we should switch to the second
 				// block.
 				// On switching to XWalkView, we assume the same applies.
-				if(true) {
+				if(true) { // NOPMD
 					container.load("javascript:" + js, null);
 				} else {
 					container.evaluateJavascript(js, IGNORE_RESULT);
@@ -139,18 +137,18 @@ public class EmbeddedBrowserActivity extends Activity {
 	private void browseToRoot() {
 		String url = settings.getAppUrl() + (DISABLE_APP_URL_VALIDATION ?
 				"" : "/medic/_design/medic/_rewrite/");
-		if(DEBUG) log("Pointing browser to %s", redactUrl(url));
+		if(DEBUG) trace(this, "Pointing browser to %s", redactUrl(url));
 		container.load(url, null);
 	}
 
-	private void enableRemoteChromeDebugging(XWalkView container) {
+	private void enableRemoteChromeDebugging() {
 		XWalkPreferences.setValue(XWalkPreferences.REMOTE_DEBUGGING, true);
 	}
 
 	private void enableWebviewLoggingAndGeolocation(XWalkView container) {
 		new XWalkUIClient(container) {
 			public boolean onConsoleMessage(ConsoleMessage cm) {
-				trace("%s:%s | %s",
+				trace(this, "onConsoleMessage() :: %s:%s | %s",
 						cm.sourceId(),
 						cm.lineNumber(),
 						cm.message());
@@ -165,10 +163,8 @@ public class EmbeddedBrowserActivity extends Activity {
 				// allow all location requests
 				// TODO this should be restricted to the domain
 				// set in Settings - issue #1603
-				EmbeddedBrowserActivity.this.log(
-						"onGeolocationPermissionsShowPrompt() :: origin=%s, callback=%s",
-						origin,
-						callback);
+				trace(this, "onGeolocationPermissionsShowPrompt() :: origin=%s, callback=%s",
+						origin, callback);
 				callback.invoke(origin, true, true);
 			}
 			*/
@@ -213,13 +209,5 @@ public class EmbeddedBrowserActivity extends Activity {
 
 	private void toast(String message) {
 		Toast.makeText(container.getContext(), message, Toast.LENGTH_LONG).show();
-	}
-
-	private void trace(String methodName, String message, Object...extras) {
-		MedicLog.trace(this, methodName + "() :: " + message, extras);
-	}
-
-	private void log(String message, Object...extras) {
-		MedicLog.trace(this, message, extras);
 	}
 }
