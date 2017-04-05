@@ -33,6 +33,7 @@ public class SimpleJsonClient2 {
 		if(DEBUG) traceMethod("get", "url", url);
 		HttpURLConnection conn = null;
 		InputStream inputStream = null;
+		BufferedReader reader = null;
 		try {
 			conn = (HttpURLConnection) url.openConnection();
 			conn.setRequestProperty("Content-Type", "application/json");
@@ -42,19 +43,26 @@ public class SimpleJsonClient2 {
 			} else {
 				inputStream = conn.getErrorStream();
 			}
-			BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"), 8);
+
+			reader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"), 8);
 			StringBuilder bob = new StringBuilder();
 
 			String line = null;
 			while((line = reader.readLine()) != null) {
-				bob.append(line + "\n");
+				bob.append(line).append('\n');
 			}
+
 			String jsonString = bob.toString();
 			if(DEBUG) log("get", "Retrieved JSON: " + jsonString);
 			return new JSONObject(jsonString);
 		} catch (JSONException | IOException ex) {
 			throw ex;
 		} finally {
+			if(reader != null) try {
+				reader.close();
+			} catch(Exception ex) {
+				if(DEBUG) ex.printStackTrace();
+			}
 			if(inputStream != null) try {
 				inputStream.close();
 			} catch(Exception ex) {

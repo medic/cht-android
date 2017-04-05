@@ -10,12 +10,10 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Window;
-import android.view.inputmethod.*;
 import android.webkit.ConsoleMessage;
 import android.webkit.ValueCallback;
 import android.widget.Toast;
 
-import java.io.File;
 
 import org.xwalk.core.XWalkPreferences;
 import org.xwalk.core.XWalkResourceClient;

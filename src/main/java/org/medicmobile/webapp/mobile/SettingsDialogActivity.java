@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Map;
 
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
-import static android.view.View.GONE;
 
 public class SettingsDialogActivity extends Activity {
 	private static final int STATE_LIST = 1;
@@ -200,7 +199,6 @@ public class SettingsDialogActivity extends Activity {
 		}
 
 		public void onItemClick(AdapterView<?> parent, final View view, int position, long id) {
-			ServerMetadata md = servers.get(position);
 			if(position == 0) {
 				displayCustomServerForm();
 			} else {
@@ -249,7 +247,7 @@ class ServerRepo {
 			servers.add(new ServerMetadata(
 					e.getValue().toString(),
 					e.getKey()));
-		};
+		}
 
 		return servers;
 	}

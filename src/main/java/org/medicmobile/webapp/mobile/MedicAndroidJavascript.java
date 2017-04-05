@@ -20,10 +20,9 @@ import static java.util.Calendar.DAY_OF_MONTH;
 import static java.util.Calendar.MONTH;
 import static java.util.Calendar.YEAR;
 import static java.util.Locale.UK;
-import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 
 public class MedicAndroidJavascript {
-	private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd", UK);
+	private static final String DATE_FORMAT = "yyyy-MM-dd";
 
 	private final EmbeddedBrowserActivity parent;
 
@@ -116,8 +115,9 @@ public class MedicAndroidJavascript {
 	@android.webkit.JavascriptInterface
 	public void datePicker(final String targetElement, String initialDate) {
 		try {
+			DateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT, UK);
 			Calendar c = Calendar.getInstance();
-			c.setTime(DATE_FORMAT.parse(initialDate));
+			c.setTime(dateFormat.parse(initialDate));
 			datePicker(targetElement, c);
 		} catch(ParseException ex) {
 			datePicker(targetElement);
