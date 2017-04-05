@@ -201,7 +201,6 @@ public class SettingsDialogActivity extends Activity {
 		}
 
 		public void onItemClick(AdapterView<?> parent, final View view, int position, long id) {
-			ServerMetadata md = servers.get(position);
 			if(position == 0) {
 				displayCustomServerForm();
 			} else {
@@ -250,7 +249,7 @@ class ServerRepo {
 			servers.add(new ServerMetadata(
 					e.getValue().toString(),
 					e.getKey()));
-		};
+		}
 
 		return servers;
 	}

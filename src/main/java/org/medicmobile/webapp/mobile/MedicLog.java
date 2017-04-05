@@ -7,6 +7,8 @@ import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static org.medicmobile.webapp.mobile.BuildConfig.LOG_TAG;
 
 public final class MedicLog {
+	private MedicLog() {}
+
 	public static void log(String message, Object... extras) {
 		message = String.format(message, extras);
 

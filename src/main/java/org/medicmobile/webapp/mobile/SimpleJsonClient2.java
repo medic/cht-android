@@ -68,8 +68,9 @@ public class SimpleJsonClient2 {
 
 			String line = null;
 			while((line = reader.readLine()) != null) {
-				bob.append(line + "\n");
+				bob.append(line).append('\n');
 			}
+
 			String jsonString = bob.toString();
 			if(DEBUG) log("get", "Retrieved JSON: " + jsonString);
 			return new JSONObject(jsonString);
