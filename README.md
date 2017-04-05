@@ -39,6 +39,12 @@ To add a new brand:
 1. add `productFlavors { <new_brand> { ... } }` in `build.gradle`
 2. add icons, strings etc. in `src/<new_brand>`
 
+
+# Releasing
+
+To release a new version, create a git tag starting with `v`, e.g. `v1.2.3`, and push this to GitHub.  Travis CI will build the release and push the debug APK to https://github.com/medic/medic-android/releases.
+
+
 # Publishing
 
 To publish to the play store:
