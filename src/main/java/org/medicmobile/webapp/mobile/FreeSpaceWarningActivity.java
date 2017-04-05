@@ -1,12 +1,13 @@
 package org.medicmobile.webapp.mobile;
 
-import android.app.*;
-import android.content.*;
-import android.os.*;
-import android.view.*;
-import android.widget.*;
+import android.app.Activity;
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.TextView;
 
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
+import static org.medicmobile.webapp.mobile.MedicLog.trace;
 
 public class FreeSpaceWarningActivity extends Activity {
 	static final String NEXT_ACTIVITY = "next-activity";
@@ -15,8 +16,8 @@ public class FreeSpaceWarningActivity extends Activity {
 	static final long MINIMUM_SPACE = 200 * 1024 * 1024;
 
 	public void onCreate(Bundle savedInstanceState) {
-		if(DEBUG) log("Starting...");
 		super.onCreate(savedInstanceState);
+		if(DEBUG) trace(this, "Starting...");
 
 		setContentView(R.layout.free_space_warning);
 
@@ -50,10 +51,5 @@ public class FreeSpaceWarningActivity extends Activity {
 //> PRIVATE HELPERS
 	private static long asMb(long bytes) {
 		return bytes >> 20;
-	}
-
-	private void log(String message, Object...extras) {
-		if(DEBUG) System.err.println("LOG | FreeSpaceWarningActivity :: " +
-				String.format(message, extras));
 	}
 }

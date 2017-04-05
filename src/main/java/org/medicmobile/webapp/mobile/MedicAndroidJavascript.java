@@ -160,8 +160,4 @@ public class MedicAndroidJavascript {
 	private static String jsonEscape(String s) {
 		return s.replaceAll("\"", "'");
 	}
-
-	private void log(String message, Object...extras) {
-		MedicLog.trace(this, message, extras);
-	}
 }

@@ -7,11 +7,12 @@ import android.os.Bundle;
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static org.medicmobile.webapp.mobile.BuildConfig.APPLICATION_ID;
 import static org.medicmobile.webapp.mobile.BuildConfig.VERSION_NAME;
+import static org.medicmobile.webapp.mobile.MedicLog.trace;
 
 public class StartupActivity extends Activity {
 	public void onCreate(Bundle savedInstanceState) {
-		if(DEBUG) log("Starting...");
 		super.onCreate(savedInstanceState);
+		if(DEBUG) trace(this, "Starting...");
 
 		configureHttpUseragent();
 
@@ -22,7 +23,7 @@ public class StartupActivity extends Activity {
 			newActivity = SettingsDialogActivity.class;
 		}
 
-		if(DEBUG) log("Starting new activity with class %s", newActivity);
+		if(DEBUG) trace(this, "Starting new activity with class %s", newActivity);
 
 		if(hasEnoughFreeSpace()) {
 			startActivity(new Intent(this, newActivity));
@@ -46,10 +47,5 @@ public class StartupActivity extends Activity {
 		if(current.contains(APPLICATION_ID)) return;
 		System.setProperty("http.agent", String.format("%s %s/%s",
 				current, APPLICATION_ID, VERSION_NAME));
-	}
-
-	private void log(String message, Object...extras) {
-		if(DEBUG) System.err.println("LOG | StartupActivity :: " +
-				String.format(message, extras));
 	}
 }

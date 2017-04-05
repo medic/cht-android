@@ -1,13 +1,17 @@
 package org.medicmobile.webapp.mobile;
 
-import java.io.*;
-import java.net.*;
-import org.json.*;
-
-import static org.medicmobile.webapp.mobile.R.string.*;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static org.medicmobile.webapp.mobile.BuildConfig.DISABLE_APP_URL_VALIDATION;
+import static org.medicmobile.webapp.mobile.MedicLog.trace;
+import static org.medicmobile.webapp.mobile.R.string.errAppUrl_apiNotReady;
+import static org.medicmobile.webapp.mobile.R.string.errAppUrl_appNotFound;
+import static org.medicmobile.webapp.mobile.R.string.errAppUrl_serverNotFound;
+import static org.medicmobile.webapp.mobile.R.string.errInvalidUrl;
 import static org.medicmobile.webapp.mobile.SimpleJsonClient2.redactUrl;
 
 public class AppUrlVerifier {
@@ -33,36 +37,14 @@ public class AppUrlVerifier {
 			return AppUrlVerififcation.failure(appUrl,
 					errAppUrl_appNotFound);
 		} catch(IOException ex) {
-			if(DEBUG) ex.printStackTrace();
+			if(DEBUG) trace(ex, "Exception caught trying to verify url: %s", redactUrl(appUrl));
 			return AppUrlVerififcation.failure(appUrl,
 					errAppUrl_serverNotFound);
 		}
 	}
-
-	private boolean is200(String url) {
-		if(DEBUG) log("is200() :: url=%s", redactUrl(url));
-		HttpURLConnection conn = null;
-		try {
-			conn = (HttpURLConnection) new URL(url).openConnection();
-			return conn.getResponseCode() == 200;
-		} catch (Exception ex) {
-			if(DEBUG) ex.printStackTrace();
-			return false;
-		} finally {
-			if(conn != null) try {
-				conn.disconnect();
-			} catch(Exception ex) {
-				if(DEBUG) ex.printStackTrace();
-			}
-		}
-	}
-
-	private void log(String message, Object...extras) {
-		if(DEBUG) System.err.println("LOG | AppUrlVerifier::" +
-				String.format(message, extras));
-	}
 }
 
+@SuppressWarnings("PMD.ShortMethodName")
 class AppUrlVerififcation {
 	public final String appUrl;
 	public final boolean isOk;

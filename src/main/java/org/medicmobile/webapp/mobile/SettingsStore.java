@@ -7,10 +7,12 @@ import java.util.regex.*;
 
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static org.medicmobile.webapp.mobile.SimpleJsonClient2.redactUrl;
+import static org.medicmobile.webapp.mobile.MedicLog.trace;
 
+@SuppressWarnings("PMD.ShortMethodName")
 public abstract class SettingsStore {
 	public static SettingsStore in(ContextWrapper ctx) {
-		if(DEBUG) log("Loading settings for context %s...", ctx);
+		if(DEBUG) trace(this, "Loading settings for context %s...", ctx);
 
 		String fixedAppUrl = ctx.getResources().
 				getString(R.string.fixed_app_url);
@@ -29,13 +31,9 @@ public abstract class SettingsStore {
 	public abstract boolean hasSettings();
 	public abstract void save(Settings s) throws SettingsException;
 	public abstract boolean allowsConfiguration();
-
-	private static void log(String message, Object...extras) {
-		if(DEBUG) System.err.println("LOG | SettingsStore :: " +
-				String.format(message, extras));
-	}
 }
 
+@SuppressWarnings("PMD.CallSuperInConstructor")
 class BrandedSettingsStore extends SettingsStore {
 	private final String apiUrl;
 
@@ -52,6 +50,7 @@ class BrandedSettingsStore extends SettingsStore {
 	}
 }
 
+@SuppressWarnings("PMD.CallSuperInConstructor")
 class UnbrandedSettingsStore extends SettingsStore {
 	private final SharedPreferences prefs;
 
@@ -99,7 +98,7 @@ class Settings {
 	public final String appUrl;
 
 	public Settings(String appUrl) {
-		if(DEBUG) log("Settings() appUrl=%s", redactUrl(appUrl));
+		if(DEBUG) trace(this, "Settings() appUrl=%s", redactUrl(appUrl));
 		this.appUrl = appUrl;
 	}
 
@@ -114,18 +113,13 @@ class Settings {
 					R.string.errInvalidUrl));
 		}
 
-		if(errors.size() > 0) {
+		if(!errors.isEmpty()) {
 			throw new IllegalSettingsException(errors);
 		}
 	}
 
 	private boolean isSet(String val) {
 		return val != null && val.length() > 0;
-	}
-
-	private void log(String message, Object...extras) {
-		if(DEBUG) System.err.println("LOG | Settings :: " +
-				String.format(message, extras));
 	}
 }
 
