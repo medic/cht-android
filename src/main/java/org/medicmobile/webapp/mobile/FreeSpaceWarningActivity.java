@@ -7,7 +7,6 @@ import android.view.*;
 import android.widget.*;
 
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
-import static android.view.View.GONE;
 
 public class FreeSpaceWarningActivity extends Activity {
 	static final String NEXT_ACTIVITY = "next-activity";
