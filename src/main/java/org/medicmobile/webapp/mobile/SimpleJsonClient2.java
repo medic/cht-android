@@ -1,12 +1,29 @@
 package org.medicmobile.webapp.mobile;
 
-import java.io.*;
-import java.net.*;
+import android.os.Build;
+import android.util.Base64;
+import android.util.Log;
 
-import org.json.*;
+import java.io.BufferedReader;
+import java.io.Closeable;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import static android.os.Build.VERSION;
+import static android.os.Build.VERSION_CODES;
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
-import static android.os.Build.*;
+import static org.medicmobile.webapp.mobile.BuildConfig.LOG_TAG;
 
 /**
  * <p>New and improved - SimpleJsonClient2 is SimpleJsonClient, but using <code>
@@ -24,17 +41,21 @@ public class SimpleJsonClient2 {
 		}
 	}
 
+	private static final Pattern AUTH_URL = Pattern.compile("(.+)://(.*):(.*)@(.*)");
+
+//> PUBLIC METHODS
 	public JSONObject get(String url) throws MalformedURLException, JSONException, IOException {
-		if(DEBUG) traceMethod("get", "url", url);
+		if(DEBUG) traceMethod("get", "url", redactUrl(url));
 		return get(new URL(url));
 	}
 
 	public JSONObject get(URL url) throws JSONException, IOException {
-		if(DEBUG) traceMethod("get", "url", url);
+		if(DEBUG) traceMethod("get", "url", redactUrl(url));
 		HttpURLConnection conn = null;
 		InputStream inputStream = null;
+		BufferedReader reader = null;
 		try {
-			conn = (HttpURLConnection) url.openConnection();
+			conn = openConnection(url);
 			conn.setRequestProperty("Content-Type", "application/json");
 
 			if(conn.getResponseCode() < 400) {
@@ -42,7 +63,7 @@ public class SimpleJsonClient2 {
 			} else {
 				inputStream = conn.getErrorStream();
 			}
-			BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"), 8);
+			reader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"), 8);
 			StringBuilder bob = new StringBuilder();
 
 			String line = null;
@@ -55,19 +76,27 @@ public class SimpleJsonClient2 {
 		} catch (JSONException | IOException ex) {
 			throw ex;
 		} finally {
-			if(inputStream != null) try {
-				inputStream.close();
-			} catch(Exception ex) {
-				if(DEBUG) ex.printStackTrace();
-			}
-			if(conn != null) try {
-				conn.disconnect();
-			} catch(Exception ex) {
-				if(DEBUG) ex.printStackTrace();
-			}
+			closeSafely("get", reader);
+			closeSafely("get", inputStream);
+			closeSafely("get", conn);
 		}
 	}
 
+//> PUBLIC UTILS
+	public static String redactUrl(URL url) {
+		return redactUrl(url.toString());
+	}
+	public static String redactUrl(String url) {
+		if(url == null) return null;
+
+		Matcher m = AUTH_URL.matcher(url);
+		if(!m.matches()) return url;
+
+		return String.format("%s://%s:%s@%s",
+				m.group(1), m.group(2), "****", m.group(4));
+	}
+
+//> INSTANCE HELPERS
 	private static void traceMethod(String methodName, Object...args) {
 		StringBuilder bob = new StringBuilder();
 		for(int i=0; i<args.length; i+=2) {
@@ -79,10 +108,66 @@ public class SimpleJsonClient2 {
 		log(methodName, bob.toString());
 	}
 
+	private void closeSafely(String method, Closeable c) {
+		if(c != null) try {
+			c.close();
+		} catch(Exception ex) {
+			if(DEBUG) log(ex, "SimpleJsonClient2.%s()", method);
+		}
+	}
+
+	private void closeSafely(String method, HttpURLConnection conn) {
+		if(conn != null) try {
+			conn.disconnect();
+		} catch(Exception ex) {
+			if(DEBUG) log(ex, "SimpleJsonClient2.%s()", method);
+		}
+	}
+
+//> STATIC HELPERS
+	private static HttpURLConnection openConnection(URL url) throws IOException {
+		HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+
+		if(url.getUserInfo() != null) {
+			try {
+				conn.setRequestProperty("Authorization", "Basic " + encodeCredentials(url.getUserInfo()));
+			} catch(Exception ex) {
+				// Don't include exception details in case they include auth details
+				throw new RuntimeException(String.format("%s caught while setting Authorization header.", ex.getClass()));
+			}
+		}
+
+		return conn;
+	}
+
+	/**
+	 * Base64-encode the {@code user-pass} component of HTTP {@code Authorization: Basic}
+	 * header.  Note that ISO-8859-1 encoding is used, unless the characterset is
+	 * unavailable, in which case UTF-8 is used instead.
+	 *
+	 * <strong>N.B. passwords with some special characters may not work.</strong>
+	 *
+	 * @see https://tools.ietf.org/html/rfc2617#section-2
+	 */
+	private static String encodeCredentials(String normal) {
+		try {
+			return Base64.encodeToString(normal.getBytes("ISO-8859-1"), Base64.NO_WRAP);
+		} catch(UnsupportedEncodingException ignored) {
+			Log.i(LOG_TAG, "UnsupportedEncodingException thrown trying to encode HTTP basic auth credentials with ISO-8859-1.  Will try UTF-8.");
+			try {
+				return Base64.encodeToString(normal.getBytes("UTF-8"), Base64.NO_WRAP);
+			} catch(UnsupportedEncodingException why) {
+				// this should never happen on android, as UTF-8 is always the default encoding
+				throw new RuntimeException(why);
+			}
+		}
+	}
+
 	private static void log(String methodName, String message) {
-		if(DEBUG) System.err.println("LOG | SimpleJsonClient2." +
-				methodName + "()" +
-				message);
+		Log.d(LOG_TAG, "SimpleJsonClient2." + methodName + "() :: " + message);
+	}
+
+	private static void log(Exception ex, String message, Object... extras) {
+		Log.i(LOG_TAG, String.format(message, extras), ex);
 	}
 }
-

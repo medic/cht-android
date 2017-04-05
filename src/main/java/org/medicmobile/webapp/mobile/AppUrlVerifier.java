@@ -8,6 +8,7 @@ import static org.medicmobile.webapp.mobile.R.string.*;
 
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static org.medicmobile.webapp.mobile.BuildConfig.DISABLE_APP_URL_VALIDATION;
+import static org.medicmobile.webapp.mobile.SimpleJsonClient2.redactUrl;
 
 public class AppUrlVerifier {
 	public AppUrlVerififcation verify(String appUrl) {
@@ -39,7 +40,7 @@ public class AppUrlVerifier {
 	}
 
 	private boolean is200(String url) {
-		if(DEBUG) log("is200() :: url=%s", url);
+		if(DEBUG) log("is200() :: url=%s", redactUrl(url));
 		HttpURLConnection conn = null;
 		try {
 			conn = (HttpURLConnection) new URL(url).openConnection();
