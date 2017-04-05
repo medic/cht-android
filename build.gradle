@@ -69,6 +69,7 @@ android {
 
 	applicationVariants.all {
 		buildConfigField "boolean", "DISABLE_APP_URL_VALIDATION", "Boolean.parseBoolean(\"${System.env.DISABLE_APP_URL_VALIDATION}\")";
+		buildConfigField "String", "LOG_TAG", '"MedicMobile"'
 	}
 
 	signingConfigs {
