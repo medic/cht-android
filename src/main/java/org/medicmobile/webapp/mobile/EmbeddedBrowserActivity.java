@@ -26,6 +26,7 @@ import org.xwalk.core.XWalkView;
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static org.medicmobile.webapp.mobile.BuildConfig.DISABLE_APP_URL_VALIDATION;
 import static org.medicmobile.webapp.mobile.MedicLog.trace;
+import static org.medicmobile.webapp.mobile.SimpleJsonClient2.redactUrl;
 
 public class EmbeddedBrowserActivity extends Activity {
 	private static final ValueCallback<String> IGNORE_RESULT = new ValueCallback<String>() {
@@ -72,7 +73,7 @@ public class EmbeddedBrowserActivity extends Activity {
 		browseToRoot();
 
 		if(settings.allowsConfiguration()) {
-			toast(settings.getAppUrl());
+			toast(redactUrl(settings.getAppUrl()));
 		}
 	}
 
@@ -138,7 +139,7 @@ public class EmbeddedBrowserActivity extends Activity {
 	private void browseToRoot() {
 		String url = settings.getAppUrl() + (DISABLE_APP_URL_VALIDATION ?
 				"" : "/medic/_design/medic/_rewrite/");
-		if(DEBUG) log("Pointing browser to %s", url);
+		if(DEBUG) log("Pointing browser to %s", redactUrl(url));
 		container.load(url, null);
 	}
 
