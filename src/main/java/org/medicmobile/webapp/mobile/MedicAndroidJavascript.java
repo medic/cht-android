@@ -1,5 +1,6 @@
 package org.medicmobile.webapp.mobile;
 
+import android.annotation.SuppressLint;
 import android.app.DatePickerDialog;
 import android.location.Criteria;
 import android.location.Location;
@@ -85,6 +86,7 @@ public class MedicAndroidJavascript {
 
 	@org.xwalk.core.JavascriptInterface
 	@android.webkit.JavascriptInterface
+	@SuppressLint("MissingPermission") // handled by catch(Exception)
 	public String getLocation() {
 		try {
 			if(locationManager == null) return jsonError("LocationManager not set.  Cannot retrieve location.");
