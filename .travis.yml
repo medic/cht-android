@@ -4,12 +4,21 @@ branches:
       - /^v.*/
 android:
   components:
-  - build-tools-22.0.1
-  - android-22
+    # some travis/android magic from https://github.com/travis-ci/travis-ci/issues/5036
+    - tools
+    - platform-tools
+
+    # The BuildTools version used by your project
+    - build-tools-23.0.3
+
+    # The SDK version used to compile your project
+    - android-22
+env:
+  - GRADLE_OPTS="-XX:MaxPermSize=512m"
 before_script:
   - export MEDIC_VERSION_NAME="0.1.$TRAVIS_BUILD_NUMBER"
 script:
-  - ./gradlew test assembleDebug
+  - ./gradlew test check assemble
 after_success:
   - git config --global user.email "dev@medicmobile.org"
   - git config --global user.name "Travis CI"
