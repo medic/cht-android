@@ -89,7 +89,7 @@ connectedCheck.doLast {
 
 android {
 	compileSdkVersion 22
-	buildToolsVersion '22.0.1'
+	buildToolsVersion '23.0.3'
 	packagingOptions {
 		exclude 'META-INF/LICENSE'
 		exclude 'META-INF/NOTICE'
