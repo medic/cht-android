@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.ArrayMap;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -17,7 +18,6 @@ import android.widget.TextView;
 import android.widget.AdapterView.OnItemClickListener;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -171,10 +171,11 @@ public class SettingsDialogActivity extends Activity {
 		field.setError(getString(stringId));
 	}
 
+	@SuppressWarnings("PMD.UseConcurrentHashMap")
 	private List<Map<String, ?>> adapt(List<ServerMetadata> servers) {
 		List adapted = new ArrayList(servers.size());
 		for(ServerMetadata md : servers) {
-			Map<String, String> m = new HashMap();
+			Map<String, String> m = new ArrayMap(2);
 			m.put("name", md.name);
 			m.put("url", md.url);
 			adapted.add(m);
