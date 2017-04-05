@@ -39,29 +39,25 @@ dependencies {
 	compile 'org.xwalk:xwalk_core_library:23.53.589.4:arm@aar'
 }
 
-def isReleaseBuild = {
-	return System.env.JENKINS == 'true' || (System.env.TRAVIS == 'true' &&
-			System.env.TRAVIS_BRANCH == 'master')
-}
 def getVersionCode = {
-	if(isReleaseBuild()) {
-		def code = System.env.TRAVIS == 'true' ?
-				System.env.TRAVIS_BUILD_NUMBER :
-				System.env.VERSION_TO_BUILD.split(/\./)[-1]
-		return Integer.parseInt(code)
+	if(System.env.JENKINS == 'true') {
+		def versionParts = System.env.VERSION_TO_BUILD.split(/\./)
+		if(versionParts.length != 3)
+			throw new RuntimeException("Unexpected version number - should be of form 'x.y.z', but was: $System.env.VERSION_TO_BUILD")
+		versionParts = versionParts.collect { Integer.parseInt(it) }
+		if(versionParts[1] > 999 || versionParts[2] > 999)
+			throw new RuntimeException('Version part greater than 999 not allowed.')
+		int versionCode = (1000000 * versionParts[0]) +
+				  (1000 * versionParts[1]) +
+				  versionParts[2]
+		if(versionCode > 2100000000)
+			throw new RuntimeException('versionCode biggger than max allowed by Google Play.')
+		return versionCode
 	}
 	return 1
 }
 def getVersionName = {
-	if(isReleaseBuild()) {
-		if(System.env.TRAVIS == 'true') {
-			def v = System.env.MEDIC_VERSION_NAME
-			if(!v) throw new RuntimeException(
-					'Missing required env var: MEDIC_VERSION_NAME')
-			return v
-		} else return System.env.VERSION_TO_BUILD
-	}
-	return 'SNAPSHOT'
+	System.env.VERSION_TO_BUILD ?: 'SNAPSHOT'
 }
 
 task coverageReport(dependsOn: 'createUnbrandedDebugCoverageReport')
