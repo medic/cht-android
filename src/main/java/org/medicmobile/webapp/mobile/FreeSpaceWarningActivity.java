@@ -1,6 +1,5 @@
 package org.medicmobile.webapp.mobile;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -9,7 +8,7 @@ import android.widget.TextView;
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static org.medicmobile.webapp.mobile.MedicLog.trace;
 
-public class FreeSpaceWarningActivity extends Activity {
+public class FreeSpaceWarningActivity extends LockableActivity {
 	static final String NEXT_ACTIVITY = "next-activity";
 
 	/** Recommended minimum free space on the device, in bytes */

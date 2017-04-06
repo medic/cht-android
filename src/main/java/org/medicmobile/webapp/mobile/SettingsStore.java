@@ -12,33 +12,69 @@ import static org.medicmobile.webapp.mobile.MedicLog.trace;
 
 @SuppressWarnings("PMD.ShortMethodName")
 public abstract class SettingsStore {
-	public static SettingsStore in(ContextWrapper ctx) {
-		if(DEBUG) log("Loading settings for context %s...", ctx);
+	private final SharedPreferences prefs;
 
-		String fixedAppUrl = ctx.getResources().
-				getString(R.string.fixed_app_url);
-		if(fixedAppUrl.length() > 0) {
-			return new BrandedSettingsStore(fixedAppUrl);
-		}
+	SettingsStore(SharedPreferences prefs) {
+		this.prefs = prefs;
+	}
+
+	public abstract String getAppUrl();
+	public abstract boolean hasSettings();
+
+	public abstract boolean allowsConfiguration();
+	public abstract void update(SharedPreferences.Editor ed, WebappSettings s);
+
+	String getUnlockCode() {
+		return get("unlock-code");
+	}
+
+	void updateWith(WebappSettings s) throws SettingsException {
+		s.validate();
+
+		SharedPreferences.Editor ed = prefs.edit();
+
+		update(ed, s);
+
+		if(!ed.commit()) throw new SettingsException(
+				"Failed to save to SharedPreferences.");
+	}
+
+	void updateWithUnlockCode(String unlockCode) throws SettingsException {
+		SharedPreferences.Editor ed = prefs.edit();
+
+		ed.putString("unlock-code", unlockCode);
+
+		if(!ed.commit()) throw new SettingsException(
+				"Failed to save to SharedPreferences.");
+	}
+
+	String get(String key) {
+		return prefs.getString(key, null);
+	}
+
+	static SettingsStore in(Context ctx) {
+		if(DEBUG) log("Loading settings for context %s...", ctx);
 
 		SharedPreferences prefs = ctx.getSharedPreferences(
 				SettingsStore.class.getName(),
 				Context.MODE_PRIVATE);
 
+		String fixedAppUrl = ctx.getResources().
+				getString(R.string.fixed_app_url);
+		if(fixedAppUrl.length() > 0) {
+			return new BrandedSettingsStore(prefs, fixedAppUrl);
+		}
+
 		return new UnbrandedSettingsStore(prefs);
 	}
-
-	public abstract String getAppUrl();
-	public abstract boolean hasSettings();
-	public abstract void save(Settings s) throws SettingsException;
-	public abstract boolean allowsConfiguration();
 }
 
 @SuppressWarnings("PMD.CallSuperInConstructor")
 class BrandedSettingsStore extends SettingsStore {
 	private final String apiUrl;
 
-	BrandedSettingsStore(String apiUrl) {
+	BrandedSettingsStore(SharedPreferences prefs, String apiUrl) {
+		super(prefs);
 		this.apiUrl = apiUrl;
 	}
 
@@ -46,30 +82,22 @@ class BrandedSettingsStore extends SettingsStore {
 	public boolean hasSettings() { return true; }
 	public boolean allowsConfiguration() { return false; }
 
-	public void save(Settings s) throws SettingsException {
-		throw new SettingsException("Cannot save to BrandedSettingsStore.");
-	}
+	public void update(SharedPreferences.Editor ed, WebappSettings s) { /* nothing to save */ }
 }
 
 @SuppressWarnings("PMD.CallSuperInConstructor")
 class UnbrandedSettingsStore extends SettingsStore {
-	private final SharedPreferences prefs;
-
 	UnbrandedSettingsStore(SharedPreferences prefs) {
-		this.prefs = prefs;
+		super(prefs);
 	}
 
 //> ACCESSORS
 	public String getAppUrl() { return get("app-url"); }
 
-	private String get(String key) {
-		return prefs.getString(key, null);
-	}
-
 	public boolean allowsConfiguration() { return true; }
 
 	public boolean hasSettings() {
-		Settings s = new Settings(getAppUrl());
+		WebappSettings s = new WebappSettings(getAppUrl());
 		try {
 			s.validate();
 			return true;
@@ -78,24 +106,19 @@ class UnbrandedSettingsStore extends SettingsStore {
 		}
 	}
 
-	public void save(Settings s) throws SettingsException {
-		s.validate();
-
-		SharedPreferences.Editor ed = prefs.edit();
+	public void update(SharedPreferences.Editor ed, WebappSettings s) {
 		ed.putString("app-url", s.appUrl);
-		if(!ed.commit()) throw new SettingsException(
-				"Failed to save to SharedPreferences.");
 	}
 }
 
-class Settings {
+class WebappSettings {
 	public static final Pattern URL_PATTERN = Pattern.compile(
 			"http[s]?://([^/:]*)(:\\d*)?(.*)");
 
 	public final String appUrl;
 
-	public Settings(String appUrl) {
-		if(DEBUG) trace(this, "Settings() appUrl=%s", redactUrl(appUrl));
+	public WebappSettings(String appUrl) {
+		if(DEBUG) trace(this, "WebappSettings() appUrl=%s", redactUrl(appUrl));
 		this.appUrl = appUrl;
 	}
 
@@ -113,6 +136,10 @@ class Settings {
 		if(!errors.isEmpty()) {
 			throw new IllegalSettingsException(errors);
 		}
+	}
+
+	public void update(SharedPreferences.Editor ed, WebappSettings s) {
+		ed.putString("app-url", s.appUrl);
 	}
 
 	private boolean isSet(String val) {
