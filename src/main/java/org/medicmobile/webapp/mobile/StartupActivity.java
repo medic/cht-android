@@ -14,10 +14,18 @@ public class StartupActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		if(DEBUG) trace(this, "Starting...");
 
+		configureAndStartNextActivity();
+
+		if(LockScreen.isCodeSet(this)) {
+			LockScreen.showFrom(this);
+		}
+	}
+
+	private void configureAndStartNextActivity() {
 		configureHttpUseragent();
 
 		Class newActivity;
-		if(SettingsStore.in(this).hasSettings()) {
+		if(SettingsStore.in(this).hasWebappSettings()) {
 			newActivity = EmbeddedBrowserActivity.class;
 		} else {
 			newActivity = SettingsDialogActivity.class;

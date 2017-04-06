@@ -7,9 +7,10 @@
 		android:orientation="vertical">
 	<EditText android:id="@+id/txtAppUrl"
 			android:hint="@string/txtAppUrl"
-			android:layout_width="fill_parent"
+			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
-			android:inputType="textUri"/>
+			android:inputType="textUri"
+			android:padding="32dp"/>
 	<Button android:id="@+id/btnCancelSettings"
 			android:text="@string/btnCancel"
 			android:onClick="cancelSettingsEdit"

@@ -1,7 +1,6 @@
 package org.medicmobile.webapp.mobile;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.location.LocationManager;
@@ -26,7 +25,7 @@ import static org.medicmobile.webapp.mobile.BuildConfig.DISABLE_APP_URL_VALIDATI
 import static org.medicmobile.webapp.mobile.MedicLog.trace;
 import static org.medicmobile.webapp.mobile.SimpleJsonClient2.redactUrl;
 
-public class EmbeddedBrowserActivity extends Activity {
+public class EmbeddedBrowserActivity extends LockableActivity {
 	private static final ValueCallback<String> IGNORE_RESULT = new ValueCallback<String>() {
 		public void onReceiveValue(String result) { /* ignore */ }
 	};
@@ -86,6 +85,9 @@ public class EmbeddedBrowserActivity extends Activity {
 
 	@Override public boolean onOptionsItemSelected(MenuItem item) {
 		switch(item.getItemId()) {
+			case R.id.mnuSetUnlockCode:
+				changeCode();
+				return true;
 			case R.id.mnuSettings:
 				openSettings();
 				return true;
