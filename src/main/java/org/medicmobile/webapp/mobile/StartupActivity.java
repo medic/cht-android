@@ -10,7 +10,7 @@ import static org.medicmobile.webapp.mobile.BuildConfig.VERSION_NAME;
 import static org.medicmobile.webapp.mobile.MedicLog.trace;
 
 public class StartupActivity extends Activity {
-	public void onCreate(Bundle savedInstanceState) {
+	@Override public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		if(DEBUG) trace(this, "Starting...");
 

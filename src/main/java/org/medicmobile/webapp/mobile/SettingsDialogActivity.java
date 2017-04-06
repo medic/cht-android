@@ -34,7 +34,7 @@ public class SettingsDialogActivity extends Activity {
 	private ServerRepo serverRepo;
 	private int state;
 
-	public void onCreate(Bundle savedInstanceState) {
+	@Override public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		if(DEBUG) trace(this, "Starting...");
 
