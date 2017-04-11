@@ -66,20 +66,16 @@ class UnbrandedSettingsStore extends SettingsStore {
 		return prefs.getString(key, null);
 	}
 
-	public Settings get() {
-		Settings s = new Settings(getAppUrl());
-		try {
-			s.validate();
-		} catch(IllegalSettingsException ex) {
-			return null;
-		}
-		return s;
-	}
-
 	public boolean allowsConfiguration() { return true; }
 
 	public boolean hasSettings() {
-		return get() != null;
+		Settings s = new Settings(getAppUrl());
+		try {
+			s.validate();
+			return true;
+		} catch(IllegalSettingsException ex) {
+			return false;
+		}
 	}
 
 	public void save(Settings s) throws SettingsException {
