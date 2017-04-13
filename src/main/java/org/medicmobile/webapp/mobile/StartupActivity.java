@@ -17,13 +17,15 @@ public class StartupActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		if(DEBUG) trace(this, "Starting...");
 
-		AlertDialog initialLockScreen = LockScreen.showFor(this);
+		if(LockScreen.isCodeSet(this)) {
+			AlertDialog initialLockScreen = LockScreen.showFor(this);
 
-		initialLockScreen.setOnDismissListener(new OnDismissListener() {
-			public void onDismiss(DialogInterface dialog) {
-				configureAndStartNextActivity();
-			}
-		});
+			initialLockScreen.setOnDismissListener(new OnDismissListener() {
+				public void onDismiss(DialogInterface dialog) {
+					configureAndStartNextActivity();
+				}
+			});
+		} else configureAndStartNextActivity();
 	}
 
 	private void configureAndStartNextActivity() {

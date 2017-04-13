@@ -12,11 +12,14 @@
 	<string name="errRequired">required</string>
 	<string name="errInvalidUrl">must be a valid URL</string>
 
+	<string name="btnOk">OK</string>
 	<string name="btnSave">Save</string>
 	<string name="btnCancel">Cancel</string>
 	<string name="btnContinue">Continue</string>
 	<string name="btnQuit">Quit</string>
 
+	<string name="mnuSetUnlockCode">Set unlock code</string>
+	<string name="mnuChangeUnlockCode">Change unlock code</string>
 	<string name="mnuSettings">Settings</string>
 	<string name="mnuLogout">Logout</string>
 	<string name="mnuHardRefresh">Home</string>
