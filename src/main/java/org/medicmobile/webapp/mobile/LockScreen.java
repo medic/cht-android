@@ -27,7 +27,7 @@ class LockScreen {
 	}
 
 	static AlertDialog showFor(final Activity a) {
-		final AlertDialog d = createPinEntryDialog(a, false, "Enter code to unlock…");
+		final AlertDialog d = createPinEntryDialog(a, false, R.string.txtUnlockPrompt);
 
 		setClickListener(d, new PinEntryClickListener(a, d) {
 			public void onClick(View v) {
@@ -46,7 +46,7 @@ class LockScreen {
 			return;
 		}
 
-		final AlertDialog d = createPinEntryDialog(a, true, "Enter old code…");
+		final AlertDialog d = createPinEntryDialog(a, true, R.string.txtOldCodePrompt);
 
 		setClickListener(d, new PinEntryClickListener(a, d) {
 			@Override public void onClick(View v) {
@@ -61,7 +61,7 @@ class LockScreen {
 	}
 
 	private static void setNewCode(final Activity a) {
-		final AlertDialog d = createPinEntryDialog(a, true, "Enter new code…");
+		final AlertDialog d = createPinEntryDialog(a, true, R.string.txtNewCodePrompt);
 
 		setClickListener(d, new PinEntryClickListener(a, d) {
 			@Override public void onClick(View v) {
@@ -74,7 +74,7 @@ class LockScreen {
 	}
 
 	private static void requestConfirmation(final Activity a, final String firstEntry) {
-		final AlertDialog d = createPinEntryDialog(a, true, "Confirm code…");
+		final AlertDialog d = createPinEntryDialog(a, true, R.string.txtNewCodeConfirmPrompt);
 
 		setClickListener(d, new PinEntryClickListener(a, d) {
 			@Override public void onClick(View v) {
@@ -94,7 +94,7 @@ class LockScreen {
 		d.show();
 	}
 
-	private static AlertDialog createPinEntryDialog(Activity a, boolean cancellable, String title) {
+	private static AlertDialog createPinEntryDialog(Activity a, boolean cancellable, int title) {
 		return new AlertDialog.Builder(a)
 				.setPositiveButton(R.string.btnOk, null)
 				.setCancelable(cancellable)
