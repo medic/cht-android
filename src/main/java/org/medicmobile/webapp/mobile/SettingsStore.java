@@ -19,7 +19,7 @@ public abstract class SettingsStore {
 	}
 
 	public abstract String getAppUrl();
-	public abstract boolean hasSettings();
+	public abstract boolean hasWebappSettings();
 
 	public abstract boolean allowsConfiguration();
 	public abstract void update(SharedPreferences.Editor ed, WebappSettings s);
@@ -79,7 +79,7 @@ class BrandedSettingsStore extends SettingsStore {
 	}
 
 	public String getAppUrl() { return apiUrl; }
-	public boolean hasSettings() { return true; }
+	public boolean hasWebappSettings() { return true; }
 	public boolean allowsConfiguration() { return false; }
 
 	public void update(SharedPreferences.Editor ed, WebappSettings s) { /* nothing to save */ }
@@ -96,7 +96,7 @@ class UnbrandedSettingsStore extends SettingsStore {
 
 	public boolean allowsConfiguration() { return true; }
 
-	public boolean hasSettings() {
+	public boolean hasWebappSettings() {
 		WebappSettings s = new WebappSettings(getAppUrl());
 		try {
 			s.validate();

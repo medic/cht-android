@@ -67,7 +67,7 @@ public class SettingsDialogActivity extends LockableActivity {
 
 		setContentView(R.layout.custom_server_form);
 
-		if(!this.settings.hasSettings()) {
+		if(!this.settings.hasWebappSettings()) {
 			cancelButton().setVisibility(View.GONE);
 		}
 
@@ -104,7 +104,7 @@ public class SettingsDialogActivity extends LockableActivity {
 	public void onBackPressed() {
 		switch(state) {
 			case STATE_LIST:
-				if(this.settings.hasSettings()) {
+				if(this.settings.hasWebappSettings()) {
 					backToWebview();
 					return;
 				}

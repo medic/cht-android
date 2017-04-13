@@ -42,6 +42,11 @@ class LockScreen {
 	}
 
 	static void changeCode(final Activity a) {
+		if(!isCodeSet(a)) {
+			setNewCode(a);
+			return;
+		}
+
 		final AlertDialog d = createPinEntryDialog(a, true, "Enter old code…");
 
 		setClickListener(d, new PinEntryClickListener(a, d) {
@@ -56,7 +61,7 @@ class LockScreen {
 		d.show();
 	}
 
-	static void setNewCode(final Activity a) {
+	private static void setNewCode(final Activity a) {
 		final AlertDialog d = createPinEntryDialog(a, true, "Enter new code…");
 
 		setClickListener(d, new PinEntryClickListener(a, d) {

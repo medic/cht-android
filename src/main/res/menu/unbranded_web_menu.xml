@@ -1,6 +1,4 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
-	<item android:id="@+id/mnuChangeUnlockCode"
-		  android:title="@string/mnuChangeUnlockCode"/>
 	<item android:id="@+id/mnuSetUnlockCode"
 		  android:title="@string/mnuSetUnlockCode"/>
 	<item android:id="@+id/mnuSettings"

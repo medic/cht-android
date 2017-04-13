@@ -32,7 +32,7 @@ public class StartupActivity extends Activity {
 		configureHttpUseragent();
 
 		Class newActivity;
-		if(SettingsStore.in(this).hasSettings()) {
+		if(SettingsStore.in(this).hasWebappSettings()) {
 			newActivity = EmbeddedBrowserActivity.class;
 		} else {
 			newActivity = SettingsDialogActivity.class;

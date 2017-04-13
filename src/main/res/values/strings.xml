@@ -18,8 +18,7 @@
 	<string name="btnContinue">Continue</string>
 	<string name="btnQuit">Quit</string>
 
-	<string name="mnuSetUnlockCode">Set unlock code</string>
-	<string name="mnuChangeUnlockCode">Change unlock code</string>
+	<string name="mnuSetUnlockCode">Set/change unlock code</string>
 	<string name="mnuSettings">Settings</string>
 	<string name="mnuLogout">Logout</string>
 	<string name="mnuHardRefresh">Home</string>
