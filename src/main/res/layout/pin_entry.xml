@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+		xmlns:tools="http://schemas.android.com/tools"
+		tools:ignore="HardcodedText,UselessParent"
 		android:layout_width="fill_parent"
 		android:layout_height="fill_parent">
+	<!-- nesting LinearLayout inside RelativeLayout is to make sure that the
+		dialog stretches to the full height of the screen, covering all
+		content in the activity behind. -->
 	<LinearLayout
 			android:layout_width="fill_parent"
 			android:layout_height="fill_parent"
@@ -13,13 +18,13 @@
 				android:orientation="horizontal"
 				android:paddingBottom="16dp">
 			<EditText android:id="@+id/txtPinEntry"
+					tools:ignore="LabelFor"
 					android:layout_weight="1"
-					android:layout_width="wrap_content"
-					android:layout_height="wrap_content"
+					android:layout_width="0dp"
+					android:layout_height="fill_parent"
 					android:gravity="center"
 					android:singleLine="true"
-					android:password="true"
-					android:inputType="none"/>
+					android:inputType="textPassword"/>
 			<Button style="@style/PinButton"
 					android:id="@+id/btnBackspace"
 					android:text="&lt;x"/>

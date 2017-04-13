@@ -1,8 +1,8 @@
 package org.medicmobile.webapp.mobile;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnDismissListener;
 import android.view.MotionEvent;
@@ -16,7 +16,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import static android.app.AlertDialog.BUTTON_POSITIVE;
-import static org.medicmobile.webapp.mobile.MedicLog.trace;
 import static org.medicmobile.webapp.mobile.MedicLog.warn;
 
 class LockScreen {
@@ -111,9 +110,11 @@ class LockScreen {
 				button.setOnClickListener(positiveClickListener);
 
 				final EditText txtPin = (EditText) d.findViewById(R.id.txtPinEntry);
+
 				// Ignore all touches on the PIN field, but allow it to be syled as
 				// if it were editable.
 				txtPin.setOnTouchListener(new OnTouchListener() {
+					@SuppressLint("ClickableViewAccessibility")
 					@Override public boolean onTouch(View v, MotionEvent e) {
 						return true;
 					}
