@@ -26,7 +26,7 @@ class LockScreen {
 		return unlockCode != null && !unlockCode.isEmpty();
 	}
 
-	static AlertDialog showFor(final Activity a) {
+	static AlertDialog showFor(final Activity a, OnDismissListener onDismiss) {
 		final AlertDialog d = createPinEntryDialog(a, false, R.string.txtUnlockPrompt);
 
 		setClickListener(d, new PinEntryClickListener(a, d) {
@@ -35,6 +35,8 @@ class LockScreen {
 				else toast("Try again.");
 			}
 		});
+
+		d.setOnDismissListener(onDismiss);
 
 		d.show();
 		return d;
@@ -168,8 +170,7 @@ abstract class LockableActivity extends Activity {
 
 		if(!LockScreen.isCodeSet(this)) return;
 
-		unlockDialog = LockScreen.showFor(this);
-		unlockDialog.setOnDismissListener(new OnDismissListener() {
+		unlockDialog = LockScreen.showFor(this, new OnDismissListener() {
 			public void onDismiss(DialogInterface dialog) {
 				LockableActivity.this.unlockDialog = null;
 			}

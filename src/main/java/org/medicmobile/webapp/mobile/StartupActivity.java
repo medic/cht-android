@@ -18,9 +18,7 @@ public class StartupActivity extends Activity {
 		if(DEBUG) trace(this, "Starting...");
 
 		if(LockScreen.isCodeSet(this)) {
-			AlertDialog initialLockScreen = LockScreen.showFor(this);
-
-			initialLockScreen.setOnDismissListener(new OnDismissListener() {
+			AlertDialog initialLockScreen = LockScreen.showFor(this, new OnDismissListener() {
 				public void onDismiss(DialogInterface dialog) {
 					configureAndStartNextActivity();
 				}
