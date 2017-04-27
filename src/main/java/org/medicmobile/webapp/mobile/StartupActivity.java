@@ -1,7 +1,6 @@
 package org.medicmobile.webapp.mobile;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnDismissListener;
 import android.content.Intent;
@@ -18,7 +17,7 @@ public class StartupActivity extends Activity {
 		if(DEBUG) trace(this, "Starting...");
 
 		if(LockScreen.isCodeSet(this)) {
-			AlertDialog initialLockScreen = LockScreen.showFor(this, new OnDismissListener() {
+			LockScreen.showFor(this, new OnDismissListener() {
 				public void onDismiss(DialogInterface dialog) {
 					configureAndStartNextActivity();
 				}
