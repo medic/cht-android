@@ -158,6 +158,12 @@ abstract class LockableActivity extends Activity {
 	private boolean justCreated = true;
 	private AlertDialog unlockDialog;
 
+	// TODO to stop the screen from being displayed momentarily on-resume,
+	// put an overlay immediately as part of on-sleep
+	@Override public void onPause() {
+		super.onPause();
+	}
+
 	@Override public void onResume() {
 		super.onResume();
 
