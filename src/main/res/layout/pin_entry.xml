@@ -27,7 +27,7 @@
 					android:inputType="textPassword"/>
 			<Button style="@style/PinButton"
 					android:id="@+id/btnBackspace"
-					android:text="&lt;x"/>
+					android:text="«x"/>
 		</LinearLayout>
 		<GridLayout android:id="@+id/divButtons"
 				android:layout_width="wrap_content"
