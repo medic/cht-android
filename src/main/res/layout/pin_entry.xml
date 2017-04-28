@@ -1,64 +1,52 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-		xmlns:tools="http://schemas.android.com/tools"
-		tools:ignore="HardcodedText,UselessParent"
-		android:layout_width="fill_parent"
-		android:layout_height="fill_parent">
-	<!-- nesting LinearLayout inside RelativeLayout is to make sure that the
-		dialog stretches to the full height of the screen, covering all
-		content in the activity behind. -->
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+		xmlns:tools="http://schemas.android.com/tools">
 	<LinearLayout
 			android:layout_width="fill_parent"
-			android:layout_height="fill_parent"
-			android:orientation="vertical"
-			android:gravity="center">
-		<LinearLayout
-				android:layout_width="fill_parent"
-				android:layout_height="wrap_content"
-				android:orientation="horizontal"
-				android:paddingBottom="16dp">
-			<EditText android:id="@+id/txtPinEntry"
-					tools:ignore="LabelFor"
-					android:layout_weight="1"
-					android:layout_width="0dp"
-					android:layout_height="fill_parent"
-					android:gravity="center"
-					android:singleLine="true"
-					android:inputType="textPassword"/>
-			<Button style="@style/PinButton"
-					android:id="@+id/btnBackspace"
-					android:text="«x"/>
-		</LinearLayout>
-		<GridLayout android:id="@+id/divButtons"
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"
-				android:columnCount="3"
-				android:rowCount="5">
-
-			<Button style="@style/PinButton"
-					android:text="1"/>
-			<Button style="@style/PinButton"
-					android:text="2"/>
-			<Button style="@style/PinButton"
-					android:text="3"/>
-
-			<Button style="@style/PinButton"
-					android:text="4"/>
-			<Button style="@style/PinButton"
-					android:text="5"/>
-			<Button style="@style/PinButton"
-					android:text="6"/>
-
-			<Button style="@style/PinButton"
-					android:text="7"/>
-			<Button style="@style/PinButton"
-					android:text="8"/>
-			<Button style="@style/PinButton"
-					android:text="9"/>
-
-			<Button style="@style/PinButton"
-					android:text="0"
-					android:layout_column="1"/>
-		</GridLayout>
+			android:layout_height="wrap_content"
+			android:orientation="horizontal"
+			android:paddingBottom="16dp">
+		<EditText android:id="@+id/txtPinEntry"
+				tools:ignore="LabelFor"
+				android:layout_weight="1"
+				android:layout_width="0dp"
+				android:layout_height="fill_parent"
+				android:gravity="center"
+				android:singleLine="true"
+				android:inputType="textPassword"/>
+		<Button style="@style/PinButton"
+				android:id="@+id/btnBackspace"
+				android:text="«x"/>
 	</LinearLayout>
-</RelativeLayout>
+	<GridLayout android:id="@+id/divButtons"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:columnCount="3"
+			android:rowCount="5">
+
+		<Button style="@style/PinButton"
+				android:text="1"/>
+		<Button style="@style/PinButton"
+				android:text="2"/>
+		<Button style="@style/PinButton"
+				android:text="3"/>
+
+		<Button style="@style/PinButton"
+				android:text="4"/>
+		<Button style="@style/PinButton"
+				android:text="5"/>
+		<Button style="@style/PinButton"
+				android:text="6"/>
+
+		<Button style="@style/PinButton"
+				android:text="7"/>
+		<Button style="@style/PinButton"
+				android:text="8"/>
+		<Button style="@style/PinButton"
+				android:text="9"/>
+
+		<Button style="@style/PinButton"
+				android:text="0"
+				android:layout_column="1"/>
+	</GridLayout>
+</merge>

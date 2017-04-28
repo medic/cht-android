@@ -16,13 +16,11 @@ public class StartupActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		if(DEBUG) trace(this, "Starting...");
 
+		configureAndStartNextActivity();
+
 		if(LockScreen.isCodeSet(this)) {
-			LockScreen.showFor(this, new OnDismissListener() {
-				public void onDismiss(DialogInterface dialog) {
-					configureAndStartNextActivity();
-				}
-			});
-		} else configureAndStartNextActivity();
+			startActivity(new Intent(this, LockScreen.class));
+		}
 	}
 
 	private void configureAndStartNextActivity() {
