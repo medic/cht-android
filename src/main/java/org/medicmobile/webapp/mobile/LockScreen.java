@@ -38,8 +38,8 @@ public class LockScreen extends Activity {
 		Button btn = (Button) findViewById(R.id.btnConfirmPinEntry);
 		btn.setOnClickListener(new PinEntryClickListener(this) {
 			public void onClick(View v) {
-				if(confirmCodeEnteredCorrectly()) dismissWithMessage("Welcome back!");
-				else rejectCode("Try again.");
+				if(confirmCodeEnteredCorrectly()) dismissWithMessage(R.string.tstUnlock_success);
+				else rejectCode(R.string.tstUnlock_codeRejected);
 			}
 		});
 
@@ -66,8 +66,8 @@ public class LockScreen extends Activity {
 			@Override public void onClick(View v) {
 				if(confirmCodeEnteredCorrectly()) {
 					setNewCode(a);
-					dismissWithMessage("Old code accepted.");
-				} else rejectCode("Try again.");
+					dismissWithMessage(R.string.tstUnlock_oldAccepted);
+				} else rejectCode(R.string.tstUnlock_codeRejected);
 			}
 		});
 
@@ -81,7 +81,7 @@ public class LockScreen extends Activity {
 		setClickListener(d, new PinEntryClickListener(a, d) {
 			@Override public void onClick(View v) {
 				requestConfirmation(a, enteredText());
-				dismissWithMessage("New code accepted.  Please confirm…");
+				dismissWithMessage(R.string.tstUnlock_newAccepted);
 			}
 		});
 
@@ -96,12 +96,12 @@ public class LockScreen extends Activity {
 				if(firstEntry.equals(enteredText())) {
 					try {
 						SettingsStore.in(a).updateWithUnlockCode(firstEntry);
-						dismissWithMessage("New code successfully set.");
+						dismissWithMessage(R.string.tstUnlock_codeChanged);
 					} catch(SettingsException ex) {
 						warn(ex, "Failed to save new unlock code.");
-						toast("Failed to save unlock code.");
+						toast(R.string.tstUnlock_failed);
 					}
-				} else rejectCode("Code does not match.  Try again.");
+				} else rejectCode(R.string.tstUnlock_confirmFailed);
 			}
 		});
 
@@ -223,18 +223,18 @@ abstract class PinEntryClickListener implements OnClickListener {
 		return txtPinEntry().getText().toString();
 	}
 
-	protected void rejectCode(String message) {
+	protected void rejectCode(int textId) {
 		txtPinEntry().setText("");
-		toast(message);
+		toast(textId);
 	}
 
-	protected void dismissWithMessage(String message) {
-		toast(message);
+	protected void dismissWithMessage(int textId) {
+		toast(textId);
 		if(isDialog()) dialog.dismiss();
 		else activity.finish();
 	}
 
-	protected void toast(String message) { Toast.makeText(activity, message, Toast.LENGTH_SHORT).show(); }
+	protected void toast(int textId) { Toast.makeText(activity, textId, Toast.LENGTH_SHORT).show(); }
 
 	private TextView txtPinEntry() {
 		return (TextView) (isDialog() ? dialog.findViewById(R.id.txtPinEntry) :

@@ -27,6 +27,13 @@
 	<string name="txtOldCodePrompt">Enter old code…</string>
 	<string name="txtNewCodePrompt">Enter new code…</string>
 	<string name="txtNewCodeConfirmPrompt">Confirm code…</string>
+	<string name="tstUnlock_failed">Failed to save unlock code"Welcome back!"</string>
+	<string name="tstUnlock_success">Welcome back!</string>
+	<string name="tstUnlock_oldAccepted">Old code accepted</string>
+	<string name="tstUnlock_newAccepted">New code accepted, please confirm…</string>
+	<string name="tstUnlock_codeChanged">New code successfully set</string>
+	<string name="tstUnlock_codeRejected">Try again</string>
+	<string name="tstUnlock_confirmFailed">Code does not match - try again</string>
 
 	<string name="txtFreeSpaceWarning">Space is running low on this device.  Medic Mobile may not be able to start, or may perform strangely.</string>
 	<string name="txtFreeSpaceCurrent">Current space:\n%s MB</string>
