@@ -38,7 +38,7 @@ public class LockScreen extends Activity {
 		Button btn = (Button) findViewById(R.id.btnConfirmPinEntry);
 		btn.setOnClickListener(new PinEntryClickListener(this) {
 			public void onClick(View v) {
-				if(confirmCodeEnteredCorrectly()) dismiss();
+				if(confirmCodeEnteredCorrectly()) dismissWithMessage("Welcome back!");
 				else rejectCode("Try again.");
 			}
 		});
@@ -66,7 +66,7 @@ public class LockScreen extends Activity {
 			@Override public void onClick(View v) {
 				if(confirmCodeEnteredCorrectly()) {
 					setNewCode(a);
-					dismiss();
+					dismissWithMessage("Old code accepted.");
 				} else rejectCode("Try again.");
 			}
 		});
@@ -81,7 +81,7 @@ public class LockScreen extends Activity {
 		setClickListener(d, new PinEntryClickListener(a, d) {
 			@Override public void onClick(View v) {
 				requestConfirmation(a, enteredText());
-				dismiss();
+				dismissWithMessage("New code accepted.  Please confirm…");
 			}
 		});
 
@@ -96,8 +96,7 @@ public class LockScreen extends Activity {
 				if(firstEntry.equals(enteredText())) {
 					try {
 						SettingsStore.in(a).updateWithUnlockCode(firstEntry);
-						toast("New code successfully set.");
-						dismiss();
+						dismissWithMessage("New code successfully set.");
 					} catch(SettingsException ex) {
 						warn(ex, "Failed to save new unlock code.");
 						toast("Failed to save unlock code.");
@@ -229,7 +228,8 @@ abstract class PinEntryClickListener implements OnClickListener {
 		toast(message);
 	}
 
-	protected void dismiss() {
+	protected void dismissWithMessage(String message) {
+		toast(message);
 		if(isDialog()) dialog.dismiss();
 		else activity.finish();
 	}
