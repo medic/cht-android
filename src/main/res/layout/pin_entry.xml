@@ -5,9 +5,6 @@
 		android:layout_height="fill_parent"
 		android:orientation="vertical"
 		android:gravity="center">
-	<!-- nesting LinearLayout inside RelativeLayout is to make sure that the
-		dialog stretches to the full height of the screen, covering all
-		content in the activity behind. -->
 	<LinearLayout
 			android:layout_width="fill_parent"
 			android:layout_height="wrap_content"
