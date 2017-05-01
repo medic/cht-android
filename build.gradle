@@ -21,6 +21,10 @@ apply plugin: 'com.android.application'
 apply plugin: 'com.noveogroup.android.check'
 apply plugin: 'jacoco-everywhere'
 
+if(System.env.MEDIC_ANDROID_EXTRAS) {
+	apply from:System.env.MEDIC_ANDROID_EXTRAS
+}
+
 // enable verbose lint warnings
 gradle.projectsEvaluated {
 	tasks.withType(JavaCompile) {
@@ -151,18 +155,6 @@ android {
 		}
 		medicmobiledemo {
 			applicationId = 'org.medicmobile.webapp.mobile.medicmobiledemo'
-		}
-		livinggoods {
-			applicationId = 'org.medicmobile.webapp.mobile.livinggoods'
-		}
-		bracuganda {
-			applicationId = 'org.medicmobile.webapp.mobile.bracuganda'
-		}
-		livinggoodskenya {
-			applicationId = 'org.medicmobile.webapp.mobile.livinggoodskenya'
-		}
-		musomali {
-			applicationId = 'org.medicmobile.webapp.mobile.musomali'
 		}
 	}
 }
