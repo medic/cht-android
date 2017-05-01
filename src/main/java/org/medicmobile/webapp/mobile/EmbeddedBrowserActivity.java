@@ -86,7 +86,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	@Override public boolean onOptionsItemSelected(MenuItem item) {
 		switch(item.getItemId()) {
 			case R.id.mnuSetUnlockCode:
-				LockScreen.changeCode(this);
+				changeCode();
 				return true;
 			case R.id.mnuSettings:
 				openSettings();

@@ -1,8 +1,6 @@
 package org.medicmobile.webapp.mobile;
 
 import android.app.Activity;
-import android.content.DialogInterface;
-import android.content.DialogInterface.OnDismissListener;
 import android.content.Intent;
 import android.os.Bundle;
 
@@ -19,7 +17,7 @@ public class StartupActivity extends Activity {
 		configureAndStartNextActivity();
 
 		if(LockScreen.isCodeSet(this)) {
-			startActivity(new Intent(this, LockScreen.class));
+			LockScreen.showFrom(this);
 		}
 	}
 

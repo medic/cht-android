@@ -2,12 +2,7 @@ package org.medicmobile.webapp.mobile;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.Dialog;
-import android.content.DialogInterface;
-import android.content.DialogInterface.OnDismissListener;
 import android.content.Intent;
-import android.content.res.Configuration;
 import android.os.Bundle;
 import android.view.MotionEvent;
 import android.view.View;
@@ -19,103 +14,49 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import static android.app.AlertDialog.BUTTON_POSITIVE;
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static org.medicmobile.webapp.mobile.MedicLog.trace;
 import static org.medicmobile.webapp.mobile.MedicLog.warn;
 
 public class LockScreen extends Activity {
 
+	private static final String X_TASK = "LockScreen.TASK";
+	private static final String X_FIRST_ENTRY = "LockScreen.FIRST_ENTRY";
+
+	enum Task {
+		UNLOCK(R.string.txtUnlockPrompt, false),
+		CONFIRM_OLD(R.string.txtOldCodePrompt, true),
+		ENTER_NEW(R.string.txtNewCodePrompt, true),
+		CONFIRM_NEW(R.string.txtNewCodeConfirmPrompt, true);
+
+		final int title;
+		final boolean allowBack;
+
+		Task(int title, boolean allowBack) {
+			this.title = title;
+			this.allowBack = allowBack;
+		}
+	}
+
+	private Task task;
+
 //> Activity OVERRIDES
-	@Override public void onBackPressed() { /* DON'T go back to the previous Activity */ }
+	@Override public void onBackPressed() { if(task.allowBack) super.onBackPressed(); }
 
 	@Override public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		if(DEBUG) trace(this, "Starting...");
 
-		setContentView(R.layout.lock_screen);
+		task = Task.valueOf(getIntent().getStringExtra(X_TASK));
+
+		setContentView(R.layout.pin_entry);
+
+		setTitle(task.title);
 
 		Button btn = (Button) findViewById(R.id.btnConfirmPinEntry);
-		btn.setOnClickListener(new PinEntryClickListener(this) {
-			public void onClick(View v) {
-				if(confirmCodeEnteredCorrectly()) dismissWithMessage(R.string.tstUnlock_success);
-				else rejectCode(R.string.tstUnlock_codeRejected);
-			}
-		});
+		btn.setOnClickListener(clickListenerFor(task));
 
-		setUpEventListeners(this);
-	}
-
-//> PRIVATE HELPERS
-
-//> STATIC UTILS
-	static boolean isCodeSet(Activity a) {
-		String unlockCode = SettingsStore.in(a).getUnlockCode();
-		return unlockCode != null && !unlockCode.isEmpty();
-	}
-
-	static void changeCode(final Activity a) {
-		if(!isCodeSet(a)) {
-			setNewCode(a);
-			return;
-		}
-
-		final AlertDialog d = createPinEntryDialog(a, true, R.string.txtOldCodePrompt);
-
-		setClickListener(d, new PinEntryClickListener(a, d) {
-			@Override public void onClick(View v) {
-				if(confirmCodeEnteredCorrectly()) {
-					setNewCode(a);
-					dismissWithMessage(R.string.tstUnlock_oldAccepted);
-				} else rejectCode(R.string.tstUnlock_codeRejected);
-			}
-		});
-
-		d.show();
-	}
-
-//> STATIC HELPERS
-	private static void setNewCode(final Activity a) {
-		final AlertDialog d = createPinEntryDialog(a, true, R.string.txtNewCodePrompt);
-
-		setClickListener(d, new PinEntryClickListener(a, d) {
-			@Override public void onClick(View v) {
-				requestConfirmation(a, enteredText());
-				dismissWithMessage(R.string.tstUnlock_newAccepted);
-			}
-		});
-
-		d.show();
-	}
-
-	private static void requestConfirmation(final Activity a, final String firstEntry) {
-		final AlertDialog d = createPinEntryDialog(a, true, R.string.txtNewCodeConfirmPrompt);
-
-		setClickListener(d, new PinEntryClickListener(a, d) {
-			@Override public void onClick(View v) {
-				if(firstEntry.equals(enteredText())) {
-					try {
-						SettingsStore.in(a).updateWithUnlockCode(firstEntry);
-						dismissWithMessage(R.string.tstUnlock_codeChanged);
-					} catch(SettingsException ex) {
-						warn(ex, "Failed to save new unlock code.");
-						toast(R.string.tstUnlock_failed);
-					}
-				} else rejectCode(R.string.tstUnlock_confirmFailed);
-			}
-		});
-
-		d.show();
-	}
-
-	private static View findViewById(Object parent, int viewId) {
-		if(parent instanceof Dialog) {
-			return ((Dialog) parent).findViewById(viewId);
-		} else return ((Activity) parent).findViewById(viewId);
-	}
-
-	private static void setUpEventListeners(Object d) { // TODO rename d to v
-		final EditText txtPin = (EditText) findViewById(d, R.id.txtPinEntry);
+		final EditText txtPin = (EditText) findViewById(R.id.txtPinEntry);
 
 		// Ignore all touches on the PIN field, but allow it to be syled as
 		// if it were editable.
@@ -126,7 +67,7 @@ public class LockScreen extends Activity {
 			}
 		});
 
-		final ViewGroup group = (ViewGroup) findViewById(d, R.id.divButtons);
+		final ViewGroup group = (ViewGroup) findViewById(R.id.divButtons);
 		int i = group.getChildCount();
 		OnClickListener buttonListener = new OnClickListener() {
 			@Override public void onClick(View v) {
@@ -140,7 +81,7 @@ public class LockScreen extends Activity {
 			b.setOnClickListener(buttonListener);
 		}
 
-		Button btnBackspace = (Button) findViewById(d, R.id.btnBackspace);
+		Button btnBackspace = (Button) findViewById(R.id.btnBackspace);
 		btnBackspace.setOnClickListener(new OnClickListener() {
 			@Override public void onClick(View v) {
 				CharSequence text = txtPin.getText();
@@ -151,36 +92,106 @@ public class LockScreen extends Activity {
 		});
 	}
 
-	private static AlertDialog createPinEntryDialog(Activity a, boolean cancellable, int title) {
-		return new AlertDialog.Builder(a)
-				.setPositiveButton(R.string.btnOk, null)
-				.setCancelable(cancellable)
-				.setTitle(title)
-				.setView(view(a, R.layout.pin_entry_dialog))
-				.create();
+//> UI SETUP
+	private OnClickListener clickListenerFor(Task t) {
+		switch(t) {
+			case UNLOCK:
+				return new OnClickListener() {
+					public void onClick(View v) {
+						if(confirmCodeEnteredCorrectly()) dismissWithMessage(R.string.tstUnlock_success);
+						else rejectCode(R.string.tstUnlock_codeRejected);
+					}
+				};
+			case CONFIRM_OLD:
+				return new OnClickListener() {
+					@Override public void onClick(View v) {
+						if(confirmCodeEnteredCorrectly()) {
+							showFor(LockScreen.this, Task.ENTER_NEW);
+							dismissWithMessage(R.string.tstUnlock_oldAccepted);
+						} else rejectCode(R.string.tstUnlock_codeRejected);
+					}
+				};
+			case ENTER_NEW:
+				return new OnClickListener() {
+					@Override public void onClick(View v) {
+						Intent i = getIntent(LockScreen.this, Task.CONFIRM_NEW);
+						i.putExtra(X_FIRST_ENTRY, enteredText());
+						startActivity(i);
+						dismissWithMessage(R.string.tstUnlock_newAccepted);
+					}
+				};
+			case CONFIRM_NEW:
+				return new OnClickListener() {
+					@Override public void onClick(View v) {
+						String firstEntry = getIntent().getStringExtra(X_FIRST_ENTRY);
+						if(firstEntry.equals(enteredText())) {
+							try {
+								SettingsStore.in(LockScreen.this).updateWithUnlockCode(firstEntry);
+								dismissWithMessage(R.string.tstUnlock_codeChanged);
+							} catch(SettingsException ex) {
+								warn(ex, "Failed to save new unlock code.");
+								toast(R.string.tstUnlock_failed);
+							}
+						} else rejectCode(R.string.tstUnlock_confirmFailed);
+					}
+				};
+			default: throw new IllegalArgumentException(String.valueOf(task));
+		}
 	}
 
-	private static void setClickListener(final AlertDialog d, final PinEntryClickListener positiveClickListener) {
-		d.setOnShowListener(new DialogInterface.OnShowListener() {
-			@Override public void onShow(DialogInterface _d) {
-				Button button = d.getButton(BUTTON_POSITIVE);
-				button.setOnClickListener(positiveClickListener);
-
-				setUpEventListeners(d);
-			}
-		});
+//> PRIVATE HELPERS
+	private boolean confirmCodeEnteredCorrectly() {
+		String unlockCode = SettingsStore.in(this).getUnlockCode();
+		return enteredText().equals(unlockCode);
 	}
 
-	private static View view(Activity a, int layoutId) {
-		return a.getLayoutInflater().inflate(layoutId, null);
+	private String enteredText() {
+		return txtPinEntry().getText().toString();
+	}
+
+	private void rejectCode(int textId) {
+		txtPinEntry().setText("");
+		toast(textId);
+	}
+
+	private void dismissWithMessage(int textId) {
+		toast(textId);
+		finish();
+	}
+
+	private void toast(int textId) { Toast.makeText(this, textId, Toast.LENGTH_SHORT).show(); }
+
+	private TextView txtPinEntry() {
+		return (TextView) findViewById(R.id.txtPinEntry);
+	}
+
+//> STATIC UTILS
+	static boolean isCodeSet(Activity a) {
+		String unlockCode = SettingsStore.in(a).getUnlockCode();
+		return unlockCode != null && !unlockCode.isEmpty();
+	}
+
+	static void showFrom(Activity caller) {
+		showFor(caller, Task.UNLOCK);
+	}
+
+	static void showFor(Activity caller, Task task) {
+		caller.startActivity(getIntent(caller, task));
+	}
+
+//> STATIC HELPERS
+	private static Intent getIntent(Activity caller, Task task) {
+		Intent i = new Intent(caller, LockScreen.class);
+		i.putExtra(X_TASK, task.toString());
+		return i;
 	}
 }
 
 abstract class LockableActivity extends Activity {
-	private boolean finishing;
+	private boolean suppressLockScreen;
 
 	@Override public void finish() {
-		finishing = true;
+		suppressLockScreen = true;
 		super.finish();
 	}
 
@@ -194,54 +205,15 @@ abstract class LockableActivity extends Activity {
 		// onPause() will be fired when the screen rotates.  We will have
 		// to detect this in onConfigurationChanged() and ignore.
 
-		if(finishing || !LockScreen.isCodeSet(this)) return;
+		if(suppressLockScreen || !LockScreen.isCodeSet(this)) return;
 
-		startActivity(new Intent(this, LockScreen.class));
-	}
-}
-
-abstract class PinEntryClickListener implements OnClickListener {
-	private final Activity activity;
-	private final AlertDialog dialog;
-
-	protected PinEntryClickListener(Activity activity) {
-		this.activity = activity;
-		this.dialog = null;
+		LockScreen.showFrom(this);
 	}
 
-	protected PinEntryClickListener(Activity parentActivity, AlertDialog dialog) {
-		this.activity = parentActivity;
-		this.dialog = dialog;
-	}
-
-	protected boolean confirmCodeEnteredCorrectly() {
-		String unlockCode = SettingsStore.in(activity).getUnlockCode();
-		return enteredText().equals(unlockCode);
-	}
-
-	protected String enteredText() {
-		return txtPinEntry().getText().toString();
-	}
-
-	protected void rejectCode(int textId) {
-		txtPinEntry().setText("");
-		toast(textId);
-	}
-
-	protected void dismissWithMessage(int textId) {
-		toast(textId);
-		if(isDialog()) dialog.dismiss();
-		else activity.finish();
-	}
-
-	protected void toast(int textId) { Toast.makeText(activity, textId, Toast.LENGTH_SHORT).show(); }
-
-	private TextView txtPinEntry() {
-		return (TextView) (isDialog() ? dialog.findViewById(R.id.txtPinEntry) :
-				              activity.findViewById(R.id.txtPinEntry));
-	}
-
-	private boolean isDialog() {
-		return dialog != null;
+	protected void changeCode() {
+		suppressLockScreen = true;
+		LockScreen.showFor(this, LockScreen.isCodeSet(this) ?
+				LockScreen.Task.CONFIRM_OLD :
+				LockScreen.Task.ENTER_NEW);
 	}
 }
