@@ -41,5 +41,8 @@ url-tester:
 uninstall:
 	adb uninstall org.medicmobile.webapp.mobile
 
-travis:
-	${GRADLEW} test assemble coverageReport
+test:
+	${GRADLEW} androidCheck lint test
+
+travis: test
+	${GRADLEW} assemble coverageReport
