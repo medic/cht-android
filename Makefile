@@ -24,6 +24,9 @@ android-logs:
 deploy-unbranded:
 	${GRADLEW} --daemon --parallel installUnbrandedDebug
 
+uninstall-unbranded:
+	adb uninstall org.medicmobile.webapp.mobile
+
 kill:
 	pkill -9 emulator64-arm
 
