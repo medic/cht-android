@@ -152,11 +152,12 @@ android {
 		medicmobiledemo {
 			applicationId = 'org.medicmobile.webapp.mobile.medicmobiledemo'
 		}
-		livinggoods {
-			applicationId = 'org.medicmobile.webapp.mobile.livinggoods'
-		}
+
 		bracuganda {
 			applicationId = 'org.medicmobile.webapp.mobile.bracuganda'
+		}
+		livinggoods {
+			applicationId = 'org.medicmobile.webapp.mobile.livinggoods'
 		}
 		livinggoodskenya {
 			applicationId = 'org.medicmobile.webapp.mobile.livinggoodskenya'
