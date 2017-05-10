@@ -156,6 +156,9 @@ android {
 		bracuganda {
 			applicationId = 'org.medicmobile.webapp.mobile.bracuganda'
 		}
+		ebpp_indonesia {
+			applicationId = 'org.medicmobile.webapp.mobile.ebpp_indonesia'
+		}
 		livinggoods {
 			applicationId = 'org.medicmobile.webapp.mobile.livinggoods'
 		}
