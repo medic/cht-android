@@ -26,12 +26,14 @@ public class MedicAndroidJavascript {
 	private static final String DATE_FORMAT = "yyyy-MM-dd";
 
 	private final EmbeddedBrowserActivity parent;
+	private final SimprintsSupport simprints;
 
 	private LocationManager locationManager;
 	private Alert soundAlert;
 
 	public MedicAndroidJavascript(EmbeddedBrowserActivity parent) {
 		this.parent = parent;
+		this.simprints = new SimprintsSupport(parent);
 	}
 
 	public void setAlert(Alert soundAlert) {
@@ -124,6 +126,27 @@ public class MedicAndroidJavascript {
 		} catch(ParseException ex) {
 			datePicker(targetElement);
 		}
+	}
+
+	/**
+	 * @return {@code true} iff an app is available to handle supported simprints {@code Intent}s
+	 */
+	@org.xwalk.core.JavascriptInterface
+	@android.webkit.JavascriptInterface
+	public boolean simprints_available() {
+		return simprints.isAppInstalled();
+	}
+
+	@org.xwalk.core.JavascriptInterface
+	@android.webkit.JavascriptInterface
+	public void simprints_ident(int targetInputId) {
+		simprints.startIdent(targetInputId);
+	}
+
+	@org.xwalk.core.JavascriptInterface
+	@android.webkit.JavascriptInterface
+	public void simprints_reg(int targetInputId) {
+		simprints.startReg(targetInputId);
 	}
 
 	private void datePicker(String targetElement, Calendar initialDate) {

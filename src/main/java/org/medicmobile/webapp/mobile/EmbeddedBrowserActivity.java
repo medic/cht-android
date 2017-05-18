@@ -13,6 +13,9 @@ import android.webkit.ConsoleMessage;
 import android.webkit.ValueCallback;
 import android.widget.Toast;
 
+import com.simprints.libsimprints.SimHelper;
+
+import java.util.List;
 
 import org.xwalk.core.XWalkPreferences;
 import org.xwalk.core.XWalkResourceClient;
@@ -23,6 +26,7 @@ import org.xwalk.core.XWalkView;
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static org.medicmobile.webapp.mobile.BuildConfig.DISABLE_APP_URL_VALIDATION;
 import static org.medicmobile.webapp.mobile.MedicLog.trace;
+import static org.medicmobile.webapp.mobile.MedicLog.warn;
 import static org.medicmobile.webapp.mobile.SimpleJsonClient2.redactUrl;
 
 public class EmbeddedBrowserActivity extends LockableActivity {
@@ -40,11 +44,14 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 
 	private XWalkView container;
 	private SettingsStore settings;
+	private SimprintsSupport simprints;
 
 	@Override public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
 		trace(this, "Starting XWalk webview...");
+
+		this.simprints = new SimprintsSupport(this);
 
 		this.settings = SettingsStore.in(this);
 
@@ -109,6 +116,17 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 			container.evaluateJavascript(
 					"angular.element(document.body).injector().get('AndroidApi').v1.back()",
 					backButtonHandler);
+		}
+	}
+
+	@Override protected void onActivityResult(int requestCode, int resultCode, Intent i) {
+		trace(this, "onActivityResult() :: requestCode=%s, resultCode=%s", requestCode, resultCode);
+		try {
+			String js = simprints.process(requestCode, i);
+			trace(this, "Execing JS: %s", js);
+			evaluateJavascript(js);
+		} catch(Exception ex) {
+			warn(ex, "Unhandled intent %s (%s) with requestCode=%s & resultCode=%s", i, i == null ? null : i.getAction(), requestCode, resultCode);
 		}
 	}
 

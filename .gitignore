@@ -1,7 +1,9 @@
-/local.properties
 /.gradle/
 /build/
 /*.log
+
+/local.properties
+/gradle.properties
 
 # IntelliJ IDEA files
 /.idea/
