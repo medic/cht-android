@@ -22,6 +22,7 @@
 	<string name="mnuSettings">Settings</string>
 	<string name="mnuLogout">Logout</string>
 	<string name="mnuHardRefresh">Home</string>
+	<string name="mnuSimprintsRegister">Register with Simprints</string>
 
 	<string name="txtUnlockPrompt">Enter code to unlock…</string>
 	<string name="txtOldCodePrompt">Enter old code…</string>

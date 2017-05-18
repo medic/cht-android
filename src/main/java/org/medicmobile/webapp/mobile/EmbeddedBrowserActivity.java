@@ -13,6 +13,8 @@ import android.webkit.ConsoleMessage;
 import android.webkit.ValueCallback;
 import android.widget.Toast;
 
+import com.simprints.libsimprints.Registration;
+import com.simprints.libsimprints.SimHelper;
 
 import org.xwalk.core.XWalkPreferences;
 import org.xwalk.core.XWalkResourceClient;
@@ -20,6 +22,7 @@ import org.xwalk.core.XWalkSettings;
 import org.xwalk.core.XWalkUIClient;
 import org.xwalk.core.XWalkView;
 
+import static com.simprints.libsimprints.Constants.SIMPRINTS_REGISTRATION;
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static org.medicmobile.webapp.mobile.BuildConfig.DISABLE_APP_URL_VALIDATION;
 import static org.medicmobile.webapp.mobile.MedicLog.trace;
@@ -97,6 +100,10 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 			case R.id.mnuLogout:
 				evaluateJavascript("angular.element(document.body).injector().get('AndroidApi').v1.logout()");
 				return true;
+			case R.id.mnuSimprintsRegister:
+				Intent intent = new SimHelper("Medic's API Key", "some-user-id").register("Medic Module ID");
+				startActivityForResult(intent, 1);
+				return true;
 			default:
 				return super.onOptionsItemSelected(item);
 		}
@@ -110,6 +117,12 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 					"angular.element(document.body).injector().get('AndroidApi').v1.back()",
 					backButtonHandler);
 		}
+	}
+
+	@Override protected void onActivityResult(int requestCode, int resultCode, Intent i) {
+		Registration registration = i.getParcelableExtra(SIMPRINTS_REGISTRATION);
+		String id = registration.getGuid();
+		toast("Simprints returned ID: " + id);
 	}
 
 	public void evaluateJavascript(final String js) {
