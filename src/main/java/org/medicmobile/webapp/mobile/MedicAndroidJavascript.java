@@ -131,9 +131,20 @@ public class MedicAndroidJavascript {
 
 	@org.xwalk.core.JavascriptInterface
 	@android.webkit.JavascriptInterface
-	public void simprints(final int targetInputId) {
-		Intent intent = new SimHelper("Medic's API Key", "some-user-id").register("Medic Module ID");
+	public void simprints_reg(final int targetInputId) {
+		Intent intent = simprints().register("Medic Module ID");
 		parent.startActivityForResult(intent, targetInputId);
+	}
+
+	@org.xwalk.core.JavascriptInterface
+	@android.webkit.JavascriptInterface
+	public void simprints_ident(final int targetInputId) {
+		Intent intent = simprints().identify("Medic Module ID");
+		parent.startActivityForResult(intent, targetInputId);
+	}
+
+	private SimHelper simprints() {
+		return new SimHelper("Medic's API Key", "some-user-id");
 	}
 
 	private void datePicker(String targetElement, Calendar initialDate) {
