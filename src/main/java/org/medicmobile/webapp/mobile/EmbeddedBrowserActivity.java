@@ -102,7 +102,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 				return true;
 			case R.id.mnuSimprintsRegister:
 				Intent intent = new SimHelper("Medic's API Key", "some-user-id").register("Medic Module ID");
-				startActivityForResult(intent, 1);
+				startActivityForResult(intent, 0);
 				return true;
 			default:
 				return super.onOptionsItemSelected(item);
@@ -122,7 +122,13 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	@Override protected void onActivityResult(int requestCode, int resultCode, Intent i) {
 		Registration registration = i.getParcelableExtra(SIMPRINTS_REGISTRATION);
 		String id = registration.getGuid();
-		toast("Simprints returned ID: " + id);
+		toast("Simprints returned ID: " + id + "; requestCode=" + requestCode);
+
+		if(requestCode != 0) {
+			String js = "$('[data-simprints-input-id=" + requestCode + "]').val('" + id + "')";
+			trace(this, "Execing JS: %s", js);
+			evaluateJavascript(js);
+		}
 	}
 
 	public void evaluateJavascript(final String js) {

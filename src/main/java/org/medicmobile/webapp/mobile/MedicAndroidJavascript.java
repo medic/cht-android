@@ -2,12 +2,15 @@ package org.medicmobile.webapp.mobile;
 
 import android.annotation.SuppressLint;
 import android.app.DatePickerDialog;
+import android.content.Intent;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.TrafficStats;
 import android.os.Process;
 import android.widget.DatePicker;
+
+import com.simprints.libsimprints.SimHelper;
 
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -124,6 +127,13 @@ public class MedicAndroidJavascript {
 		} catch(ParseException ex) {
 			datePicker(targetElement);
 		}
+	}
+
+	@org.xwalk.core.JavascriptInterface
+	@android.webkit.JavascriptInterface
+	public void simprints(final int targetInputId) {
+		Intent intent = new SimHelper("Medic's API Key", "some-user-id").register("Medic Module ID");
+		parent.startActivityForResult(intent, targetInputId);
 	}
 
 	private void datePicker(String targetElement, Calendar initialDate) {
