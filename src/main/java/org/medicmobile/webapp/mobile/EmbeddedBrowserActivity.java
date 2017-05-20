@@ -128,7 +128,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	}
 
 	@Override protected void onActivityResult(int requestCode, int resultCode, Intent i) {
-		if(i.getAction().equals(SIMPRINTS_REGISTRATION)) {
+		if(i.getAction().equals("com.simprints.id.REGISTER")) {
 			Registration registration = i.getParcelableExtra(SIMPRINTS_REGISTRATION);
 			String id = registration.getGuid();
 			toast("Simprints returned ID: " + id + "; requestCode=" + requestCode);
@@ -138,7 +138,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 				trace(this, "Execing JS: %s", js);
 				evaluateJavascript(js);
 			}
-		} else if(i.getAction().equals(SIMPRINTS_IDENTIFICATIONS)) {
+		} else if(i.getAction().equals("com.simprints.id.IDENTIFY")) {
 			String js;
 			try {
 				JSONArray result = new JSONArray();
