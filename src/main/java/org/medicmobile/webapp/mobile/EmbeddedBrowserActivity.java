@@ -28,6 +28,8 @@ import org.xwalk.core.XWalkUIClient;
 import org.xwalk.core.XWalkView;
 
 import static com.simprints.libsimprints.Constants.SIMPRINTS_IDENTIFICATIONS;
+import static com.simprints.libsimprints.Constants.SIMPRINTS_IDENTIFY_INTENT;
+import static com.simprints.libsimprints.Constants.SIMPRINTS_REGISTER_INTENT;
 import static com.simprints.libsimprints.Constants.SIMPRINTS_REGISTRATION;
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static org.medicmobile.webapp.mobile.BuildConfig.DISABLE_APP_URL_VALIDATION;
@@ -128,7 +130,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	}
 
 	@Override protected void onActivityResult(int requestCode, int resultCode, Intent i) {
-		if(i.getAction().equals("com.simprints.id.REGISTER")) {
+		if(i.getAction().equals(SIMPRINTS_REGISTER_INTENT)) {
 			Registration registration = i.getParcelableExtra(SIMPRINTS_REGISTRATION);
 			String id = registration.getGuid();
 			toast("Simprints returned ID: " + id + "; requestCode=" + requestCode);
@@ -138,7 +140,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 				trace(this, "Execing JS: %s", js);
 				evaluateJavascript(js);
 			}
-		} else if(i.getAction().equals("com.simprints.id.IDENTIFY")) {
+		} else if(i.getAction().equals(SIMPRINTS_IDENTIFY_INTENT)) {
 			String js;
 			try {
 				JSONArray result = new JSONArray();
