@@ -70,7 +70,7 @@ final class SimprintsSupport {
 
 					toast(ctx, "Simprints ident returned IDs: " + result + "; requestId=" + requestId);
 
-					return safeFormat("$('[data-simprints-idents=%s]').val('%s')", requestId, result);
+					return safeFormat("$('[data-simprints-idents=%s]').val('%s').change()", requestId, result);
 				} catch(JSONException ex) {
 					toast(ctx, "Problem serialising simprints identifications.");
 					warn(ex, "Problem serialising simprints identifications.");
@@ -83,7 +83,7 @@ final class SimprintsSupport {
 				String id = registration.getGuid();
 				toast(ctx, "Simprints registration returned ID: " + id + "; requestId=" + requestCode);
 
-				return safeFormat("$('[data-simprints-reg=%s]').val('%s')", requestId, id);
+				return safeFormat("$('[data-simprints-reg=%s]').val('%s').change()", requestId, id);
 			}
 
 			default: throw new RuntimeException("Bad request type: " + requestType);
