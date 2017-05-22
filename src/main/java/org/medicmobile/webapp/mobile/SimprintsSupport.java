@@ -54,6 +54,8 @@ final class SimprintsSupport {
 		int requestType = requestCode & INTENT_TYPE_MASK;
 		int requestId = requestCode & INTENT_ID_MASK;
 
+		trace(this, "process() :: requestType=%s, requestCode=%s", requestType, requestCode);
+
 		switch(requestType) {
 			case INTENT_IDENTIFY: {
 				String js;

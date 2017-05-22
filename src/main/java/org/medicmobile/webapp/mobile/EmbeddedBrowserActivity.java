@@ -128,6 +128,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	}
 
 	@Override protected void onActivityResult(int requestCode, int resultCode, Intent i) {
+		trace(this, "onActivityResult() :: requestCode=%s, resultCode=%s", requestCode, resultCode);
 		try {
 			String js = simprints.process(requestCode, i);
 			trace(this, "Execing JS: %s", js);
