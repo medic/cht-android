@@ -18,13 +18,14 @@ import static com.simprints.libsimprints.Constants.SIMPRINTS_IDENTIFICATIONS;
 import static com.simprints.libsimprints.Constants.SIMPRINTS_IDENTIFY_INTENT;
 import static com.simprints.libsimprints.Constants.SIMPRINTS_REGISTER_INTENT;
 import static com.simprints.libsimprints.Constants.SIMPRINTS_REGISTRATION;
+import static org.medicmobile.webapp.mobile.MedicLog.trace;
 import static org.medicmobile.webapp.mobile.MedicLog.warn;
 import static org.medicmobile.webapp.mobile.Utils.json;
 import static org.medicmobile.webapp.mobile.Utils.toast;
 
 final class SimprintsSupport {
 	private static final int INTENT_TYPE_MASK = 0x7;
-	private static final int INTENT_ID_MASK = ~INTENT_TYPE_MASK;
+	private static final int INTENT_ID_MASK = 0xFFFFF8;
 
 	private static final int INTENT_CONFIRM_IDENTITY = 1;
 	private static final int INTENT_IDENTIFY = 2;
