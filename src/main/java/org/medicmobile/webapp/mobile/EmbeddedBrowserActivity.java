@@ -133,7 +133,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 			trace(this, "Execing JS: %s", js);
 			evaluateJavascript(js);
 		} catch(Exception ex) {
-			warn(ex, "Unhandled intent %s with requestCode=%s & resultCode=%s", i.getAction(), requestCode, resultCode);
+			warn(ex, "Unhandled intent %s (%s) with requestCode=%s & resultCode=%s", i, i == null ? null : i.getAction(), requestCode, resultCode);
 		}
 	}
 
