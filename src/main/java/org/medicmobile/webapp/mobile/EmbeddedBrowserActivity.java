@@ -11,32 +11,23 @@ import android.view.MenuItem;
 import android.view.Window;
 import android.webkit.ConsoleMessage;
 import android.webkit.ValueCallback;
-import android.widget.Toast;
 
-import com.simprints.libsimprints.Identification;
-import com.simprints.libsimprints.Registration;
 import com.simprints.libsimprints.SimHelper;
 
 import java.util.List;
 
-import org.json.JSONArray;
-import org.json.JSONException;
 import org.xwalk.core.XWalkPreferences;
 import org.xwalk.core.XWalkResourceClient;
 import org.xwalk.core.XWalkSettings;
 import org.xwalk.core.XWalkUIClient;
 import org.xwalk.core.XWalkView;
 
-import static com.simprints.libsimprints.Constants.SIMPRINTS_IDENTIFICATIONS;
-import static com.simprints.libsimprints.Constants.SIMPRINTS_IDENTIFY_INTENT;
-import static com.simprints.libsimprints.Constants.SIMPRINTS_REGISTER_INTENT;
-import static com.simprints.libsimprints.Constants.SIMPRINTS_REGISTRATION;
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static org.medicmobile.webapp.mobile.BuildConfig.DISABLE_APP_URL_VALIDATION;
 import static org.medicmobile.webapp.mobile.MedicLog.trace;
 import static org.medicmobile.webapp.mobile.MedicLog.warn;
 import static org.medicmobile.webapp.mobile.SimpleJsonClient2.redactUrl;
-import static org.medicmobile.webapp.mobile.Utils.json;
+import static org.medicmobile.webapp.mobile.Utils.toast;
 
 public class EmbeddedBrowserActivity extends LockableActivity {
 	private static final ValueCallback<String> IGNORE_RESULT = new ValueCallback<String>() {
@@ -53,11 +44,14 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 
 	private XWalkView container;
 	private SettingsStore settings;
+	private SimprintsSupport simprints;
 
 	@Override public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
 		trace(this, "Starting XWalk webview...");
+
+		this.simprints = new SimprintsSupport(this);
 
 		this.settings = SettingsStore.in(this);
 
@@ -83,7 +77,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		browseToRoot();
 
 		if(settings.allowsConfiguration()) {
-			toast(redactUrl(settings.getAppUrl()));
+			toast(this, redactUrl(settings.getAppUrl()));
 		}
 	}
 
@@ -110,10 +104,14 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 			case R.id.mnuLogout:
 				evaluateJavascript("angular.element(document.body).injector().get('AndroidApi').v1.logout()");
 				return true;
-			case R.id.mnuSimprintsRegister:
-				Intent intent = new SimHelper("Medic's API Key", "some-user-id").register("Medic Module ID");
-				startActivityForResult(intent, 0);
+			case R.id.mnuSimprintsIdentify: {
+				simprints.startIdent(0);
 				return true;
+			}
+			case R.id.mnuSimprintsRegister: {
+				simprints.startReg(0);
+				return true;
+			}
 			default:
 				return super.onOptionsItemSelected(item);
 		}
@@ -130,41 +128,13 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	}
 
 	@Override protected void onActivityResult(int requestCode, int resultCode, Intent i) {
-		if(i.getAction().equals(SIMPRINTS_REGISTER_INTENT)) {
-			Registration registration = i.getParcelableExtra(SIMPRINTS_REGISTRATION);
-			String id = registration.getGuid();
-			toast("Simprints returned ID: " + id + "; requestCode=" + requestCode);
-
-			if(requestCode != 0) {
-				String js = "$('[data-simprints-reg=" + requestCode + "]').val('" + id + "')";
-				trace(this, "Execing JS: %s", js);
-				evaluateJavascript(js);
-			}
-		} else if(i.getAction().equals(SIMPRINTS_IDENTIFY_INTENT)) {
-			String js;
-			try {
-				JSONArray result = new JSONArray();
-				List<Identification> ids = i.getParcelableArrayListExtra(SIMPRINTS_IDENTIFICATIONS);
-				for(Identification id : ids) {
-					result.put(json(
-						"id", id.getGuid(),
-						"confidence", id.getConfidence(),
-						"tier", id.getTier()
-					));
-				}
-				// TODO probably need to escape any ' characters in the JSON
-				js = "$('[data-simprints-idents=" + requestCode + "]').val('" + result.toString() + "')";
-			} catch(JSONException ex) {
-				warn(ex, "Problem serialising simprints identifications.");
-				// TODO probably need to escape any ' characters in the JSON
-				js = "console.log('Problem serialising simprints identifications: " + ex + "')";
-			}
-
-			if(requestCode != 0) {
-				trace(this, "Execing JS: %s", js);
-				evaluateJavascript(js);
-			}
-		} else warn(this, "Unhandled intent %s with requestCode=%s & resultCode=%s", i.getAction(), requestCode, resultCode);
+		try {
+			String js = simprints.process(requestCode, i);
+			trace(this, "Execing JS: %s", js);
+			evaluateJavascript(js);
+		} catch(Exception ex) {
+			warn(ex, "Unhandled intent %s with requestCode=%s & resultCode=%s", i.getAction(), requestCode, resultCode);
+		}
 	}
 
 	public void evaluateJavascript(final String js) {
@@ -262,9 +232,5 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 				return false;
 			}
 		});
-	}
-
-	private void toast(String message) {
-		Toast.makeText(container.getContext(), message, Toast.LENGTH_LONG).show();
 	}
 }

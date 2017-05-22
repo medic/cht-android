@@ -10,8 +10,6 @@ import android.net.TrafficStats;
 import android.os.Process;
 import android.widget.DatePicker;
 
-import com.simprints.libsimprints.SimHelper;
-
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -29,12 +27,14 @@ public class MedicAndroidJavascript {
 	private static final String DATE_FORMAT = "yyyy-MM-dd";
 
 	private final EmbeddedBrowserActivity parent;
+	private final SimprintsSupport simprints;
 
 	private LocationManager locationManager;
 	private Alert soundAlert;
 
 	public MedicAndroidJavascript(EmbeddedBrowserActivity parent) {
 		this.parent = parent;
+		this.simprints = new SimprintsSupport(parent);
 	}
 
 	public void setAlert(Alert soundAlert) {
@@ -131,20 +131,14 @@ public class MedicAndroidJavascript {
 
 	@org.xwalk.core.JavascriptInterface
 	@android.webkit.JavascriptInterface
-	public void simprints_reg(final int targetInputId) {
-		Intent intent = simprints().register("Medic Module ID");
-		parent.startActivityForResult(intent, targetInputId);
+	public void simprints_ident(int targetInputId) {
+		simprints.startIdent(targetInputId);
 	}
 
 	@org.xwalk.core.JavascriptInterface
 	@android.webkit.JavascriptInterface
-	public void simprints_ident(final int targetInputId) {
-		Intent intent = simprints().identify("Medic Module ID");
-		parent.startActivityForResult(intent, targetInputId);
-	}
-
-	private SimHelper simprints() {
-		return new SimHelper("Medic's API Key", "some-user-id");
+	public void simprints_reg(int targetInputId) {
+		simprints.startReg(targetInputId);
 	}
 
 	private void datePicker(String targetElement, Calendar initialDate) {

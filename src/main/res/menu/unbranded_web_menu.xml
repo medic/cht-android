@@ -7,6 +7,8 @@
 		  android:title="@string/mnuLogout"/>
 	<item android:id="@+id/mnuHardRefresh"
 		  android:title="@string/mnuHardRefresh"/>
+	<item android:id="@+id/mnuSimprintsIdentify"
+		  android:title="Identify with Simprints"/>
 	<item android:id="@+id/mnuSimprintsRegister"
-		  android:title="@string/mnuSimprintsRegister"/>
+		  android:title="Register with Simprints"/>
 </menu>

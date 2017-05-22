@@ -1,5 +1,8 @@
 package org.medicmobile.webapp.mobile;
 
+import android.content.Context;
+import android.widget.Toast;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -15,5 +18,9 @@ final class Utils {
 			o.put(keyVals[i-1].toString(), keyVals[i]);
 		}
 		return o;
+	}
+
+	public static void toast(Context ctx, String message) {
+		Toast.makeText(ctx, message, Toast.LENGTH_LONG).show();
 	}
 }
