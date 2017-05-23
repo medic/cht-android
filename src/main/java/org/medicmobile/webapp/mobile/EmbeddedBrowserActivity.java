@@ -97,6 +97,13 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 			case R.id.mnuLogout:
 				evaluateJavascript("angular.element(document.body).injector().get('AndroidApi').v1.logout()");
 				return true;
+			case R.id.mnuShowBikramDatepicker:
+				new BsDatePicker(this, new BsDatePicker.Listener() {
+					public void onDateSet(BsDatePicker picker, int year, int month, int day) {
+						toast(String.format("Picker returned %s/%s/%s", day, month, year));
+					}
+				}).show();
+				return true;
 			default:
 				return super.onOptionsItemSelected(item);
 		}

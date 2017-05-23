@@ -31,12 +31,14 @@ gradle.projectsEvaluated {
 repositories {
 	mavenCentral()
 	maven { url 'https://download.01.org/crosswalk/releases/crosswalk/android/maven2' }
+	maven { url "https://jitpack.io" }
 }
 
 dependencies {
 	compile fileTree(dir: 'libs', include: ['*.jar'])
 	compile 'com.android.support:appcompat-v7:21.0.3'
 	compile 'org.xwalk:xwalk_core_library:23.53.589.4:arm@aar'
+	compile 'com.github.medic:bikram-sambat:1.2.3'
 }
 
 def getVersionCode = {

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+		android:layout_width="fill_parent"
+		android:layout_height="fill_parent"
+		android:orientation="vertical"
+		android:gravity="center">
+	<Spinner android:id="@+id/spnDay"
+			style="@style/bsDatePicker"/>
+	<Spinner android:id="@+id/spnMonth"
+			style="@style/bsDatePicker"/>
+	<Spinner android:id="@+id/spnYear"
+			style="@style/bsDatePicker"/>
+	<Button android:id="@+id/btnOk"
+			style="@style/bsDatePicker"
+			android:text="@string/btnOk"
+			android:layout_width="fill_parent"/>
+</LinearLayout>

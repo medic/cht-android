@@ -7,4 +7,6 @@
 		  android:title="@string/mnuLogout"/>
 	<item android:id="@+id/mnuHardRefresh"
 		  android:title="@string/mnuHardRefresh"/>
+	<item android:id="@+id/mnuShowBikramDatepicker"
+		  android:title="Show Bikram datepicker"/>
 </menu>
