@@ -104,14 +104,6 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 			case R.id.mnuLogout:
 				evaluateJavascript("angular.element(document.body).injector().get('AndroidApi').v1.logout()");
 				return true;
-			case R.id.mnuSimprintsIdentify: {
-				simprints.startIdent(0);
-				return true;
-			}
-			case R.id.mnuSimprintsRegister: {
-				simprints.startReg(0);
-				return true;
-			}
 			default:
 				return super.onOptionsItemSelected(item);
 		}
