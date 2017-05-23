@@ -18,10 +18,10 @@ import static com.simprints.libsimprints.Constants.SIMPRINTS_IDENTIFICATIONS;
 import static com.simprints.libsimprints.Constants.SIMPRINTS_IDENTIFY_INTENT;
 import static com.simprints.libsimprints.Constants.SIMPRINTS_REGISTER_INTENT;
 import static com.simprints.libsimprints.Constants.SIMPRINTS_REGISTRATION;
+import static org.medicmobile.webapp.mobile.MedicLog.log;
 import static org.medicmobile.webapp.mobile.MedicLog.trace;
 import static org.medicmobile.webapp.mobile.MedicLog.warn;
 import static org.medicmobile.webapp.mobile.Utils.json;
-import static org.medicmobile.webapp.mobile.Utils.toast;
 
 final class SimprintsSupport {
 	private static final int INTENT_TYPE_MASK = 0x7;
@@ -73,11 +73,10 @@ final class SimprintsSupport {
 						}
 					}
 
-					toast(ctx, "Simprints ident returned IDs: " + result + "; requestId=" + requestId);
+					log("Simprints ident returned IDs: " + result + "; requestId=" + requestId);
 
 					return safeFormat("$('[data-simprints-idents=%s]').val('%s').change()", requestId, result);
 				} catch(JSONException ex) {
-					toast(ctx, "Problem serialising simprints identifications.");
 					warn(ex, "Problem serialising simprints identifications.");
 					return safeFormat("console.log('Problem serialising simprints identifications: %s')", ex);
 				}
@@ -87,7 +86,7 @@ final class SimprintsSupport {
 				if(i == null || !i.hasExtra(SIMPRINTS_REGISTRATION)) return "console.log('No registration data returned from simprints app.')";
 				Registration registration = i.getParcelableExtra(SIMPRINTS_REGISTRATION);
 				String id = registration.getGuid();
-				toast(ctx, "Simprints registration returned ID: " + id + "; requestId=" + requestCode);
+				log("Simprints registration returned ID: " + id + "; requestId=" + requestCode);
 
 				return safeFormat("$('[data-simprints-reg=%s]').val('%s').change()", requestId, id);
 			}
