@@ -18,6 +18,9 @@ import static com.simprints.libsimprints.Constants.SIMPRINTS_IDENTIFICATIONS;
 import static com.simprints.libsimprints.Constants.SIMPRINTS_IDENTIFY_INTENT;
 import static com.simprints.libsimprints.Constants.SIMPRINTS_REGISTER_INTENT;
 import static com.simprints.libsimprints.Constants.SIMPRINTS_REGISTRATION;
+import static org.medicmobile.webapp.mobile.BuildConfig.SIMPRINTS_API_KEY;
+import static org.medicmobile.webapp.mobile.BuildConfig.SIMPRINTS_MODULE_ID;
+import static org.medicmobile.webapp.mobile.BuildConfig.SIMPRINTS_USER_ID;
 import static org.medicmobile.webapp.mobile.MedicLog.log;
 import static org.medicmobile.webapp.mobile.MedicLog.trace;
 import static org.medicmobile.webapp.mobile.MedicLog.warn;
@@ -41,7 +44,7 @@ final class SimprintsSupport {
 
 	void startIdent(int targetInputId) {
 		checkValid(targetInputId);
-		Intent intent = simprints().identify("Medic Module ID");
+		Intent intent = simprints().identify(SIMPRINTS_MODULE_ID);
 		ctx.startActivityForResult(intent, targetInputId | INTENT_IDENTIFY);
 	}
 
@@ -110,7 +113,7 @@ final class SimprintsSupport {
 	}
 
 	private static SimHelper simprints() {
-		return new SimHelper("Medic's API Key", "some-user-id");
+		return new SimHelper(SIMPRINTS_API_KEY, SIMPRINTS_USER_ID);
 	}
 
 	private static void checkValid(int targetInputId) {

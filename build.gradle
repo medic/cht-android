@@ -103,6 +103,21 @@ android {
 	applicationVariants.all {
 		buildConfigField "boolean", "DISABLE_APP_URL_VALIDATION", "Boolean.parseBoolean(\"${System.env.DISABLE_APP_URL_VALIDATION}\")";
 		buildConfigField "String", "LOG_TAG", '"MedicMobile"'
+		try {
+			buildConfigField "String", "SIMPRINTS_API_KEY", /"$SIMPRINTS_API_KEY"/
+		} catch(_) {
+			buildConfigField "String", "SIMPRINTS_API_KEY", /"Medic's API Key"/
+		}
+		try {
+			buildConfigField "String", "SIMPRINTS_USER_ID", /"$SIMPRINTS_USER_ID"/
+		} catch(_) {
+			buildConfigField "String", "SIMPRINTS_USER_ID", '"some-user-id"'
+		}
+		try {
+			buildConfigField "String", "SIMPRINTS_MODULE_ID", /"$SIMPRINTS_MODULE_ID"/
+		} catch(_) {
+			buildConfigField "String", "SIMPRINTS_MODULE_ID", '"Medic Module ID"'
+		}
 	}
 
 	signingConfigs {
