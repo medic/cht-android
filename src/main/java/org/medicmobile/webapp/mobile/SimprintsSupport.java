@@ -62,13 +62,15 @@ final class SimprintsSupport {
 				String js;
 				try {
 					JSONArray result = new JSONArray();
-					List<Identification> ids = i.getParcelableArrayListExtra(SIMPRINTS_IDENTIFICATIONS);
-					for(Identification id : ids) {
-						result.put(json(
-							"id", id.getGuid(),
-							"confidence", id.getConfidence(),
-							"tier", id.getTier()
-						));
+					if(i != null && i.hasExtra(SIMPRINTS_IDENTIFICATIONS)) {
+						List<Identification> ids = i.getParcelableArrayListExtra(SIMPRINTS_IDENTIFICATIONS);
+						for(Identification id : ids) {
+							result.put(json(
+								"id", id.getGuid(),
+								"confidence", id.getConfidence(),
+								"tier", id.getTier()
+							));
+						}
 					}
 
 					toast(ctx, "Simprints ident returned IDs: " + result + "; requestId=" + requestId);
@@ -82,6 +84,7 @@ final class SimprintsSupport {
 			}
 
 			case INTENT_REGISTER: {
+				if(i == null || !i.hasExtra(SIMPRINTS_REGISTRATION)) return "console.log('No registration data returned from simprints app.')";
 				Registration registration = i.getParcelableExtra(SIMPRINTS_REGISTRATION);
 				String id = registration.getGuid();
 				toast(ctx, "Simprints registration returned ID: " + id + "; requestId=" + requestCode);
