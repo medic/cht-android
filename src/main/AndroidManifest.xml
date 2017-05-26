@@ -5,7 +5,7 @@
 	<!-- When upgrading targetSdkVersion, check that the app menu still
 			works on newer devices. -->
 	<uses-sdk android:minSdkVersion="19"
-			android:targetSdkVersion="23"
+			android:targetSdkVersion="24"
 			tools:ignore="OldTargetApi"/>
 	<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
 	<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>

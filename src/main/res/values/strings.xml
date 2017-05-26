@@ -38,4 +38,7 @@
 	<string name="txtFreeSpaceWarning">Space is running low on this device.  Medic Mobile may not be able to start, or may perform strangely.</string>
 	<string name="txtFreeSpaceCurrent">Current space:\n%s MB</string>
 	<string name="txtFreeSpaceRecommended">Recommended space:\n%s MB</string>
+
+	<string name="promptChooseFile">Choose file</string>
+	<string name="promptChooseImage">Choose image</string>
 </resources>
