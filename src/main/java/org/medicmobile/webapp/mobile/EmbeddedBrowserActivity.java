@@ -166,7 +166,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	}
 
 	private void enableWebviewLoggingAndGeolocation(XWalkView container) {
-		new XWalkUIClient(container) {
+		container.setUIClient(new XWalkUIClient(container) {
 			public boolean onConsoleMessage(ConsoleMessage cm) {
 				trace(this, "onConsoleMessage() :: %s:%s | %s",
 						cm.sourceId(),
@@ -188,7 +188,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 				callback.invoke(origin, true, true);
 			}
 			*/
-		};
+		});
 	}
 
 	@SuppressLint("SetJavaScriptEnabled")
