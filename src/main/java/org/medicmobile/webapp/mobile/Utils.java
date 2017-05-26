@@ -1,6 +1,7 @@
 package org.medicmobile.webapp.mobile;
 
 import android.content.Context;
+import android.content.Intent;
 import android.widget.Toast;
 
 import org.json.JSONException;
@@ -22,5 +23,9 @@ final class Utils {
 
 	public static void toast(Context ctx, String message) {
 		Toast.makeText(ctx, message, Toast.LENGTH_LONG).show();
+	}
+
+	public static boolean intentHandlerAvailableFor(Context ctx, Intent intent) {
+		return intent.resolveActivity(ctx.getPackageManager()) != null;
 	}
 }

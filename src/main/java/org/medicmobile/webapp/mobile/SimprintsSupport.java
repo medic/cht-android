@@ -24,6 +24,7 @@ import static org.medicmobile.webapp.mobile.BuildConfig.SIMPRINTS_USER_ID;
 import static org.medicmobile.webapp.mobile.MedicLog.log;
 import static org.medicmobile.webapp.mobile.MedicLog.trace;
 import static org.medicmobile.webapp.mobile.MedicLog.warn;
+import static org.medicmobile.webapp.mobile.Utils.intentHandlerAvailableFor;
 import static org.medicmobile.webapp.mobile.Utils.json;
 
 final class SimprintsSupport {
@@ -42,16 +43,19 @@ final class SimprintsSupport {
 		this.ctx = ctx;
 	}
 
+	boolean isAppInstalled() {
+		return intentHandlerAvailableFor(ctx, regIntent()) &&
+		       intentHandlerAvailableFor(ctx, identIntent());
+	}
+
 	void startIdent(int targetInputId) {
 		checkValid(targetInputId);
-		Intent intent = simprints().identify(SIMPRINTS_MODULE_ID);
-		ctx.startActivityForResult(intent, targetInputId | INTENT_IDENTIFY);
+		ctx.startActivityForResult(identIntent(), targetInputId | INTENT_IDENTIFY);
 	}
 
 	void startReg(int targetInputId) {
 		checkValid(targetInputId);
-		Intent intent = simprints().register("Medic Module ID");
-		ctx.startActivityForResult(intent, targetInputId | INTENT_REGISTER);
+		ctx.startActivityForResult(regIntent(), targetInputId | INTENT_REGISTER);
 	}
 
 	String process(int requestCode, Intent i) {
@@ -96,6 +100,14 @@ final class SimprintsSupport {
 
 			default: throw new RuntimeException("Bad request type: " + requestType);
 		}
+	}
+
+	private Intent identIntent() {
+		return simprints().identify(SIMPRINTS_MODULE_ID);
+	}
+
+	private Intent regIntent() {
+		return simprints().register(SIMPRINTS_MODULE_ID);
 	}
 
 	private static String safeFormat(String js, Object... args) {

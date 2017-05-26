@@ -129,6 +129,15 @@ public class MedicAndroidJavascript {
 		}
 	}
 
+	/**
+	 * @return {@code true} iff an app is available to handle supported simprints {@code Intent}s
+	 */
+	@org.xwalk.core.JavascriptInterface
+	@android.webkit.JavascriptInterface
+	public boolean simprints_available() {
+		return simprints.isAppInstalled();
+	}
+
 	@org.xwalk.core.JavascriptInterface
 	@android.webkit.JavascriptInterface
 	public void simprints_ident(int targetInputId) {
