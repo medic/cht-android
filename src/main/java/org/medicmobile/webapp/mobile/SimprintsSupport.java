@@ -27,11 +27,11 @@ final class SimprintsSupport {
 	private static final int INTENT_TYPE_MASK = 0x7;
 	private static final int INTENT_ID_MASK = 0xFFFFF8;
 
-	private static final int INTENT_CONFIRM_IDENTITY = 1;
+	// future: private static final int INTENT_CONFIRM_IDENTITY = 1;
 	private static final int INTENT_IDENTIFY = 2;
 	private static final int INTENT_REGISTER = 3;
-	private static final int INTENT_UPDATE = 4;
-	private static final int INTENT_VERIFY = 5;
+	// future: private static final int INTENT_UPDATE = 4;
+	// future: private static final int INTENT_VERIFY = 5;
 
 	private final Activity ctx;
 
@@ -63,7 +63,6 @@ final class SimprintsSupport {
 
 		switch(requestType) {
 			case INTENT_IDENTIFY: {
-				String js;
 				try {
 					JSONArray result = new JSONArray();
 					if(i != null && i.hasExtra(SIMPRINTS_IDENTIFICATIONS)) {
