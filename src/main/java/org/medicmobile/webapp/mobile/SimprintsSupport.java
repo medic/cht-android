@@ -1,7 +1,6 @@
 package org.medicmobile.webapp.mobile;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 
 import com.simprints.libsimprints.Identification;
@@ -14,8 +13,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 
 import static com.simprints.libsimprints.Constants.SIMPRINTS_IDENTIFICATIONS;
-import static com.simprints.libsimprints.Constants.SIMPRINTS_IDENTIFY_INTENT;
-import static com.simprints.libsimprints.Constants.SIMPRINTS_REGISTER_INTENT;
 import static com.simprints.libsimprints.Constants.SIMPRINTS_REGISTRATION;
 import static org.medicmobile.webapp.mobile.BuildConfig.SIMPRINTS_API_KEY;
 import static org.medicmobile.webapp.mobile.BuildConfig.SIMPRINTS_MODULE_ID;
@@ -43,8 +40,9 @@ final class SimprintsSupport {
 	}
 
 	boolean isAppInstalled() {
-		return intentHandlerAvailableFor(ctx, regIntent()) &&
-		       intentHandlerAvailableFor(ctx, identIntent());
+		return
+				intentHandlerAvailableFor(ctx, regIntent()) &&
+				intentHandlerAvailableFor(ctx, identIntent());
 	}
 
 	void startIdent(int targetInputId) {

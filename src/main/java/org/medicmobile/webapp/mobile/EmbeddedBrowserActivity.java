@@ -13,10 +13,6 @@ import android.webkit.ConsoleMessage;
 import android.webkit.ValueCallback;
 import android.widget.Toast;
 
-import com.simprints.libsimprints.SimHelper;
-
-import java.util.List;
-
 import org.xwalk.core.XWalkPreferences;
 import org.xwalk.core.XWalkResourceClient;
 import org.xwalk.core.XWalkSettings;
