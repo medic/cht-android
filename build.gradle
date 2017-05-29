@@ -185,5 +185,8 @@ android {
 		musomali {
 			applicationId = 'org.medicmobile.webapp.mobile.musomali'
 		}
+		simprints {
+			applicationId = 'org.medicmobile.webapp.mobile.simprints'
+		}
 	}
 }
