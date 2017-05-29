@@ -93,6 +93,7 @@ public class LockScreen extends Activity {
 	}
 
 //> UI SETUP
+	@SuppressWarnings({ "PMD.StdCyclomaticComplexity", "PMD.ModifiedCyclomaticComplexity" })
 	private OnClickListener clickListenerFor(Task t) {
 		switch(t) {
 			case UNLOCK:
@@ -196,8 +197,6 @@ abstract class LockableActivity extends Activity {
 	}
 
 	@Override public void onPause() {
-		super.onPause();
-
 		// Handle the lock screen here, as doing it in onResume() means
 		// that the screen we're trying to block is displayed
 		// momentarily when returning to the activity.
@@ -209,6 +208,8 @@ abstract class LockableActivity extends Activity {
 		if(suppressLockScreen || !LockScreen.isCodeSet(this)) return;
 
 		LockScreen.showFrom(this);
+
+		super.onPause();
 	}
 
 	protected void changeCode() {
