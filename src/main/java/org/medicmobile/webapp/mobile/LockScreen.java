@@ -205,9 +205,7 @@ abstract class LockableActivity extends Activity {
 		// onPause() will be fired when the screen rotates.  We would
 		// have to detect this in onConfigurationChanged() and ignore.
 
-		if(suppressLockScreen || !LockScreen.isCodeSet(this)) return;
-
-		LockScreen.showFrom(this);
+		if(!suppressLockScreen && LockScreen.isCodeSet(this)) LockScreen.showFrom(this);
 
 		super.onPause();
 	}
