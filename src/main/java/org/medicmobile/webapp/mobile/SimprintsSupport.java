@@ -78,7 +78,7 @@ final class SimprintsSupport {
 
 						log("Simprints ident returned IDs: " + result + "; requestId=" + requestId);
 
-						return respond(requestId, result);
+						return respond(requestId, result.toString());
 				}
 
 				case INTENT_REGISTER: {
@@ -87,7 +87,7 @@ final class SimprintsSupport {
 					String id = registration.getGuid();
 					log("Simprints registration returned ID: " + id + "; requestId=" + requestCode);
 					JSONObject result = json("id", id);
-					return respond(requestId, result);
+					return respond(requestId, result.toString());
 				}
 
 				default: throw new RuntimeException("Bad request type: " + requestType);
@@ -107,7 +107,7 @@ final class SimprintsSupport {
 		return simHelper().register(SIMPRINTS_MODULE_ID);
 	}
 
-	private void respond(requestId, result) {
+	private void respond(int requestId, String result) {
 		return safeFormat("angular.element(document.body).injector().get('AndroidApi').v1.simprintsResponse('%s', '%s')", requestId, result);
 	}
 
