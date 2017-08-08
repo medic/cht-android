@@ -61,40 +61,40 @@ final class SimprintsSupport {
 
 		trace(this, "process() :: requestType=%s, requestCode=%s", requestType, requestCode);
 
-		switch(requestType) {
-			case INTENT_IDENTIFY: {
-				try {
-					JSONArray result = new JSONArray();
-					if(i != null && i.hasExtra(SIMPRINTS_IDENTIFICATIONS)) {
-						List<Identification> ids = i.getParcelableArrayListExtra(SIMPRINTS_IDENTIFICATIONS);
-						for(Identification id : ids) {
-							result.put(json(
-								"id", id.getGuid(),
-								"confidence", id.getConfidence(),
-								"tier", id.getTier()
-							));
+		try {
+			switch(requestType) {
+				case INTENT_IDENTIFY: {
+						JSONArray result = new JSONArray();
+						if(i != null && i.hasExtra(SIMPRINTS_IDENTIFICATIONS)) {
+							List<Identification> ids = i.getParcelableArrayListExtra(SIMPRINTS_IDENTIFICATIONS);
+							for(Identification id : ids) {
+								result.put(json(
+									"id", id.getGuid(),
+									"confidence", id.getConfidence(),
+									"tier", id.getTier()
+								));
+							}
 						}
-					}
 
-					log("Simprints ident returned IDs: " + result + "; requestId=" + requestId);
+						log("Simprints ident returned IDs: " + result + "; requestId=" + requestId);
 
-					return safeFormat("$('[data-simprints-idents=%s]').val('%s').change()", requestId, result);
-				} catch(JSONException ex) {
-					warn(ex, "Problem serialising simprints identifications.");
-					return safeFormat("console.log('Problem serialising simprints identifications: %s')", ex);
+						return respond(requestId, result);
 				}
+
+				case INTENT_REGISTER: {
+					if(i == null || !i.hasExtra(SIMPRINTS_REGISTRATION)) return "console.log('No registration data returned from simprints app.')";
+					Registration registration = i.getParcelableExtra(SIMPRINTS_REGISTRATION);
+					String id = registration.getGuid();
+					log("Simprints registration returned ID: " + id + "; requestId=" + requestCode);
+					JSONObject result = json("id", id);
+					return respond(requestId, result);
+				}
+
+				default: throw new RuntimeException("Bad request type: " + requestType);
 			}
-
-			case INTENT_REGISTER: {
-				if(i == null || !i.hasExtra(SIMPRINTS_REGISTRATION)) return "console.log('No registration data returned from simprints app.')";
-				Registration registration = i.getParcelableExtra(SIMPRINTS_REGISTRATION);
-				String id = registration.getGuid();
-				log("Simprints registration returned ID: " + id + "; requestId=" + requestCode);
-
-				return safeFormat("$('[data-simprints-reg=%s]').val('%s').change()", requestId, id);
-			}
-
-			default: throw new RuntimeException("Bad request type: " + requestType);
+		} catch(JSONException ex) {
+			warn(ex, "Problem serialising simprints identifications.");
+			return safeFormat("console.log('Problem serialising simprints identifications: %s')", ex);
 		}
 	}
 
@@ -105,6 +105,10 @@ final class SimprintsSupport {
 
 	private Intent regIntent() {
 		return simHelper().register(SIMPRINTS_MODULE_ID);
+	}
+
+	private void respond(requestId, result) {
+		return safeFormat("angular.element(document.body).injector().get('AndroidApi').v1.simprintsResponse('%s', '%s')", requestId, result);
 	}
 
 //> STATIC HELPERS
