@@ -11,6 +11,7 @@ import java.util.List;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import static com.simprints.libsimprints.Constants.SIMPRINTS_IDENTIFICATIONS;
 import static com.simprints.libsimprints.Constants.SIMPRINTS_REGISTRATION;
@@ -107,7 +108,7 @@ final class SimprintsSupport {
 		return simHelper().register(SIMPRINTS_MODULE_ID);
 	}
 
-	private void respond(int requestId, String result) {
+	private String respond(int requestId, String result) {
 		return safeFormat("angular.element(document.body).injector().get('AndroidApi').v1.simprintsResponse('%s', '%s')", requestId, result);
 	}
 
