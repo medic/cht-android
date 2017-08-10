@@ -4,8 +4,10 @@ import android.annotation.SuppressLint;
 import android.app.DatePickerDialog;
 import android.location.Criteria;
 import android.location.Location;
+import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.TrafficStats;
+import android.os.Bundle;
 import android.os.Process;
 import android.widget.DatePicker;
 
@@ -31,6 +33,16 @@ public class MedicAndroidJavascript {
 	private LocationManager locationManager;
 	private Alert soundAlert;
 
+	// Define a listener that responds to location updates (dummy for now)
+	private LocationListener locationListener = new LocationListener() {
+		public void onLocationChanged(Location location) {
+			System.out.println("GPS Update: " + location);
+		}
+		public void onStatusChanged(String provider, int status, Bundle extras) {}
+		public void onProviderEnabled(String provider) {}
+		public void onProviderDisabled(String provider) {}
+	};
+
 	public MedicAndroidJavascript(EmbeddedBrowserActivity parent) {
 		this.parent = parent;
 		this.simprints = new SimprintsSupport(parent);
@@ -42,6 +54,8 @@ public class MedicAndroidJavascript {
 
 	public void setLocationManager(LocationManager locationManager) {
 		this.locationManager = locationManager;
+		// Force location update on init
+		this.getLocation();
 	}
 
 	@org.xwalk.core.JavascriptInterface
@@ -96,9 +110,13 @@ public class MedicAndroidJavascript {
 			String provider = locationManager.getBestProvider(new Criteria(), true);
 			if(provider == null) return jsonError("No location provider available.");
 
+			locationManager.requestSingleUpdate(provider, locationListener, null);
+
 			Location loc = locationManager.getLastKnownLocation(provider);
 
 			if(loc == null) return jsonError("Provider '" + provider + "' did not provide a location.");
+
+			locationManager.requestLocationUpdates(provider, 5 * 60 * 1000, 0, locationListener);
 
 			return new JSONObject()
 					.put("lat", loc.getLatitude())
