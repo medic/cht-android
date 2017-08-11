@@ -3,6 +3,8 @@ package org.medicmobile.webapp.mobile;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.location.Location;
+import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -19,6 +21,8 @@ import org.xwalk.core.XWalkSettings;
 import org.xwalk.core.XWalkUIClient;
 import org.xwalk.core.XWalkView;
 
+import static android.location.LocationManager.GPS_PROVIDER;
+import static android.location.LocationManager.NETWORK_PROVIDER;
 import static android.provider.MediaStore.ACTION_IMAGE_CAPTURE;
 import static com.mvc.imagepicker.ImagePicker.getPickImageIntent;
 import static java.lang.Boolean.parseBoolean;
@@ -34,6 +38,9 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	/** Any activity result with all 3 low bits set is _not_ a simprints result. */
 	private static final int NON_SIMPRINTS_FLAGS = 0x7;
 	private static final int PROCESS_FILE = (0 << 3) | NON_SIMPRINTS_FLAGS;
+
+	private static final long FIVE_MINS = 5 * 60 * 1000;
+	private static final float ANY_DISTANCE = 0f;
 
 	private static final ValueCallback<String> IGNORE_RESULT = new ValueCallback<String>() {
 		public void onReceiveValue(String result) { /* ignore */ }
@@ -74,6 +81,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 
 		container = (XWalkView) findViewById(R.id.wbvMain);
 
+		enableLocationUpdates();
 		if(DEBUG) enableWebviewLoggingAndGeolocation(container);
 		enableRemoteChromeDebugging();
 		enableJavascript(container);
@@ -233,6 +241,33 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		maj.setLocationManager((LocationManager) this.getSystemService(Context.LOCATION_SERVICE));
 
 		container.addJavascriptInterface(maj, "medicmobile_android");
+	}
+
+	/**
+	 * Make the app poll the location providers periodically.  This should mean that calls
+	 * to MedicAndroidJavascript.getLocation() are reasonably up-to-date, and an initial
+	 * location is likely to have been resolved by the time the user first fills a form and
+	 * getLocation() is called.  However, longer-term we are likely to want a more explicit
+	 * async getLocation() implementation which is triggered only when needed.
+	 * @see https://github.com/medic/medic-projects/issues/2629
+	 */
+	@SuppressLint("MissingPermission")
+	private void enableLocationUpdates() {
+		LocationManager m = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+
+		m.requestLocationUpdates(GPS_PROVIDER, FIVE_MINS, ANY_DISTANCE, new LocationListener() {
+			public void onLocationChanged(Location location) {}
+			public void onProviderDisabled(String provider) {}
+			public void onProviderEnabled(String provider) {}
+			public void onStatusChanged(String provider, int status, Bundle extras) {}
+		});
+
+		m.requestLocationUpdates(NETWORK_PROVIDER, FIVE_MINS, ANY_DISTANCE, new LocationListener() {
+			public void onLocationChanged(Location location) {}
+			public void onProviderDisabled(String provider) {}
+			public void onProviderEnabled(String provider) {}
+			public void onStatusChanged(String provider, int status, Bundle extras) {}
+		});
 	}
 
 	private void enableStorage(XWalkView container) {

@@ -8,6 +8,7 @@ import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static org.medicmobile.webapp.mobile.BuildConfig.APPLICATION_ID;
 import static org.medicmobile.webapp.mobile.BuildConfig.VERSION_NAME;
 import static org.medicmobile.webapp.mobile.MedicLog.trace;
+import static org.medicmobile.webapp.mobile.Utils.startAppActivityChain;
 
 public class StartupActivity extends Activity {
 	@Override public void onCreate(Bundle savedInstanceState) {
@@ -24,24 +25,12 @@ public class StartupActivity extends Activity {
 	private void configureAndStartNextActivity() {
 		configureHttpUseragent();
 
-		Class newActivity;
-		if(SettingsStore.in(this).hasWebappSettings()) {
-			newActivity = EmbeddedBrowserActivity.class;
-		} else {
-			newActivity = SettingsDialogActivity.class;
-		}
-
-		if(DEBUG) trace(this, "Starting new activity with class %s", newActivity);
-
-		if(hasEnoughFreeSpace()) {
-			startActivity(new Intent(this, newActivity));
-		} else {
+		if(hasEnoughFreeSpace()) startAppActivityChain(this);
+		else {
 			Intent i = new Intent(this, FreeSpaceWarningActivity.class);
-			i.putExtra(FreeSpaceWarningActivity.NEXT_ACTIVITY, newActivity);
 			startActivity(i);
+			finish();
 		}
-
-		finish();
 	}
 
 	private boolean hasEnoughFreeSpace() {
