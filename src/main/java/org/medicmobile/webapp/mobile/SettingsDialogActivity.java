@@ -223,6 +223,7 @@ class ServerRepo {
 				"ServerRepo",
 				Context.MODE_PRIVATE);
 		save("https://alpha.dev.medicmobile.org");
+		save("https://medic.github.io/atp");
 	}
 
 	List<ServerMetadata> getServers() {
