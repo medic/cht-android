@@ -11,7 +11,6 @@ import java.util.List;
 
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import static com.simprints.libsimprints.Constants.SIMPRINTS_IDENTIFICATIONS;
 import static com.simprints.libsimprints.Constants.SIMPRINTS_REGISTRATION;
@@ -62,40 +61,44 @@ final class SimprintsSupport {
 
 		trace(this, "process() :: requestType=%s, requestCode=%s", requestType, requestCode);
 
-		try {
-			switch(requestType) {
-				case INTENT_IDENTIFY: {
-						JSONArray result = new JSONArray();
-						if(i != null && i.hasExtra(SIMPRINTS_IDENTIFICATIONS)) {
-							List<Identification> ids = i.getParcelableArrayListExtra(SIMPRINTS_IDENTIFICATIONS);
-							for(Identification id : ids) {
-								result.put(json(
-									"id", id.getGuid(),
-									"confidence", id.getConfidence(),
-									"tier", id.getTier()
-								));
-							}
+		switch(requestType) {
+			case INTENT_IDENTIFY: {
+				try {
+					JSONArray result = new JSONArray();
+					if(i != null && i.hasExtra(SIMPRINTS_IDENTIFICATIONS)) {
+						List<Identification> ids = i.getParcelableArrayListExtra(SIMPRINTS_IDENTIFICATIONS);
+						for(Identification id : ids) {
+							result.put(json(
+								"id", id.getGuid(),
+								"confidence", id.getConfidence(),
+								"tier", id.getTier()
+							));
 						}
+					}
 
-						log("Simprints ident returned IDs: " + result + "; requestId=" + requestId);
+					log("Simprints ident returned IDs: " + result + "; requestId=" + requestId);
 
-						return respond(requestId, result.toString());
+					return jsResponse(requestId, result);
+				} catch(JSONException ex) {
+					warn(ex, "Problem serialising simprints identifications.");
+					return safeFormat("console.log('Problem serialising simprints identifications: %s')", ex);
 				}
+			}
 
-				case INTENT_REGISTER: {
+			case INTENT_REGISTER: {
+				try {
 					if(i == null || !i.hasExtra(SIMPRINTS_REGISTRATION)) return "console.log('No registration data returned from simprints app.')";
 					Registration registration = i.getParcelableExtra(SIMPRINTS_REGISTRATION);
 					String id = registration.getGuid();
 					log("Simprints registration returned ID: " + id + "; requestId=" + requestCode);
-					JSONObject result = json("id", id);
-					return respond(requestId, result.toString());
+					return jsResponse(requestId, json("id", id));
+				} catch(JSONException ex) {
+					warn(ex, "Problem serialising simprints registration result.");
+					return safeFormat("console.log('Problem serialising simprints registration result: %s')", ex);
 				}
-
-				default: throw new RuntimeException("Bad request type: " + requestType);
 			}
-		} catch(JSONException ex) {
-			warn(ex, "Problem serialising simprints identifications.");
-			return safeFormat("console.log('Problem serialising simprints identifications: %s')", ex);
+
+			default: throw new RuntimeException("Bad request type: " + requestType);
 		}
 	}
 
@@ -108,7 +111,7 @@ final class SimprintsSupport {
 		return simHelper().register(SIMPRINTS_MODULE_ID);
 	}
 
-	private String respond(int requestId, String result) {
+	private String jsResponse(int requestId, Object result) {
 		return safeFormat("angular.element(document.body).injector().get('AndroidApi').v1.simprintsResponse('%s', '%s')", requestId, result);
 	}
 
