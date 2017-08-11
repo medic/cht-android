@@ -1,5 +1,6 @@
 package org.medicmobile.webapp.mobile;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 
@@ -22,5 +23,14 @@ final class Utils {
 
 	static boolean intentHandlerAvailableFor(Context ctx, Intent intent) {
 		return intent.resolveActivity(ctx.getPackageManager()) != null;
+	}
+
+	static void startAppActivityChain(Activity a) {
+		if(SettingsStore.in(a).hasWebappSettings()) {
+			MmPromptForPermissionsActivity.startPermissionsRequestChainFrom(a);
+		} else {
+			a.startActivity(new Intent(a, SettingsDialogActivity.class));
+			a.finish();
+		}
 	}
 }
