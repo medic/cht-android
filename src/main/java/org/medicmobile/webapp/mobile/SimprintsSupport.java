@@ -78,7 +78,7 @@ final class SimprintsSupport {
 
 					log("Simprints ident returned IDs: " + result + "; requestId=" + requestId);
 
-					return jsResponse(requestId, result);
+					return jsResponse("identify", requestId, result);
 				} catch(JSONException ex) {
 					warn(ex, "Problem serialising simprints identifications.");
 					return safeFormat("console.log('Problem serialising simprints identifications: %s')", ex);
@@ -91,7 +91,7 @@ final class SimprintsSupport {
 					Registration registration = i.getParcelableExtra(SIMPRINTS_REGISTRATION);
 					String id = registration.getGuid();
 					log("Simprints registration returned ID: " + id + "; requestId=" + requestCode);
-					return jsResponse(requestId, json("id", id));
+					return jsResponse("register", requestId, json("id", id));
 				} catch(JSONException ex) {
 					warn(ex, "Problem serialising simprints registration result.");
 					return safeFormat("console.log('Problem serialising simprints registration result: %s')", ex);
@@ -111,8 +111,8 @@ final class SimprintsSupport {
 		return simHelper().register(SIMPRINTS_MODULE_ID);
 	}
 
-	private String jsResponse(int requestId, Object result) {
-		return safeFormat("angular.element(document.body).injector().get('AndroidApi').v1.simprintsResponse('%s', '%s')", requestId, result);
+	private String jsResponse(String requestType, int requestId, Object result) {
+		return safeFormat("angular.element(document.body).injector().get('AndroidApi').v1.simprintsResponse('%s', '%s', '%s')", requestType, requestId, result);
 	}
 
 //> STATIC HELPERS
