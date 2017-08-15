@@ -20,6 +20,9 @@ import static org.medicmobile.webapp.mobile.MedicLog.trace;
  * To support Android 6.0+ (marshmallow), we must request SMS permissions at
  * runtime as well as in {@code AndroidManifest.xml}.
  * @see https://developer.android.com/intl/ru/about/versions/marshmallow/android-6.0-changes.html#behavior-runtime-permissions
+ *
+ * TODO this class was copy/pasted from medic-gateway.  It should be pulled into
+ * a separate lib so that both projects can share the same source.
  */
 public abstract class PromptForPermissionsActivity extends Activity implements ActivityCompat.OnRequestPermissionsResultCallback {
 	private static final String X_IS_DEMAND = "isDemand";
