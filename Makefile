@@ -1,6 +1,7 @@
 ADB = ${ANDROID_HOME}/platform-tools/adb
 EMULATOR = ${ANDROID_HOME}/tools/emulator
 GRADLEW = ./gradlew
+flavour = Unbranded
 
 ifdef ComSpec	 # Windows
   # Use `/` for all paths, except `.\`
@@ -9,7 +10,7 @@ ifdef ComSpec	 # Windows
   GRADLEW := $(subst /,\,${GRADLEW})
 endif
 
-default: deploy-unbranded android-logs
+default: deploy-flavour android-logs
 branded: clean-apks assemble-all deploy-all android-logs
 branded-debug: clean-apks assemble-all-debug deploy-all android-logs
 clean: clean-apks
@@ -21,8 +22,8 @@ android-emulator:
 android-logs:
 	${ADB} logcat MedicMobile:V AndroidRuntime:E '*:S' | tee android.log
 
-deploy-unbranded:
-	${GRADLEW} --daemon --parallel installUnbrandedDebug
+deploy-flavour:
+	${GRADLEW} --daemon --parallel install${flavour}Debug
 
 uninstall-unbranded:
 	adb uninstall org.medicmobile.webapp.mobile
