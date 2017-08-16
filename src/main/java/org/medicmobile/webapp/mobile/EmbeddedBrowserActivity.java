@@ -8,6 +8,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Window;
@@ -124,13 +125,19 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		}
 	}
 
-	@Override public void onBackPressed() {
-		if(container == null) {
-			super.onBackPressed();
+	@Override public boolean dispatchKeyEvent(KeyEvent event) {
+		if(event.getKeyCode() == KeyEvent.KEYCODE_BACK) {
+			// With standard android WebView, this would be handled by onBackPressed().  However, that
+			// method does not get called when using XWalkView, so we catch the back button here instead.
+			if(event.getAction() == KeyEvent.ACTION_UP) {
+				container.evaluateJavascript(
+						"angular.element(document.body).injector().get('AndroidApi').v1.back()",
+						backButtonHandler);
+			}
+
+			return true;
 		} else {
-			container.evaluateJavascript(
-					"angular.element(document.body).injector().get('AndroidApi').v1.back()",
-					backButtonHandler);
+			return super.dispatchKeyEvent(event);
 		}
 	}
 
