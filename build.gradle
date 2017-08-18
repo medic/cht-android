@@ -193,8 +193,8 @@ android {
 		livinggoodskenya {
 			applicationId = 'org.medicmobile.webapp.mobile.livinggoodskenya'
 		}
-		mohkenya {
-			applicationId = 'org.medicmobile.webapp.mobile.mohkenya'
+		mohsiaya {
+			applicationId = 'org.medicmobile.webapp.mobile.mohsiaya'
 		}
 		musomali {
 			applicationId = 'org.medicmobile.webapp.mobile.musomali'
