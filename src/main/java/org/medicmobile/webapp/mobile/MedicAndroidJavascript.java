@@ -86,9 +86,14 @@ public class MedicAndroidJavascript {
 				.put("tx", tx);
 	}
 
+	@Deprecated
 	@org.xwalk.core.JavascriptInterface
 	@android.webkit.JavascriptInterface
 	@SuppressLint("MissingPermission") // handled by catch(Exception)
+	/**
+	 * @deprecated Location should be fetched directly from the browser.
+	 * @see https://github.com/medic/medic-webapp/issues/3781
+	 */
 	public String getLocation() {
 		try {
 			if(locationManager == null) return jsonError("LocationManager not set.  Cannot retrieve location.");
