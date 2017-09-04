@@ -187,6 +187,9 @@ android {
 		ebpp_indonesia {
 			applicationId = 'org.medicmobile.webapp.mobile.ebpp_indonesia'
 		}
+		hope_through_health {
+			applicationId = 'org.medicmobile.webapp.mobile.hope_through_health'
+		}
 		livinggoods {
 			applicationId = 'org.medicmobile.webapp.mobile.livinggoods'
 		}
