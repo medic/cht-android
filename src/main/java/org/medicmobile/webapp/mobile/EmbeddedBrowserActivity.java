@@ -1,5 +1,6 @@
 package org.medicmobile.webapp.mobile;
 
+import android.Manifest.permission;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
@@ -8,6 +9,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -22,6 +24,7 @@ import org.xwalk.core.XWalkSettings;
 import org.xwalk.core.XWalkUIClient;
 import org.xwalk.core.XWalkView;
 
+import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.location.LocationManager.GPS_PROVIDER;
 import static android.location.LocationManager.NETWORK_PROVIDER;
 import static android.provider.MediaStore.ACTION_IMAGE_CAPTURE;
@@ -29,6 +32,7 @@ import static com.mvc.imagepicker.ImagePicker.getPickImageIntent;
 import static java.lang.Boolean.parseBoolean;
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static org.medicmobile.webapp.mobile.BuildConfig.DISABLE_APP_URL_VALIDATION;
+import static org.medicmobile.webapp.mobile.MedicLog.log;
 import static org.medicmobile.webapp.mobile.MedicLog.trace;
 import static org.medicmobile.webapp.mobile.MedicLog.warn;
 import static org.medicmobile.webapp.mobile.SimpleJsonClient2.redactUrl;
@@ -258,8 +262,12 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	 * async getLocation() implementation which is triggered only when needed.
 	 * @see https://github.com/medic/medic-projects/issues/2629
 	 */
-	@SuppressLint("MissingPermission")
 	private void enableLocationUpdates() {
+		if(ContextCompat.checkSelfPermission(this, permission.ACCESS_FINE_LOCATION) != PERMISSION_GRANTED) {
+			log("Cannot enable location updates: permission ACCESS_FINE_LOCATION not granted.");
+			return;
+		}
+
 		LocationManager m = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
 
 		m.requestLocationUpdates(GPS_PROVIDER, FIVE_MINS, ANY_DISTANCE, new LocationListener() {
