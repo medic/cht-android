@@ -130,8 +130,7 @@ public class SettingsDialogActivity extends LockableActivity {
 	private void saveSettings(WebappSettings s) {
 		try {
 			settings.updateWith(s);
-			startActivity(new Intent(this, EmbeddedBrowserActivity.class));
-			finish();
+			MmPromptForPermissionsActivity.startPermissionsRequestChainFrom(this);
 		} catch(IllegalSettingsException ex) {
 			if(DEBUG) trace(ex, "Tried to save illegal setting.");
 			for(IllegalSetting error : ex.errors) {
