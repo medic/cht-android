@@ -261,7 +261,9 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	 * getLocation() is called.  However, longer-term we are likely to want a more explicit
 	 * async getLocation() implementation which is triggered only when needed.
 	 * @see https://github.com/medic/medic-projects/issues/2629
+	 * @deprecated @see https://github.com/medic/medic-webapp/issues/3781
 	 */
+	@Deprecated
 	private void enableLocationUpdates() {
 		if(ContextCompat.checkSelfPermission(this, permission.ACCESS_FINE_LOCATION) != PERMISSION_GRANTED) {
 			log("Cannot enable location updates: permission ACCESS_FINE_LOCATION not granted.");
