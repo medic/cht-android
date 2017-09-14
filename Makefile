@@ -37,6 +37,8 @@ assemble-all-debug:
 deploy-all:
 	find build/outputs/apk -name \*-debug.apk | \
 		xargs -n1 ${ADB} install -r
+uninstall-all:
+	${GRADLEW} uninstallAll
 url-tester:
 	DISABLE_APP_URL_VALIDATION=true ${GRADLEW} --daemon --parallel installUnbrandedDebug
 uninstall:
