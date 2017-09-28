@@ -171,6 +171,8 @@ public class MedicAndroidJavascript {
 			}
 		};
 
+		// Make sure that the datepicker uses spinners instead of calendars.  Material design
+		// does not support non-calendar view, so we explicitly use the Holo theme here.
 		// Rumours suggest this may still show a calendar view on Android 24.  This has not been confirmed.
 		// https://stackoverflow.com/questions/28740657/datepicker-dialog-without-calendar-visualization-in-lollipop-spinner-mode
 		DatePickerDialog dialog = new DatePickerDialog(parent, android.R.style.Theme_Holo_Dialog, listener,
