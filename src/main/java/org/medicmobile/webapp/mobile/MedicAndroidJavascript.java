@@ -171,8 +171,16 @@ public class MedicAndroidJavascript {
 			}
 		};
 
-		new DatePickerDialog(parent, listener, initialDate.get(YEAR), initialDate.get(MONTH), initialDate.get(DAY_OF_MONTH))
-				.show();
+		// Rumours suggest this may still show a calendar view on Android 24.  This has not been confirmed.
+		// https://stackoverflow.com/questions/28740657/datepicker-dialog-without-calendar-visualization-in-lollipop-spinner-mode
+		DatePickerDialog dialog = new DatePickerDialog(parent, android.R.style.Theme_Holo_Dialog, listener,
+				initialDate.get(YEAR), initialDate.get(MONTH), initialDate.get(DAY_OF_MONTH));
+
+		DatePicker picker = dialog.getDatePicker();
+		picker.setCalendarViewShown(false);
+		picker.setSpinnersShown(true);
+
+		dialog.show();
 	}
 
 	private static String jsonError(String message, Exception ex) {
