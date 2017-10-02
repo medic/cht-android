@@ -112,6 +112,9 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 
 	@Override public boolean onOptionsItemSelected(MenuItem item) {
 		switch(item.getItemId()) {
+			case R.id.mnuGotoTestPages:
+				evaluateJavascript("window.location.href = 'https://medic.github.io/atp'");
+				return true;
 			case R.id.mnuSetUnlockCode:
 				changeCode();
 				return true;
