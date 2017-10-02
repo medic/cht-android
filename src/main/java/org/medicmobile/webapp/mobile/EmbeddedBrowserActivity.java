@@ -136,6 +136,8 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		if(event.getKeyCode() == KeyEvent.KEYCODE_BACK) {
 			// With standard android WebView, this would be handled by onBackPressed().  However, that
 			// method does not get called when using XWalkView, so we catch the back button here instead.
+			// TODO this causes issues with the Samsung long-back-press to trigger menu - the menu opens,
+			// but the app also handles the back press :¬/
 			if(event.getAction() == KeyEvent.ACTION_UP) {
 				container.evaluateJavascript(
 						"angular.element(document.body).injector().get('AndroidApi').v1.back()",
