@@ -15,53 +15,53 @@ import static org.medicmobile.webapp.mobile.R.string.errInvalidUrl;
 import static org.medicmobile.webapp.mobile.SimpleJsonClient2.redactUrl;
 
 public class AppUrlVerifier {
-	public AppUrlVerififcation verify(String appUrl) {
+	public AppUrlVerification verify(String appUrl) {
 		if(DISABLE_APP_URL_VALIDATION) {
-			return AppUrlVerififcation.ok(appUrl);
+			return AppUrlVerification.ok(appUrl);
 		}
 
 		try {
 			JSONObject json = new SimpleJsonClient2().get(appUrl + "/setup/poll");
 
 			if(!json.getString("handler").equals("medic-api"))
-				return AppUrlVerififcation.failure(appUrl, errAppUrl_appNotFound);
+				return AppUrlVerification.failure(appUrl, errAppUrl_appNotFound);
 			if(!json.getBoolean("ready"))
-				return AppUrlVerififcation.failure(appUrl, errAppUrl_apiNotReady);
+				return AppUrlVerification.failure(appUrl, errAppUrl_apiNotReady);
 
-			return AppUrlVerififcation.ok(appUrl);
+			return AppUrlVerification.ok(appUrl);
 		} catch(MalformedURLException ex) {
 			// seems unlikely, as we should have verified this already
-			return AppUrlVerififcation.failure(appUrl,
+			return AppUrlVerification.failure(appUrl,
 					errInvalidUrl);
 		} catch(JSONException ex) {
-			return AppUrlVerififcation.failure(appUrl,
+			return AppUrlVerification.failure(appUrl,
 					errAppUrl_appNotFound);
 		} catch(IOException ex) {
 			if(DEBUG) trace(ex, "Exception caught trying to verify url: %s", redactUrl(appUrl));
-			return AppUrlVerififcation.failure(appUrl,
+			return AppUrlVerification.failure(appUrl,
 					errAppUrl_serverNotFound);
 		}
 	}
 }
 
 @SuppressWarnings("PMD.ShortMethodName")
-class AppUrlVerififcation {
+class AppUrlVerification {
 	public final String appUrl;
 	public final boolean isOk;
 	public final int failure;
 
-	private AppUrlVerififcation(String appUrl, boolean isOk, int failure) {
+	private AppUrlVerification(String appUrl, boolean isOk, int failure) {
 		this.appUrl = appUrl;
 		this.isOk = isOk;
 		this.failure = failure;
 	}
 
 //> FACTORIES
-	public static AppUrlVerififcation ok(String appUrl) {
-		return new AppUrlVerififcation(appUrl, true, 0);
+	public static AppUrlVerification ok(String appUrl) {
+		return new AppUrlVerification(appUrl, true, 0);
 	}
 
-	public static AppUrlVerififcation failure(String appUrl, int failure) {
-		return new AppUrlVerififcation(appUrl, false, failure);
+	public static AppUrlVerification failure(String appUrl, int failure) {
+		return new AppUrlVerification(appUrl, false, failure);
 	}
 }

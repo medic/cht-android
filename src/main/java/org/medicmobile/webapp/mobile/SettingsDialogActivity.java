@@ -83,12 +83,12 @@ public class SettingsDialogActivity extends LockableActivity {
 
 		String appUrl = text(R.id.txtAppUrl);
 
-		new AsyncTask<String, Void, AppUrlVerififcation>() {
-			protected AppUrlVerififcation doInBackground(String... appUrl) {
+		new AsyncTask<String, Void, AppUrlVerification>() {
+			protected AppUrlVerification doInBackground(String... appUrl) {
 				if(DEBUG && appUrl.length != 1) throw new IllegalArgumentException();
 				return new AppUrlVerifier().verify(appUrl[0]);
 			}
-			protected void onPostExecute(AppUrlVerififcation result) {
+			protected void onPostExecute(AppUrlVerification result) {
 				if(result.isOk) {
 					saveSettings(new WebappSettings(result.appUrl));
 					serverRepo.save(result.appUrl);
