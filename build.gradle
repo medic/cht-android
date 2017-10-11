@@ -145,8 +145,9 @@ android {
 			testCoverageEnabled = true
 		}
 		release {
-			minifyEnabled false
-			proguardFile getDefaultProguardFile('proguard-android.txt')
+			minifyEnabled true
+			proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'config/xwalk.pro'
+			shrinkResources true
 			signingConfig signingConfigs.release
 		}
 	}
