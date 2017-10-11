@@ -194,9 +194,13 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		finish();
 	}
 
-	private void browseToRoot() {
-		String url = settings.getAppUrl() + (DISABLE_APP_URL_VALIDATION ?
+	private String getRootUrl() {
+		return settings.getAppUrl() + (DISABLE_APP_URL_VALIDATION ?
 				"" : "/medic/_design/medic/_rewrite/");
+	}
+
+	private void browseToRoot() {
+		String url = getRootUrl();
 		if(DEBUG) trace(this, "Pointing browser to %s", redactUrl(url));
 		container.load(url, null);
 	}
@@ -312,6 +316,28 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 					return true;
 				}
 				return false;
+			}
+			@Override public void onReceivedLoadError(XWalkView view, int errorCode, String description, String failingUrl) {
+				if(errorCode == XWalkResourceClient.ERROR_OK) return;
+
+				log("EmbeddedBrowserActivity.onReceivedLoadError() :: [%s] %s :: %s", errorCode, failingUrl, description);
+
+				if(!getRootUrl().equals(failingUrl)) {
+					log("EmbeddedBrowserActivity.onReceivedLoadError() :: ignoring for non-root URL");
+				}
+
+				evaluateJavascript(String.format(
+						"var body = document.evaluate('/html/body', document);" +
+						"body = body.iterateNext();" +
+						"if(body) {" +
+						"  var content = document.createElement('div');" +
+						"  content.innerHTML = '" +
+								"<h1>Error loading page</h1>" +
+								"<p>[%s] %s</p>" +
+								"<button onclick=\"window.location.reload()\">Retry</button>" +
+								"';" +
+						"  body.appendChild(content);" +
+						"}", errorCode, description));
 			}
 		});
 	}
