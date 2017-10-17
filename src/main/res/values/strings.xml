@@ -51,6 +51,13 @@
 		]]>
 	</string>
 
+	<string name="txtPermissionsPrompt_fileAccess">
+		<![CDATA[
+		<b>Warning: <i>%1$s</i> does not currently have permissions to read or write files.</b><br>
+		<br>This permission is required so that %1$s can include photos with form submissions.
+		]]>
+	</string>
+
 	<string name="txtDemandPermissions">
 		<![CDATA[
 		<b>Warning: <i>%1$s</i> does not currently have all required permissions.</b><br>
