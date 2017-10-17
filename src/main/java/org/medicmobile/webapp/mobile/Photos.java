@@ -61,9 +61,13 @@ class Photos {
 			if(extras == null) {
 				warn(this, "process() :: expected to find photo data in the intent, but no file URL or extras were included.");
 			} else if(extras.containsKey("data")) {
+				// On Android 4.4.x when using the camera to take a new picture, we find that there is no content://
+				// URI supplied in i.getData() - instead we're supplied with a Bitmap object containing the photo in
+				// the 'data' extra of the intent.  We have to convert this to a URI for returning to the XWalkView.
+				// A temp file provides us with a file:// URI, which appears to be a functional alternative.
 				trace(this, "process() :: found data extra.  Will write to temp file.");
 				try {
-					uri = writeToTempFile((Bitmap) extras.get("data"));
+					uri = writeToFile((Bitmap) extras.get("data"));
 					trace(this, "process() :: image written to temp file.  uri=%s", uri);
 				} catch(Exception ex) {
 					warn(ex, "process() :: erorr writing image data to temp file");
@@ -85,8 +89,6 @@ class Photos {
 
 	private void pickImage() {
 		Intent i = getPickImageIntent(a, a.getString(R.string.promptChooseImage));
-//		i.putExtra(android.provider.MediaStore.EXTRA_OUTPUT, Uri.fromFile(tempFile()));
-
 		a.startActivityForResult(i, PROCESS_FILE);
 	}
 
@@ -98,26 +100,33 @@ class Photos {
 		return new Intent(ACTION_IMAGE_CAPTURE);
 	}
 
-	private File tempFile(String extension) throws IOException {
-		File imageCacheDir = new File(a.getCacheDir(), "form-photos");
-		imageCacheDir.mkdirs();
-		return File.createTempFile("photo", "." + extension, imageCacheDir);
-	}
-
-	private Uri writeToTempFile(Bitmap bitmap) throws IOException {
+	/**
+	 * Write the supplied {@code Bitmap} to a random file location.
+	 *
+	 * Android documentation suggests that while these are nominally "temp"
+	 * files, they may not be cleaned up automatically.  For now, this may
+	 * be considered a useful feature.
+	 *
+	 * @return the {@code android.net.Uri} of the created file
+	 */
+	private Uri writeToFile(Bitmap bitmap) throws IOException {
 		File temp = null;
 		FileOutputStream fos = null;
 		try {
-			temp = tempFile("jpg");
+			File imageCacheDir = new File(a.getCacheDir(), "form-photos");
+			imageCacheDir.mkdirs();
+			temp = File.createTempFile("medic-mobile.photo.", ".jpg", imageCacheDir);
+
 			fos = new FileOutputStream(temp);
 			bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos);
-			trace(this, "writeToTempFile() :: wrote temp file %s with %s bytes", temp, temp.length());
+
+			trace(this, "writeToFile() :: wrote temp file %s with %s bytes", temp, temp.length());
 			return Uri.fromFile(temp);
 		} finally {
 			if(fos == null) try {
 				fos.close();
 			} catch(IOException ex) {
-				warn(ex, "writeToTempFile() :: exception closing FileOutputStream to %s", temp);
+				warn(ex, "writeToFile() :: exception closing FileOutputStream to %s", temp);
 			}
 		}
 	}
