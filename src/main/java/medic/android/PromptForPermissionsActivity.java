@@ -25,6 +25,9 @@ import static org.medicmobile.webapp.mobile.MedicLog.trace;
  * a separate lib so that both projects can share the same source.
  */
 public abstract class PromptForPermissionsActivity extends Activity implements ActivityCompat.OnRequestPermissionsResultCallback {
+	public static final int REQUIRED = 0;
+	public static final int OPTIONAL = 1;
+
 	private static final String X_IS_DEMAND = "isDemand";
 	private static final String X_PERMISSIONS_TYPE = "permissionsType";
 
@@ -33,7 +36,6 @@ public abstract class PromptForPermissionsActivity extends Activity implements A
 	private int permissionsRequestType;
 
 //> API
-	protected abstract boolean refuseToFunctionWithoutPermissions();
 	protected abstract Object[][] getPermissionRequests();
 	protected abstract Class<? extends Activity> getNextActivityClass();
 
@@ -51,7 +53,7 @@ public abstract class PromptForPermissionsActivity extends Activity implements A
 			promptTextId = R.string.txtDemandPermissions;
 		} else {
 			permissionsRequestType = getIntent().getIntExtra(X_PERMISSIONS_TYPE, 0);
-			promptTextId = (int) getPermissionRequests()[permissionsRequestType][0];
+			promptTextId = (int) getPermissionRequests()[permissionsRequestType][1];
 			makePermissionRequest();
 		}
 
@@ -80,14 +82,14 @@ public abstract class PromptForPermissionsActivity extends Activity implements A
 
 		if(allGranted) {
 			nextActivity(this, permissionsRequestType + 1);
-		} else if(refuseToFunctionWithoutPermissions()) {
-			// For some flavours, we don't want to give people the option to use the app without the
-			// correct permissions.  If the permission is not granted, re-request the same.
+		} else if(isDemand) {
+			// For some permissions, we don't want to give people the option to use the app without
+			// the correct permissions.  If the permission is not granted, re-request the same.
 			if(canShowPromptFor(this, permissionsRequestType)) { // NOPMD
 				// Don't do anything - the user can re-read the on-screen advice.
 			} else {
 				// The user has checked the "don't ask me again"/"never allow" box (TODO which one?), so we have to step things up.
-				startActivity(demandPermissions(this));
+				startActivity(demandPermission(this, permissionsRequestType));
 				finish();
 			}
 		} else {
@@ -108,8 +110,11 @@ public abstract class PromptForPermissionsActivity extends Activity implements A
 		Intent next = null;
 
 		for(int p=firstPermissionToConsider; p<getPermissionRequests().length; ++p) {
-			if(!hasRequiredPermissions(a, p)) {
-				next = requestPermission(a, p);
+			if(hasRequiredPermissions(a, p)) {
+				trace(this, "nextActivity() :: already has permission %s", p);
+			} else {
+				trace(this, "nextActivity() :: does not have permission %s.  Should now start relevant activity.", p);
+				next = shouldDemand(p) ? demandPermission(a, p) : requestPermission(a, p);
 				break;
 			}
 		}
@@ -140,8 +145,12 @@ public abstract class PromptForPermissionsActivity extends Activity implements A
 		return true;
 	}
 
+	private boolean shouldDemand(int permissionsRequestType) {
+		return ((int) getPermissionRequests()[permissionsRequestType][0]) == REQUIRED;
+	}
+
 	private String[] getPermissions(int permissionsRequestType) {
-		return (String[]) getPermissionRequests()[permissionsRequestType][1];
+		return (String[]) getPermissionRequests()[permissionsRequestType][2];
 	}
 
 //> PRIVATE HELPERS
@@ -157,9 +166,10 @@ public abstract class PromptForPermissionsActivity extends Activity implements A
 		return i;
 	}
 
-	private Intent demandPermissions(Activity a) {
+	private Intent demandPermission(Activity a, int permissionsRequestType) {
 		trace(a, "demandPermission()");
 		Intent i = new Intent(a, getClass());
+		i.putExtra(X_PERMISSIONS_TYPE, permissionsRequestType);
 		i.putExtra(X_IS_DEMAND, true);
 		return i;
 	}

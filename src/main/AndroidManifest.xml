@@ -14,8 +14,8 @@
 	<uses-permission android:name="android.permission.VIBRATE"/>
 	<uses-permission android:name="com.android.launcher.permission.INSTALL_SHORTCUT"/>
 	<uses-permission android:name="com.android.launcher.permission.UNINSTALL_SHORTCUT"/>
-	<!-- READ_EXTERNAL_STORAGE required if users want to include photos from their phone -->
-	<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+	<!-- To allow access to photo for inclusion in forms.  WRITE implies READ -->
+	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 	<application android:label="@string/app_name"
 			android:icon="@mipmap/ic_launcher"
 			android:allowBackup="false"

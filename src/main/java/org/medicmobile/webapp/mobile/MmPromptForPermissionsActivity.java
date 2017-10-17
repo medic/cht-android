@@ -5,12 +5,12 @@ import android.app.Activity;
 
 import medic.android.PromptForPermissionsActivity;
 
+import static medic.android.PromptForPermissionsActivity.REQUIRED;
+
 public class MmPromptForPermissionsActivity extends PromptForPermissionsActivity {
 	private static final Object[][] PERMISSIONS_REQUESTS = {
-		/* location */ { R.string.txtPermissionsPrompt_location, new String[] { permission.ACCESS_COARSE_LOCATION, permission.ACCESS_FINE_LOCATION } },
+		/* location */ { REQUIRED, R.string.txtPermissionsPrompt_location, new String[] { permission.ACCESS_COARSE_LOCATION, permission.ACCESS_FINE_LOCATION } },
 	};
-
-	@Override protected boolean refuseToFunctionWithoutPermissions() { return true; }
 
 	@Override protected Object[][] getPermissionRequests() { return PERMISSIONS_REQUESTS; }
 
