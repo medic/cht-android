@@ -43,6 +43,7 @@
 	<string name="promptChooseFile">Choose file</string>
 	<string name="promptChooseImage">Choose image</string>
 
+	<string name="spnCompressingImage">Compressing image…</string>
 
 	<string name="txtPermissionsPrompt_location">
 		<![CDATA[

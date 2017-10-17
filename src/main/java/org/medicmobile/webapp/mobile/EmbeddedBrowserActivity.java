@@ -27,8 +27,6 @@ import org.xwalk.core.XWalkView;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.location.LocationManager.GPS_PROVIDER;
 import static android.location.LocationManager.NETWORK_PROVIDER;
-import static android.provider.MediaStore.ACTION_IMAGE_CAPTURE;
-import static com.mvc.imagepicker.ImagePicker.getPickImageIntent;
 import static java.lang.Boolean.parseBoolean;
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static org.medicmobile.webapp.mobile.BuildConfig.DISABLE_APP_URL_VALIDATION;
@@ -36,13 +34,12 @@ import static org.medicmobile.webapp.mobile.MedicLog.log;
 import static org.medicmobile.webapp.mobile.MedicLog.trace;
 import static org.medicmobile.webapp.mobile.MedicLog.warn;
 import static org.medicmobile.webapp.mobile.SimpleJsonClient2.redactUrl;
-import static org.medicmobile.webapp.mobile.Utils.intentHandlerAvailableFor;
 
 @SuppressWarnings("PMD.GodClass")
 public class EmbeddedBrowserActivity extends LockableActivity {
 	/** Any activity result with all 3 low bits set is _not_ a simprints result. */
 	private static final int NON_SIMPRINTS_FLAGS = 0x7;
-	private static final int PROCESS_FILE = (0 << 3) | NON_SIMPRINTS_FLAGS;
+	static final int GRAB_PHOTO = (0 << 3) | NON_SIMPRINTS_FLAGS;
 
 	private static final long FIVE_MINS = 5 * 60 * 1000;
 	private static final float ANY_DISTANCE = 0f;
@@ -62,8 +59,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	private XWalkView container;
 	private SettingsStore settings;
 	private SimprintsSupport simprints;
-
-	private ValueCallback<Uri> uploadCallback;
+	private PhotoGrabber photoGrabber;
 
 	@Override public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -71,6 +67,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		trace(this, "Starting XWalk webview...");
 
 		this.simprints = new SimprintsSupport(this);
+		this.photoGrabber = new PhotoGrabber(this);
 
 		this.settings = SettingsStore.in(this);
 
@@ -154,11 +151,8 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		trace(this, "onActivityResult() :: requestCode=%s, resultCode=%s", requestCode, resultCode);
 		if((requestCode & NON_SIMPRINTS_FLAGS) == NON_SIMPRINTS_FLAGS) {
 			switch(requestCode) {
-				case PROCESS_FILE:
-					if(uploadCallback != null) {
-						uploadCallback.onReceiveValue(i == null || resultCode != RESULT_OK ? null : i.getData());
-						uploadCallback = null;
-					} else warn(this, "uploadCallback is null for requestCode %s", requestCode);
+				case GRAB_PHOTO:
+					photoGrabber.process(requestCode, resultCode, i);
 					return;
 			}
 		} else try {
@@ -222,16 +216,13 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 			@Override public void openFileChooser(XWalkView view, ValueCallback<Uri> callback, String acceptType, String shouldCapture) {
 				trace(this, "openFileChooser() :: %s,%s,%s,%s", view, callback, acceptType, shouldCapture);
 
-				uploadCallback = callback;
-
 				boolean capture = parseBoolean(shouldCapture);
 
-				if(acceptType.startsWith("image/") && capture && canStartCamera()) {
-					takePhoto();
-				} else if(acceptType.startsWith("image/") && !capture) {
-					pickImage();
+				if(photoGrabber.canHandle(acceptType, capture)) {
+					photoGrabber.chooser(callback, capture);
 				} else {
-					chooseFile(acceptType);
+					evaluateJavascript(String.format("console.log('No file chooser is currently implemented for \"accept\" value: %s');", acceptType));
+					warn(this, "openFileChooser() :: No file chooser is currently implemented for \"accept\" value: %s", acceptType);
 				}
 			}
 
@@ -344,29 +335,5 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 
 	private void toast(String message) {
 		Toast.makeText(container.getContext(), message, Toast.LENGTH_LONG).show();
-	}
-
-//> FILE & CAMERA HANDLERS
-	private void takePhoto() {
-		startActivityForResult(cameraIntent(), PROCESS_FILE);
-	}
-
-	private void pickImage() {
-		startActivityForResult(getPickImageIntent(this, getString(R.string.promptChooseImage)), PROCESS_FILE);
-	}
-
-	private void chooseFile(String acceptType) {
-		Intent i = new Intent(Intent.ACTION_GET_CONTENT);
-		i.addCategory(Intent.CATEGORY_OPENABLE);
-		i.setType(acceptType);
-		startActivityForResult(Intent.createChooser(i, getString(R.string.promptChooseFile)), PROCESS_FILE);
-	}
-
-	private boolean canStartCamera() {
-		return intentHandlerAvailableFor(this, cameraIntent());
-	}
-
-	private static Intent cameraIntent() {
-		return new Intent(ACTION_IMAGE_CAPTURE);
 	}
 }
