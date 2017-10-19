@@ -4,10 +4,11 @@ import static android.util.Log.d;
 import static android.util.Log.i;
 import static android.util.Log.w;
 import static java.lang.String.format;
-import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static org.medicmobile.webapp.mobile.BuildConfig.LOG_TAG;
 
 public final class MedicLog {
+	private static final boolean DEBUG = true;
+
 	private MedicLog() {}
 
 	public static void trace(Object caller, String message, Object... extras) {

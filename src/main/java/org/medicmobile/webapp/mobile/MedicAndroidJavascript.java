@@ -14,6 +14,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -28,8 +29,8 @@ public class MedicAndroidJavascript {
 	private final EmbeddedBrowserActivity parent;
 	private final SimprintsSupport simprints;
 
-	private LocationManager locationManager;
 	private Alert soundAlert;
+	private LocationManager locationManager;
 
 	public MedicAndroidJavascript(EmbeddedBrowserActivity parent) {
 		this.parent = parent;
@@ -154,6 +155,38 @@ public class MedicAndroidJavascript {
 		simprints.startReg(targetInputId);
 	}
 
+
+//> ACCOUNT SWITCHING
+	@org.xwalk.core.JavascriptInterface
+	@android.webkit.JavascriptInterface
+	public String getAuthedAccounts() {
+		JSONArray accounts = new JSONArray();
+		for(String accountName : parent.getAuthManager().getAuthedAccountNames()) {
+			accounts.put(accountName);
+		}
+		return accounts.toString();
+	}
+
+	@org.xwalk.core.JavascriptInterface
+	@android.webkit.JavascriptInterface
+	public void switchToUnauthedAccount() {
+		parent.getAuthManager().loginNew();
+	}
+
+	@org.xwalk.core.JavascriptInterface
+	@android.webkit.JavascriptInterface
+	public boolean switchToAuthedAccount(String account) {
+		return parent.getAuthManager().switchTo(account);
+	}
+
+	@org.xwalk.core.JavascriptInterface
+	@android.webkit.JavascriptInterface
+	public void storeCurrentCookies() {
+		parent.getAuthManager().storeCurrentCookies();
+	}
+	
+
+//> PRIVATE HELPERS
 	private void datePicker(String targetElement, Calendar initialDate) {
 		// Remove single-quotes from the `targetElement` CSS selecter, as
 		// we'll be using these to enclose the entire string in JS.  We
