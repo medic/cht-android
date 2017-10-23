@@ -101,8 +101,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 
 		container = (XWalkView) findViewById(R.id.wbvMain);
 
-		XWalkCookieManager monster = new XWalkCookieManager();
-		authManager = new AuthManager(this, container, monster);
+		authManager = new AuthManager(this, container);
 
 		enableLocationUpdates();
 		if(DEBUG) enableWebviewLoggingAndGeolocation(container);
@@ -428,10 +427,11 @@ class AuthManager {
 
 	private String currentAccount;
 
-	AuthManager(EmbeddedBrowserActivity parent, XWalkView container, XWalkCookieManager monster) {
+	AuthManager(EmbeddedBrowserActivity parent, XWalkView container) {
 		this.parent = parent;
 		this.container = container;
-		this.monster = monster;
+
+		monster = new XWalkCookieManager();
 		cookieStash = new TreeMap<>();
 
 		// TODO load stash from persistent store
