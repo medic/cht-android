@@ -98,7 +98,7 @@ class AuthManager {
 
 	void stealCookies(XWalkWebResourceResponse response) {
 		Map<String, String> headers = response.getResponseHeaders();
-		List<String> cookiesForAccount;
+		List<String> cookiesForAccount = null;
 
 		// XWalk maps response cookies via case-sensitive keys.  For
 		// adherence to the HTTP spec, we ideally want to treat headers
