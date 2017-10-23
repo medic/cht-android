@@ -18,16 +18,6 @@ import android.webkit.ConsoleMessage;
 import android.webkit.ValueCallback;
 import android.widget.Toast;
 
-import java.net.HttpCookie;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.xwalk.core.XWalkCookieManager;
 import org.xwalk.core.XWalkPreferences;
 import org.xwalk.core.XWalkResourceClient;
 import org.xwalk.core.XWalkSettings;
@@ -49,7 +39,6 @@ import static org.medicmobile.webapp.mobile.MedicLog.trace;
 import static org.medicmobile.webapp.mobile.MedicLog.warn;
 import static org.medicmobile.webapp.mobile.SimpleJsonClient2.redactUrl;
 import static org.medicmobile.webapp.mobile.Utils.intentHandlerAvailableFor;
-import static org.medicmobile.webapp.mobile.Utils.urlDecode;
 
 @SuppressWarnings("PMD.GodClass")
 public class EmbeddedBrowserActivity extends LockableActivity {
@@ -332,27 +321,8 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		container.setResourceClient(new XWalkResourceClient(container) {
 			@Override public void onReceivedResponseHeaders(XWalkView view, XWalkWebResourceRequest request, XWalkWebResourceResponse response) {
 				super.onReceivedResponseHeaders(view, request, response);
-				Uri uri = request.getUrl();
-				String url = uri == null ? null : uri.toString();
-				trace(this, "onReceivedResponseHeaders() :: url=%s, request=%s, response=%s", url, request, response);
-				if(response.getStatusCode() == 200) {
-					Map<String, String> headers = response.getResponseHeaders();
-					List<String> stash = new LinkedList<>();
-					for(String key : headers.keySet()) {
-						trace(this, "onReceivedResponseHeaders() :: Checking key: %s", key);
-						if(key.equalsIgnoreCase("set-cookie")) {
-							String fullValue = headers.get(key);
-							trace(this, "onReceivedResponseHeaders() :: fullValue=%s", fullValue);
-							if(fullValue != null) {
-								for(String cookie : AuthManager.cutCookies(fullValue)) {
-									stash.add(cookie);
-								}
-							}
-						} else trace(this, "onReceivedResponseHeaders() :: not a cookie");
-					}
-					authManager.stash(stash);
-					trace(this, "onReceivedResponseHeaders() :: request=%s, set-cookie=%s (%s cookies)", request, stash, stash.size());
-				}
+
+				if(response.getStatusCode() == 200) authManager.stealCookies(response);
 			}
 
 			@Override public boolean shouldOverrideUrlLoading(XWalkView view, String url) {
@@ -415,188 +385,5 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 
 	private static Intent cameraIntent() {
 		return new Intent(ACTION_IMAGE_CAPTURE);
-	}
-}
-
-class AuthManager {
-	/** account name -> auth cookies */
-	private final Map<String, Map<String, String>> cookieStash;
-	private final EmbeddedBrowserActivity parent;
-	private final XWalkView container;
-	private final XWalkCookieManager monster;
-
-	private String currentAccount;
-
-	AuthManager(EmbeddedBrowserActivity parent, XWalkView container) {
-		this.parent = parent;
-		this.container = container;
-
-		monster = new XWalkCookieManager();
-		cookieStash = new TreeMap<>();
-
-		// TODO load stash from persistent store
-	}
-
-	Collection<String> getAuthedAccountNames() {
-		List<String> names = new LinkedList<>();
-		for(String name : cookieStash.keySet()) {
-			Map<String, String> c = cookieStash.get(name);
-			if(c == null) continue;
-
-			String authSessionCookie = c.get("AuthSession");
-			if(authSessionCookie == null) continue;
-			if(authSessionCookie.length() == 0) continue;
-
-			names.add(name);
-		}
-		return names;
-	}
-
-	boolean switchTo(String account) {
-		trace(this, "switchTo() :: requested change to account: %s", account);
-		Map<String, String> accountCookies = cookieStash.get(account);
-		if(accountCookies == null) {
-			trace(this, "switchTo() :: account '%s' not found", account);
-			return false;
-		} else {
-			trace(this, "switchTo() :: setting cookies for account '%s' to: %s", account, accountCookies);
-			setCookies(accountCookies);
-
-			container.post(new Runnable() {
-				public void run() {
-					try {
-						parent.evaluateJavascript("window.location = '/medic/_design/medic/_rewrite/#/about'");
-					} catch(Exception ex) {
-						warn(ex, "switchTo()");
-					}
-				}
-			});
-			return true;
-		}
-	}
-
-	void loginNew() {
-		try {
-			container.post(new Runnable() {
-				public void run() {
-					try {
-						monster.removeAllCookie();
-						parent.evaluateJavascript("window.location.href = '/medic/login'");
-					} catch(Exception ex) {
-						warn(ex, "loginNew()");
-					}
-				}
-			});
-		} catch(Exception ex) {
-			warn(ex, "loginNew()");
-		}
-	}
-
-	void stash(Collection<String> cookies) {
-		Map<String, String> map = asMap(cookies);
-
-		String accountName = getAccountName(map);
-		if(accountName == null) return;
-
-		// TODO store cookies to persistent storage
-
-		this.cookieStash.put(accountName, map);
-	}
-
-	private String getAccountName(Map<String, String> cookies) {
-		try {
-			String encodedString = cookies.get("userCtx");
-			trace(this, "getAccountName() :: encodedString=%s", encodedString);
-
-			if(encodedString == null) return null;
-
-			String jsonString = urlDecode(encodedString);
-			trace(this, "getAccountName() :: jsonString=%s", jsonString);
-
-			if(jsonString == null || jsonString.length() == 0) return null;
-
-			JSONObject json = new JSONObject(jsonString);
-			trace(this, "getAccountName() :: json=%s", json);
-
-			String name = json.optString("name");
-			trace(this, "getAccountName() :: name=%s", name);
-
-			return name;
-		} catch(JSONException ex) {
-			warn(ex, "getAccountName()");
-			return null;
-		}
-	}
-
-	private Map<String, String> asMap(Collection<String> cookies) {
-		Map<String, String> map = new TreeMap<>();
-
-		for(String cookie : cookies) {
-			String[] parts = cookie.split("=", 2);
-			String key = parts[0].trim();
-			//String value = parts.length > 1 ? urlDecode(parts[1].trim()) : null;
-			String value = parts.length > 1 ? parts[1].trim() : null;
-			map.put(key, value);
-		}
-
-		return map;
-	}
-
-	private void setCookies(final Map<String, String> cookies) {
-		container.post(new Runnable() {
-			public void run() {
-				monster.removeAllCookie();
-				String url = container.getUrl();
-				for(String cookieName : cookies.keySet()) {
-					String rawValue = cookies.get(cookieName);
-					String cookieString = String.format("%s=%s", cookieName, rawValue);
-					trace("setCookies", "setting cookie: %s", cookieString);
-					monster.setCookie(url, cookieString);
-				}
-			}
-		});
-	}
-
-	/**
-	 * Decompose the Set-Cookies header as supplied by
-	 * {@code XWalkWebResourceResponse}.
-	 *
-	 * Unhelpfully, {@code XWalkWebResourceResponse.getHeaders()} joins all
-	 * {@code Set-Cookie} headers into a single {@code String} value,
-	 * separated by commas.  We have to manually decode this, while
-	 * preserving settings/flags set on each cookie.  Although commas are
-	 * illegal in cookie values, they may be present in the Expires flag,
-	 * hence the bizarre splitting logic.
-	 *
-	 * We assume that all cookies are separated by commas (as per the XWalk
-	 * implementation), rather than by semicolon (as per RFC 2109 and RFC
-	 * 2965), as this behaviour is discouraged in RFC 6265.
-	 */
-	public static Collection<String> cutCookies(String setCookieString) {
-		String[] parts = setCookieString.split(",");
-
-		List<String> strings = new LinkedList<>();
-
-		for(int i=parts.length-1; i>=0; --i) {
-			String headerPart = parts[i];
-			System.out.println("Decoding header part: " + headerPart);
-
-			boolean decoded = false;
-			do {
-				try {
-					HttpCookie.parse(headerPart);
-					// we assume that there's only one cookie per part.  Don't keep
-					// the resulting HttpCookie object so that we preserve flags etc.
-					strings.add(headerPart);
-					decoded = true;
-				} catch(IllegalArgumentException ex) {
-					headerPart = parts[--i] + headerPart;
-				}
-			} while(!decoded && i>=0);
-
-			System.out.println("Decoded to: " + decoded);
-		}
-
-		return strings;
 	}
 }
