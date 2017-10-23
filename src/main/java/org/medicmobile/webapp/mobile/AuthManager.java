@@ -58,18 +58,34 @@ class AuthManager {
 
 	boolean switchTo(String account) {
 		trace(this, "switchTo() :: requested change to account: %s", account);
-		Map<String, String> accountCookies = cookieStash.get(account);
+
+		final Map<String, String> accountCookies = cookieStash.get(account);
+
 		if(accountCookies == null) {
 			trace(this, "switchTo() :: account '%s' not found", account);
 			return false;
 		} else {
 			trace(this, "switchTo() :: setting cookies for account '%s' to: %s", account, accountCookies);
-			setCookies(accountCookies);
 
 			container.post(new Runnable() {
 				public void run() {
 					try {
-						parent.evaluateJavascript("window.location.href = '/medic/_design/medic/_rewrite/#/about'");
+						monster.removeAllCookie();
+
+						String url = container.getUrl();
+						trace(this, "switchTo() :: url=%s", url);
+
+						for(String cookieName : accountCookies.keySet()) {
+							String rawValue = accountCookies.get(cookieName);
+							String cookieString = String.format("%s=%s", cookieName, rawValue);
+							trace(this, "switchTo() :: setting cookie: %s", cookieString);
+							monster.setCookie(url, cookieString);
+						}
+
+						// TODO we don't need to do the reload here if we're coming from the login page.
+						// on the other hand, if we're already in the application we should only need
+						// to set the cookies and then reload the page - no need to change the URL.
+						parent.evaluateJavascript("window.location.href = '/medic/_design/medic/_rewrite/#/about'; window.location.reload()");
 					} catch(Exception ex) {
 						warn(ex, "switchTo()");
 					}
@@ -170,21 +186,6 @@ class AuthManager {
 		}
 
 		return map;
-	}
-
-	private void setCookies(final Map<String, String> cookies) {
-		container.post(new Runnable() {
-			public void run() {
-				monster.removeAllCookie();
-				String url = container.getUrl();
-				for(String cookieName : cookies.keySet()) {
-					String rawValue = cookies.get(cookieName);
-					String cookieString = String.format("%s=%s", cookieName, rawValue);
-					trace("setCookies", "setting cookie: %s", cookieString);
-					monster.setCookie(url, cookieString);
-				}
-			}
-		});
 	}
 
 //> PERSISTENT STORAGE
