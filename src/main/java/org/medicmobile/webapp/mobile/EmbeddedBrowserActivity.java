@@ -342,8 +342,20 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 				trace(this, "onReceivedResponseHeaders() :: request=%s, response=%s", request, response);
 				if(response.getStatusCode() == 200) {
 					Map<String, String> headers = response.getResponseHeaders();
-					String cookies = headers.get("Set-Cookie");
-					trace(this, "onReceivedResponseHeaders() :: request=%s, cookies=%s", request, cookies);
+					List<String> setCookies = new LinkedList<>();
+					for(String key : headers.keySet()) {
+						trace(this, "onReceivedResponseHeaders() :: Checking key: %s", key);
+						if(key.equalsIgnoreCase("set-cookie")) {
+							String fullValue = headers.get(key);
+							trace(this, "onReceivedResponseHeaders() :: fullValue=%s", fullValue);
+							if(fullValue != null) {
+								for(String part : fullValue.split(",")) {
+									setCookies.add(part.trim());
+								}
+							}
+						} else trace(this, "onReceivedResponseHeaders() :: not a cookie");
+					}
+					trace(this, "onReceivedResponseHeaders() :: request=%s, set-cookie=%s (%s cookies)", request, setCookies, setCookies.size());
 				}
 			}
 
