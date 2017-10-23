@@ -450,7 +450,10 @@ class AuthManager {
 			container.post(new Runnable() {
 				public void run() {
 					try {
-						if(container.getUrl().endsWith("/medic/login")) {
+						String currentUrl = container.getUrl();
+						trace(this, "switchTo() :: url=%s", currentUrl);
+						if(currentUrl.endsWith("/medic/login")) {
+							trace(this, "switchTo() :: looks like the login page - redirecting to :", currentUrl);
 							parent.evaluateJavascript("window.location = '/medic/_design/medic/_rewrite/'");
 						} else {
 							parent.evaluateJavascript("window.location.reload()");
