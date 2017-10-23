@@ -47,14 +47,4 @@ final class Utils {
 			throw new RuntimeException(ex);
 		}
 	}
-
-	static String urlEncode(String s) {
-		try {
-			return URLEncoder.encode(s, "UTF-8");
-		} catch(UnsupportedEncodingException ex) {
-			// this should never happen as UTF-8 is default encoding
-			// on android.
-			throw new RuntimeException(ex);
-		}
-	}
 }
