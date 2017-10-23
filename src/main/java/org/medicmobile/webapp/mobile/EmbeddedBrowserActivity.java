@@ -15,17 +15,14 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Window;
 import android.webkit.ConsoleMessage;
-import android.webkit.CookieManager;
 import android.webkit.ValueCallback;
 import android.widget.Toast;
 
 import java.net.HttpCookie;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
 
 import org.json.JSONException;
@@ -53,7 +50,6 @@ import static org.medicmobile.webapp.mobile.MedicLog.warn;
 import static org.medicmobile.webapp.mobile.SimpleJsonClient2.redactUrl;
 import static org.medicmobile.webapp.mobile.Utils.intentHandlerAvailableFor;
 import static org.medicmobile.webapp.mobile.Utils.urlDecode;
-//import static org.medicmobile.webapp.mobile.Utils.urlEncode;
 
 @SuppressWarnings("PMD.GodClass")
 public class EmbeddedBrowserActivity extends LockableActivity {
@@ -104,10 +100,8 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		}
 
 		container = (XWalkView) findViewById(R.id.wbvMain);
-//		monster = container.getCookieManager();
 
 		XWalkCookieManager monster = new XWalkCookieManager();
-		monster.setAcceptCookie(true);
 		authManager = new AuthManager(this, container, monster);
 
 		enableLocationUpdates();
@@ -338,7 +332,6 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	private void enableUrlHandlers(XWalkView container) {
 		container.setResourceClient(new XWalkResourceClient(container) {
 			@Override public void onReceivedResponseHeaders(XWalkView view, XWalkWebResourceRequest request, XWalkWebResourceResponse response) {
-				// TODO Auto-generated method stub
 				super.onReceivedResponseHeaders(view, request, response);
 				Uri uri = request.getUrl();
 				String url = uri == null ? null : uri.toString();
@@ -371,13 +364,6 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 				}
 				return false;
 			}
-//			@Override public void onLoadFinished(XWalkView view, String urlString) {
-//				Uri url = Uri.parse(urlString);
-//				trace(this, "onLoadFinished() :: url=%s, path=%s", urlString, url.getPath());
-//				authManager.storeCurrentCookies();
-//				//if("/_session".equals(url.getPath())) {
-//				//}
-//			}
 			// According to XWalk source code, this method is only called when connection times out
 			@Override public void onReceivedLoadError(XWalkView view, int errorCode, String description, String failingUrl) {
 				if(errorCode == XWalkResourceClient.ERROR_OK) return;
@@ -436,8 +422,6 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 class AuthManager {
 	/** account name -> auth cookies */
 	private final Map<String, Map<String, String>> cookieStash;
-	/** maintain a set of empty values used when clearing cookies */
-	private final Map<String, String> noCookies = new HashMap<>(); // TODO remove
 	private final EmbeddedBrowserActivity parent;
 	private final XWalkView container;
 	private final XWalkCookieManager monster;
@@ -449,6 +433,8 @@ class AuthManager {
 		this.container = container;
 		this.monster = monster;
 		cookieStash = new TreeMap<>();
+
+		// TODO load stash from persistent store
 	}
 
 	Collection<String> getAuthedAccountNames() {
@@ -475,7 +461,7 @@ class AuthManager {
 		} else {
 			trace(this, "switchTo() :: setting cookies for account '%s' to: %s", account, accountCookies);
 			setCookies(accountCookies);
-			
+
 			container.post(new Runnable() {
 				public void run() {
 					try {
@@ -485,13 +471,11 @@ class AuthManager {
 					}
 				}
 			});
-			reloadPage();
 			return true;
 		}
 	}
 
 	void loginNew() {
-//		setCookies(noCookies);
 		try {
 			container.post(new Runnable() {
 				public void run() {
@@ -504,23 +488,7 @@ class AuthManager {
 				}
 			});
 		} catch(Exception ex) {
-			warn(ex, "reloadPage()");
-		}
-	}
-
-	private void reloadPage() {
-		try {
-			container.post(new Runnable() {
-				public void run() {
-					try {
-						parent.evaluateJavascript("window.location.reload()");
-					} catch(Exception ex) {
-						warn(ex, "reloadPage()");
-					}
-				}
-			});
-		} catch(Exception ex) {
-			warn(ex, "reloadPage()");
+			warn(ex, "loginNew()");
 		}
 	}
 
@@ -530,107 +498,10 @@ class AuthManager {
 		String accountName = getAccountName(map);
 		if(accountName == null) return;
 
+		// TODO store cookies to persistent storage
+
 		this.cookieStash.put(accountName, map);
 	}
-
-	void storeCurrentCookies() {
-		if(true) return;
-		trace(this, "storeCurrentCookies() :: ENTRY");
-		try {
-			monster.flushCookieStore();
-			container.post(new Runnable() {
-				public void run() {
-					container.evaluateJavascript("(function() { return document.cookie; }())", new ValueCallback<String>() {
-						public void onReceiveValue(String result) {
-							try {
-								{
-									result = result.replaceAll("^\"", "");
-									result = result.replaceAll("\"$", "");
-
-									trace(this, "storeCurrentCookies() :: result=%s", result);
-									final Map<String, String> cookies = new HashMap<>();
-									add(cookies, result);
-									String currentUrl = container.getUrl();
-									trace(this, "storeCurrentCookies() :: currentUrl=%s", currentUrl);
-									String monsterCookies = monster.getCookie(currentUrl);
-									trace(this, "storeCurrentCookies() :: monsterCookies=%s", monsterCookies);
-									add(cookies, monsterCookies);
-									currentAccount = getAccountName(cookies);
-									if(currentAccount != null) cookieStash.put(currentAccount, cookies);
-								}
-
-
-								try {
-									CookieManager cm = CookieManager.getInstance();
-
-									java.lang.reflect.Field ccm = cm.getClass().getDeclaredField("mChromeCookieManager");
-									ccm.setAccessible(true);
-									Object acm = ccm.get(cm);
-
-									java.lang.reflect.Method getCookie = acm.getClass().getDeclaredMethod("nativeGetCookie", String.class);
-									getCookie.setAccessible(true);
-
-									Object cookie = getCookie.invoke(acm, container.getUrl());
-
-									trace(this, "Cookie: '%s'", cookie);
-								} catch(Exception ex) {
-									MedicLog.warn(ex, "getCookie");
-								}
-							} catch(Exception ex) {
-								warn(ex, "storeCurrentCookies()");
-							}
-						}
-					});
-				}
-			});
-		} catch(Exception ex) {
-			warn(ex, "storeCurrentCookies()");
-		}
-	}
-
-	private void add(Map<String, String> store, String s) {
-		if(s == null || s.length()==0) return;
-		for(String cookie : s.split(";")) {
-			String[] cookieParts = cookie.split("=", 2);
-
-			if(cookieParts.length < 2) continue;
-
-			String cookieName = cookieParts[0].trim();
-			//String cookieValue = urlDecode(cookieParts[1].trim());
-			String cookieValue = cookieParts[1].trim();
-
-			trace(this, "add() :: Adding cookie %s=%s", cookieName, cookieValue);
-			store.put(cookieName, cookieValue);
-			noCookies.put(cookieName, "");
-		}
-	}
-
-/*	private String getAccountName(Collection<String> cookies) { // TODO dead code
-		try {
-			String jsonString = null;
-
-			for(String cookie : cookies) {
-				String[] parts = cookie.split("=", 2);
-				if(parts.length > 1 && "userCtx".equals(parts[0].trim())) {
-					jsonString = parts[1].trim();
-				}
-			}
-			trace(this, "getAccountName() :: jsonString=%s", jsonString);
-
-			if(jsonString == null || jsonString.length() == 0) return null;
-
-			JSONObject json = new JSONObject(jsonString);
-			trace(this, "getAccountName() :: json=%s", json);
-
-			String name = json.optString("name");
-			trace(this, "getAccountName() :: name=%s", name);
-
-			return name;
-		} catch(JSONException ex) {
-			warn(ex, "getAccountName()");
-			return null;
-		}
-	}*/
 
 	private String getAccountName(Map<String, String> cookies) {
 		try {
@@ -657,13 +528,6 @@ class AuthManager {
 		}
 	}
 
-	/** TODO should probably whitelist expected cookies rather than the opposite */
-	private String flagsFor(String cookieName) {
-		if("AuthSession".equals(cookieName)) {
-			return "; HttpOnly"; // TODO add "; Secure; SameSite: Strict"
-		} else return "";
-	}
-
 	private Map<String, String> asMap(Collection<String> cookies) {
 		Map<String, String> map = new TreeMap<>();
 
@@ -679,52 +543,18 @@ class AuthManager {
 	}
 
 	private void setCookies(final Map<String, String> cookies) {
-		if(true) {
-			container.post(new Runnable() {
-				public void run() {
-					monster.removeAllCookie();
-					String url = container.getUrl();
-					for(String cookieName : cookies.keySet()) {
-						String rawValue = cookies.get(cookieName);
-				//		String cookieValue = urlEncode(rawValue);
-				//		String cookieString = String.format("%s=%s%s", cookieName, rawValue, flagsFor(cookieName));
-						String cookieString = String.format("%s=%s", cookieName, rawValue);
-						trace("setCookies", "setting cookie: %s", cookieString);
-						monster.setCookie(url, cookieString);
-					}
-				}
-			});
-		}
-
-/*		if(false) {
-			try {
-				trace(this, "setCookies() :: setting cookies to: %s", cookies);
-
-				StringBuilder bob = new StringBuilder();
+		container.post(new Runnable() {
+			public void run() {
+				monster.removeAllCookie();
+				String url = container.getUrl();
 				for(String cookieName : cookies.keySet()) {
 					String rawValue = cookies.get(cookieName);
-					trace("setCookies", "setting cookie: %s=%s", cookieName, rawValue);
-
-					String cookieValue = urlEncode(rawValue);
-					bob.append(';');
-					bob.append(' ');
-					bob.append(cookieName);
-					bob.append('=');
-					bob.append(cookieValue);
+					String cookieString = String.format("%s=%s", cookieName, rawValue);
+					trace("setCookies", "setting cookie: %s", cookieString);
+					monster.setCookie(url, cookieString);
 				}
-				final String cookieString = bob.length() > 0 ? bob.substring(2) : "";
-
-				container.post(new Runnable() {
-					public void run() {
-						String url = container.getUrl();
-						trace(this, "setCookies() :: setting cookies for %s to: %s", url, cookieString);
-						monster.setCookie(url, cookieString);
-					}
-				});
-			} catch(Exception ex) {
-				warn(ex, "setCookies()");
 			}
-		}*/
+		});
 	}
 
 	/**
@@ -768,46 +598,5 @@ class AuthManager {
 		}
 
 		return strings;
-	}
-}
-
-class JsBuilder {
-	private final StringBuilder bob = new StringBuilder();
-
-	private boolean finalised;
-
-	public JsBuilder() {}
-
-	public JsBuilder(String command, Object... args) {
-		append(command, args);
-	}
-
-	void append(String command, Object... args) {
-		if(finalised) throw new RuntimeException("Cannot execute more JS commands after a page change.");
-
-		bob.append(String.format(command, args) + ";\n");
-	}
-
-	void logVar(String varName) {
-		append("console.log('%s = ' + %s)", varName, varName);
-	}
-
-	void log(String text, Object... args) {
-		append("console.log('" + text + "')", args);
-	}
-
-	void to(String url) {
-		append("window.location = '%s'", url);
-		finalised = true;
-	}
-
-	void reloadPage() {
-		append("window.location.reload()");
-		finalised = true;
-	}
-
-	public String toString() {
-		MedicLog.trace(this, "toString() :: %s", bob);
-		return bob.toString();
 	}
 }

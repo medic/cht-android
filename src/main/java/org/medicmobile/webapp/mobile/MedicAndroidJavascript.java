@@ -179,12 +179,7 @@ public class MedicAndroidJavascript {
 		return parent.getAuthManager().switchTo(account);
 	}
 
-	@org.xwalk.core.JavascriptInterface
-	@android.webkit.JavascriptInterface
-	public void storeCurrentCookies() {
-		parent.getAuthManager().storeCurrentCookies();
-	}
-	
+	// TODO add function to invalidate a stashed cookie set
 
 //> PRIVATE HELPERS
 	private void datePicker(String targetElement, Calendar initialDate) {
