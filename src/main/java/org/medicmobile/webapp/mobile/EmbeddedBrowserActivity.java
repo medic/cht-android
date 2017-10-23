@@ -349,6 +349,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 				//if("/_session".equals(url.getPath())) {
 				//}
 			}
+			// According to XWalk source code, this method is only called when connection times out
 			@Override public void onReceivedLoadError(XWalkView view, int errorCode, String description, String failingUrl) {
 				if(errorCode == XWalkResourceClient.ERROR_OK) return;
 
@@ -591,7 +592,7 @@ class AuthManager {
 	/** TODO should probably whitelist expected cookies rather than the opposite */
 	private String flagsFor(String cookieName) {
 		if("AuthSession".equals(cookieName)) {
-			return "; HttpOnly";
+			return "; HttpOnly"; // TODO add "; Secure; SameSite: Strict"
 		} else return "";
 	}
 
