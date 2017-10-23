@@ -35,6 +35,8 @@ import org.xwalk.core.XWalkResourceClient;
 import org.xwalk.core.XWalkSettings;
 import org.xwalk.core.XWalkUIClient;
 import org.xwalk.core.XWalkView;
+import org.xwalk.core.XWalkWebResourceRequest;
+import org.xwalk.core.XWalkWebResourceResponse;
 
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.location.LocationManager.GPS_PROVIDER;
@@ -334,6 +336,17 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 
 	private void enableUrlHandlers(XWalkView container) {
 		container.setResourceClient(new XWalkResourceClient(container) {
+			@Override public void onReceivedResponseHeaders(XWalkView view, XWalkWebResourceRequest request, XWalkWebResourceResponse response) {
+				// TODO Auto-generated method stub
+				super.onReceivedResponseHeaders(view, request, response);
+				trace(this, "onReceivedResponseHeaders() :: request=%s, response=%s", request, response);
+				if(response.getStatusCode() == 200) {
+					Map<String, String> headers = response.getResponseHeaders();
+					String cookies = headers.get("Set-Cookie");
+					trace(this, "onReceivedResponseHeaders() :: request=%s, cookies=%s", request, cookies);
+				}
+			}
+
 			@Override public boolean shouldOverrideUrlLoading(XWalkView view, String url) {
 				if(url.startsWith("tel:") || url.startsWith("sms:")) {
 					Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
