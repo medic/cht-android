@@ -322,6 +322,8 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 			@Override public void onReceivedResponseHeaders(XWalkView view, XWalkWebResourceRequest request, XWalkWebResourceResponse response) {
 				super.onReceivedResponseHeaders(view, request, response);
 
+				log("EmbeddedBrowserActivity.onReceivedResponseHeaders() :: [%s] %s", response.getStatusCode(), response.getReasonPhrase());
+
 				if(response.getStatusCode() == 200) authManager.stealCookies(response);
 			}
 
@@ -335,9 +337,9 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 			}
 			// According to XWalk source code, this method is only called when connection times out
 			@Override public void onReceivedLoadError(XWalkView view, int errorCode, String description, String failingUrl) {
-				if(errorCode == XWalkResourceClient.ERROR_OK) return;
-
 				log("EmbeddedBrowserActivity.onReceivedLoadError() :: [%s] %s :: %s", errorCode, failingUrl, description);
+
+				if(errorCode == XWalkResourceClient.ERROR_OK) return;
 
 				if(!getRootUrl().equals(failingUrl)) {
 					log("EmbeddedBrowserActivity.onReceivedLoadError() :: ignoring for non-root URL");

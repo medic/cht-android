@@ -2,6 +2,7 @@ package org.medicmobile.webapp.mobile;
 
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.net.Uri;
 
 import java.net.HttpCookie;
 import java.util.Collection;
@@ -75,6 +76,10 @@ class AuthManager {
 						String url = container.getUrl();
 						trace(this, "switchTo() :: url=%s", url);
 
+						Uri uri = Uri.parse(url);
+						String path = uri.getPath();
+						trace(this, "switchTo() :: uri=%s, path=%s", uri, uri.getPath());
+
 						for(String cookieName : accountCookies.keySet()) {
 							String rawValue = accountCookies.get(cookieName);
 							String cookieString = String.format("%s=%s", cookieName, rawValue);
@@ -85,7 +90,11 @@ class AuthManager {
 						// TODO we don't need to do the reload here if we're coming from the login page.
 						// on the other hand, if we're already in the application we should only need
 						// to set the cookies and then reload the page - no need to change the URL.
-						parent.evaluateJavascript("window.location.href = '/medic/_design/medic/_rewrite/#/about'; window.location.reload()");
+						if("/medic/login".equals(uri.getPath())) {
+							parent.evaluateJavascript("window.location.href = '/medic/_design/medic/_rewrite/#/about';");
+						} else {
+							parent.evaluateJavascript("window.location.reload();");
+						}
 					} catch(Exception ex) {
 						warn(ex, "switchTo()");
 					}
@@ -118,7 +127,7 @@ class AuthManager {
 
 		// XWalk maps response cookies via case-sensitive keys.  For
 		// adherence to the HTTP spec, we ideally want to treat headers
-		// case-insensitively.  Hence this horrible map look-up. 
+		// case-insensitively.  Hence this horrible map look-up.
 		for(String key : headers.keySet()) {
 			if(key.equalsIgnoreCase("set-cookie")) {
 				String fullValue = headers.get(key);
