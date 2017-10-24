@@ -6,7 +6,6 @@ import android.content.Intent;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.net.URLEncoder;
 
 import org.json.JSONException;
 import org.json.JSONObject;
