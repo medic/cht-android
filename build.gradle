@@ -100,6 +100,8 @@ android {
 		versionCode getVersionCode()
 		versionName getVersionName()
 		archivesBaseName = "${project.name}-${versionName}"
+
+		buildConfigField "boolean", "FORCE_LOGIN_HOTDOG_VIA_DODGY_MEANS", "false"
 	}
 
 	applicationVariants.all {
@@ -202,6 +204,11 @@ android {
 		}
 		moh_kenya_siaya {
 			applicationId = 'org.medicmobile.webapp.mobile.moh_kenya_siaya'
+		}
+		moh_kenya_siaya_multi {
+			// special build for moh_kenya_siaya to allow for account switching via hotdog logout button
+			applicationId = 'org.medicmobile.webapp.mobile.moh_kenya_siaya_multi'
+			buildConfigField "boolean", "FORCE_LOGIN_HOTDOG_VIA_DODGY_MEANS", "true"
 		}
 		musomali {
 			applicationId = 'org.medicmobile.webapp.mobile.musomali'

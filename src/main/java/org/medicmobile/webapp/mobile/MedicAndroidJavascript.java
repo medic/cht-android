@@ -47,6 +47,16 @@ public class MedicAndroidJavascript {
 	@org.xwalk.core.JavascriptInterface
 	@android.webkit.JavascriptInterface
 	public String getAppVersion() {
+		if(org.medicmobile.webapp.mobile.BuildConfig.FORCE_LOGIN_HOTDOG_VIA_DODGY_MEANS) {
+			// Horrible hack - if we return a blank string for the
+			// app version, in certain places the webapp will think
+			// we're not using the mobile app, so will display the
+			// logout option in the homburg menu.  This allows a
+			// user to switch accounts without having to log out and
+			// then in again.
+			return "";
+		}
+
 		try {
 			return parent.getPackageManager()
 					.getPackageInfo(parent.getPackageName(), 0)
