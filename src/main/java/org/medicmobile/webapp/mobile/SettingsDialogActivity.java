@@ -101,7 +101,12 @@ public class SettingsDialogActivity extends LockableActivity {
 		}.execute(appUrl);
 	}
 
-	public void onBackPressed() {
+	public void cancelSettingsEdit(View view) {
+		if(DEBUG) trace(this, "cancelSettingsEdit");
+		backToWebview();
+	}
+
+	@Override public void onBackPressed() {
 		switch(state) {
 			case STATE_LIST:
 				if(this.settings.hasWebappSettings()) {
@@ -114,11 +119,6 @@ public class SettingsDialogActivity extends LockableActivity {
 				return;
 		}
 		super.onBackPressed();
-	}
-
-	public void cancelSettingsEdit(View view) {
-		if(DEBUG) trace(this, "cancelSettingsEdit");
-		backToWebview();
 	}
 
 //> PRIVATE HELPERS
