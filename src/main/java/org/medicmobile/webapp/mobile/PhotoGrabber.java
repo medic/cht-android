@@ -134,7 +134,7 @@ class PhotoGrabber {
 		int quality;
 
 		do {
-			for(quality=90; quality>=50; quality-=10) {
+			for(quality=90; quality>=30; quality-=10) {
 				trace(this, "writeToFile() :: Attempting to write bitmap=%s (%sx%s) to file=%s at quality=%s; size of last write=%s...",
 						bitmap, bitmap.getWidth(), bitmap.getHeight(), temp, quality, tempFileSize);
 
