@@ -8,12 +8,12 @@ ifdef ComSpec	 # Windows
   GRADLEW := $(subst /,\,${GRADLEW})
 endif
 
-default: deploy-flavour android-logs
-branded: clean-apks assemble-all deploy-all android-logs
-branded-debug: clean-apks assemble-all-debug deploy-all android-logs
+default: deploy-flavour logs
+branded: clean-apks assemble-all deploy-all logs
+branded-debug: clean-apks assemble-all-debug deploy-all logs
 clean: clean-apks
 
-android-logs:
+logs:
 	${ADB} logcat MedicMobile:V AndroidRuntime:E '*:S' | tee android.log
 
 deploy-flavour:
