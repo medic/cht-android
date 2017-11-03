@@ -1,12 +1,10 @@
 ADB = ${ANDROID_HOME}/platform-tools/adb
-EMULATOR = ${ANDROID_HOME}/tools/emulator
 GRADLEW = ./gradlew
 flavour = Unbranded
 
 ifdef ComSpec	 # Windows
   # Use `/` for all paths, except `.\`
   ADB := $(subst \,/,${ADB})
-  EMULATOR := $(subst \,/,${EMULATOR})
   GRADLEW := $(subst /,\,${GRADLEW})
 endif
 
@@ -15,18 +13,11 @@ branded: clean-apks assemble-all deploy-all android-logs
 branded-debug: clean-apks assemble-all-debug deploy-all android-logs
 clean: clean-apks
 
-android-emulator:
-	nohup ${EMULATOR} -avd test -wipe-data > emulator.log 2>&1 &
-	${ADB} wait-for-device
-
 android-logs:
 	${ADB} logcat MedicMobile:V AndroidRuntime:E '*:S' | tee android.log
 
 deploy-flavour:
 	${GRADLEW} --daemon --parallel install${flavour}Debug
-
-kill:
-	pkill -9 emulator64-arm
 
 clean-apks:
 	rm -rf build/outputs/apk/
