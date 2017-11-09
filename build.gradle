@@ -111,7 +111,7 @@ android {
 		if(System.env.SIMPRINTS_API_KEY) {
 			buildConfigField "String", "SIMPRINTS_API_KEY", /"${System.env.SIMPRINTS_API_KEY}"/
 		} else try {
-			buildConfigField "String", "SIMPRINTS_API_KEY", /"$SIMPRINTS_API_KEY"/
+			buildConfigField "String", "SIMPRINTS_API_KEY", /"${simprintsApiKey}"/
 		} catch(_) {
 			buildConfigField "String", "SIMPRINTS_API_KEY", /"Medic's API Key"/
 		}
@@ -119,7 +119,7 @@ android {
 		if(System.env.SIMPRINTS_USER_ID) {
 			buildConfigField "String", "SIMPRINTS_USER_ID", /"${System.env.SIMPRINTS_USER_ID}"/
 		} else try {
-			buildConfigField "String", "SIMPRINTS_USER_ID", /"$SIMPRINTS_USER_ID"/
+			buildConfigField "String", "SIMPRINTS_USER_ID", /"${simprintsUserId}"/
 		} catch(_) {
 			buildConfigField "String", "SIMPRINTS_USER_ID", '"some-user-id"'
 		}
@@ -127,7 +127,7 @@ android {
 		if(System.env.SIMPRINTS_MODULE_ID) {
 			buildConfigField "String", "SIMPRINTS_MODULE_ID", /"${System.env.SIMPRINTS_MODULE_ID}"/
 		} else try {
-			buildConfigField "String", "SIMPRINTS_MODULE_ID", /"$SIMPRINTS_MODULE_ID"/
+			buildConfigField "String", "SIMPRINTS_MODULE_ID", /"${simprintsModuleId}"/
 		} catch(_) {
 			buildConfigField "String", "SIMPRINTS_MODULE_ID", '"Medic Module ID"'
 		}
@@ -179,6 +179,10 @@ android {
 			// we will not create project-specific src directories
 			// for `unbranded` - it will use the defaults in
 			// src/main
+
+			simprintsApiKey = 'f4c47c4e-d6ee-444f-b16e-22a4761b1f3c'
+			simprintsModuleId = 'simprints.app'
+			simprintsUserId = 'test@simprints.app'
 		}
 		medicmobiledemo {
 			applicationId = 'org.medicmobile.webapp.mobile.medicmobiledemo'
@@ -215,6 +219,10 @@ android {
 		}
 		simprints {
 			applicationId = 'org.medicmobile.webapp.mobile.simprints'
+
+			simprintsApiKey = 'f4c47c4e-d6ee-444f-b16e-22a4761b1f3c'
+			simprintsModuleId = 'simprints.app'
+			simprintsUserId = 'test@simprints.app'
 		}
 	}
 }
