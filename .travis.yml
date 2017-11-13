@@ -5,7 +5,7 @@ android:
     - tools
     - platform-tools
     - extra-android-m2repository
-    - build-tools-23.0.3
+    - build-tools-26.0.1
     - android-24
 env:
   - GRADLE_OPTS="-XX:MaxPermSize=512m"
