@@ -43,6 +43,8 @@ dependencies {
 	compile 'com.github.Mariovc:ImagePicker:1.2.0'
 }
 
+def simprintsApiKey, simprintsModuleId, simprintsUserId
+
 def getVersionCode = {
 	if(System.env.JENKINS == 'true') {
 		def versionParts = System.env.VERSION_TO_BUILD.split(/\./)
@@ -110,25 +112,25 @@ android {
 
 		if(System.env.SIMPRINTS_API_KEY) {
 			buildConfigField "String", "SIMPRINTS_API_KEY", /"${System.env.SIMPRINTS_API_KEY}"/
-		} else try {
+		} else if(simprintsApiKey) {
 			buildConfigField "String", "SIMPRINTS_API_KEY", /"${simprintsApiKey}"/
-		} catch(_) {
+		} else {
 			buildConfigField "String", "SIMPRINTS_API_KEY", /"Medic's API Key"/
 		}
 
 		if(System.env.SIMPRINTS_USER_ID) {
 			buildConfigField "String", "SIMPRINTS_USER_ID", /"${System.env.SIMPRINTS_USER_ID}"/
-		} else try {
+		} else if(simprintsUserId) {
 			buildConfigField "String", "SIMPRINTS_USER_ID", /"${simprintsUserId}"/
-		} catch(_) {
+		} else {
 			buildConfigField "String", "SIMPRINTS_USER_ID", '"some-user-id"'
 		}
 
 		if(System.env.SIMPRINTS_MODULE_ID) {
 			buildConfigField "String", "SIMPRINTS_MODULE_ID", /"${System.env.SIMPRINTS_MODULE_ID}"/
-		} else try {
+		} else if(simprintsModuleId) {
 			buildConfigField "String", "SIMPRINTS_MODULE_ID", /"${simprintsModuleId}"/
-		} catch(_) {
+		} else {
 			buildConfigField "String", "SIMPRINTS_MODULE_ID", '"Medic Module ID"'
 		}
 	}
