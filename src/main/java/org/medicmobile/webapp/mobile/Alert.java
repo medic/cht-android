@@ -1,8 +1,8 @@
 package org.medicmobile.webapp.mobile;
 
-import android.content.*;
-import android.media.*;
-import android.os.*;
+import android.content.Context;
+import android.media.MediaPlayer;
+import android.os.Vibrator;
 
 public class Alert {
 	private final MediaPlayer m;
