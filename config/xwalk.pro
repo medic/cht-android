@@ -14,3 +14,8 @@
 -keepattributes **
 
 -optimizations !code/allocation/variable
+
+-keepclassmembers class * {
+	@android.webkit.JavascriptInterface <methods>;
+	@org.xwalk.core.JavascriptInterface <methods>;
+}
