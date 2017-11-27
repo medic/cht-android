@@ -13,6 +13,7 @@ import android.support.v4.content.ContextCompat;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.Window;
 import android.webkit.ConsoleMessage;
 import android.webkit.ValueCallback;
@@ -78,7 +79,9 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		// app with a medic production server.
 		if(settings.allowsConfiguration() &&
 				settings.getAppUrl().contains("app.medicmobile.org")) {
-			findViewById(R.id.lytWebView).setPadding(10, 10, 10, 10);
+			View webviewContainer = findViewById(R.id.lytWebView);
+			webviewContainer.setPadding(10, 10, 10, 10);
+			webviewContainer.setBackgroundColor(R.drawable.warning_background);
 		}
 
 		container = (XWalkView) findViewById(R.id.wbvMain);
