@@ -87,7 +87,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		container = (XWalkView) findViewById(R.id.wbvMain);
 
 		enableLocationUpdates();
-		if(DEBUG) enableWebviewLoggingAndGeolocation(container);
+		setUpUiClient(container);
 		enableRemoteChromeDebugging();
 		enableJavascript(container);
 		enableStorage(container);
@@ -206,18 +206,23 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		XWalkPreferences.setValue(XWalkPreferences.REMOTE_DEBUGGING, true);
 	}
 
-	private void enableWebviewLoggingAndGeolocation(XWalkView container) {
+	private void setUpUiClient(XWalkView container) {
 		container.setUIClient(new XWalkUIClient(container) {
-			public boolean onConsoleMessage(ConsoleMessage cm) {
+			/** Not applicable for Crosswalk.  TODO find alternative and remove this
+			@Override public boolean onConsoleMessage(ConsoleMessage cm) {
+				if(!DEBUG) {
+					return super.onConsoleMessage(cm);
+				}
+
 				trace(this, "onConsoleMessage() :: %s:%s | %s",
 						cm.sourceId(),
 						cm.lineNumber(),
 						cm.message());
 				return true;
-			}
+			} */
 
 			@Override public void openFileChooser(XWalkView view, ValueCallback<Uri> callback, String acceptType, String shouldCapture) {
-				trace(this, "openFileChooser() :: %s,%s,%s,%s", view, callback, acceptType, shouldCapture);
+				if(DEBUG) trace(this, "openFileChooser() :: %s,%s,%s,%s", view, callback, acceptType, shouldCapture);
 
 				boolean capture = parseBoolean(shouldCapture);
 
