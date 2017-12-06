@@ -150,7 +150,7 @@ android {
 		}
 		release {
 			minifyEnabled true
-			proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'config/xwalk.pro'
+			proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'config/xwalk.pro', 'config/libsimprints.pro'
 			shrinkResources true
 			signingConfig signingConfigs.release
 		}
