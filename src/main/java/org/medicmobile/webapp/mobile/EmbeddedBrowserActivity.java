@@ -150,19 +150,22 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	}
 
 	@Override protected void onActivityResult(int requestCode, int resultCode, Intent i) {
-		trace(this, "onActivityResult() :: requestCode=%s, resultCode=%s", requestCode, resultCode);
-		if((requestCode & NON_SIMPRINTS_FLAGS) == NON_SIMPRINTS_FLAGS) {
-			switch(requestCode) {
-				case GRAB_PHOTO:
-					photoGrabber.process(requestCode, resultCode, i);
-					return;
+		try {
+			trace(this, "onActivityResult() :: requestCode=%s, resultCode=%s", requestCode, resultCode);
+			if((requestCode & NON_SIMPRINTS_FLAGS) == NON_SIMPRINTS_FLAGS) {
+				switch(requestCode) {
+					case GRAB_PHOTO:
+						photoGrabber.process(requestCode, resultCode, i);
+						return;
+				}
+			} else {
+				String js = simprints.process(requestCode, i);
+				trace(this, "Execing JS: %s", js);
+				evaluateJavascript(js);
 			}
-		} else try {
-			String js = simprints.process(requestCode, i);
-			trace(this, "Execing JS: %s", js);
-			evaluateJavascript(js);
 		} catch(Exception ex) {
-			warn(ex, "Unhandled intent %s (%s) with requestCode=%s & resultCode=%s", i, i == null ? null : i.getAction(), requestCode, resultCode);
+			String action = i == null ? null : i.getAction();
+			warn(ex, "Problem handling intent %s (%s) with requestCode=%s & resultCode=%s", i, action, requestCode, resultCode);
 		}
 	}
 
