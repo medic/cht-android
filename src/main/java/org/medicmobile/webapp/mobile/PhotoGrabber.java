@@ -63,7 +63,8 @@ class PhotoGrabber {
 		}
 
 		if(resultCode != RESULT_OK) {
-			trace(this, "process() :: non-OK result code :: resultCode=%s, i=%s, intentData=%s", i, resultCode, i.getData());
+			String data = i == null ? null : i.getDataString();
+			trace(this, "process() :: non-OK result code :: resultCode=%s, i=%s, intentData=%s", i, resultCode, data);
 		} else {
 			try {
 				handleBitmapCallback(getImageFromResult(a, FAKE_REQUEST_CODE, resultCode, i));
