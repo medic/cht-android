@@ -28,8 +28,10 @@ import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.location.LocationManager.GPS_PROVIDER;
 import static android.location.LocationManager.NETWORK_PROVIDER;
 import static java.lang.Boolean.parseBoolean;
+import static org.medicmobile.webapp.mobile.BuildConfig.APPLICATION_ID;
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static org.medicmobile.webapp.mobile.BuildConfig.DISABLE_APP_URL_VALIDATION;
+import static org.medicmobile.webapp.mobile.BuildConfig.VERSION_NAME;
 import static org.medicmobile.webapp.mobile.MedicLog.log;
 import static org.medicmobile.webapp.mobile.MedicLog.trace;
 import static org.medicmobile.webapp.mobile.MedicLog.warn;
@@ -85,6 +87,8 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 
 		container = (XWalkView) findViewById(R.id.wbvMain);
 
+		configureUseragent();
+
 		enableLocationUpdates();
 		setUpUiClient(container);
 		enableRemoteChromeDebugging();
@@ -98,6 +102,15 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		if(settings.allowsConfiguration()) {
 			toast(redactUrl(settings.getAppUrl()));
 		}
+	}
+
+	private void configureUseragent() {
+		String current = container.getUserAgentString();
+
+		if(current.contains(APPLICATION_ID)) return;
+
+		container.setUserAgentString(String.format("%s %s/%s",
+				current, APPLICATION_ID, VERSION_NAME));
 	}
 
 	@Override public boolean onCreateOptionsMenu(Menu menu) {
