@@ -63,6 +63,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	private SimprintsSupport simprints;
 	private PhotoGrabber photoGrabber;
 
+//> ACTIVITY LIFECYCLE METHODS
 	@Override public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
@@ -102,15 +103,6 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		if(settings.allowsConfiguration()) {
 			toast(redactUrl(settings.getAppUrl()));
 		}
-	}
-
-	private void configureUseragent() {
-		String current = container.getUserAgentString();
-
-		if(current.contains(APPLICATION_ID)) return;
-
-		container.setUserAgentString(String.format("%s %s/%s",
-				current, APPLICATION_ID, VERSION_NAME));
 	}
 
 	@Override public boolean onCreateOptionsMenu(Menu menu) {
@@ -182,6 +174,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		}
 	}
 
+//> PUBLIC API
 	public void evaluateJavascript(final String js) {
 		container.post(new Runnable() {
 			public void run() {
@@ -198,6 +191,30 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 				}
 			}
 		});
+	}
+
+	public void errorToJsConsole(String message, Object... extras) {
+		jsConsole("error", message, extras);
+	}
+
+	public void logToJsConsole(String message, Object... extras) {
+		jsConsole("log", message, extras);
+	}
+
+//> PRIVATE HELPERS
+	private void jsConsole(String type, String message, Object... extras) {
+		String formatted = String.format(message, extras);
+		String escaped = formatted.replace("'", "\\'");
+		evaluateJavascript("console." + type + "('" + escaped + "');");
+	}
+
+	private void configureUseragent() {
+		String current = container.getUserAgentString();
+
+		if(current.contains(APPLICATION_ID)) return;
+
+		container.setUserAgentString(String.format("%s %s/%s",
+				current, APPLICATION_ID, VERSION_NAME));
 	}
 
 	private void openSettings() {
@@ -244,7 +261,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 				if(photoGrabber.canHandle(acceptType, capture)) {
 					photoGrabber.chooser(callback, capture);
 				} else {
-					evaluateJavascript(String.format("console.log('No file chooser is currently implemented for \"accept\" value: %s');", acceptType));
+					logToJsConsole("No file chooser is currently implemented for \"accept\" value: %s", acceptType);
 					warn(this, "openFileChooser() :: No file chooser is currently implemented for \"accept\" value: %s", acceptType);
 				}
 			}

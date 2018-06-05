@@ -9,6 +9,8 @@ import android.net.TrafficStats;
 import android.os.Process;
 import android.widget.DatePicker;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -21,6 +23,7 @@ import static java.util.Calendar.DAY_OF_MONTH;
 import static java.util.Calendar.MONTH;
 import static java.util.Calendar.YEAR;
 import static java.util.Locale.UK;
+import static org.medicmobile.webapp.mobile.MedicLog.log;
 
 public class MedicAndroidJavascript {
 	private static final String DATE_FORMAT = "yyyy-MM-dd";
@@ -44,6 +47,7 @@ public class MedicAndroidJavascript {
 		this.locationManager = locationManager;
 	}
 
+//> JavascriptInterface METHODS
 	@org.xwalk.core.JavascriptInterface
 	@android.webkit.JavascriptInterface
 	public String getAppVersion() {
@@ -59,14 +63,18 @@ public class MedicAndroidJavascript {
 	@org.xwalk.core.JavascriptInterface
 	@android.webkit.JavascriptInterface
 	public void playAlert() {
-		if(soundAlert != null) soundAlert.trigger();
+		try {
+			if(soundAlert != null) soundAlert.trigger();
+		} catch(Exception ex) {
+			logException(ex);
+		}
 	}
 
 	@org.xwalk.core.JavascriptInterface
 	@android.webkit.JavascriptInterface
 	public String getDataUsage() {
-		int uid = Process.myUid();
 		try {
+			int uid = Process.myUid();
 			return new JSONObject()
 					.put("system", getDataUsage(
 							TrafficStats.getTotalRxBytes(),
@@ -117,7 +125,11 @@ public class MedicAndroidJavascript {
 	@org.xwalk.core.JavascriptInterface
 	@android.webkit.JavascriptInterface
 	public void datePicker(final String targetElement) {
-		datePicker(targetElement, Calendar.getInstance());
+		try {
+			datePicker(targetElement, Calendar.getInstance());
+		} catch(Exception ex) {
+			logException(ex);
+		}
 	}
 
 	@org.xwalk.core.JavascriptInterface
@@ -130,6 +142,8 @@ public class MedicAndroidJavascript {
 			datePicker(targetElement, c);
 		} catch(ParseException ex) {
 			datePicker(targetElement);
+		} catch(Exception ex) {
+			logException(ex);
 		}
 	}
 
@@ -139,21 +153,35 @@ public class MedicAndroidJavascript {
 	@org.xwalk.core.JavascriptInterface
 	@android.webkit.JavascriptInterface
 	public boolean simprints_available() {
-		return simprints.isAppInstalled();
+		try {
+			return simprints.isAppInstalled();
+		} catch(Exception ex) {
+			logException(ex);
+			return false;
+		}
 	}
 
 	@org.xwalk.core.JavascriptInterface
 	@android.webkit.JavascriptInterface
 	public void simprints_ident(int targetInputId) {
-		simprints.startIdent(targetInputId);
+		try {
+			simprints.startIdent(targetInputId);
+		} catch(Exception ex) {
+			logException(ex);
+		}
 	}
 
 	@org.xwalk.core.JavascriptInterface
 	@android.webkit.JavascriptInterface
 	public void simprints_reg(int targetInputId) {
-		simprints.startReg(targetInputId);
+		try {
+			simprints.startReg(targetInputId);
+		} catch(Exception ex) {
+			logException(ex);
+		}
 	}
 
+//> PRIVATE HELPER METHODS
 	private void datePicker(String targetElement, Calendar initialDate) {
 		// Remove single-quotes from the `targetElement` CSS selecter, as
 		// we'll be using these to enclose the entire string in JS.  We
@@ -185,6 +213,20 @@ public class MedicAndroidJavascript {
 		dialog.show();
 	}
 
+	private void logException(Exception ex) {
+		log(ex, "Execption thrown in JavascriptInterface function.");
+
+		StringWriter sw = new StringWriter();
+		PrintWriter pw = new PrintWriter(sw);
+		ex.printStackTrace(pw);
+		String stacktrace = sw.toString()
+				.replace("\n", "; ")
+				.replace("\t", " ");
+
+		parent.errorToJsConsole("Execption thrown in JavascriptInterface function: %s", stacktrace);
+	}
+
+//> STATIC HELPERS
 	private static String jsonError(String message, Exception ex) {
 		return jsonError(message + ex.getClass() + ": " + ex.getMessage());
 	}
