@@ -9,7 +9,11 @@
 			tools:ignore="OldTargetApi"/>
 	<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
 	<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+	<!-- Indicate to Adnroid 5+ that we want to use hardware to get the location(!)
+	     @see https://developer.android.com/guide/topics/location/strategies#Permission -->
+	<uses-feature android:name="android.hardware.location" android:required="false"/>
 	<uses-feature android:name="android.hardware.location.gps" android:required="false"/>
+	<uses-feature android:name="android.hardware.location.network" android:required="false"/>
 
 	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
 	<uses-permission android:name="android.permission.INTERNET"/>
