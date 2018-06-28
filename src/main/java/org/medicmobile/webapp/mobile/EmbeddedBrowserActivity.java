@@ -312,12 +312,17 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 
 		LocationManager m = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
 
-		m.requestLocationUpdates(GPS_PROVIDER, FIVE_MINS, ANY_DISTANCE, new LocationListener() {
-			public void onLocationChanged(Location location) {}
-			public void onProviderDisabled(String provider) {}
-			public void onProviderEnabled(String provider) {}
-			public void onStatusChanged(String provider, int status, Bundle extras) {}
-		});
+		// Checking if the phone has GPS or GPS needs to be enabled before requesting GPS location updates
+		if(m.isProviderEnabled(LocationManager.GPS_PROVIDER)){
+			m.requestLocationUpdates(GPS_PROVIDER, FIVE_MINS, ANY_DISTANCE, new LocationListener() {
+				public void onLocationChanged(Location location) {}
+				public void onProviderDisabled(String provider) {}
+				public void onProviderEnabled(String provider) {}
+				public void onStatusChanged(String provider, int status, Bundle extras) {}
+			});
+		}else {
+			log("GPS not enabled or phone does not have GPS.");
+		}
 
 		m.requestLocationUpdates(NETWORK_PROVIDER, FIVE_MINS, ANY_DISTANCE, new LocationListener() {
 			public void onLocationChanged(Location location) {}
