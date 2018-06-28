@@ -40,6 +40,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	/** Any activity result with all 3 low bits set is _not_ a simprints result. */
 	private static final int NON_SIMPRINTS_FLAGS = 0x7;
 	static final int GRAB_PHOTO = (0 << 3) | NON_SIMPRINTS_FLAGS;
+	static final int GRAB_MRDT_PHOTO = (1 << 3) | NON_SIMPRINTS_FLAGS;
 
 	private static final long FIVE_MINS = 5 * 60 * 1000;
 	private static final float ANY_DISTANCE = 0f;
@@ -59,6 +60,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	private XWalkView container;
 	private SettingsStore settings;
 	private SimprintsSupport simprints;
+	private MrdtSupport mrdt;
 	private PhotoGrabber photoGrabber;
 
 //> ACTIVITY LIFECYCLE METHODS
@@ -69,6 +71,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 
 		this.simprints = new SimprintsSupport(this);
 		this.photoGrabber = new PhotoGrabber(this);
+		this.mrdt = new MrdtSupport(this);
 
 		this.settings = SettingsStore.in(this);
 
@@ -160,6 +163,13 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 					case GRAB_PHOTO:
 						photoGrabber.process(requestCode, resultCode, i);
 						return;
+					case GRAB_MRDT_PHOTO:
+						String js = mrdt.process(requestCode, resultCode, i);
+						trace(this, "Execing JS: %s", js);
+						evaluateJavascript(js);
+						return;
+					default:
+						trace(this, "onActivityResult() :: no handling for requestCode=%s", requestCode);
 				}
 			} else {
 				String js = simprints.process(requestCode, i);
@@ -170,6 +180,15 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 			String action = i == null ? null : i.getAction();
 			warn(ex, "Problem handling intent %s (%s) with requestCode=%s & resultCode=%s", i, action, requestCode, resultCode);
 		}
+	}
+
+//> ACCESSORS
+	SimprintsSupport getSimprintsSupport() {
+		return this.simprints;
+	}
+
+	MrdtSupport getMrdtSupport() {
+		return this.mrdt;
 	}
 
 //> PUBLIC API
