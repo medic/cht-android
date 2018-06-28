@@ -25,8 +25,6 @@ import org.xwalk.core.XWalkUIClient;
 import org.xwalk.core.XWalkView;
 
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
-import static android.location.LocationManager.GPS_PROVIDER;
-import static android.location.LocationManager.NETWORK_PROVIDER;
 import static java.lang.Boolean.parseBoolean;
 import static org.medicmobile.webapp.mobile.BuildConfig.APPLICATION_ID;
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
@@ -306,29 +304,38 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	@Deprecated
 	private void enableLocationUpdates() {
 		if(ContextCompat.checkSelfPermission(this, permission.ACCESS_FINE_LOCATION) != PERMISSION_GRANTED) {
-			log("Cannot enable location updates: permission ACCESS_FINE_LOCATION not granted.");
+			log("EmbeddedBrowserActivity.enableLocationUpdates() :: Cannot enable location updates: permission ACCESS_FINE_LOCATION not granted.");
 			return;
 		}
 
 		LocationManager m = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
 
-		if(m.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-			m.requestLocationUpdates(GPS_PROVIDER, FIVE_MINS, ANY_DISTANCE, new LocationListener() {
-				public void onLocationChanged(Location location) {}
-				public void onProviderDisabled(String provider) {}
-				public void onProviderEnabled(String provider) {}
-				public void onStatusChanged(String provider, int status, Bundle extras) {}
-			});
-		} else {
-			log("Cannot get GPS updates: GPS not enabled or phone does not have GPS.");
+		if(m == null) {
+			log("EmbeddedBrowserActivity.enableLocationUpdates() :: Cannot enable location updates: LOCATION_SERVICE could not be fetched.");
+			return;
 		}
 
-		m.requestLocationUpdates(NETWORK_PROVIDER, FIVE_MINS, ANY_DISTANCE, new LocationListener() {
-			public void onLocationChanged(Location location) {}
-			public void onProviderDisabled(String provider) {}
-			public void onProviderEnabled(String provider) {}
-			public void onStatusChanged(String provider, int status, Bundle extras) {}
-		});
+		requestLocationUpdates(m, LocationManager.GPS_PROVIDER);
+		requestLocationUpdates(m, LocationManager.NETWORK_PROVIDER);
+	}
+
+	private void requestLocationUpdates(LocationManager m, String locationProvider) {
+		try {
+			if(m.isProviderEnabled(locationProvider)) {
+				m.requestLocationUpdates(locationProvider, FIVE_MINS, ANY_DISTANCE, new LocationListener() {
+					public void onLocationChanged(Location location) {}
+					public void onProviderDisabled(String provider) {}
+					public void onProviderEnabled(String provider) {}
+					public void onStatusChanged(String provider, int status, Bundle extras) {}
+				});
+			} else {
+				log("EmbeddedBrowserActivity.requestLocationUpdates(%s) :: Cannot get updates: not enabled or phone does not have this feature.",
+						locationProvider);
+			}
+		} catch(SecurityException ex) {
+			log(ex, "EmbeddedBrowserActivity.requestLocationUpdates(%s) :: Exception thrown while checking provider.",
+					locationProvider);
+		}
 	}
 
 	private void enableStorage(XWalkView container) {
