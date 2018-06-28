@@ -321,8 +321,8 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 				public void onStatusChanged(String provider, int status, Bundle extras) {}
 			});
 		}else {
-            log("GPS not enabled or phone does not have GPS.");
-        }
+			log("GPS not enabled or phone does not have GPS.");
+		}
 
 		m.requestLocationUpdates(NETWORK_PROVIDER, FIVE_MINS, ANY_DISTANCE, new LocationListener() {
 			public void onLocationChanged(Location location) {}
