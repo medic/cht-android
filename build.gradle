@@ -209,6 +209,9 @@ android {
 		livinggoods_innovation_ke {
 			applicationId = 'org.medicmobile.webapp.mobile.livinggoods_innovation_ke'
 		}
+		livinggoods_assisted_networks {
+			applicationId = 'org.medicmobile.webapp.mobile.livinggoods_assisted_networks'
+		}
 		moh_kenya_siaya_white {
 			applicationId = 'org.medicmobile.webapp.mobile.moh_kenya_siaya'
 		}
