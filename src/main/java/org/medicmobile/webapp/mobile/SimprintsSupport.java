@@ -17,6 +17,7 @@ import static com.simprints.libsimprints.Constants.SIMPRINTS_REGISTRATION;
 import static org.medicmobile.webapp.mobile.BuildConfig.SIMPRINTS_API_KEY;
 import static org.medicmobile.webapp.mobile.BuildConfig.SIMPRINTS_MODULE_ID;
 import static org.medicmobile.webapp.mobile.BuildConfig.SIMPRINTS_USER_ID;
+import static org.medicmobile.webapp.mobile.JavascriptUtils.safeFormat;
 import static org.medicmobile.webapp.mobile.MedicLog.log;
 import static org.medicmobile.webapp.mobile.MedicLog.trace;
 import static org.medicmobile.webapp.mobile.MedicLog.warn;
@@ -116,20 +117,6 @@ final class SimprintsSupport {
 	}
 
 //> STATIC HELPERS
-	private static String safeFormat(String js, Object... args) {
-		Object[] escapedArgs = new Object[args.length];
-		for(int i=0; i<args.length; ++i) {
-			escapedArgs[i] = jsEscape(args[i]);
-		}
-		return String.format(js, escapedArgs);
-	}
-
-	private static String jsEscape(Object s) {
-		return s.toString()
-				.replaceAll("'",  "\\'")
-				.replaceAll("\n", "\\n");
-	}
-
 	private static SimHelper simHelper() {
 		return new SimHelper(SIMPRINTS_API_KEY, SIMPRINTS_USER_ID);
 	}

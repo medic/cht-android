@@ -30,13 +30,15 @@ public class MedicAndroidJavascript {
 
 	private final EmbeddedBrowserActivity parent;
 	private final SimprintsSupport simprints;
+	private final MrdtSupport mrdt;
 
 	private LocationManager locationManager;
 	private Alert soundAlert;
 
 	public MedicAndroidJavascript(EmbeddedBrowserActivity parent) {
 		this.parent = parent;
-		this.simprints = new SimprintsSupport(parent);
+		this.simprints = parent.getSimprintsSupport();
+		this.mrdt = parent.getMrdtSupport();
 	}
 
 	public void setAlert(Alert soundAlert) {
@@ -142,6 +144,27 @@ public class MedicAndroidJavascript {
 			datePicker(targetElement, c);
 		} catch(ParseException ex) {
 			datePicker(targetElement);
+		} catch(Exception ex) {
+			logException(ex);
+		}
+	}
+
+	@org.xwalk.core.JavascriptInterface
+	@android.webkit.JavascriptInterface
+	public boolean mrdt_available() {
+		try {
+			return mrdt.isAppInstalled();
+		} catch(Exception ex) {
+			logException(ex);
+			return false;
+		}
+	}
+
+	@org.xwalk.core.JavascriptInterface
+	@android.webkit.JavascriptInterface
+	public void mrdt_verify() {
+		try {
+			mrdt.startVerify();
 		} catch(Exception ex) {
 			logException(ex);
 		}
