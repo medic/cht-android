@@ -234,5 +234,8 @@ android {
 			simprintsModuleId = 'simprints.app'
 			simprintsUserId = 'test@simprints.app'
 		}
+		vhw_burundi {
+			applicationId = 'org.medicmobile.webapp.mobile.vhw_burundi'
+		}
 	}
 }
