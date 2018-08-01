@@ -91,7 +91,7 @@ coverageReport.doLast {
 }
 
 android {
-	compileSdkVersion 24
+	compileSdkVersion 26
 	buildToolsVersion '23.0.3'
 	packagingOptions {
 		exclude 'META-INF/LICENSE'
