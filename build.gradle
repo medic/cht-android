@@ -212,7 +212,7 @@ android {
 		livinggoods_innovation_ke_supervisor {
 			applicationId = 'org.medicmobile.webapp.mobile.livinggoods_innovation_ke_supervisor'
 		}
-		livinggoods_assisted_networks {
+		livinggoods_innovation_ke_hivst {
 			applicationId = 'org.medicmobile.webapp.mobile.livinggoods_innovation_ke_hivst'
 		}
 		livinggoods_assisted_networks {
