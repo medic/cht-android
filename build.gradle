@@ -179,8 +179,6 @@ android {
 	flavorDimensions 'brand'
 	productFlavors {
 		unbranded {
-			dimension 'brand'
-
 			// we will not create project-specific src directories
 			// for `unbranded` - it will use the defaults in
 			// src/main
@@ -190,72 +188,55 @@ android {
 			simprintsUserId = 'test@simprints.app'
 		}
 		medicmobiledemo {
-			dimension 'brand'
 			applicationId = 'org.medicmobile.webapp.mobile.medicmobiledemo'
 		}
 
 		bracuganda {
-			dimension 'brand'
 			applicationId = 'org.medicmobile.webapp.mobile.bracuganda'
 		}
 		cic_guatemala {
-			dimension 'brand'
 			applicationId = 'org.medicmobile.webapp.mobile.cic_guatemala'
 		}
 		ebpp_indonesia {
-			dimension 'brand'
 			applicationId = 'org.medicmobile.webapp.mobile.ebpp_indonesia'
 		}
 		hope_through_health {
-			dimension 'brand'
 			applicationId = 'org.medicmobile.webapp.mobile.hope_through_health'
 		}
 		livinggoods {
-			dimension 'brand'
 			applicationId = 'org.medicmobile.webapp.mobile.livinggoods'
 		}
 		livinggoodskenya {
-			dimension 'brand'
 			applicationId = 'org.medicmobile.webapp.mobile.livinggoodskenya'
 		}
 		livinggoods_innovation_ke {
-			dimension 'brand'
 			applicationId = 'org.medicmobile.webapp.mobile.livinggoods_innovation_ke'
 		}
 		livinggoods_innovation_ke_supervisor {
-			dimension 'brand'
 			applicationId = 'org.medicmobile.webapp.mobile.livinggoods_innovation_ke_supervisor'
 		}
 		livinggoods_innovation_ke_hivst {
-			dimension 'brand'
 			applicationId = 'org.medicmobile.webapp.mobile.livinggoods_innovation_ke_hivst'
 		}
 		livinggoods_assisted_networks {
-			dimension 'brand'
 			applicationId = 'org.medicmobile.webapp.mobile.livinggoods_assisted_networks'
 		}
 		moh_kenya_siaya_white {
-			dimension 'brand'
 			applicationId = 'org.medicmobile.webapp.mobile.moh_kenya_siaya'
 		}
 		moh_kenya_siaya_red {
-			dimension 'brand'
 			applicationId = 'org.medicmobile.webapp.mobile.moh_kenya_siaya_red'
 		}
 		moh_kenya_siaya_green {
-			dimension 'brand'
 			applicationId = 'org.medicmobile.webapp.mobile.moh_kenya_siaya_green'
 		}
 		moh_kenya_siaya_black {
-			dimension 'brand'
 			applicationId = 'org.medicmobile.webapp.mobile.moh_kenya_siaya_black'
 		}
 		musomali {
-			dimension 'brand'
 			applicationId = 'org.medicmobile.webapp.mobile.musomali'
 		}
 		simprints {
-			dimension 'brand'
 			applicationId = 'org.medicmobile.webapp.mobile.simprints'
 
 			simprintsApiKey = 'f4c47c4e-d6ee-444f-b16e-22a4761b1f3c'
@@ -263,7 +244,6 @@ android {
 			simprintsUserId = 'test@simprints.app'
 		}
 		vhw_burundi {
-			dimension 'brand'
 			applicationId = 'org.medicmobile.webapp.mobile.vhw_burundi'
 		}
 	}
