@@ -18,8 +18,6 @@ import java.net.URL;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import static android.os.Build.VERSION;
-import static android.os.Build.VERSION_CODES;
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static org.medicmobile.webapp.mobile.BuildConfig.LOG_TAG;
 
@@ -32,13 +30,6 @@ import static org.medicmobile.webapp.mobile.BuildConfig.LOG_TAG;
  * @see org.apache.http.impl.client.DefaultHttpClient
  */
 public class SimpleJsonClient2 {
-	static {
-		// HTTP connection reuse which was buggy pre-froyo
-		if (VERSION.SDK_INT < VERSION_CODES.FROYO) {
-			System.setProperty("http.keepAlive", "false");
-		}
-	}
-
 	private static final Pattern AUTH_URL = Pattern.compile("(.+)://(.*):(.*)@(.*)");
 
 //> PUBLIC METHODS
