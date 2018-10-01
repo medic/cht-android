@@ -18,6 +18,7 @@ import static android.provider.MediaStore.ACTION_IMAGE_CAPTURE;
 import static com.mvc.imagepicker.ImagePicker.getImageFromResult;
 import static com.mvc.imagepicker.ImagePicker.getPickImageIntent;
 import static org.medicmobile.webapp.mobile.EmbeddedBrowserActivity.GRAB_PHOTO;
+import static org.medicmobile.webapp.mobile.MedicLog.log;
 import static org.medicmobile.webapp.mobile.MedicLog.trace;
 import static org.medicmobile.webapp.mobile.MedicLog.warn;
 import static org.medicmobile.webapp.mobile.Utils.intentHandlerAvailableFor;
@@ -195,7 +196,8 @@ class PhotoGrabber {
 
 	private File tempFile() throws IOException {
 		File imageCacheDir = new File(a.getCacheDir(), "medic-form-photos");
-		imageCacheDir.mkdirs();
+		boolean mkdirSuccess = imageCacheDir.mkdirs();
+		if(!mkdirSuccess) log("tempFile() :: imageCacheDir.mkdirs() failed.  This may cause problems with taking photos.");
 		return File.createTempFile("photo", ".jpg", imageCacheDir);
 	}
 }
