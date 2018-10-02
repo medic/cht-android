@@ -1,13 +1,10 @@
 package org.medicmobile.webapp.mobile;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
@@ -58,14 +55,9 @@ public class LockScreen extends Activity {
 
 		final EditText txtPin = (EditText) findViewById(R.id.txtPinEntry);
 
-		// Ignore all touches on the PIN field, but allow it to be syled as
-		// if it were editable.
-		txtPin.setOnTouchListener(new OnTouchListener() {
-			@SuppressLint("ClickableViewAccessibility")
-			@Override public boolean onTouch(View v, MotionEvent e) {
-				return true;
-			}
-		});
+		// Ignore all input on the PIN field, but allow it to be styled
+		// as if it were editable.
+		txtPin.setKeyListener(null);
 
 		final ViewGroup group = (ViewGroup) findViewById(R.id.divButtons);
 		int i = group.getChildCount();
