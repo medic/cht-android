@@ -35,7 +35,7 @@ import static org.medicmobile.webapp.mobile.MedicLog.trace;
 import static org.medicmobile.webapp.mobile.MedicLog.warn;
 import static org.medicmobile.webapp.mobile.SimpleJsonClient2.redactUrl;
 
-@SuppressWarnings("PMD.GodClass")
+@SuppressWarnings({ "PMD.GodClass", "PMD.TooManyMethods" })
 public class EmbeddedBrowserActivity extends LockableActivity {
 	/** Any activity result with all 3 low bits set is _not_ a simprints result. */
 	private static final int NON_SIMPRINTS_FLAGS = 0x7;
@@ -341,10 +341,16 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	private void requestLocationUpdates(LocationManager m, String locationProvider) {
 		try {
 			if(m.isProviderEnabled(locationProvider)) {
+				// Method bodies are empty because we need the location updates to be running constantly so
+				// that recent location can be requested when required from Javascript.
 				m.requestLocationUpdates(locationProvider, FIVE_MINS, ANY_DISTANCE, new LocationListener() {
+					@SuppressWarnings("PMD.UncommentedEmptyMethodBody")
 					public void onLocationChanged(Location location) {}
+					@SuppressWarnings("PMD.UncommentedEmptyMethodBody")
 					public void onProviderDisabled(String provider) {}
+					@SuppressWarnings("PMD.UncommentedEmptyMethodBody")
 					public void onProviderEnabled(String provider) {}
+					@SuppressWarnings("PMD.UncommentedEmptyMethodBody")
 					public void onStatusChanged(String provider, int status, Bundle extras) {}
 				});
 			} else {
