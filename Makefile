@@ -39,4 +39,4 @@ test:
 	${GRADLEW} androidCheck lintUnbrandedDebug test
 
 travis: test
-	${GRADLEW} assemble coverageReport
+	${GRADLEW} assemble
