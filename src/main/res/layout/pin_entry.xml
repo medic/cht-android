@@ -18,7 +18,8 @@
 				android:layout_height="fill_parent"
 				android:gravity="center"
 				android:singleLine="true"
-				android:inputType="textPassword"/>
+				android:inputType="textPassword"
+				android:importantForAutofill="no"/>
 		<Button style="@style/PinButton"
 				android:id="@+id/btnBackspace"
 				android:text="«x"/>

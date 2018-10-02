@@ -4,7 +4,6 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.ArrayMap;
 import android.view.View;
@@ -21,6 +20,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import medic.android.ActivityTask;
+
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static org.medicmobile.webapp.mobile.SimpleJsonClient2.redactUrl;
 import static org.medicmobile.webapp.mobile.MedicLog.trace;
@@ -32,6 +33,29 @@ public class SettingsDialogActivity extends LockableActivity {
 	private SettingsStore settings;
 	private ServerRepo serverRepo;
 	private int state;
+
+	private static class AppUrlVerificationTask extends ActivityTask<SettingsDialogActivity, String, Void, AppUrlVerification> {
+		AppUrlVerificationTask(SettingsDialogActivity a) {
+			super(a);
+		}
+
+		protected AppUrlVerification doInBackground(String... appUrl) {
+			if(DEBUG && appUrl.length != 1) throw new IllegalArgumentException();
+			return new AppUrlVerifier().verify(appUrl[0]);
+		}
+		protected void onPostExecute(AppUrlVerification result) {
+			SettingsDialogActivity ctx = getRequiredCtx("AppUrlVerificationTask.onPostExecute()");
+
+			if(result.isOk) {
+				ctx.saveSettings(new WebappSettings(result.appUrl));
+				ctx.serverRepo.save(result.appUrl);
+			} else {
+				ctx.showError(R.id.txtAppUrl, result.failure);
+				ctx.submitButton().setEnabled(true);
+				ctx.cancelButton().setEnabled(true);
+			}
+		}
+	}
 
 	@Override public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -83,22 +107,7 @@ public class SettingsDialogActivity extends LockableActivity {
 
 		String appUrl = text(R.id.txtAppUrl);
 
-		new AsyncTask<String, Void, AppUrlVerification>() {
-			protected AppUrlVerification doInBackground(String... appUrl) {
-				if(DEBUG && appUrl.length != 1) throw new IllegalArgumentException();
-				return new AppUrlVerifier().verify(appUrl[0]);
-			}
-			protected void onPostExecute(AppUrlVerification result) {
-				if(result.isOk) {
-					saveSettings(new WebappSettings(result.appUrl));
-					serverRepo.save(result.appUrl);
-				} else {
-					showError(R.id.txtAppUrl, result.failure);
-					submitButton().setEnabled(true);
-					cancelButton().setEnabled(true);
-				}
-			}
-		}.execute(appUrl);
+		new AppUrlVerificationTask(this).execute(appUrl);
 	}
 
 	public void cancelSettingsEdit(View view) {
