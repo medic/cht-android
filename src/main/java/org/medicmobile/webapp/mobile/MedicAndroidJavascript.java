@@ -31,6 +31,7 @@ public class MedicAndroidJavascript {
 	private final EmbeddedBrowserActivity parent;
 	private final SimprintsSupport simprints;
 	private final MrdtSupport mrdt;
+	private final SmsSender smsSender;
 
 	private LocationManager locationManager;
 	private Alert soundAlert;
@@ -39,6 +40,7 @@ public class MedicAndroidJavascript {
 		this.parent = parent;
 		this.simprints = parent.getSimprintsSupport();
 		this.mrdt = parent.getMrdtSupport();
+		this.smsSender = parent.getSmsSender();
 	}
 
 	public void setAlert(Alert soundAlert) {
@@ -201,6 +203,30 @@ public class MedicAndroidJavascript {
 			simprints.startReg(targetInputId);
 		} catch(Exception ex) {
 			logException(ex);
+		}
+	}
+
+
+	@org.xwalk.core.JavascriptInterface
+	@android.webkit.JavascriptInterface
+	public boolean sms_available() {
+		return smsSender != null;
+	}
+
+	/**
+	 * @param id id associated with this message, e.g. a pouchdb docId
+	 * @param destination the recipient phone number for this message
+	 * @param content the text content of the SMS to be sent
+	 */
+	@org.xwalk.core.JavascriptInterface
+	@android.webkit.JavascriptInterface
+	public void sms_send(String id, String destination, String content) throws Exception {
+		try {
+			// TODO we may need to do this on a background thread to avoid the browser UI from blocking while the SMS is being sent.  Check.
+			smsSender.send(id, destination, content);
+		} catch(Exception ex) {
+			logException(ex);
+			throw ex;
 		}
 	}
 
