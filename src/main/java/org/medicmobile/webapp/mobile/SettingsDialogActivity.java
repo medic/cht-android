@@ -20,7 +20,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import medic.android.ActivityTask;
+import medic.android.ActivityBackgroundTask;
 
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static org.medicmobile.webapp.mobile.SimpleJsonClient2.redactUrl;
@@ -34,7 +34,7 @@ public class SettingsDialogActivity extends LockableActivity {
 	private ServerRepo serverRepo;
 	private int state;
 
-	private static class AppUrlVerificationTask extends ActivityTask<SettingsDialogActivity, String, Void, AppUrlVerification> {
+	private static class AppUrlVerificationTask extends ActivityBackgroundTask<SettingsDialogActivity, String, Void, AppUrlVerification> {
 		AppUrlVerificationTask(SettingsDialogActivity a) {
 			super(a);
 		}

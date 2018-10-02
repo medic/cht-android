@@ -9,12 +9,11 @@ import java.lang.ref.WeakReference;
 import static android.os.Build.VERSION.SDK_INT;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 
-// TODO rename this as ActivityBackgroundTask or something
 // TODO this was copy/pasted from medic-gateway, and we should consider sharing code more gracefully between projects
-public abstract class ActivityTask<Parent extends Activity, Params, Progress, Result> extends AsyncTask<Params, Progress, Result> {
+public abstract class ActivityBackgroundTask<Parent extends Activity, Params, Progress, Result> extends AsyncTask<Params, Progress, Result> {
 	private final WeakReference<Parent> parent;
 
-	public ActivityTask(Parent parent) {
+	public ActivityBackgroundTask(Parent parent) {
 		super();
 		this.parent = new WeakReference<>(parent);
 	}
