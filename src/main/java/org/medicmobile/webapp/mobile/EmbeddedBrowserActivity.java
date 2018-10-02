@@ -62,6 +62,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	private SimprintsSupport simprints;
 	private MrdtSupport mrdt;
 	private PhotoGrabber photoGrabber;
+	private SmsSender smsSender;
 
 //> ACTIVITY LIFECYCLE METHODS
 	@Override public void onCreate(Bundle savedInstanceState) {
@@ -72,6 +73,11 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		this.simprints = new SimprintsSupport(this);
 		this.photoGrabber = new PhotoGrabber(this);
 		this.mrdt = new MrdtSupport(this);
+		try {
+			this.smsSender = new SmsSender(this);
+		} catch(Exception ex) {
+			warn(ex, "Failed to create SmsSender.");
+		}
 
 		this.settings = SettingsStore.in(this);
 
@@ -189,6 +195,10 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 
 	MrdtSupport getMrdtSupport() {
 		return this.mrdt;
+	}
+
+	SmsSender getSmsSender() {
+		return this.smsSender;
 	}
 
 //> PUBLIC API
