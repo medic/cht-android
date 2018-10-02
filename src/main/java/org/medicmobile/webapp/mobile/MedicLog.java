@@ -1,6 +1,7 @@
 package org.medicmobile.webapp.mobile;
 
 import static android.util.Log.d;
+import static android.util.Log.e;
 import static android.util.Log.i;
 import static android.util.Log.w;
 import static java.lang.String.format;
@@ -42,6 +43,12 @@ public final class MedicLog {
 		message = format(message, extras);
 
 		w(LOG_TAG, message, ex);
+	}
+
+	public static void error(Exception ex, String message, Object... extras) {
+		message = format(message, extras);
+
+		e(LOG_TAG, message, ex);
 	}
 
 	private static String messageWithCaller(Object caller, String message, Object... extras) {
