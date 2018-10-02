@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+		xmlns:tools="http://schemas.android.com/tools"
 		android:layout_width="fill_parent"
 		android:layout_height="fill_parent"
 		android:scrollbars="vertical"
@@ -29,18 +30,26 @@
 				android:layout_width="fill_parent"
 				android:layout_height="fill_parent"
 				android:orientation="vertical">
+			<!-- OnClick is ignored because lint generates error
+			     incorrectly.  Test with future build tool versions
+			     to see if this exception can be removed -->
 			<Button android:id="@+id/btnFreeSpaceQuit"
 					android:text="@string/btnQuit"
 					android:onClick="evtQuit"
+					tools:ignore="OnClick"
 					android:layout_height="wrap_content"
 					android:layout_width="wrap_content"
 					android:paddingLeft="16dp"
 					android:paddingRight="16dp"
 					android:layout_toStartOf="@+id/btnFreeSpaceContinue"
 					android:layout_alignParentBottom="true"/>
+			<!-- OnClick is ignored because lint generates error
+			     incorrectly.  Test with future build tool versions
+			     to see if this exception can be removed -->
 			<Button android:id="@+id/btnFreeSpaceContinue"
 					android:text="@string/btnContinue"
 					android:onClick="evtContinue"
+					tools:ignore="OnClick"
 					android:layout_height="wrap_content"
 					android:layout_width="wrap_content"
 					android:paddingLeft="16dp"
