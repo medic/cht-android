@@ -30,6 +30,7 @@ import static org.medicmobile.webapp.mobile.BuildConfig.APPLICATION_ID;
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static org.medicmobile.webapp.mobile.BuildConfig.DISABLE_APP_URL_VALIDATION;
 import static org.medicmobile.webapp.mobile.BuildConfig.VERSION_NAME;
+import static org.medicmobile.webapp.mobile.MedicLog.error;
 import static org.medicmobile.webapp.mobile.MedicLog.log;
 import static org.medicmobile.webapp.mobile.MedicLog.trace;
 import static org.medicmobile.webapp.mobile.MedicLog.warn;
@@ -76,7 +77,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		try {
 			this.smsSender = new SmsSender(this);
 		} catch(Exception ex) {
-			warn(ex, "Failed to create SmsSender.");
+			error(ex, "Failed to create SmsSender.");
 		}
 
 		this.settings = SettingsStore.in(this);
