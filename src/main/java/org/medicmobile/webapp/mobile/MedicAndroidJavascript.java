@@ -206,6 +206,13 @@ public class MedicAndroidJavascript {
 		}
 	}
 
+
+	@org.xwalk.core.JavascriptInterface
+	@android.webkit.JavascriptInterface
+	public boolean sms_available() {
+		return smsSender != null;
+	}
+
 	/**
 	 * @param id id associated with this message, e.g. a pouchdb docId
 	 * @param destination the recipient phone number for this message
