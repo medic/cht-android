@@ -220,11 +220,12 @@ public class MedicAndroidJavascript {
 	 */
 	@org.xwalk.core.JavascriptInterface
 	@android.webkit.JavascriptInterface
-	public void sms_send(String id, String destination, String content) {
+	public void sms_send(String id, String destination, String content) throws Exception {
 		try {
 			smsSender.send(id, destination, content);
 		} catch(Exception ex) {
 			logException(ex);
+			throw ex;
 		}
 	}
 
