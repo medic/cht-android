@@ -5,9 +5,8 @@ import android.content.Intent;
 import android.os.Bundle;
 
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
-import static org.medicmobile.webapp.mobile.BuildConfig.APPLICATION_ID;
-import static org.medicmobile.webapp.mobile.BuildConfig.VERSION_NAME;
 import static org.medicmobile.webapp.mobile.MedicLog.trace;
+import static org.medicmobile.webapp.mobile.Utils.createUseragentFrom;
 import static org.medicmobile.webapp.mobile.Utils.startAppActivityChain;
 
 public class StartupActivity extends Activity {
@@ -41,8 +40,6 @@ public class StartupActivity extends Activity {
 
 	private void configureHttpUseragent() {
 		String current = System.getProperty("http.agent");
-		if(current.contains(APPLICATION_ID)) return;
-		System.setProperty("http.agent", String.format("%s %s/%s",
-				current, APPLICATION_ID, VERSION_NAME));
+		System.setProperty("http.agent", createUseragentFrom(current));
 	}
 }

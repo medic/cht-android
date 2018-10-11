@@ -26,14 +26,13 @@ import org.xwalk.core.XWalkView;
 
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static java.lang.Boolean.parseBoolean;
-import static org.medicmobile.webapp.mobile.BuildConfig.APPLICATION_ID;
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static org.medicmobile.webapp.mobile.BuildConfig.DISABLE_APP_URL_VALIDATION;
-import static org.medicmobile.webapp.mobile.BuildConfig.VERSION_NAME;
 import static org.medicmobile.webapp.mobile.MedicLog.log;
 import static org.medicmobile.webapp.mobile.MedicLog.trace;
 import static org.medicmobile.webapp.mobile.MedicLog.warn;
 import static org.medicmobile.webapp.mobile.SimpleJsonClient2.redactUrl;
+import static org.medicmobile.webapp.mobile.Utils.createUseragentFrom;
 
 @SuppressWarnings({ "PMD.GodClass", "PMD.TooManyMethods" })
 public class EmbeddedBrowserActivity extends LockableActivity {
@@ -228,10 +227,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	private void configureUseragent() {
 		String current = container.getUserAgentString();
 
-		if(current.contains(APPLICATION_ID)) return;
-
-		container.setUserAgentString(String.format("%s %s/%s",
-				current, APPLICATION_ID, VERSION_NAME));
+		container.setUserAgentString(createUseragentFrom(current));
 	}
 
 	private void openSettings() {
