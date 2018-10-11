@@ -10,7 +10,6 @@ import android.telephony.SmsManager;
 import android.telephony.SmsMessage;
 
 import java.util.ArrayList;
-import java.util.Random;
 
 import static java.lang.Integer.toHexString;
 import static org.medicmobile.webapp.mobile.JavascriptUtils.safeFormat;
@@ -23,18 +22,17 @@ import static android.telephony.SmsManager.RESULT_ERROR_NULL_PDU;
 import static android.telephony.SmsManager.RESULT_ERROR_RADIO_OFF;
 
 class SmsSender {
+	private static final int UNUSED_REQUEST_CODE = 0;
 	private static final String DEFAULT_SMSC = null;
 
 	private static final String SENDING_REPORT = "medic.android.sms.SENDING_REPORT";
 	private static final String DELIVERY_REPORT = "medic.android.sms.DELIVERY_REPORT";
 
 	private final EmbeddedBrowserActivity parent;
-	private final Random r;
 	private final SmsManager smsManager;
 
 	SmsSender(EmbeddedBrowserActivity parent) {
 		this.parent = parent;
-		this.r = new Random();
 		this.smsManager = SmsManager.getDefault();
 
 		parent.registerReceiver(new BroadcastReceiver() {
@@ -120,10 +118,8 @@ class SmsSender {
 		// will never want to cancel these intents, and we do not want
 		// collisions.  There is a small chance of collisions if two
 		// SMS are in-flight at the same time and are given the same id.
-		// TODO use an algorithm that's less likely to generate colliding values
-		int requestCode = r.nextInt();
 
-		return PendingIntent.getBroadcast(parent, requestCode, intent, PendingIntent.FLAG_ONE_SHOT);
+		return PendingIntent.getBroadcast(parent, UNUSED_REQUEST_CODE, intent, PendingIntent.FLAG_ONE_SHOT);
 	}
 
 //> STATIC HELPERS
