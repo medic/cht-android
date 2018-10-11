@@ -8,7 +8,9 @@ import android.content.Intent;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import static org.medicmobile.webapp.mobile.BuildConfig.APPLICATION_ID;
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
+import static org.medicmobile.webapp.mobile.BuildConfig.VERSION_NAME;
 
 final class Utils {
 	private Utils() {}
@@ -47,5 +49,12 @@ final class Utils {
 		p.setCanceledOnTouchOutside(false);
 		p.show();
 		return p;
+	}
+
+	static String createUseragentFrom(String current) {
+		if(current.contains(APPLICATION_ID)) return current;
+
+		return String.format("%s %s/%s",
+				current, APPLICATION_ID, VERSION_NAME);
 	}
 }
