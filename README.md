@@ -61,3 +61,11 @@ To publish to the play store:
 	_updates_: trigger the job `medic-android-publish`, selecting the version, release track, and branding you wish to publish
 
 1. repeat the previous step if you want to publish the app for multiple brands
+
+## Copyright
+
+Copyright 2013-2018 Medic Mobile, Inc. <hello@medicmobile.org>
+
+## License
+
+The software is provided under AGPL-3.0. Contributions to this project are accepted under the same license.
