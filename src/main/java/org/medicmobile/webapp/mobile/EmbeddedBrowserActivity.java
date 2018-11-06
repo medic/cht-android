@@ -18,11 +18,17 @@ import android.view.Window;
 import android.webkit.ValueCallback;
 import android.widget.Toast;
 
+import java.io.ByteArrayInputStream;
+import java.util.Collections;
+import java.util.Map;
+
 import org.xwalk.core.XWalkPreferences;
 import org.xwalk.core.XWalkResourceClient;
 import org.xwalk.core.XWalkSettings;
 import org.xwalk.core.XWalkUIClient;
 import org.xwalk.core.XWalkView;
+import org.xwalk.core.XWalkWebResourceRequest;
+import org.xwalk.core.XWalkWebResourceResponse;
 
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static java.lang.Boolean.parseBoolean;
@@ -33,6 +39,7 @@ import static org.medicmobile.webapp.mobile.MedicLog.trace;
 import static org.medicmobile.webapp.mobile.MedicLog.warn;
 import static org.medicmobile.webapp.mobile.SimpleJsonClient2.redactUrl;
 import static org.medicmobile.webapp.mobile.Utils.createUseragentFrom;
+import static org.medicmobile.webapp.mobile.Utils.isUrlRelated;
 
 @SuppressWarnings({ "PMD.GodClass", "PMD.TooManyMethods" })
 public class EmbeddedBrowserActivity extends LockableActivity {
@@ -58,6 +65,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 
 	private XWalkView container;
 	private SettingsStore settings;
+	private String appUrl;
 	private SimprintsSupport simprints;
 	private MrdtSupport mrdt;
 	private PhotoGrabber photoGrabber;
@@ -73,6 +81,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		this.mrdt = new MrdtSupport(this);
 
 		this.settings = SettingsStore.in(this);
+		this.appUrl = settings.getAppUrl();
 
 		this.requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.main);
@@ -80,7 +89,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		// Add an alarming red border if using configurable (i.e. dev)
 		// app with a medic production server.
 		if(settings.allowsConfiguration() &&
-				settings.getAppUrl().contains("app.medicmobile.org")) {
+				appUrl.contains("app.medicmobile.org")) {
 			View webviewContainer = findViewById(R.id.lytWebView);
 			webviewContainer.setPadding(10, 10, 10, 10);
 			webviewContainer.setBackgroundColor(R.drawable.warning_background);
@@ -101,7 +110,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		browseToRoot();
 
 		if(settings.allowsConfiguration()) {
-			toast(redactUrl(settings.getAppUrl()));
+			toast(redactUrl(appUrl));
 		}
 	}
 
@@ -237,7 +246,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	}
 
 	private String getRootUrl() {
-		return settings.getAppUrl() + (DISABLE_APP_URL_VALIDATION ?
+		return appUrl + (DISABLE_APP_URL_VALIDATION ?
 				"" : "/medic/_design/medic/_rewrite/");
 	}
 
@@ -379,6 +388,20 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 					return true;
 				}
 				return false;
+			}
+			@Override public XWalkWebResourceResponse shouldInterceptLoadRequest(XWalkView view, XWalkWebResourceRequest request) {
+				if(isUrlRelated(appUrl, request.getUrl())) {
+					return null; // load as normal
+				} else {
+					warn(this, "shouldInterceptLoadRequest() :: Denying access to URL outside of expected domain: %s", request.getUrl());
+
+					Map<String, String> noHeaders = Collections.<String, String>emptyMap();
+					ByteArrayInputStream emptyResponse = new ByteArrayInputStream(new byte[0]);
+
+					return createXWalkWebResourceResponse(
+							"text/plain", "UTF-8", emptyResponse,
+							403, "Read access forbidden.", noHeaders);
+				}
 			}
 			@Override public void onReceivedLoadError(XWalkView view, int errorCode, String description, String failingUrl) {
 				if(errorCode == XWalkResourceClient.ERROR_OK) return;

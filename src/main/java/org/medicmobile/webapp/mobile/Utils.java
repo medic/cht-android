@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -14,6 +15,12 @@ import static org.medicmobile.webapp.mobile.BuildConfig.VERSION_NAME;
 
 final class Utils {
 	private Utils() {}
+
+	static boolean isUrlRelated(String appUrl, Uri uriToTest) {
+		// android.net.Uri doesn't give us a host for URLs like blob:https://some-project.dev.medicmobile.org/abc-123
+		// so we might as well just regex the URL string
+		return uriToTest.toString().matches("^(blob:)?" + appUrl + "/.*$");
+	}
 
 	static JSONObject json(Object... keyVals) throws JSONException {
 		if(DEBUG && keyVals.length % 2 != 0) throw new AssertionError();
