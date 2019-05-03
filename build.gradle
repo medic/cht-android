@@ -181,6 +181,9 @@ android {
 		livinggoodskenya {
 			applicationId = 'org.medicmobile.webapp.mobile.livinggoodskenya'
 		}
+		livinggoods_assisted_networks {
+			applicationId = 'org.medicmobile.webapp.mobile.livinggoods_assisted_networks'
+		}
 		livinggoods_innovation_ke {
 			applicationId = 'org.medicmobile.webapp.mobile.livinggoods_innovation_ke'
 		}
@@ -189,9 +192,6 @@ android {
 		}
 		livinggoods_innovation_ke_hivst {
 			applicationId = 'org.medicmobile.webapp.mobile.livinggoods_innovation_ke_hivst'
-		}
-		livinggoods_assisted_networks {
-			applicationId = 'org.medicmobile.webapp.mobile.livinggoods_assisted_networks'
 		}
 		moh_kenya_siaya_white {
 			applicationId = 'org.medicmobile.webapp.mobile.moh_kenya_siaya'
@@ -208,6 +208,9 @@ android {
 		musomali {
 			applicationId = 'org.medicmobile.webapp.mobile.musomali'
 		}
+		pih_malawi {
+			applicationId = 'org.medicmobile.webapp.mobile.pih_malawi'
+		}
 		simprints {
 			applicationId = 'org.medicmobile.webapp.mobile.simprints'
 
@@ -217,9 +220,6 @@ android {
 		}
 		vhw_burundi {
 			applicationId = 'org.medicmobile.webapp.mobile.vhw_burundi'
-		}
-		pih_malawi {
-			applicationId = 'org.medicmobile.webapp.mobile.pih_malawi'
 		}
 	}
 }
