@@ -218,5 +218,8 @@ android {
 		vhw_burundi {
 			applicationId = 'org.medicmobile.webapp.mobile.vhw_burundi'
 		}
+		pih_malawi {
+			applicationId = 'org.medicmobile.webapp.mobile.pih_malawi'
+		}
 	}
 }
