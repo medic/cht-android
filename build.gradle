@@ -78,6 +78,7 @@ android {
 
 	applicationVariants.all {
 		buildConfigField "boolean", "DISABLE_APP_URL_VALIDATION", "Boolean.parseBoolean(\"${System.env.DISABLE_APP_URL_VALIDATION}\")";
+		buildConfigField "boolean", "USE_URL_ROOT_PATH", "Boolean.parseBoolean(\"${System.env.USE_URL_ROOT_PATH}\")";
 		buildConfigField "String", "LOG_TAG", '"MedicMobile"'
 
 		if(System.env.SIMPRINTS_API_KEY) {

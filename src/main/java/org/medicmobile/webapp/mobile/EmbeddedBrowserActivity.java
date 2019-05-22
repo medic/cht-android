@@ -34,6 +34,7 @@ import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static java.lang.Boolean.parseBoolean;
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static org.medicmobile.webapp.mobile.BuildConfig.DISABLE_APP_URL_VALIDATION;
+import static org.medicmobile.webapp.mobile.BuildConfig.USE_URL_ROOT_PATH;
 import static org.medicmobile.webapp.mobile.MedicLog.error;
 import static org.medicmobile.webapp.mobile.MedicLog.log;
 import static org.medicmobile.webapp.mobile.MedicLog.trace;
@@ -257,8 +258,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	}
 
 	private String getRootUrl() {
-		return appUrl + (DISABLE_APP_URL_VALIDATION ?
-				"" : "/medic/_design/medic/_rewrite/");
+		return appUrl + (USE_URL_ROOT_PATH || DISABLE_APP_URL_VALIDATION ? "" : "/medic/_design/medic/_rewrite/");
 	}
 
 	private void browseToRoot() {
