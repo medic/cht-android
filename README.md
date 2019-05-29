@@ -11,18 +11,7 @@ Medic Mobile Android App
 4. Execute: `make` (will also push app unto phone)
 
 ## Connecting to the server locally
-On first load, the app will ask for a server URL. For local development, use `http://<your server's local IP>:5988`.
-Find the local network IP with `ifconfig`. Make sure both phone and server are on the same wifi network.
-
-## Troubleshooting
-If the phone can't connect to the server, that could be the wifi network config that doesn't allow it.
-One possibility, for macbooks, is sharing the macbook's connection over Bluetooth PAN.
-1. Setup macbook to share Wifi connection over BT PAN : https://support.apple.com/kb/PH18704?locale=en_US
-2. Pair laptop with phone : turn on BT on both and pair.
-3. Enable internet access through BT on phone : http://android.stackexchange.com/questions/12572/are-there-any-android-phones-that-allow-bluetooth-pan-off-the-shelf/29089#29089
-
-You can find the laptop's IP in System Preferences > Network > Bluetooth PAN > Advanced.
-
+Refer to https://github.com/medic/medic#testing-locally-with-devices.
 
 # Branding
 
