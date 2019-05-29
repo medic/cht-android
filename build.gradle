@@ -74,6 +74,7 @@ android {
 		versionCode getVersionCode()
 		versionName getVersionName()
 		archivesBaseName = "${project.name}-${versionName}"
+		minSdkVersion 19
 	}
 
 	applicationVariants.all {
