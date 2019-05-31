@@ -4,9 +4,7 @@
 		package="org.medicmobile.webapp.mobile">
 	<!-- When upgrading targetSdkVersion, check that the app menu still
 			works on newer devices. -->
-	<uses-sdk android:minSdkVersion="19"
-			android:targetSdkVersion="26"
-			tools:ignore="OldTargetApi"/>
+	<uses-sdk tools:ignore="OldTargetApi"/>
 
 	<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
 	<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
