@@ -74,6 +74,8 @@ android {
 		versionCode getVersionCode()
 		versionName getVersionName()
 		archivesBaseName = "${project.name}-${versionName}"
+		minSdkVersion 19
+		targetSdkVersion 26
 	}
 
 	applicationVariants.all {
@@ -135,6 +137,7 @@ android {
 
 		disable 'UnusedResources' // linter can't handle static imports, so just skip this test
 		disable 'GradleDependency' // TODO update to latest support-v4 lib and re-enable this rule
+		disable 'OldTargetApi'
 
 		warningsAsErrors true
 
