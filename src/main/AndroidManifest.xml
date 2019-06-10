@@ -13,6 +13,7 @@
 	<uses-feature android:name="android.hardware.location" android:required="false"/>
 	<uses-feature android:name="android.hardware.location.gps" android:required="false"/>
 	<uses-feature android:name="android.hardware.location.network" android:required="false"/>
+	<uses-permission android:name="android.permission.SEND_SMS"/>
 
 	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
 	<uses-permission android:name="android.permission.INTERNET"/>

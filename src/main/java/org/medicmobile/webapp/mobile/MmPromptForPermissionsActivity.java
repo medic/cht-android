@@ -7,7 +7,7 @@ import medic.android.PromptForPermissionsActivity;
 
 public class MmPromptForPermissionsActivity extends PromptForPermissionsActivity {
 	private static final Object[][] PERMISSIONS_REQUESTS = {
-		/* location */ { R.string.txtPermissionsPrompt_location, new String[] { permission.ACCESS_COARSE_LOCATION, permission.ACCESS_FINE_LOCATION } },
+		/* location */ { R.string.txtPermissionsPrompt_location, new String[] { permission.ACCESS_COARSE_LOCATION, permission.ACCESS_FINE_LOCATION, permission.SEND_SMS } },
 	};
 
 	@Override protected boolean refuseToFunctionWithoutPermissions() { return true; }
