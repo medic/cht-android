@@ -39,4 +39,4 @@ test:
 	${GRADLEW} androidCheck lintUnbrandedDebug test
 
 travis: # test
-	${GRADLEW} assembleDebug
+	${GRADLEW} assembleUnbrandedDebug
