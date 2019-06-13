@@ -31,6 +31,6 @@ deploy:
   file_glob: true
   file: ./build/outputs/apk/**/*.apk
   on:
-    # tags: true
+    tags: true
     repo: medic/medic-android
     branch: 3186-travis-build
