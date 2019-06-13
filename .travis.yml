@@ -28,5 +28,5 @@ deploy:
   file: build/outputs/apk/*.apk
   skip_cleanup: true
   on:
-    tags: true
+    #tags: true
     repo: medic/medic-android
