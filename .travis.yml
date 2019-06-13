@@ -22,12 +22,16 @@ cache:
   - "$HOME/.android/build-cache"
 deploy:
   provider: releases
+  skip_cleanup: true
+  overwrite: true
   api_key:
     secure: l4w0Y6WXQPgI1b18iy1Icxve+tV76mwhWG+59OvyZvAsnjHOfq9pOJjY3Hwyk8JimWU26a30bhgwr9AjJZ6X64muhsnpYUIPqki67j9rQSWWGvRnSw5pE+uT092wB/Qr78WGPxmful0cW2Q3A2dVWZeQlU5cC/UMW7YImWTg5zTUAyfDYsez9X2lDgXMB0CY8Sm+hb1huQpug408McJek4t/E9oq0AwO7oDVdQTfrzw+gdCd18z3p2pT5PH0v7tPqUTrIOxR9CCpgatrFlVAigiUBaX2unTAYr8/MwPbyuD7BqfcqNNrnOKu3fg6IlNeMhE+IZ4weiW0Tu5TSrnorE7OX0EUBNrkeXA0d5HgWdentZlhW/hLLqCjjrTogUcNXV4PCXR2gsvBe2YRkzVli4t4E0MUO0Y74VlCClZ+5NiUTIT2XnimP4J+GM7tNt2l5nguyFPNhhc1zcaq/eibil7mN9glMBZNtbvr9B4d0oz0/+HjKG8QU/9KTdgfiJxNMgAktr3rJU3aSRWe/rsTxkCYQ6PXArhW0jnmtssGu6zjUSUcxCEoVUCpRHkRd2FTaunjcJ0iB3nY6t7OSum1PzpRMGS4g7eETBxXW727Zu5TYKV1Hk5XVrgkLVPIyInpjL0+Kest4MbciUw6gk9Stu+O0oR4DTaZVgvYmIt/Tp8=
   file_glob: true
   file: build/outputs/apk/*.apk
-  skip_cleanup: true
   on:
     #tags: true
     repo: medic/medic-android
     branch: 3186-travis-build
+before_install:
+- openssl aes-256-cbc -K $encrypted_323c4a109760_key -iv $encrypted_323c4a109760_iv
+  -in medic-official.keystore.enc -out medic-official.keystore -d
