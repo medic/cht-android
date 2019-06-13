@@ -9,9 +9,9 @@ ifdef ComSpec	 # Windows
 endif
 
 default: deploy-flavour logs
-branded: clean-apks assemble-all deploy-all logs
-branded-debug: clean-apks assemble-all-debug deploy-all logs
-clean: clean-apks
+branded: clean-bundles bundle-all deploy-all logs
+branded-debug: clean-bundles bundle-all-debug deploy-all logs
+clean: clean-bundles
 
 logs:
 	${ADB} logcat MedicMobile:V AndroidRuntime:E '*:S' | tee android.log
@@ -19,14 +19,14 @@ logs:
 deploy-flavour:
 	${GRADLEW} --daemon --parallel install${flavour}Debug
 
-clean-apks:
-	rm -rf build/outputs/apk/
-assemble-all:
-	${GRADLEW} --daemon --parallel assemble
-assemble-all-debug:
-	${GRADLEW} --daemon --parallel assembleDebug
+clean-bundles:
+	rm -rf build/outputs/bundle/
+bundle-all:
+	${GRADLEW} --daemon --parallel bundle
+bundle-all-debug:
+	${GRADLEW} --daemon --parallel bundleDebug
 deploy-all:
-	find build/outputs/apk -name \*-debug.apk | \
+	find build/outputs/bundle -name \*-debug.aab | \
 		xargs -n1 ${ADB} install -r
 uninstall-all:
 	${GRADLEW} uninstallAll
@@ -39,4 +39,4 @@ test:
 	${GRADLEW} androidCheck lintUnbrandedDebug test
 
 travis: # test 
-	${GRADLEW} assembleUnbrandedRelease
+	${GRADLEW} bundleRelease

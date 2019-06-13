@@ -17,7 +17,7 @@ Refer to https://github.com/medic/medic#testing-locally-with-devices.
 
 ## Building branded apps
 
-To build and deploy APKs for all configured brands:
+To build and deploy builds for all configured brands:
 
 	make branded
 
@@ -30,24 +30,17 @@ To add a new brand:
 
 # Releasing
 
-To release a new version, create a git tag starting with `v`, e.g. `v1.2.3`, and push this to GitHub.  Travis CI will build the release and push the debug APK to https://github.com/medic/medic-android/releases.
+To release a new version, create a git tag starting with `v`, e.g. `v1.2.3`, and push this to GitHub. Travis CI will build the release and push a signed, versioned, release-ready bundle to https://github.com/medic/medic-android/releases.
 
 # Publishing
 
-To publish to the play store:
+To publish to [GitHub](https://github.com/medic/medic-android/releases):
 
-1. identify the git tag of the app version you want to build
-1. open remote desktop connection to our Jenkins server, windows.dev.medicmobile.org
-1. log in to Jenkins on remote desktop (http://localhost:8080)
-1. trigger job `medic-android`, supplying the version number/git tag from step **1** as the "VERSION_TO_BUILD" (eg 0.1.93)
-1. wait for `medic-android` job to complete successfully
-1. upload the APK to the play store
+For each brand you'd like to publish:
 
-	_initial load_: upload the .apk file to the APK page in the play store dev console
-
-	_updates_: trigger the job `medic-android-publish`, selecting the version, release track, and branding you wish to publish
-
-1. repeat the previous step if you want to publish the app for multiple brands
+1. Download the bundle you'd like to release from [GitHub Releases](https://github.com/medic/medic-android/releases).
+1. Navigate to the Google Play Console. `Release management` > `App releases`.
+1. Upload the bundle
 
 ## Copyright
 
