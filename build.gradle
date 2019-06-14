@@ -78,7 +78,6 @@ android {
 	defaultConfig {
 		versionCode getVersionCode()
 		versionName getVersionName()
-		ndk.abiFilters 'armeabi-v7a','arm64-v8a','x86','x86_64'
 		archivesBaseName = "${project.name}-${versionName}"
 		minSdkVersion 19
 		targetSdkVersion 26
@@ -111,7 +110,7 @@ android {
 			buildConfigField "String", "SIMPRINTS_MODULE_ID", /"${simprintsModuleId}"/
 		} else {
 			buildConfigField "String", "SIMPRINTS_MODULE_ID", '"Medic Module ID"'
-		}
+    }
 	}
 
 	signingConfigs {
@@ -160,7 +159,7 @@ android {
 
 	flavorDimensions 'brand'
 	productFlavors {
-		unbranded {
+    unbranded {
 			// we will not create project-specific src directories
 			// for `unbranded` - it will use the defaults in
 			// src/main
@@ -241,4 +240,14 @@ android {
 			applicationId = 'org.medicmobile.webapp.mobile.vhw_burundi'
 		}
 	}
+
+  splits {
+    abi {
+      enable true
+      reset()
+      include 'armeabi-v7a', 'arm64-v8a'
+      universalApk false
+    }
+  }
+
 }
