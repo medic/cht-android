@@ -1,5 +1,5 @@
 language: android
-dist: trusty
+dist: trusty # Android builds are only supported on our Trusty image
 jdk: oraclejdk8
 android:
   components:
@@ -36,4 +36,3 @@ deploy:
   on:
     tags: true
     repo: medic/medic-android
-    branch: master
