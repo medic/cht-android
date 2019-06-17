@@ -36,3 +36,4 @@ deploy:
   on:
     tags: true
     repo: medic/medic-android
+    branch: master
