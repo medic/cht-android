@@ -1,3 +1,5 @@
+import com.android.build.OutputFile
+
 buildscript {
 	repositories {
 		mavenCentral()
@@ -84,7 +86,7 @@ android {
 		// When upgrading targetSdkVersion, check that the app menu still works on newer devices.
 	}
 
-	applicationVariants.all {
+	applicationVariants.all { variant ->
 		buildConfigField "boolean", "DISABLE_APP_URL_VALIDATION", "Boolean.parseBoolean(\"${System.env.DISABLE_APP_URL_VALIDATION}\")";
 		buildConfigField "String", "LOG_TAG", '"MedicMobile"'
 
@@ -110,6 +112,13 @@ android {
 			buildConfigField "String", "SIMPRINTS_MODULE_ID", /"${simprintsModuleId}"/
 		} else {
 			buildConfigField "String", "SIMPRINTS_MODULE_ID", '"Medic Module ID"'
+    }
+
+    // Every APK requires a unique version code. 
+    // So when compiling multiple APKS for the different ABIs, use the first digit
+    variant.outputs.each { output ->
+      def versionAugmentation = (output.getFilter(OutputFile.ABI) == 'arm64-v8a') ? 1 : 0;
+      output.versionCodeOverride = variant.versionCode * 10 + versionAugmentation
     }
 	}
 
