@@ -37,4 +37,4 @@ deploy:
   on:
     tag: true
     repo: medic/medic-android
-    branch: master
+    branch: 3186-travis-build
