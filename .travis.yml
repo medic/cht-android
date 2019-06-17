@@ -37,3 +37,4 @@ deploy:
   on:
     tag: true
     repo: medic/medic-android
+    all_branches: true
