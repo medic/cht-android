@@ -38,5 +38,5 @@ uninstall:
 test:
 	${GRADLEW} androidCheck lintUnbrandedDebug test
 
-travis: # test 
+travis:
 	${GRADLEW} assembleRelease
