@@ -1,3 +1,5 @@
+import com.android.build.OutputFile
+
 buildscript {
 	repositories {
 		mavenCentral()
@@ -43,24 +45,28 @@ dependencies {
 def simprintsApiKey, simprintsModuleId, simprintsUserId
 
 def getVersionCode = {
-	if(System.env.JENKINS == 'true') {
-		def versionParts = System.env.VERSION_TO_BUILD.split(/\./)
-		if(versionParts.length != 3)
-			throw new RuntimeException("Unexpected version number - should be of form 'x.y.z', but was: $System.env.VERSION_TO_BUILD")
-		versionParts = versionParts.collect { Integer.parseInt(it) }
-		if(versionParts[1] > 999 || versionParts[2] > 999)
-			throw new RuntimeException('Version part greater than 999 not allowed.')
-		int versionCode = (1000000 * versionParts[0]) +
-				  (1000 * versionParts[1]) +
-				  versionParts[2]
-		if(versionCode > 2100000000)
-			throw new RuntimeException('versionCode biggger than max allowed by Google Play.')
-		return versionCode
-	}
-	return 1
+  int versionCode = 1
+  if(System.env.TRAVIS == 'true' && System.env.TRAVIS_TAG && System.env.TRAVIS_TAG.startsWith('v')) {
+    def versionParts = System.env.TRAVIS_TAG.split(/[\.v]/)
+
+    if (versionParts.length != 4)
+      throw new RuntimeException("Unexpected version number - should be of formatted as 'v0.0.0', but was: $System.env.TRAVIS_TAG")
+
+    versionParts = versionParts.drop(1).collect { Integer.parseInt(it) }
+
+    if (versionParts[1] > 999 || versionParts[2] > 999)
+      throw new RuntimeException('Version part greater than 999 not allowed.')
+
+    versionCode = (1000 * 1000 * versionParts[0]) + 1000 * versionParts[1] + versionParts[2]
+    if (versionCode > 2100000000 / 10)
+      throw new RuntimeException('versionCode bigger than max allowed by Google Play.')
+  }
+
+  return versionCode
 }
+
 def getVersionName = {
-	System.env.VERSION_TO_BUILD ?: 'SNAPSHOT'
+	System.env.TRAVIS_TAG ?: 'SNAPSHOT'
 }
 
 android {
@@ -74,14 +80,13 @@ android {
 	defaultConfig {
 		versionCode getVersionCode()
 		versionName getVersionName()
-		ndk.abiFilters 'armeabi-v7a','arm64-v8a','x86','x86_64'
 		archivesBaseName = "${project.name}-${versionName}"
 		minSdkVersion 19
 		targetSdkVersion 26
 		// When upgrading targetSdkVersion, check that the app menu still works on newer devices.
 	}
 
-	applicationVariants.all {
+	applicationVariants.all { variant ->
 		buildConfigField "boolean", "DISABLE_APP_URL_VALIDATION", "Boolean.parseBoolean(\"${System.env.DISABLE_APP_URL_VALIDATION}\")";
 		buildConfigField "String", "LOG_TAG", '"MedicMobile"'
 
@@ -107,7 +112,14 @@ android {
 			buildConfigField "String", "SIMPRINTS_MODULE_ID", /"${simprintsModuleId}"/
 		} else {
 			buildConfigField "String", "SIMPRINTS_MODULE_ID", '"Medic Module ID"'
-		}
+    }
+
+    // Every APK requires a unique version code. 
+    // So when compiling multiple APKS for the different ABIs, use the first digit
+    variant.outputs.each { output ->
+      def versionAugmentation = (output.getFilter(OutputFile.ABI) == 'arm64-v8a') ? 1 : 0;
+      output.versionCodeOverride = variant.versionCode * 10 + versionAugmentation
+    }
 	}
 
 	signingConfigs {
@@ -156,7 +168,7 @@ android {
 
 	flavorDimensions 'brand'
 	productFlavors {
-		unbranded {
+    unbranded {
 			// we will not create project-specific src directories
 			// for `unbranded` - it will use the defaults in
 			// src/main
@@ -237,4 +249,13 @@ android {
 			applicationId = 'org.medicmobile.webapp.mobile.vhw_burundi'
 		}
 	}
+
+  splits {
+    abi {
+      enable true
+      reset()
+      include 'armeabi-v7a', 'arm64-v8a'
+      universalApk false
+    }
+  }
 }
