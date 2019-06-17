@@ -58,7 +58,7 @@ def getVersionCode = {
       throw new RuntimeException('Version part greater than 999 not allowed.')
 
     versionCode = (1000 * 1000 * versionParts[0]) + 1000 * versionParts[1] + versionParts[2]
-    if(versionCode > 2100000000)
+    if (versionCode > 2100000000 / 10)
       throw new RuntimeException('versionCode bigger than max allowed by Google Play.')
   }
 
