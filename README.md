@@ -30,15 +30,9 @@ To add a new brand:
 
 # Publishing
 
-To publish to [GitHub](https://github.com/medic/medic-android/releases):
+Create a git tag starting with `v`, e.g. `v1.2.3` and push the tag to GitHub. 
 
-1. Create a git tag starting with `v`, e.g. `v1.2.3` and push the tag to GitHub. Travis CI will build the release and push a signed, versioned, release-ready bundle to https://github.com/medic/medic-android/releases.
-
-Then, for each brand you'd like to publish:
-
-1. Download all APKs for the flavor you'd like to release from [GitHub Releases](https://github.com/medic/medic-android/releases).
-1. Navigate to the Google Play Console. `Release management` > `App releases`.
-1. Upload all APKs
+Creating this tag will trigger a Travis CI to build, sign, and properly version the build. The release-ready APKs are available for side-loading from [GitHub Releases](https://github.com/medic/medic-android/releases) and are uploaded to the Google Play Console in the "alpha" channel. To release to the public, click "Release to Production" or "Release to Beta" via the Google Play Console for each flavor.
 
 ## Copyright
 
