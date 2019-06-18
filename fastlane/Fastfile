@@ -2,8 +2,6 @@
 # You can find the documentation at https://docs.fastlane.tools
 #
 
-# setup_travis
-
 default_platform(:android)
 
 platform :android do
@@ -12,10 +10,6 @@ platform :android do
     gradleTaskName = "assemble#{options[:flavor]}Release"
     version = ENV['TRAVIS_TAG'].empty? ? 'SNAPSHOT' : ENV['TRAVIS_TAG']
     package_name = options[:flavor] == 'unbranded' ? "org.medicmobile.webapp.mobile" : "org.medicmobile.webapp.mobile.#{options[:flavor]}"
-
-    puts "gradleTaskName: #{gradleTaskName}"
-    puts "version: #{version}"
-    puts "package_name: #{package_name}"
 
     gradle(task: gradleTaskName)
 
