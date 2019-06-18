@@ -13,7 +13,7 @@ env:
 jobs:
   include:
     - stage: test
-      - script: make test
+      script: make test
     - stage: deploy
       if: tag IS present
       - script:
