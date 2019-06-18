@@ -2,6 +2,8 @@
 # You can find the documentation at https://docs.fastlane.tools
 #
 
+setup_travis
+
 default_platform(:android)
 
 platform :android do
