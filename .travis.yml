@@ -11,8 +11,8 @@ android:
 env:
 - GRADLE_OPTS="-XX:MaxPermSize=2048M"
 stages:
-  - test
-  - deploy
+  - name: test
+  - name: deploy
     if: tag IS present
 jobs:
   include:
