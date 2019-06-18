@@ -18,8 +18,10 @@ jobs:
   include:
     - stage: test
       script: make test
+  
     - stage: deploy
-    - script:
+    # flavors sorted alphabetically with three per job
+      script:
       - fastlane deploy flavor:unbranded
       - fastlane deploy flavor:medicmobiledemo
       - fastlane deploy flavor:bracuganda

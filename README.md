@@ -26,7 +26,8 @@ To build and deploy APKs for all configured brands:
 To add a new brand:
 
 1. add `productFlavors { <new_brand> { ... } }` in `build.gradle`
-2. add icons, strings etc. in `src/<new_brand>`
+1. add icons, strings etc. in `src/<new_brand>`
+1. to enable automated deployments, add the `new_brand` to `.travis.yml`
 
 # Publishing
 
