@@ -12,33 +12,29 @@ env:
 - GRADLE_OPTS="-XX:MaxPermSize=2048M"
 jobs:
   include:
-#   - stage: test
-#     script: make test
-    - stage: deploy
-#     if: tag IS present
-      script: fastlane deploy flavor:unbranded
-      script: fastlane deploy flavor:medicmobiledemo
-      script: fastlane deploy flavor:bracuganda
-      script: fastlane deploy flavor:cic_guatemala
-      script: fastlane deploy flavor:ebpp_indonesia
-      script: fastlane deploy flavor:hope_through_health
-      script: fastlane deploy flavor:livinggoods
-      script: fastlane deploy flavor:livinggoodskenya
-      script: fastlane deploy flavor:livinggoods_assisted_networks
-      script: fastlane deploy flavor:livinggoods_innovation_ke
-      script: fastlane deploy flavor:livinggoods_innovation_ke_supervisor
-      script: fastlane deploy flavor:livinggoods_innovation_ke_hivst
-      script: fastlane deploy flavor:moh_kenya_siaya_white
-      script: fastlane deploy flavor:moh_kenya_siaya_red
-      script: fastlane deploy flavor:moh_kenya_siaya_green
-      script: fastlane deploy flavor:moh_kenya_siaya_black
-      script: fastlane deploy flavor:moh_zanzibar_training
-      script: fastlane deploy flavor:moh_zanzibar
-      script: fastlane deploy flavor:musomali
-      script: fastlane deploy flavor:pih_malawi
-      script: fastlane deploy flavor:pih_malawi_supervisor
-      script: fastlane deploy flavor:simprints
-      script: fastlane deploy flavor:vhw_burundi
+    - script: fastlane deploy flavor:unbranded
+    - script: fastlane deploy flavor:medicmobiledemo
+    - script: fastlane deploy flavor:bracuganda
+    - script: fastlane deploy flavor:cic_guatemala
+    - script: fastlane deploy flavor:ebpp_indonesia
+    - script: fastlane deploy flavor:hope_through_health
+    - script: fastlane deploy flavor:livinggoods
+    - script: fastlane deploy flavor:livinggoodskenya
+    - script: fastlane deploy flavor:livinggoods_assisted_networks
+    - script: fastlane deploy flavor:livinggoods_innovation_ke
+    - script: fastlane deploy flavor:livinggoods_innovation_ke_supervisor
+    - script: fastlane deploy flavor:livinggoods_innovation_ke_hivst
+    - script: fastlane deploy flavor:moh_kenya_siaya_white
+    - script: fastlane deploy flavor:moh_kenya_siaya_red
+    - script: fastlane deploy flavor:moh_kenya_siaya_green
+    - script: fastlane deploy flavor:moh_kenya_siaya_black
+    - script: fastlane deploy flavor:moh_zanzibar_training
+    - script: fastlane deploy flavor:moh_zanzibar
+    - script: fastlane deploy flavor:musomali
+    - script: fastlane deploy flavor:pih_malawi
+    - script: fastlane deploy flavor:pih_malawi_supervisor
+    - script: fastlane deploy flavor:simprints
+    - script: fastlane deploy flavor:vhw_burundi
 before_install:
 - openssl aes-256-cbc -K $encrypted_323c4a109760_key -iv $encrypted_323c4a109760_iv -in secrets.tar.gz.enc -out ./secrets.tar.gz -d
 - tar -xf ./secrets.tar.gz
