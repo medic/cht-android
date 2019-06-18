@@ -16,35 +16,35 @@ jobs:
       script: make test
     - stage: deploy
       # if: tag IS present
-      script:
+    - script:
       - fastlane deploy flavor:unbranded
       - fastlane deploy flavor:medicmobiledemo
       - fastlane deploy flavor:bracuganda
-      script:
+    - script:
       - fastlane deploy flavor:cic_guatemala
       - fastlane deploy flavor:ebpp_indonesia
       - fastlane deploy flavor:hope_through_health
-      script:
+    - script:
       - fastlane deploy flavor:livinggoods
       - fastlane deploy flavor:livinggoodskenya
       - fastlane deploy flavor:livinggoods_assisted_networks
-      script:
+    - script:
       - fastlane deploy flavor:livinggoods_innovation_ke
       - fastlane deploy flavor:livinggoods_innovation_ke_supervisor
       - fastlane deploy flavor:livinggoods_innovation_ke_hivst
-      script:
+    - script:
       # - fastlane deploy flavor:moh_kenya_siaya_white
       - fastlane deploy flavor:moh_kenya_siaya_red
       - fastlane deploy flavor:moh_kenya_siaya_green
-      script:
+    - script:
       - fastlane deploy flavor:moh_kenya_siaya_black
       - fastlane deploy flavor:moh_zanzibar_training
       - fastlane deploy flavor:moh_zanzibar
-      script:
+    - script:
       - fastlane deploy flavor:musomali
       - fastlane deploy flavor:pih_malawi
       - fastlane deploy flavor:pih_malawi_supervisor
-      script:
+    - script:
       - fastlane deploy flavor:simprints
       - fastlane deploy flavor:vhw_burundi
 before_install:
