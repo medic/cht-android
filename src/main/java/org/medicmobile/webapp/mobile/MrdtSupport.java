@@ -39,11 +39,11 @@ class MrdtSupport {
 					String base64data = Base64.encodeToString(data, Base64.NO_WRAP);
 					long timeTaken = i.getLongExtra("timeTaken", 0);
 
-					String javaScript = "const api = angular.element(document.body).injector().get('AndroidApi');"
-							+ "if (api.v1.mrdtTimeTakenResponse) {"
-							+ "	api.v1.mrdtTimeTakenResponse('\"%s\"');"
-							+ "}"
-							+ "api.v1.mrdtResponse('\"%s\"');";
+					String javaScript = "const api = angular.element(document.body).injector().get('AndroidApi');" +
+							"if (api.v1.mrdtTimeTakenResponse) {" +
+							"	api.v1.mrdtTimeTakenResponse('\"%s\"');" +
+							"}" +
+							"api.v1.mrdtResponse('\"%s\"');";
 					return safeFormat(javaScript, String.valueOf(timeTaken), base64data);
 				} catch(Exception /*| JSONException*/ ex) {
 					warn(ex, "Problem serialising mrdt image.");
