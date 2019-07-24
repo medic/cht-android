@@ -10,7 +10,7 @@ import org.robolectric.annotation.*;
 import static org.junit.Assert.*;
 
 @RunWith(RobolectricTestRunner.class)
-@Config(sdk=26)
+@Config(sdk=28)
 public class UtilsTest {
 	@Test
 	public void isUrlRelated_goodNormalUrls() {

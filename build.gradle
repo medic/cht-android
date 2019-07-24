@@ -39,7 +39,7 @@ dependencies {
   implementation 'com.github.Mariovc:ImagePicker:1.2.2'
   testImplementation 'junit:junit:4.12'
   testImplementation 'com.google.android:android-test:4.1.1.4'
-  testImplementation 'org.robolectric:robolectric:3.8'
+  testImplementation 'org.robolectric:robolectric:4.3'
 }
 
 def simprintsApiKey, simprintsModuleId, simprintsUserId
@@ -70,7 +70,7 @@ def getVersionName = {
 }
 
 android {
-  compileSdkVersion 26
+  compileSdkVersion 28
   buildToolsVersion '28.0.2'
   packagingOptions {
     exclude 'META-INF/LICENSE'
@@ -82,7 +82,7 @@ android {
     versionName getVersionName()
     archivesBaseName = "${project.name}-${versionName}"
     minSdkVersion 19
-    targetSdkVersion 26
+    targetSdkVersion 28
     // When upgrading targetSdkVersion, check that the app menu still works on newer devices.
   }
 
