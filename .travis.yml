@@ -41,8 +41,9 @@ jobs:
       # - fastlane deploy flavor:moh_kenya_siaya_white
       - fastlane deploy flavor:moh_kenya_siaya_red
       - fastlane deploy flavor:moh_kenya_siaya_green
-    - script:
       - fastlane deploy flavor:moh_kenya_siaya_black
+      - fastlane deploy flavor:moh_mali
+    - script:
       - fastlane deploy flavor:moh_zanzibar_training
       - fastlane deploy flavor:moh_zanzibar
     - script:
