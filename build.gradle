@@ -223,6 +223,9 @@ android {
     moh_kenya_siaya_black {
       applicationId = 'org.medicmobile.webapp.mobile.moh_kenya_siaya_black'
     }
+    moh_mali {
+      applicationId = 'org.medicmobile.webapp.mobile.moh_mali'
+    }
     moh_zanzibar_training {
       applicationId = 'org.medicmobile.webapp.mobile.moh_zanzibar_training'
     }
