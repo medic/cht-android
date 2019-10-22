@@ -261,7 +261,6 @@ public class MedicAndroidJavascript {
 			String model = Build.MODEL;
 			String manufacturer = Build.BRAND;
 			String harware = Build.HARDWARE;
-			String securityPatch = Build.VERSION.SECURITY_PATCH;
 
 			File dataDirectory = Environment.getDataDirectory();
 			StatFs dataDirectoryStat = new StatFs(dataDirectory.getPath());
@@ -287,7 +286,6 @@ public class MedicAndroidJavascript {
 					.put("model", model)
 					.put("manufacturer", manufacturer)
 					.put("harware", harware)
-					.put("securityPatch", securityPatch)
 					.put("freeMemorySize", freeMemorySize)
 					.put("totalMemorySize", totalMemorySize)
 					.put("freeRAMSize", freeRAMSize)
