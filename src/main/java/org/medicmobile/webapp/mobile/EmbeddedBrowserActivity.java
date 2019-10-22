@@ -325,7 +325,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 
 		maj.setLocationManager((LocationManager) this.getSystemService(Context.LOCATION_SERVICE));
 
-    maj.setActivityManager((ActivityManager) this.getSystemService(Context.ACTIVITY_SERVICE));
+		maj.setActivityManager((ActivityManager) this.getSystemService(Context.ACTIVITY_SERVICE));
 
 		container.addJavascriptInterface(maj, "medicmobile_android");
 	}

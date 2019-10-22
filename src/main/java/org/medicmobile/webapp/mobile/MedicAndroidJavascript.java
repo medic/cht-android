@@ -46,7 +46,7 @@ public class MedicAndroidJavascript {
 	private final SmsSender smsSender;
 
 	private LocationManager locationManager;
-  private ActivityManager activityManager;
+	private ActivityManager activityManager;
 	private Alert soundAlert;
 
 	public MedicAndroidJavascript(EmbeddedBrowserActivity parent) {
@@ -64,9 +64,9 @@ public class MedicAndroidJavascript {
 		this.locationManager = locationManager;
 	}
 
-  public void setActivityManager(ActivityManager activityManager) {
-    this.activityManager = activityManager;
-  }
+	public void setActivityManager(ActivityManager activityManager) {
+		this.activityManager = activityManager;
+	}
 
 //> JavascriptInterface METHODS
 	@org.xwalk.core.JavascriptInterface
@@ -247,60 +247,59 @@ public class MedicAndroidJavascript {
 		}
 	}
 
-  @org.xwalk.core.JavascriptInterface
-  @android.webkit.JavascriptInterface
-  public String getDeviceInfo() {
-    try {
-      if (activityManager == null) {
-        return jsonError("ActivityManager not set.  Cannot retrieve RAM info.");
-      }
+	@org.xwalk.core.JavascriptInterface
+	@android.webkit.JavascriptInterface
+	public String getDeviceInfo() {
+		try {
+			if (activityManager == null) {
+				return jsonError("ActivityManager not set.  Cannot retrieve RAM info.");
+			}
 
-      String androidVersion = Build.VERSION.RELEASE;
-      int osApiLevel = Build.VERSION.SDK_INT;
-      String osVersion = System.getProperty("os.version") + "(" + android.os.Build.VERSION.INCREMENTAL + ")";
-      String device = Build.DEVICE;
-      String model = Build.MODEL;
-      String manufacturer = Build.BRAND;
-      String harware = Build.HARDWARE;
-      String securityPatch = Build.VERSION.SECURITY_PATCH;
+			String androidVersion = Build.VERSION.RELEASE;
+			int osApiLevel = Build.VERSION.SDK_INT;
+			String osVersion = System.getProperty("os.version") + "(" + android.os.Build.VERSION.INCREMENTAL + ")";
+			String device = Build.DEVICE;
+			String model = Build.MODEL;
+			String manufacturer = Build.BRAND;
+			String harware = Build.HARDWARE;
+			String securityPatch = Build.VERSION.SECURITY_PATCH;
 
+			File dataDirectory = Environment.getDataDirectory();
+			StatFs dataDirectoryStat = new StatFs(dataDirectory.getPath());
+			long dataDirectoryBlockSize = dataDirectoryStat.getBlockSizeLong();
+			long dataDirectoryAvailableBlocks = dataDirectoryStat.getAvailableBlocksLong();
+			long dataDirectoryTotalBlocks = dataDirectoryStat.getBlockCountLong();
+			String freeMemorySize = formatSize(dataDirectoryAvailableBlocks * dataDirectoryBlockSize);
+			String totalMemorySize = formatSize(dataDirectoryTotalBlocks * dataDirectoryBlockSize);
 
-      File dataDirectory = Environment.getDataDirectory();
-      StatFs dataDirectoryStat = new StatFs(dataDirectory.getPath());
-      long dataDirectoryBlockSize = dataDirectoryStat.getBlockSizeLong();
-      long dataDirectoryAvailableBlocks = dataDirectoryStat.getAvailableBlocksLong();
-      long dataDirectoryTotalBlocks = dataDirectoryStat.getBlockCountLong();
-      String freeMemorySize = formatSize(dataDirectoryAvailableBlocks * dataDirectoryBlockSize);
-      String totalMemorySize = formatSize(dataDirectoryTotalBlocks * dataDirectoryBlockSize);
+			MemoryInfo memoryInfo = new ActivityManager.MemoryInfo();
+			activityManager.getMemoryInfo(memoryInfo);
+			String totalRAMSize = formatSize(memoryInfo.totalMem);
+			String freeRAMSize = formatSize(memoryInfo.availMem);
+			String thresholdRAM = formatSize(memoryInfo.threshold);
 
-      MemoryInfo memoryInfo = new ActivityManager.MemoryInfo();
-      activityManager.getMemoryInfo(memoryInfo);
-      String totalRAMSize = formatSize(memoryInfo.totalMem);
-      String freeRAMSize = formatSize(memoryInfo.availMem);
-      String thresholdRAM = formatSize(memoryInfo.threshold);
+			String cpuInfo = getCPUInfo();
 
-      String cpuInfo = getCPUInfo();
-
-      return new JSONObject()
-          .put("androidVersion", androidVersion)
-          .put("osApiLevel", osApiLevel)
-          .put("osVersion", osVersion)
-          .put("device", device)
-          .put("model", model)
-          .put("manufacturer", manufacturer)
-          .put("harware", harware)
-          .put("securityPatch", securityPatch)
-          .put("freeMemorySize", freeMemorySize)
-          .put("totalMemorySize", totalMemorySize)
-          .put("freeRAMSize", freeRAMSize)
-          .put("totalRAMSize", totalRAMSize)
-          .put("thresholdRAM", thresholdRAM)
-          .put("cpuInfo", cpuInfo)
-          .toString();
-    } catch(Exception ex) {
-      return jsonError("Problem fetching device info: ", ex);
-    }
-  }
+			return new JSONObject()
+					.put("androidVersion", androidVersion)
+					.put("osApiLevel", osApiLevel)
+					.put("osVersion", osVersion)
+					.put("device", device)
+					.put("model", model)
+					.put("manufacturer", manufacturer)
+					.put("harware", harware)
+					.put("securityPatch", securityPatch)
+					.put("freeMemorySize", freeMemorySize)
+					.put("totalMemorySize", totalMemorySize)
+					.put("freeRAMSize", freeRAMSize)
+					.put("totalRAMSize", totalRAMSize)
+					.put("thresholdRAM", thresholdRAM)
+					.put("cpuInfo", cpuInfo)
+					.toString();
+		} catch(Exception ex) {
+			return jsonError("Problem fetching device info: ", ex);
+		}
+	}
 
 //> PRIVATE HELPER METHODS
 	private void datePicker(String targetElement, Calendar initialDate) {
@@ -334,49 +333,51 @@ public class MedicAndroidJavascript {
 		dialog.show();
 	}
 
-  private static String getCPUInfo() throws IOException {
-    BufferedReader bufferedReader = new BufferedReader(new FileReader("/proc/cpuinfo"));
-    String line;
-    Map<String, String> output = new HashMap<>();
-    while ((line = bufferedReader.readLine()) != null) {
-      String[] data = line.split(":");
-      if (data.length > 1) {
-        String key = data[0].trim();
-        if (key.equals("model name")) {
-          bufferedReader.close();
+	private static String getCPUInfo() throws IOException {
+		BufferedReader bufferedReader = new BufferedReader(new FileReader("/proc/cpuinfo"));
+		String line;
+		Map<String, String> output = new HashMap<>();
+		while ((line = bufferedReader.readLine()) != null) {
+			String[] data = line.split(":");
+			if (data.length > 1) {
+				String key = data[0].trim();
+				if (key.equals("model name")) {
+					bufferedReader.close();
 
-          return data[1].trim();
-        }
-      }
-    }
-    bufferedReader.close();
+					return data[1].trim();
+				}
+			}
+		}
+		bufferedReader.close();
 
-    return "N/A";
-  }
+		return "N/A";
+	}
 
-  private static String formatSize(long size) {
-      String suffix = null;
+	private static String formatSize(long size) {
+		String suffix = null;
 
-      if (size >= 1024) {
-          suffix = "KB";
-          size /= 1024;
-          if (size >= 1024) {
-              suffix = "MB";
-              size /= 1024;
-          }
-      }
+		if (size >= 1024) {
+			suffix = "KB";
+			size /= 1024;
 
-      StringBuilder resultBuffer = new StringBuilder(Long.toString(size));
+			if (size >= 1024) {
+				suffix = "MB";
+				size /= 1024;
+			}
+		}
 
-      int commaOffset = resultBuffer.length() - 3;
-      while (commaOffset > 0) {
-          resultBuffer.insert(commaOffset, ',');
-          commaOffset -= 3;
-      }
+		StringBuilder resultBuffer = new StringBuilder(Long.toString(size));
 
-      if (suffix != null) resultBuffer.append(suffix);
-      return resultBuffer.toString();
-  }
+		int commaOffset = resultBuffer.length() - 3;
+		while (commaOffset > 0) {
+			resultBuffer.insert(commaOffset, ',');
+			commaOffset -= 3;
+		}
+
+		if (suffix != null) resultBuffer.append(suffix);
+
+		return resultBuffer.toString();
+	}
 
 	private void logException(Exception ex) {
 		log(ex, "Execption thrown in JavascriptInterface function.");
