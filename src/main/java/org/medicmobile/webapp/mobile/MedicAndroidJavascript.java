@@ -7,6 +7,9 @@ import android.app.DatePickerDialog;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkCapabilities;
+import android.net.NetworkInfo;
 import android.net.TrafficStats;
 import android.os.Process;
 import android.widget.DatePicker;
@@ -46,6 +49,7 @@ public class MedicAndroidJavascript {
 
 	private LocationManager locationManager;
 	private ActivityManager activityManager;
+	private ConnectivityManager connectivityManager;
 	private Alert soundAlert;
 
 	public MedicAndroidJavascript(EmbeddedBrowserActivity parent) {
@@ -65,6 +69,10 @@ public class MedicAndroidJavascript {
 
 	public void setActivityManager(ActivityManager activityManager) {
 		this.activityManager = activityManager;
+	}
+
+	public void setConnectivityManager(ConnectivityManager connectivityManager) {
+		this.connectivityManager = connectivityManager;
 	}
 
 //> JavascriptInterface METHODS
@@ -251,16 +259,40 @@ public class MedicAndroidJavascript {
 	public String getDeviceInfo() {
 		try {
 			if (activityManager == null) {
-				return jsonError("ActivityManager not set.  Cannot retrieve RAM info.");
+				return jsonError("ActivityManager not set. Cannot retrieve RAM info.");
 			}
+
+			if (connectivityManager == null) {
+				return jsonError("ConnectivityManager not set. Cannot retrieve network info.");
+			}
+
+			String versionName = parent.getPackageManager()
+					.getPackageInfo(parent.getPackageName(), 0)
+					.versionName;
+			JSONObject appObject = new JSONObject();
+			appObject.put("version", versionName);
 
 			String androidVersion = Build.VERSION.RELEASE;
 			int osApiLevel = Build.VERSION.SDK_INT;
 			String osVersion = System.getProperty("os.version") + "(" + android.os.Build.VERSION.INCREMENTAL + ")";
+			JSONObject softwareObject = new JSONObject();
+			softwareObject
+					.put("androidVersion", androidVersion)
+					.put("osApiLevel", osApiLevel)
+					.put("osVersion", osVersion);
+
 			String device = Build.DEVICE;
 			String model = Build.MODEL;
 			String manufacturer = Build.BRAND;
-			String harware = Build.HARDWARE;
+			String hardware = Build.HARDWARE;
+			Map<String, String> cpuInfo = getCPUInfo();
+			JSONObject hardwareObject = new JSONObject();
+			hardwareObject
+					.put("device", device)
+					.put("model", model)
+					.put("manufacturer", manufacturer)
+					.put("hardware", hardware)
+					.put("cpuInfo", new JSONObject(cpuInfo));
 
 			File dataDirectory = Environment.getDataDirectory();
 			StatFs dataDirectoryStat = new StatFs(dataDirectory.getPath());
@@ -269,29 +301,52 @@ public class MedicAndroidJavascript {
 			long dataDirectoryTotalBlocks = dataDirectoryStat.getBlockCountLong();
 			String freeMemorySize = formatSize(dataDirectoryAvailableBlocks * dataDirectoryBlockSize);
 			String totalMemorySize = formatSize(dataDirectoryTotalBlocks * dataDirectoryBlockSize);
+			JSONObject memoryObject = new JSONObject();
+			memoryObject
+					.put("free", freeMemorySize)
+					.put("total", totalMemorySize);
 
 			MemoryInfo memoryInfo = new ActivityManager.MemoryInfo();
 			activityManager.getMemoryInfo(memoryInfo);
 			String totalRAMSize = formatSize(memoryInfo.totalMem);
 			String freeRAMSize = formatSize(memoryInfo.availMem);
 			String thresholdRAM = formatSize(memoryInfo.threshold);
+			Runtime runtime = Runtime.getRuntime();
+			String maxMemorySize = formatSize(runtime.maxMemory());
+			JSONObject ramObject = new JSONObject();
+			ramObject
+					.put("free", freeRAMSize)
+					.put("total", totalRAMSize)
+					.put("threshold", thresholdRAM)
+					.put("maxMemory", maxMemorySize);
 
-			String cpuInfo = getCPUInfo();
+			NetworkInfo netInfo = connectivityManager.getActiveNetworkInfo();
+			JSONObject networkObject = new JSONObject();
+			if (netInfo != null && Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
+				NetworkCapabilities networkCapabilities = connectivityManager.getNetworkCapabilities(connectivityManager.getActiveNetwork());
+				int downSpeed = networkCapabilities.getLinkDownstreamBandwidthKbps();
+				int upSpeed = networkCapabilities.getLinkUpstreamBandwidthKbps();
+				networkObject
+						.put("downSpeed", formatSpeed(downSpeed))
+						.put("upSpeed", formatSpeed(upSpeed));
+			}
+
+			log("!!!!!!json = %s", new JSONObject()
+					.put("app", appObject)
+					.put("software", softwareObject)
+					.put("hardware", hardwareObject)
+					.put("memory", memoryObject)
+					.put("ram", ramObject)
+					.put("network", networkObject)
+					.toString());
 
 			return new JSONObject()
-					.put("androidVersion", androidVersion)
-					.put("osApiLevel", osApiLevel)
-					.put("osVersion", osVersion)
-					.put("device", device)
-					.put("model", model)
-					.put("manufacturer", manufacturer)
-					.put("harware", harware)
-					.put("freeMemorySize", freeMemorySize)
-					.put("totalMemorySize", totalMemorySize)
-					.put("freeRAMSize", freeRAMSize)
-					.put("totalRAMSize", totalRAMSize)
-					.put("thresholdRAM", thresholdRAM)
-					.put("cpuInfo", cpuInfo)
+					.put("app", appObject)
+					.put("software", softwareObject)
+					.put("hardware", hardwareObject)
+					.put("memory", memoryObject)
+					.put("ram", ramObject)
+					.put("network", networkObject)
 					.toString();
 		} catch(Exception ex) {
 			return jsonError("Problem fetching device info: ", ex);
@@ -330,24 +385,26 @@ public class MedicAndroidJavascript {
 		dialog.show();
 	}
 
-	private static String getCPUInfo() throws IOException {
+	private static Map<String, String> getCPUInfo() throws IOException {
 		BufferedReader bufferedReader = new BufferedReader(new FileReader("/proc/cpuinfo"));
 		String line;
 		Map<String, String> output = new HashMap<>();
+		int cores = 0;
 		while ((line = bufferedReader.readLine()) != null) {
 			String[] data = line.split(":");
 			if (data.length > 1) {
 				String key = data[0].trim();
 				if (key.equals("model name")) {
-					bufferedReader.close();
-
-					return data[1].trim();
+					cores++;
+					output.put(key, data[1].trim());
 				}
 			}
 		}
 		bufferedReader.close();
 
-		return "N/A";
+		output.put("cores", String.valueOf(cores));
+
+		return output;
 	}
 
 	private static String formatSize(long size) {
@@ -360,6 +417,32 @@ public class MedicAndroidJavascript {
 			if (size >= 1024) {
 				suffix = "MB";
 				size /= 1024;
+			}
+		}
+
+		StringBuilder resultBuffer = new StringBuilder(Long.toString(size));
+
+		int commaOffset = resultBuffer.length() - 3;
+		while (commaOffset > 0) {
+			resultBuffer.insert(commaOffset, ',');
+			commaOffset -= 3;
+		}
+
+		if (suffix != null) resultBuffer.append(suffix);
+
+		return resultBuffer.toString();
+	}
+
+	private static String formatSpeed(long size) {
+		String suffix = "Kbps";
+
+		if (size >= 1000) {
+			suffix = "Mbps";
+			size /= 1000;
+
+			if (size >= 1000) {
+				suffix = "Gbps";
+				size /= 1000;
 			}
 		}
 
