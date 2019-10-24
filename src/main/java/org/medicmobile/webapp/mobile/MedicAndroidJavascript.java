@@ -331,15 +331,6 @@ public class MedicAndroidJavascript {
 						.put("upSpeed", formatSpeed(upSpeed));
 			}
 
-			log("!!!!!!json = %s", new JSONObject()
-					.put("app", appObject)
-					.put("software", softwareObject)
-					.put("hardware", hardwareObject)
-					.put("memory", memoryObject)
-					.put("ram", ramObject)
-					.put("network", networkObject)
-					.toString());
-
 			return new JSONObject()
 					.put("app", appObject)
 					.put("software", softwareObject)
