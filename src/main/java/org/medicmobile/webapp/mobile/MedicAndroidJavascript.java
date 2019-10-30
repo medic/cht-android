@@ -299,8 +299,8 @@ public class MedicAndroidJavascript {
 			long dataDirectoryBlockSize = dataDirectoryStat.getBlockSizeLong();
 			long dataDirectoryAvailableBlocks = dataDirectoryStat.getAvailableBlocksLong();
 			long dataDirectoryTotalBlocks = dataDirectoryStat.getBlockCountLong();
-			String freeMemorySize = formatSize(dataDirectoryAvailableBlocks * dataDirectoryBlockSize);
-			String totalMemorySize = formatSize(dataDirectoryTotalBlocks * dataDirectoryBlockSize);
+			long freeMemorySize = dataDirectoryAvailableBlocks * dataDirectoryBlockSize;
+			long totalMemorySize = dataDirectoryTotalBlocks * dataDirectoryBlockSize;
 			JSONObject memoryObject = new JSONObject();
 			memoryObject
 					.put("free", freeMemorySize)
@@ -308,11 +308,11 @@ public class MedicAndroidJavascript {
 
 			MemoryInfo memoryInfo = new ActivityManager.MemoryInfo();
 			activityManager.getMemoryInfo(memoryInfo);
-			String totalRAMSize = formatSize(memoryInfo.totalMem);
-			String freeRAMSize = formatSize(memoryInfo.availMem);
-			String thresholdRAM = formatSize(memoryInfo.threshold);
+			long totalRAMSize = memoryInfo.totalMem;
+			long freeRAMSize = memoryInfo.availMem;
+			long thresholdRAM = memoryInfo.threshold;
 			Runtime runtime = Runtime.getRuntime();
-			String maxMemorySize = formatSize(runtime.maxMemory());
+			long maxMemorySize = runtime.maxMemory();
 			JSONObject ramObject = new JSONObject();
 			ramObject
 					.put("free", freeRAMSize)
@@ -327,8 +327,8 @@ public class MedicAndroidJavascript {
 				int downSpeed = networkCapabilities.getLinkDownstreamBandwidthKbps();
 				int upSpeed = networkCapabilities.getLinkUpstreamBandwidthKbps();
 				networkObject
-						.put("downSpeed", formatSpeed(downSpeed))
-						.put("upSpeed", formatSpeed(upSpeed));
+						.put("downSpeed", downSpeed)
+						.put("upSpeed", upSpeed);
 			}
 
 			return new JSONObject()
@@ -396,58 +396,6 @@ public class MedicAndroidJavascript {
 		output.put("cores", String.valueOf(cores));
 
 		return output;
-	}
-
-	private static String formatSize(long size) {
-		String suffix = null;
-
-		if (size >= 1024) {
-			suffix = "KB";
-			size /= 1024;
-
-			if (size >= 1024) {
-				suffix = "MB";
-				size /= 1024;
-			}
-		}
-
-		StringBuilder resultBuffer = new StringBuilder(Long.toString(size));
-
-		int commaOffset = resultBuffer.length() - 3;
-		while (commaOffset > 0) {
-			resultBuffer.insert(commaOffset, ',');
-			commaOffset -= 3;
-		}
-
-		if (suffix != null) resultBuffer.append(suffix);
-
-		return resultBuffer.toString();
-	}
-
-	private static String formatSpeed(long size) {
-		String suffix = "Kbps";
-
-		if (size >= 1000) {
-			suffix = "Mbps";
-			size /= 1000;
-
-			if (size >= 1000) {
-				suffix = "Gbps";
-				size /= 1000;
-			}
-		}
-
-		StringBuilder resultBuffer = new StringBuilder(Long.toString(size));
-
-		int commaOffset = resultBuffer.length() - 3;
-		while (commaOffset > 0) {
-			resultBuffer.insert(commaOffset, ',');
-			commaOffset -= 3;
-		}
-
-		if (suffix != null) resultBuffer.append(suffix);
-
-		return resultBuffer.toString();
 	}
 
 	private void logException(Exception ex) {
