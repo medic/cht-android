@@ -376,10 +376,10 @@ public class MedicAndroidJavascript {
 		dialog.show();
 	}
 
-	private static Map<String, String> getCPUInfo() throws IOException {
+	private static HashMap getCPUInfo() throws IOException {
 		BufferedReader bufferedReader = new BufferedReader(new FileReader("/proc/cpuinfo"));
 		String line;
-		Map<String, String> output = new HashMap<>();
+		HashMap output = new HashMap();
 		int cores = 0;
 		while ((line = bufferedReader.readLine()) != null) {
 			String[] data = line.split(":");
@@ -393,7 +393,7 @@ public class MedicAndroidJavascript {
 		}
 		bufferedReader.close();
 
-		output.put("cores", String.valueOf(cores));
+		output.put("cores", cores);
 
 		return output;
 	}
