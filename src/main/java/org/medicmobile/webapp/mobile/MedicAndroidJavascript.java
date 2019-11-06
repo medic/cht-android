@@ -301,8 +301,8 @@ public class MedicAndroidJavascript {
 			long dataDirectoryTotalBlocks = dataDirectoryStat.getBlockCountLong();
 			long freeMemorySize = dataDirectoryAvailableBlocks * dataDirectoryBlockSize;
 			long totalMemorySize = dataDirectoryTotalBlocks * dataDirectoryBlockSize;
-			JSONObject memoryObject = new JSONObject();
-			memoryObject
+			JSONObject storageObject = new JSONObject();
+			storageObject
 					.put("free", freeMemorySize)
 					.put("total", totalMemorySize);
 
@@ -311,14 +311,11 @@ public class MedicAndroidJavascript {
 			long totalRAMSize = memoryInfo.totalMem;
 			long freeRAMSize = memoryInfo.availMem;
 			long thresholdRAM = memoryInfo.threshold;
-			Runtime runtime = Runtime.getRuntime();
-			long maxMemorySize = runtime.maxMemory();
 			JSONObject ramObject = new JSONObject();
 			ramObject
 					.put("free", freeRAMSize)
 					.put("total", totalRAMSize)
-					.put("threshold", thresholdRAM)
-					.put("maxMemory", maxMemorySize);
+					.put("threshold", thresholdRAM);
 
 			NetworkInfo netInfo = connectivityManager.getActiveNetworkInfo();
 			JSONObject networkObject = new JSONObject();
@@ -335,7 +332,7 @@ public class MedicAndroidJavascript {
 					.put("app", appObject)
 					.put("software", softwareObject)
 					.put("hardware", hardwareObject)
-					.put("memory", memoryObject)
+					.put("storage", storageObject)
 					.put("ram", ramObject)
 					.put("network", networkObject)
 					.toString();
