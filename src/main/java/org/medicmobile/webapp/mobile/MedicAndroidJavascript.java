@@ -20,6 +20,7 @@ import android.os.StatFs;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -29,6 +30,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -373,17 +375,56 @@ public class MedicAndroidJavascript {
 		dialog.show();
 	}
 
-	private static HashMap getCPUInfo() throws IOException {
+	private int getNumberOfCores() {
+		if(Build.VERSION.SDK_INT >= 17) {
+			return Runtime.getRuntime().availableProcessors();
+		}
+		else {
+			return getNumCoresOldPhones();
+		}
+	}
+
+	/**
+	 * Gets the number of cores available in this device, across all processors.
+	 * Requires: Ability to peruse the filesystem at "/sys/devices/system/cpu"
+	 * @return The number of cores, or 1 if failed to get result
+	 */
+	private int getNumCoresOldPhones() {
+		// Private Class to display only CPU devices in the directory listing
+		class CpuFilter implements FileFilter {
+			@Override
+			public boolean accept(File pathname) {
+				// Check if filename is "cpu", followed by a single digit number
+				if (Pattern.matches("cpu[0-9]+", pathname.getName())) {
+					return true;
+				}
+				return false;
+			}
+		}
+
+		try {
+			// Get directory containing CPU info
+			File dir = new File("/sys/devices/system/cpu/");
+			// Filter to only list the devices we care about
+			File[] files = dir.listFiles(new CpuFilter());
+			// Return the number of cores (virtual CPU devices)
+			return files.length;
+		} catch(Exception e) {
+			// Default to return 1 core
+			return 1;
+		}
+	}
+
+	private HashMap getCPUInfo() throws IOException {
 		BufferedReader bufferedReader = new BufferedReader(new FileReader("/proc/cpuinfo"));
 		String line;
 		HashMap output = new HashMap();
-		int cores = 0;
+		int cores = getNumberOfCores();
 		while ((line = bufferedReader.readLine()) != null) {
 			String[] data = line.split(":");
 			if (data.length > 1) {
 				String key = data[0].trim();
 				if (key.equals("model name")) {
-					cores++;
 					output.put(key, data[1].trim());
 				}
 			}
