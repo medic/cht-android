@@ -7,7 +7,9 @@ import android.content.Intent;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.app.ActivityManager;
 import android.net.Uri;
+import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.view.KeyEvent;
@@ -323,6 +325,10 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		maj.setAlert(new Alert(this));
 
 		maj.setLocationManager((LocationManager) this.getSystemService(Context.LOCATION_SERVICE));
+
+		maj.setActivityManager((ActivityManager) this.getSystemService(Context.ACTIVITY_SERVICE));
+
+		maj.setConnectivityManager((ConnectivityManager) this.getSystemService(Context.CONNECTIVITY_SERVICE));
 
 		container.addJavascriptInterface(maj, "medicmobile_android");
 	}
