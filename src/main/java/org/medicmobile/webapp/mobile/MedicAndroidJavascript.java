@@ -383,6 +383,7 @@ public class MedicAndroidJavascript {
 				String key = data[0].trim();
 				if (key.equals("model name")) {
 					output.put(key, data[1].trim());
+					break;
 				}
 			}
 		}
@@ -390,6 +391,9 @@ public class MedicAndroidJavascript {
 
 		int cores = Runtime.getRuntime().availableProcessors();
 		output.put("cores", cores);
+
+		String arch = System.getProperty("os.arch");
+		output.put("arch", arch);
 
 		return output;
 	}
