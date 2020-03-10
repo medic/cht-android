@@ -27,6 +27,7 @@ jobs:
       - fastlane deploy flavor:bracuganda
     - script:
       - fastlane deploy flavor:cic_guatemala
+      - fastlane deploy flavor:cmmb_kenya
       - fastlane deploy flavor:ebpp_indonesia
       - fastlane deploy flavor:hope_through_health
     - script:
