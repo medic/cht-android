@@ -187,6 +187,11 @@ android {
     cic_guatemala {
       applicationId = 'org.medicmobile.webapp.mobile.cic_guatemala'
     }
+
+    cmmb_kenya {
+      applicationId = 'org.medicmobile.webapp.mobile.cmmb_kenya'
+    }
+
     ebpp_indonesia {
       applicationId = 'org.medicmobile.webapp.mobile.ebpp_indonesia'
     }
