@@ -1,6 +1,6 @@
 ADB = ${ANDROID_HOME}/platform-tools/adb
 GRADLEW = ./gradlew
-flavour = Unbranded
+flavour = cmmb_kenya
 
 ifdef ComSpec	 # Windows
   # Use `/` for all paths, except `.\`
