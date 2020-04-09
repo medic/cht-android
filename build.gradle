@@ -256,6 +256,9 @@ android {
     vhw_burundi {
       applicationId = 'org.medicmobile.webapp.mobile.vhw_burundi'
     }
+    surveillance_covid19_kenya {
+      applicationId = 'org.medicmobile.webapp.mobile.surveillance_covid19_kenya'
+    }
   }
 
   splits {
