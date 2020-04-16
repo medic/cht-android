@@ -1,23 +1,83 @@
 language: android
+dist: trusty # Android builds are only supported on our Trusty image
 jdk: oraclejdk8
 android:
   components:
-    - tools
-    - platform-tools
-    - extra-android-m2repository
-    - build-tools-28.0.2
-    - android-26
+  - tools
+  - platform-tools
+  - extra-android-m2repository
+  - build-tools-28.0.2
+  - android-28
 env:
-  - GRADLE_OPTS="-XX:MaxPermSize=512m"
-script:
-  - make travis
+- GRADLE_OPTS="-XX:MaxPermSize=2048M"
+stages:
+  - name: test
+  - name: deploy
+    if: tag IS present
+jobs:
+  include:
+    - stage: test
+      script: make test
+  
+    - stage: deploy
+    # flavors sorted alphabetically with three per job
+      script:
+      - fastlane deploy flavor:unbranded
+      - fastlane deploy flavor:medicmobiledemo
+      - fastlane deploy flavor:bracuganda
+    - script:
+      - fastlane deploy flavor:cic_guatemala
+      - fastlane deploy flavor:cmmb_kenya
+      - fastlane deploy flavor:ebpp_indonesia
+      - fastlane deploy flavor:hope_through_health
+    - script:
+      - fastlane deploy flavor:livinggoods
+      - fastlane deploy flavor:livinggoodskenya
+      - fastlane deploy flavor:livinggoods_assisted_networks
+    - script:
+      - fastlane deploy flavor:livinggoods_innovation_ke
+      - fastlane deploy flavor:livinggoods_innovation_ke_supervisor 
+      - fastlane deploy flavor:livinggoods_innovation_ke_hivst
+    - script:
+      # - fastlane deploy flavor:moh_kenya_siaya_white
+      - fastlane deploy flavor:moh_kenya_siaya_red
+      - fastlane deploy flavor:moh_kenya_siaya_green
+      - fastlane deploy flavor:moh_kenya_siaya_black
+      - fastlane deploy flavor:moh_mali
+    - script:
+      - fastlane deploy flavor:moh_zanzibar_training
+      - fastlane deploy flavor:moh_zanzibar
+    - script:
+      - fastlane deploy flavor:musomali
+      - fastlane deploy flavor:pih_malawi
+      - fastlane deploy flavor:pih_malawi_supervisor
+    - script:
+      - fastlane deploy flavor:simprints
+      - fastlane deploy flavor:surveillance_covid19_kenya
+      - fastlane deploy flavor:vhw_burundi
+    - script:
+before_install:
+- openssl aes-256-cbc -K $encrypted_323c4a109760_key -iv $encrypted_323c4a109760_iv -in secrets.tar.gz.enc -out ./secrets.tar.gz -d
+- tar -xf ./secrets.tar.gz
+- gem update --system
+- gem install fastlane --no-document --quiet
+before_cache:
+- rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
+- rm -fr $HOME/.gradle/caches/*/plugin-resolution/
+cache:
+  directories:
+  - "$HOME/.gradle/caches/"
+  - "$HOME/.gradle/wrapper/"
+  - "$HOME/.android/build-cache"
 deploy:
   provider: releases
-  api_key:
-    secure: qgWMVwIw3/F+lRvSCr3Q8yAcSmz5sGnkLMIJJ/ilQxTIgP/0JuhQar7/v1JA2Dla2ePwy2BRiD9btSPeGwKvmPKLvCiEemPJu6hltqqK19Bt/NGus5GlArpiwiS0//jFiOem/t2U7FFhvyZpZ6evPAqNGKWiiuRNA+M2rHqBXEAO3XEsE4t83kk6dlT5CvCacuitaC8zjgbaR/bFkcH3w+xp228pv7CDAZ97xn35vhZlSnGLslvYlZHQd/dYdpiaBq/n/3FwHN4t2cnTRtHh2tZV5C80Jr2kYGr7ZvNVDgOB0Cb3f+f57rpZSZa9kGG5cW10E07LKkE5+yYC8yMZX68UbybO8paLMSVTOHHLRxgctBtkO8pKdaev0aLlRfBu/OhfUpC/qxTDDooivyX5rLDlH8a/9eP7CiXF84BiPx9i8CesY1pcZO3co8Zwle/uvvrbvhyWZzdPn0ciT9/MeclZRSXFOgQ1wBGXTX7PO2lujCpLo1WBmIOkPFznOWwSeMzT8VZVWvlcSIK/pELi1Md1F3DJ0IXSr2ulnXRkyMrRpuklSZF5OacjNd44YlXD6bsthAD7aj6rCePXaLWP5BZuxLdwi6wj6gmttQaqzvoNCR7eUWc7nybMk/mcfTXoHqXyznGURY0gmB27bEETo0ONAIypaM+kCDqzdKrdUuk=
-  file_glob: true
-  file: build/outputs/apk/*-debug.apk
   skip_cleanup: true
+  overwrite: true
+  api_key:
+    secure: Dm6ciqGeR3zT+/hdO4jq+2sMa/d3sHSQ1U9ya9tCu71+BMZfjRA8vgBAWgnp6xixCUTEppJNgRrKaCR9V12Yu8Yl3ceY3bGRd6xhR9uUK+PgFUSjptuiwgwE1Fbj7lxT1NG1ZptvnqYZ0YhPiAC5cmcJUuz/0g83fKJfDNrX9V6IGQObdiPqDJX3cVbU/5NpSbIsnNqQfaldMP2Y1m1gODMCifOqM2Mj1nHd+X9OzEpuICCZiiHJJBKafdifZKmPlSgYDjt3d6DCsn5YiNnNm5Rs4kqWJc4YvV2G+S4eMnL7XB4pg45zZQ6ZIwn3NPp5a4pfHTn5nGC/2Hqqe8cw+xURYf/qrOZp3mQgAYiJht9bivMhwlvCvTh2kw+xorTj7wlFDSyj78QLxjxidiAj0AkBdYlVttSXDXAoCTGKHDhFEtKNviVdB9TNfYwKTFin4BCPsPnBEQZB9pzqIwBha9INjutYUJ9aX1uC7a1grR7Oa6IL7NH0Z0sV7bYkoW91X0ZxQtsVnFduc2y6AwKzqlO1VKN0U55KmUnj0STCGSMHZoI1cObBJtCzUcUnH7NIEfeZLq/tQ8sRkFlCJ1g2bJI0VG8DMTP56krvHKNknLacN5SjloNCST3SL6qlYto95ypSlfU+u3qpC6kNdXa7Yvodk+5u7VVQcX18xczbYvs=
+  file_glob: true
+  file: ./build/outputs/apk/**/*.apk
   on:
     tags: true
     repo: medic/medic-android
+    branch: master

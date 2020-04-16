@@ -34,9 +34,5 @@ url-tester:
 	DISABLE_APP_URL_VALIDATION=true ${GRADLEW} --daemon --parallel installUnbrandedDebug
 uninstall:
 	adb uninstall org.medicmobile.webapp.mobile
-
 test:
 	${GRADLEW} androidCheck lintUnbrandedDebug test
-
-travis: test
-	${GRADLEW} test assembleDebug
