@@ -34,7 +34,6 @@ repositories {
 
 dependencies {
   implementation fileTree(dir: 'libs', include: ['*.jar'])
-  implementation 'org.xwalk:xwalk_core_library:23.53.589.4:arm64-v8a@aar'
   implementation 'com.simprints:LibSimprints:1.0.11'
   implementation 'com.github.Mariovc:ImagePicker:1.2.2'
   testImplementation 'junit:junit:4.12'
@@ -137,7 +136,7 @@ android {
     }
     release {
       minifyEnabled true
-      proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'config/xwalk.pro', 'config/libsimprints.pro'
+      proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'config/libsimprints.pro'
       shrinkResources true
       signingConfig signingConfigs.release
     }

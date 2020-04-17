@@ -10,6 +10,7 @@ import android.location.LocationManager;
 import android.app.ActivityManager;
 import android.net.Uri;
 import android.net.ConnectivityManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.view.KeyEvent;
@@ -19,18 +20,16 @@ import android.view.View;
 import android.view.Window;
 import android.webkit.ValueCallback;
 import android.widget.Toast;
+import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceResponse;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 
+import java.io.File;
 import java.io.ByteArrayInputStream;
 import java.util.Collections;
 import java.util.Map;
-
-import org.xwalk.core.XWalkPreferences;
-import org.xwalk.core.XWalkResourceClient;
-import org.xwalk.core.XWalkSettings;
-import org.xwalk.core.XWalkUIClient;
-import org.xwalk.core.XWalkView;
-import org.xwalk.core.XWalkWebResourceRequest;
-import org.xwalk.core.XWalkWebResourceResponse;
 
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static java.lang.Boolean.parseBoolean;
@@ -66,7 +65,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		}
 	};
 
-	private XWalkView container;
+	private WebView container;
 	private SettingsStore settings;
 	private String appUrl;
 	private SimprintsSupport simprints;
@@ -78,7 +77,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	@Override public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		trace(this, "Starting XWalk webview...");
+		trace(this, "Starting webview...");
 
 		this.simprints = new SimprintsSupport(this);
 		this.photoGrabber = new PhotoGrabber(this);
@@ -104,13 +103,10 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 			webviewContainer.setBackgroundColor(R.drawable.warning_background);
 		}
 
-		container = (XWalkView) findViewById(R.id.wbvMain);
-
-		configureUseragent();
+		container = (WebView) findViewById(R.id.wbvMain);
 
 		enableLocationUpdates();
-		setUpUiClient(container);
-		enableRemoteChromeDebugging();
+		enableRemoteChromeDebugging(container);
 		enableJavascript(container);
 		enableStorage(container);
 
@@ -223,7 +219,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 				// block.
 				// On switching to XWalkView, we assume the same applies.
 				if(true) { // NOPMD
-					container.load("javascript:" + js, null);
+					container.loadUrl("javascript:" + js);
 				} else {
 					container.evaluateJavascript(js, IGNORE_RESULT);
 				}
@@ -245,13 +241,6 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		String escaped = formatted.replace("'", "\\'");
 		evaluateJavascript("console." + type + "('" + escaped + "');");
 	}
-
-	private void configureUseragent() {
-		String current = container.getUserAgentString();
-
-		container.setUserAgentString(createUseragentFrom(current));
-	}
-
 	private void openSettings() {
 		startActivity(new Intent(this,
 				SettingsDialogActivity.class));
@@ -266,15 +255,17 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	private void browseToRoot() {
 		String url = getRootUrl();
 		if(DEBUG) trace(this, "Pointing browser to %s", redactUrl(url));
-		container.load(url, null);
+		container.loadUrl(url);
 	}
 
-	private void enableRemoteChromeDebugging() {
-		XWalkPreferences.setValue(XWalkPreferences.REMOTE_DEBUGGING, true);
+	private void enableRemoteChromeDebugging(WebView container) {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+			container.setWebContentsDebuggingEnabled(true);
+		}
 	}
 
-	private void setUpUiClient(XWalkView container) {
-		container.setUIClient(new XWalkUIClient(container) {
+	private void setUpUiClient(WebView container) {
+		container.setWebViewClient(new WebViewClient() {
 			/** Not applicable for Crosswalk.  TODO find alternative and remove this
 			@Override public boolean onConsoleMessage(ConsoleMessage cm) {
 				if(!DEBUG) {
@@ -288,8 +279,8 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 				return true;
 			} */
 
-			@Override public void openFileChooser(XWalkView view, ValueCallback<Uri> callback, String acceptType, String shouldCapture) {
-				if(DEBUG) trace(this, "openFileChooser() :: %s,%s,%s,%s", view, callback, acceptType, shouldCapture);
+			public void openFileChooser(ValueCallback<Uri> callback, String acceptType, String shouldCapture) {
+				if(DEBUG) trace(this, "openFileChooser() :: %s,%s,%s", callback, acceptType, shouldCapture);
 
 				boolean capture = parseBoolean(shouldCapture);
 
@@ -318,7 +309,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	}
 
 	@SuppressLint("SetJavaScriptEnabled")
-	private void enableJavascript(XWalkView container) {
+	private void enableJavascript(WebView container) {
 		container.getSettings().setJavaScriptEnabled(true);
 
 		MedicAndroidJavascript maj = new MedicAndroidJavascript(this);
@@ -385,20 +376,21 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		}
 	}
 
-	private void enableStorage(XWalkView container) {
-		XWalkSettings settings = container.getSettings();
-
-		// N.B. in Crosswalk, database seems to be enabled by default
-
-		settings.setDomStorageEnabled(true);
-
-		// N.B. in Crosswalk, appcache seems to work by default, and
-		// there is no option to set the storage path.
+	private void enableStorage(WebView container) {
+		WebSettings webSettings = container.getSettings();
+		webSettings.setDatabaseEnabled(true);
+		webSettings.setDomStorageEnabled(true);
+		File dir = getCacheDir();
+		if (!dir.exists()) {
+			dir.mkdirs();
+		}
+		webSettings.setAppCachePath(dir.getPath());
+		webSettings.setAppCacheEnabled(true);
 	}
 
-	private void enableUrlHandlers(XWalkView container) {
-		container.setResourceClient(new XWalkResourceClient(container) {
-			@Override public boolean shouldOverrideUrlLoading(XWalkView view, String url) {
+	private void enableUrlHandlers(WebView container) {
+		container.setWebViewClient(new WebViewClient() {
+			@Override public boolean shouldOverrideUrlLoading(WebView view, String url) {
 				if(url.startsWith("tel:") || url.startsWith("sms:")) {
 					Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
 					view.getContext().startActivity(i);
@@ -406,7 +398,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 				}
 				return false;
 			}
-			@Override public XWalkWebResourceResponse shouldInterceptLoadRequest(XWalkView view, XWalkWebResourceRequest request) {
+			@Override public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
 				if(isUrlRelated(appUrl, request.getUrl())) {
 					return null; // load as normal
 				} else {
@@ -415,18 +407,17 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 					Map<String, String> noHeaders = Collections.<String, String>emptyMap();
 					ByteArrayInputStream emptyResponse = new ByteArrayInputStream(new byte[0]);
 
-					return createXWalkWebResourceResponse(
-							"text/plain", "UTF-8", emptyResponse,
-							403, "Read access forbidden.", noHeaders);
+					return  new WebResourceResponse(
+							"text/plain", "UTF-8", 403,
+							"Read access forbidden.", noHeaders, emptyResponse);
 				}
 			}
-			@Override public void onReceivedLoadError(XWalkView view, int errorCode, String description, String failingUrl) {
-				if(errorCode == XWalkResourceClient.ERROR_OK) return;
+			@Override public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
 
-				log("EmbeddedBrowserActivity.onReceivedLoadError() :: [%s] %s :: %s", errorCode, failingUrl, description);
+				log("EmbeddedBrowserActivity.onReceivedError() :: [%s] %s :: %s", errorCode, failingUrl, description);
 
 				if(!getRootUrl().equals(failingUrl)) {
-					log("EmbeddedBrowserActivity.onReceivedLoadError() :: ignoring for non-root URL");
+					log("EmbeddedBrowserActivity.onReceivedError() :: ignoring for non-root URL");
 				}
 
 				evaluateJavascript(String.format(

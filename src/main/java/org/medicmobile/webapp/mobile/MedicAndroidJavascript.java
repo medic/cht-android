@@ -76,7 +76,6 @@ public class MedicAndroidJavascript {
 	}
 
 //> JavascriptInterface METHODS
-	@org.xwalk.core.JavascriptInterface
 	@android.webkit.JavascriptInterface
 	public String getAppVersion() {
 		try {
@@ -88,7 +87,6 @@ public class MedicAndroidJavascript {
 		}
 	}
 
-	@org.xwalk.core.JavascriptInterface
 	@android.webkit.JavascriptInterface
 	public void playAlert() {
 		try {
@@ -98,7 +96,6 @@ public class MedicAndroidJavascript {
 		}
 	}
 
-	@org.xwalk.core.JavascriptInterface
 	@android.webkit.JavascriptInterface
 	public String getDataUsage() {
 		try {
@@ -123,7 +120,6 @@ public class MedicAndroidJavascript {
 	}
 
 	@Deprecated
-	@org.xwalk.core.JavascriptInterface
 	@android.webkit.JavascriptInterface
 	@SuppressLint("MissingPermission") // handled by catch(Exception)
 	/**
@@ -150,7 +146,6 @@ public class MedicAndroidJavascript {
 		}
 	}
 
-	@org.xwalk.core.JavascriptInterface
 	@android.webkit.JavascriptInterface
 	public void datePicker(final String targetElement) {
 		try {
@@ -160,7 +155,6 @@ public class MedicAndroidJavascript {
 		}
 	}
 
-	@org.xwalk.core.JavascriptInterface
 	@android.webkit.JavascriptInterface
 	public void datePicker(final String targetElement, String initialDate) {
 		try {
@@ -175,7 +169,6 @@ public class MedicAndroidJavascript {
 		}
 	}
 
-	@org.xwalk.core.JavascriptInterface
 	@android.webkit.JavascriptInterface
 	public boolean mrdt_available() {
 		try {
@@ -186,7 +179,6 @@ public class MedicAndroidJavascript {
 		}
 	}
 
-	@org.xwalk.core.JavascriptInterface
 	@android.webkit.JavascriptInterface
 	public void mrdt_verify() {
 		try {
@@ -199,7 +191,6 @@ public class MedicAndroidJavascript {
 	/**
 	 * @return {@code true} iff an app is available to handle supported simprints {@code Intent}s
 	 */
-	@org.xwalk.core.JavascriptInterface
 	@android.webkit.JavascriptInterface
 	public boolean simprints_available() {
 		try {
@@ -210,7 +201,6 @@ public class MedicAndroidJavascript {
 		}
 	}
 
-	@org.xwalk.core.JavascriptInterface
 	@android.webkit.JavascriptInterface
 	public void simprints_ident(int targetInputId) {
 		try {
@@ -220,7 +210,6 @@ public class MedicAndroidJavascript {
 		}
 	}
 
-	@org.xwalk.core.JavascriptInterface
 	@android.webkit.JavascriptInterface
 	public void simprints_reg(int targetInputId) {
 		try {
@@ -231,7 +220,6 @@ public class MedicAndroidJavascript {
 	}
 
 
-	@org.xwalk.core.JavascriptInterface
 	@android.webkit.JavascriptInterface
 	public boolean sms_available() {
 		return smsSender != null;
@@ -242,7 +230,6 @@ public class MedicAndroidJavascript {
 	 * @param destination the recipient phone number for this message
 	 * @param content the text content of the SMS to be sent
 	 */
-	@org.xwalk.core.JavascriptInterface
 	@android.webkit.JavascriptInterface
 	public void sms_send(String id, String destination, String content) throws Exception {
 		try {
@@ -254,7 +241,6 @@ public class MedicAndroidJavascript {
 		}
 	}
 
-	@org.xwalk.core.JavascriptInterface
 	@android.webkit.JavascriptInterface
 	public String getDeviceInfo() {
 		try {

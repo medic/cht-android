@@ -3,7 +3,7 @@
 		android:id="@+id/lytWebView"
 		android:layout_width="fill_parent"
 		android:layout_height="fill_parent">
-	<org.xwalk.core.XWalkView android:id="@+id/wbvMain"
+	<WebView android:id="@+id/wbvMain"
 			android:layout_width="fill_parent"
 			android:layout_height="fill_parent"/>
 </LinearLayout>
