@@ -237,6 +237,9 @@ android {
     moh_zanzibar {
       applicationId = 'org.medicmobile.webapp.mobile.moh_zanzibar'
     }
+    msf_niger {
+      applicationId = 'org.medicmobile.webapp.mobile.msf_niger'
+    }
     musomali {
       applicationId = 'org.medicmobile.webapp.mobile.musomali'
     }
