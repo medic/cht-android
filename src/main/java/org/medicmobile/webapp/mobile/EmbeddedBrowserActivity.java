@@ -49,9 +49,7 @@ import static org.medicmobile.webapp.mobile.Utils.isUrlRelated;
 
 @SuppressWarnings({"PMD.GodClass", "PMD.TooManyMethods"})
 public class EmbeddedBrowserActivity extends LockableActivity {
-    /**
-     * Any activity result with all 3 low bits set is _not_ a simprints result.
-     */
+	/** Any activity result with all 3 low bits set is _not_ a simprints result. */
     private static final int NON_SIMPRINTS_FLAGS = 0x7;
     static final int GRAB_PHOTO = (0 << 3) | NON_SIMPRINTS_FLAGS;
     static final int GRAB_MRDT_PHOTO = (1 << 3) | NON_SIMPRINTS_FLAGS;
@@ -81,8 +79,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
     private SharedPreferences sharedPreferences;
 
     //> ACTIVITY LIFECYCLE METHODS
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
+	@Override public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         trace(this, "Starting XWalk webview...");
@@ -101,6 +98,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.main);
+
         // Add an alarming red border if using configurable (i.e. dev)
         // app with a medic production server.
         if (settings.allowsConfiguration() &&
@@ -164,8 +162,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
         return super.onCreateOptionsMenu(menu);
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+	@Override public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.mnuGotoTestPages:
                 evaluateJavascript("window.location.href = 'https://medic.github.io/atp'");
@@ -187,8 +184,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
         }
     }
 
-    @Override
-    public boolean dispatchKeyEvent(KeyEvent event) {
+	@Override public boolean dispatchKeyEvent(KeyEvent event) {
         if (event.getKeyCode() == KeyEvent.KEYCODE_BACK) {
             // With standard android WebView, this would be handled by onBackPressed().  However, that
             // method does not get called when using XWalkView, so we catch the back button here instead.
@@ -206,8 +202,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
         }
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent i) {
+	@Override protected void onActivityResult(int requestCode, int resultCode, Intent i) {
         try {
             trace(this, "onActivityResult() :: requestCode=%s, resultCode=%s", requestCode, resultCode);
             if ((requestCode & NON_SIMPRINTS_FLAGS) == NON_SIMPRINTS_FLAGS) {
@@ -324,10 +319,8 @@ public class EmbeddedBrowserActivity extends LockableActivity {
              return true;
              } */
 
-            @Override
-            public void openFileChooser(XWalkView view, ValueCallback<Uri> callback, String acceptType, String shouldCapture) {
-                if (DEBUG)
-                    trace(this, "openFileChooser() :: %s,%s,%s,%s", view, callback, acceptType, shouldCapture);
+			@Override public void openFileChooser(XWalkView view, ValueCallback<Uri> callback, String acceptType, String shouldCapture) {
+				if(DEBUG) trace(this, "openFileChooser() :: %s,%s,%s,%s", view, callback, acceptType, shouldCapture);
 
                 boolean capture = parseBoolean(shouldCapture);
 
@@ -377,7 +370,6 @@ public class EmbeddedBrowserActivity extends LockableActivity {
      * location is likely to have been resolved by the time the user first fills a form and
      * getLocation() is called.  However, longer-term we are likely to want a more explicit
      * async getLocation() implementation which is triggered only when needed.
-     *
      * @see https://github.com/medic/medic-projects/issues/2629
      * @deprecated @see https://github.com/medic/medic-webapp/issues/3781
      */
@@ -406,20 +398,13 @@ public class EmbeddedBrowserActivity extends LockableActivity {
                 // that recent location can be requested when required from Javascript.
                 m.requestLocationUpdates(locationProvider, FIVE_MINS, ANY_DISTANCE, new LocationListener() {
                     @SuppressWarnings("PMD.UncommentedEmptyMethodBody")
-                    public void onLocationChanged(Location location) {
-                    }
-
+					public void onLocationChanged(Location location) {}
                     @SuppressWarnings("PMD.UncommentedEmptyMethodBody")
-                    public void onProviderDisabled(String provider) {
-                    }
-
+					public void onProviderDisabled(String provider) {}
                     @SuppressWarnings("PMD.UncommentedEmptyMethodBody")
-                    public void onProviderEnabled(String provider) {
-                    }
-
+					public void onProviderEnabled(String provider) {}
                     @SuppressWarnings("PMD.UncommentedEmptyMethodBody")
-                    public void onStatusChanged(String provider, int status, Bundle extras) {
-                    }
+					public void onStatusChanged(String provider, int status, Bundle extras) {}
                 });
             } else {
                 log("EmbeddedBrowserActivity.requestLocationUpdates(%s) :: Cannot get updates: not enabled or phone does not have this feature.",
@@ -444,8 +429,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 
     private void enableUrlHandlers(XWalkView container) {
         container.setResourceClient(new XWalkResourceClient(container) {
-            @Override
-            public boolean shouldOverrideUrlLoading(XWalkView view, String url) {
+			@Override public boolean shouldOverrideUrlLoading(XWalkView view, String url) {
                 if (url.startsWith("tel:") || url.startsWith("sms:")) {
                     Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
                     view.getContext().startActivity(i);
@@ -453,9 +437,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
                 }
                 return false;
             }
-
-            @Override
-            public XWalkWebResourceResponse shouldInterceptLoadRequest(XWalkView view, XWalkWebResourceRequest request) {
+			@Override public XWalkWebResourceResponse shouldInterceptLoadRequest(XWalkView view, XWalkWebResourceRequest request) {
                 if (isUrlRelated(appUrl, request.getUrl())) {
                     return null; // load as normal
                 } else {
@@ -469,9 +451,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
                             403, "Read access forbidden.", noHeaders);
                 }
             }
-
-            @Override
-            public void onReceivedLoadError(XWalkView view, int errorCode, String description, String failingUrl) {
+			@Override public void onReceivedLoadError(XWalkView view, int errorCode, String description, String failingUrl) {
                 if (errorCode == XWalkResourceClient.ERROR_OK) return;
 
                 log("EmbeddedBrowserActivity.onReceivedLoadError() :: [%s] %s :: %s", errorCode, failingUrl, description);
