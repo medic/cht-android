@@ -135,7 +135,6 @@ public class EmbeddedBrowserActivity extends LockableActivity {
         String recentNavigation = sharedPreferences.getString(MY_LAST_ACTIVITY, "");
         if (!(recentNavigation != null && recentNavigation.isEmpty())) {
             container.loadUrl(recentNavigation);
-            Log.d("Gopinath", sharedPreferences.getString(MY_LAST_ACTIVITY, ""));
         }
     }
 
@@ -145,11 +144,6 @@ public class EmbeddedBrowserActivity extends LockableActivity {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString(MY_LAST_ACTIVITY, container.getUrl());
         editor.commit();
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
     }
 
     @Override
@@ -289,9 +283,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
     }
 
     private String getRootUrl() {
-        /*
-        * Removed Unnecessary Check as the Condition is always returning False*/
-        return appUrl.concat("/medic/_design/medic/_rewrite/");
+        return appUrl;
     }
 
     private void browseToRoot() {
