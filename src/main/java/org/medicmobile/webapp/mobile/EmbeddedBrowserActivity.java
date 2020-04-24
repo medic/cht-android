@@ -13,14 +13,12 @@ import android.net.Uri;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.webkit.ValueCallback;
-import android.webkit.WebView;
 import android.widget.Toast;
 
 import java.io.ByteArrayInputStream;
@@ -47,9 +45,9 @@ import static org.medicmobile.webapp.mobile.SimpleJsonClient2.redactUrl;
 import static org.medicmobile.webapp.mobile.Utils.createUseragentFrom;
 import static org.medicmobile.webapp.mobile.Utils.isUrlRelated;
 
-@SuppressWarnings({"PMD.GodClass", "PMD.TooManyMethods"})
+@SuppressWarnings({ "PMD.GodClass", "PMD.TooManyMethods" })
 public class EmbeddedBrowserActivity extends LockableActivity {
-	/** Any activity result with all 3 low bits set is _not_ a simprints result. */
+    /** Any activity result with all 3 low bits set is _not_ a simprints result. */
     private static final int NON_SIMPRINTS_FLAGS = 0x7;
     static final int GRAB_PHOTO = (0 << 3) | NON_SIMPRINTS_FLAGS;
     static final int GRAB_MRDT_PHOTO = (1 << 3) | NON_SIMPRINTS_FLAGS;
@@ -63,7 +61,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
     static final String MY_LAST_ACTIVITY = "myLastActivity";
     private final ValueCallback<String> backButtonHandler = new ValueCallback<String>() {
         public void onReceiveValue(String result) {
-            if (!"true".equals(result)) {
+            if(!"true".equals(result)) {
                 EmbeddedBrowserActivity.this.moveTaskToBack(false);
             }
         }
@@ -79,7 +77,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
     private SharedPreferences sharedPreferences;
 
     //> ACTIVITY LIFECYCLE METHODS
-	@Override public void onCreate(Bundle savedInstanceState) {
+    @Override public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         trace(this, "Starting XWalk webview...");
@@ -89,7 +87,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
         this.mrdt = new MrdtSupport(this);
         try {
             this.smsSender = new SmsSender(this);
-        } catch (Exception ex) {
+        } catch(Exception ex) {
             error(ex, "Failed to create SmsSender.");
         }
 
@@ -101,7 +99,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 
         // Add an alarming red border if using configurable (i.e. dev)
         // app with a medic production server.
-        if (settings.allowsConfiguration() &&
+        if(settings.allowsConfiguration() &&
                 appUrl.contains("app.medicmobile.org")) {
             View webviewContainer = findViewById(R.id.lytWebView);
             webviewContainer.setPadding(10, 10, 10, 10);
@@ -122,7 +120,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 
         browseToRoot();
 
-        if (settings.allowsConfiguration()) {
+        if(settings.allowsConfiguration()) {
             toast(redactUrl(appUrl));
         }
 
@@ -146,9 +144,8 @@ public class EmbeddedBrowserActivity extends LockableActivity {
         editor.commit();
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        if (settings.allowsConfiguration()) {
+    @Override public boolean onCreateOptionsMenu(Menu menu) {
+        if(settings.allowsConfiguration()) {
             getMenuInflater().inflate(R.menu.unbranded_web_menu, menu);
         } else {
             getMenuInflater().inflate(R.menu.web_menu, menu);
@@ -156,8 +153,8 @@ public class EmbeddedBrowserActivity extends LockableActivity {
         return super.onCreateOptionsMenu(menu);
     }
 
-	@Override public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
+    @Override public boolean onOptionsItemSelected(MenuItem item) {
+        switch(item.getItemId()) {
             case R.id.mnuGotoTestPages:
                 evaluateJavascript("window.location.href = 'https://medic.github.io/atp'");
                 return true;
@@ -178,13 +175,13 @@ public class EmbeddedBrowserActivity extends LockableActivity {
         }
     }
 
-	@Override public boolean dispatchKeyEvent(KeyEvent event) {
-        if (event.getKeyCode() == KeyEvent.KEYCODE_BACK) {
+    @Override public boolean dispatchKeyEvent(KeyEvent event) {
+        if(event.getKeyCode() == KeyEvent.KEYCODE_BACK) {
             // With standard android WebView, this would be handled by onBackPressed().  However, that
             // method does not get called when using XWalkView, so we catch the back button here instead.
             // TODO this causes issues with the Samsung long-back-press to trigger menu - the menu opens,
             // but the app also handles the back press :¬/
-            if (event.getAction() == KeyEvent.ACTION_UP) {
+            if(event.getAction() == KeyEvent.ACTION_UP) {
                 container.evaluateJavascript(
                         "angular.element(document.body).injector().get('AndroidApi').v1.back()",
                         backButtonHandler);
@@ -196,11 +193,11 @@ public class EmbeddedBrowserActivity extends LockableActivity {
         }
     }
 
-	@Override protected void onActivityResult(int requestCode, int resultCode, Intent i) {
+    @Override protected void onActivityResult(int requestCode, int resultCode, Intent i) {
         try {
             trace(this, "onActivityResult() :: requestCode=%s, resultCode=%s", requestCode, resultCode);
-            if ((requestCode & NON_SIMPRINTS_FLAGS) == NON_SIMPRINTS_FLAGS) {
-                switch (requestCode) {
+            if((requestCode & NON_SIMPRINTS_FLAGS) == NON_SIMPRINTS_FLAGS) {
+                switch(requestCode) {
                     case GRAB_PHOTO:
                         photoGrabber.process(requestCode, resultCode, i);
                         return;
@@ -217,7 +214,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
                 trace(this, "Execing JS: %s", js);
                 evaluateJavascript(js);
             }
-        } catch (Exception ex) {
+        } catch(Exception ex) {
             String action = i == null ? null : i.getAction();
             warn(ex, "Problem handling intent %s (%s) with requestCode=%s & resultCode=%s", i, action, requestCode, resultCode);
         }
@@ -246,7 +243,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
                 // to run JS, in which case we should switch to the second
                 // block.
                 // On switching to XWalkView, we assume the same applies.
-                if (true) { // NOPMD
+                if(true) { // NOPMD
                     container.load("javascript:" + js, null);
                 } else {
                     container.evaluateJavascript(js, IGNORE_RESULT);
@@ -288,7 +285,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 
     private void browseToRoot() {
         String url = getRootUrl();
-        if (DEBUG) trace(this, "Pointing browser to %s", redactUrl(url));
+        if(DEBUG) trace(this, "Pointing browser to %s", redactUrl(url));
         container.load(url, null);
     }
 
@@ -303,7 +300,6 @@ public class EmbeddedBrowserActivity extends LockableActivity {
              if(!DEBUG) {
              return super.onConsoleMessage(cm);
              }
-
              trace(this, "onConsoleMessage() :: %s:%s | %s",
              cm.sourceId(),
              cm.lineNumber(),
@@ -311,12 +307,12 @@ public class EmbeddedBrowserActivity extends LockableActivity {
              return true;
              } */
 
-			@Override public void openFileChooser(XWalkView view, ValueCallback<Uri> callback, String acceptType, String shouldCapture) {
-				if(DEBUG) trace(this, "openFileChooser() :: %s,%s,%s,%s", view, callback, acceptType, shouldCapture);
+            @Override public void openFileChooser(XWalkView view, ValueCallback<Uri> callback, String acceptType, String shouldCapture) {
+                if(DEBUG) trace(this, "openFileChooser() :: %s,%s,%s,%s", view, callback, acceptType, shouldCapture);
 
                 boolean capture = parseBoolean(shouldCapture);
 
-                if (photoGrabber.canHandle(acceptType, capture)) {
+                if(photoGrabber.canHandle(acceptType, capture)) {
                     photoGrabber.chooser(callback, capture);
                 } else {
                     logToJsConsole("No file chooser is currently implemented for \"accept\" value: %s", acceptType);
@@ -367,14 +363,14 @@ public class EmbeddedBrowserActivity extends LockableActivity {
      */
     @Deprecated
     private void enableLocationUpdates() {
-        if (ContextCompat.checkSelfPermission(this, permission.ACCESS_FINE_LOCATION) != PERMISSION_GRANTED) {
+        if(ContextCompat.checkSelfPermission(this, permission.ACCESS_FINE_LOCATION) != PERMISSION_GRANTED) {
             log("EmbeddedBrowserActivity.enableLocationUpdates() :: Cannot enable location updates: permission ACCESS_FINE_LOCATION not granted.");
             return;
         }
 
         LocationManager m = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
 
-        if (m == null) {
+        if(m == null) {
             log("EmbeddedBrowserActivity.enableLocationUpdates() :: Cannot enable location updates: LOCATION_SERVICE could not be fetched.");
             return;
         }
@@ -385,24 +381,24 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 
     private void requestLocationUpdates(LocationManager m, String locationProvider) {
         try {
-            if (m.isProviderEnabled(locationProvider)) {
+            if(m.isProviderEnabled(locationProvider)) {
                 // Method bodies are empty because we need the location updates to be running constantly so
                 // that recent location can be requested when required from Javascript.
                 m.requestLocationUpdates(locationProvider, FIVE_MINS, ANY_DISTANCE, new LocationListener() {
                     @SuppressWarnings("PMD.UncommentedEmptyMethodBody")
-					public void onLocationChanged(Location location) {}
+                    public void onLocationChanged(Location location) {}
                     @SuppressWarnings("PMD.UncommentedEmptyMethodBody")
-					public void onProviderDisabled(String provider) {}
+                    public void onProviderDisabled(String provider) {}
                     @SuppressWarnings("PMD.UncommentedEmptyMethodBody")
-					public void onProviderEnabled(String provider) {}
+                    public void onProviderEnabled(String provider) {}
                     @SuppressWarnings("PMD.UncommentedEmptyMethodBody")
-					public void onStatusChanged(String provider, int status, Bundle extras) {}
+                    public void onStatusChanged(String provider, int status, Bundle extras) {}
                 });
             } else {
                 log("EmbeddedBrowserActivity.requestLocationUpdates(%s) :: Cannot get updates: not enabled or phone does not have this feature.",
                         locationProvider);
             }
-        } catch (SecurityException ex) {
+        } catch(SecurityException ex) {
             log(ex, "EmbeddedBrowserActivity.requestLocationUpdates(%s) :: Exception thrown while checking provider.",
                     locationProvider);
         }
@@ -421,16 +417,16 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 
     private void enableUrlHandlers(XWalkView container) {
         container.setResourceClient(new XWalkResourceClient(container) {
-			@Override public boolean shouldOverrideUrlLoading(XWalkView view, String url) {
-                if (url.startsWith("tel:") || url.startsWith("sms:")) {
+            @Override public boolean shouldOverrideUrlLoading(XWalkView view, String url) {
+                if(url.startsWith("tel:") || url.startsWith("sms:")) {
                     Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
                     view.getContext().startActivity(i);
                     return true;
                 }
                 return false;
             }
-			@Override public XWalkWebResourceResponse shouldInterceptLoadRequest(XWalkView view, XWalkWebResourceRequest request) {
-                if (isUrlRelated(appUrl, request.getUrl())) {
+            @Override public XWalkWebResourceResponse shouldInterceptLoadRequest(XWalkView view, XWalkWebResourceRequest request) {
+                if(isUrlRelated(appUrl, request.getUrl())) {
                     return null; // load as normal
                 } else {
                     warn(this, "shouldInterceptLoadRequest() :: Denying access to URL outside of expected domain: %s", request.getUrl());
@@ -443,12 +439,12 @@ public class EmbeddedBrowserActivity extends LockableActivity {
                             403, "Read access forbidden.", noHeaders);
                 }
             }
-			@Override public void onReceivedLoadError(XWalkView view, int errorCode, String description, String failingUrl) {
-                if (errorCode == XWalkResourceClient.ERROR_OK) return;
+            @Override public void onReceivedLoadError(XWalkView view, int errorCode, String description, String failingUrl) {
+                if(errorCode == XWalkResourceClient.ERROR_OK) return;
 
                 log("EmbeddedBrowserActivity.onReceivedLoadError() :: [%s] %s :: %s", errorCode, failingUrl, description);
 
-                if (!getRootUrl().equals(failingUrl)) {
+                if(!getRootUrl().equals(failingUrl)) {
                     log("EmbeddedBrowserActivity.onReceivedLoadError() :: ignoring for non-root URL");
                 }
 
