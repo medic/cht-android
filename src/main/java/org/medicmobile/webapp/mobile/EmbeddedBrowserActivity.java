@@ -4,6 +4,7 @@ import android.Manifest.permission;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -79,7 +80,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		super.onCreate(savedInstanceState);
 
 		trace(this, "Starting XWalk webview...");
-
+		setOrientation();
 		this.simprints = new SimprintsSupport(this);
 		this.photoGrabber = new PhotoGrabber(this);
 		this.mrdt = new MrdtSupport(this);
@@ -120,6 +121,15 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 
 		if(settings.allowsConfiguration()) {
 			toast(redactUrl(appUrl));
+		}
+	}
+
+	private void setOrientation() {
+		boolean tabletSize = getResources().getConfiguration().smallestScreenWidthDp >= 600;
+		if (tabletSize) {
+			setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+		} else {
+			setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 		}
 	}
 
