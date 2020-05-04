@@ -199,6 +199,20 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		}
 	}
 
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+		super.onSaveInstanceState(outState);
+		//current state of webview i.e Xwalk is saved
+		container.saveState(outState);
+	}
+
+	@Override
+	protected void onRestoreInstanceState(Bundle savedInstanceState) {
+		super.onRestoreInstanceState(savedInstanceState);
+		//current state of webview i.e Xwalk is restored
+		container.restoreState(savedInstanceState);
+	}
+
 //> ACCESSORS
 	SimprintsSupport getSimprintsSupport() {
 		return this.simprints;
