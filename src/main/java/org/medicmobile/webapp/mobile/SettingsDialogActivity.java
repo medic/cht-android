@@ -230,8 +230,8 @@ class ServerRepo {
 		prefs = ctx.getSharedPreferences(
 				"ServerRepo",
 				Context.MODE_PRIVATE);
-		save("https://alpha.dev.medicmobile.org");
-		save("https://beta.dev.medicmobile.org");
+		save("https://gamma.dev.medicmobile.org");
+		save("https://gamma-cht.dev.medicmobile.org");
 		save("https://medic.github.io/atp");
 	}
 
