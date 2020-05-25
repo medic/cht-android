@@ -184,6 +184,9 @@ android {
     bracuganda {
       applicationId = 'org.medicmobile.webapp.mobile.bracuganda'
     }
+    bracuganda_pilot {
+      applicationId = 'org.medicmobile.webapp.mobile.bracuganda_pilot'
+    }
     cic_guatemala {
       applicationId = 'org.medicmobile.webapp.mobile.cic_guatemala'
     }
