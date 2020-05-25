@@ -25,6 +25,7 @@ jobs:
       - fastlane deploy flavor:unbranded
       - fastlane deploy flavor:medicmobiledemo
       - fastlane deploy flavor:bracuganda
+      - fastlane deploy flavor:bracuganda_pilot
     - script:
       - fastlane deploy flavor:cic_guatemala
       - fastlane deploy flavor:cmmb_kenya
