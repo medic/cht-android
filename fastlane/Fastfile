@@ -12,4 +12,5 @@ platform :android do
     package_name = options[:flavor] == 'unbranded' ? "org.medicmobile.webapp.mobile" : "org.medicmobile.webapp.mobile.#{options[:flavor]}"
 
     gradle(task: gradleTaskName)
+  end
 end
