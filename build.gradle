@@ -262,6 +262,9 @@ android {
     covid_moh_mali {
       applicationId = "org.medicmobile.webapp.mobile.covid_moh_mali"
     }
+    surveillance_moh_mali {
+      applicationId = "org.medicmobile.webapp.mobile.surveillance_moh_mali"
+    }
   }
 
   splits {
