@@ -116,7 +116,9 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 
 		enableUrlHandlers(container);
 
-		browseToRoot();
+		Intent appLinkIntent = getIntent();
+		Uri appLinkData = appLinkIntent.getData();
+		browse(appLinkData);
 
 		if(settings.allowsConfiguration()) {
 			toast(redactUrl(appUrl));
@@ -261,6 +263,14 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	private String getRootUrl() {
 		return appUrl + (DISABLE_APP_URL_VALIDATION ?
 				"" : "/medic/_design/medic/_rewrite/");
+	}
+
+	private void browse(Uri url) {
+		if (url != null) {
+			container.load(url.toString(), null);
+		} else {
+			browseToRoot();
+		}
 	}
 
 	private void browseToRoot() {

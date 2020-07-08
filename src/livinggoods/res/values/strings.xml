@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 	<string name="app_name">Living Goods</string>
-	<string name="fixed_app_url">https://lg.app.medicmobile.org</string>
+	<string name="scheme">https</string>
+	<string name="fixed_app_url">lg.app.medicmobile.org</string>
 </resources>
