@@ -8,7 +8,7 @@ import android.net.Uri;
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static org.medicmobile.webapp.mobile.MedicLog.trace;
 
-public class TokenLogin extends Activity {
+public class AppUrlIntentActivity extends Activity {
 	@Override public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		Intent appLinkIntent = getIntent();

@@ -47,7 +47,7 @@
         android:screenOrientation="portrait"/>
     <activity android:name="SettingsDialogActivity"
         android:screenOrientation="portrait"/>
-    <activity android:name="TokenLogin" android:launchMode="singleInstance">
+    <activity android:name="AppUrlIntentActivity" android:launchMode="singleInstance">
       <intent-filter>
         <action android:name="android.intent.action.VIEW" />
         <category android:name="android.intent.category.DEFAULT" />
