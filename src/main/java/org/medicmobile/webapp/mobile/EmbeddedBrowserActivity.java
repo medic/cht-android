@@ -108,7 +108,6 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 
 		configureUseragent();
 
-		enableLocationUpdates();
 		setUpUiClient(container);
 		enableRemoteChromeDebugging();
 		enableJavascript(container);
@@ -331,58 +330,6 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		maj.setConnectivityManager((ConnectivityManager) this.getSystemService(Context.CONNECTIVITY_SERVICE));
 
 		container.addJavascriptInterface(maj, "medicmobile_android");
-	}
-
-	/**
-	 * Make the app poll the location providers periodically.  This should mean that calls
-	 * to MedicAndroidJavascript.getLocation() are reasonably up-to-date, and an initial
-	 * location is likely to have been resolved by the time the user first fills a form and
-	 * getLocation() is called.  However, longer-term we are likely to want a more explicit
-	 * async getLocation() implementation which is triggered only when needed.
-	 * @see https://github.com/medic/medic-projects/issues/2629
-	 * @deprecated @see https://github.com/medic/medic-webapp/issues/3781
-	 */
-	@Deprecated
-	private void enableLocationUpdates() {
-		if(ContextCompat.checkSelfPermission(this, permission.ACCESS_FINE_LOCATION) != PERMISSION_GRANTED) {
-			log("EmbeddedBrowserActivity.enableLocationUpdates() :: Cannot enable location updates: permission ACCESS_FINE_LOCATION not granted.");
-			return;
-		}
-
-		LocationManager m = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-
-		if(m == null) {
-			log("EmbeddedBrowserActivity.enableLocationUpdates() :: Cannot enable location updates: LOCATION_SERVICE could not be fetched.");
-			return;
-		}
-
-		requestLocationUpdates(m, LocationManager.GPS_PROVIDER);
-		requestLocationUpdates(m, LocationManager.NETWORK_PROVIDER);
-	}
-
-	private void requestLocationUpdates(LocationManager m, String locationProvider) {
-		try {
-			if(m.isProviderEnabled(locationProvider)) {
-				// Method bodies are empty because we need the location updates to be running constantly so
-				// that recent location can be requested when required from Javascript.
-				m.requestLocationUpdates(locationProvider, FIVE_MINS, ANY_DISTANCE, new LocationListener() {
-					@SuppressWarnings("PMD.UncommentedEmptyMethodBody")
-					public void onLocationChanged(Location location) {}
-					@SuppressWarnings("PMD.UncommentedEmptyMethodBody")
-					public void onProviderDisabled(String provider) {}
-					@SuppressWarnings("PMD.UncommentedEmptyMethodBody")
-					public void onProviderEnabled(String provider) {}
-					@SuppressWarnings("PMD.UncommentedEmptyMethodBody")
-					public void onStatusChanged(String provider, int status, Bundle extras) {}
-				});
-			} else {
-				log("EmbeddedBrowserActivity.requestLocationUpdates(%s) :: Cannot get updates: not enabled or phone does not have this feature.",
-						locationProvider);
-			}
-		} catch(SecurityException ex) {
-			log(ex, "EmbeddedBrowserActivity.requestLocationUpdates(%s) :: Exception thrown while checking provider.",
-					locationProvider);
-		}
 	}
 
 	private void enableStorage(XWalkView container) {
