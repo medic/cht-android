@@ -1,17 +1,13 @@
 package org.medicmobile.webapp.mobile;
 
-import android.Manifest.permission;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
-import android.location.Location;
-import android.location.LocationListener;
 import android.location.LocationManager;
 import android.app.ActivityManager;
 import android.net.Uri;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
-import android.support.v4.content.ContextCompat;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -32,7 +28,6 @@ import org.xwalk.core.XWalkView;
 import org.xwalk.core.XWalkWebResourceRequest;
 import org.xwalk.core.XWalkWebResourceResponse;
 
-import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static java.lang.Boolean.parseBoolean;
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static org.medicmobile.webapp.mobile.BuildConfig.DISABLE_APP_URL_VALIDATION;
