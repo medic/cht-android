@@ -118,7 +118,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 
 		Intent appLinkIntent = getIntent();
 		Uri appLinkData = appLinkIntent.getData();
-		browse(appLinkData);
+		browseTo(appLinkData);
 
 		if(settings.allowsConfiguration()) {
 			toast(redactUrl(appUrl));
@@ -146,7 +146,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 				openSettings();
 				return true;
 			case R.id.mnuHardRefresh:
-				browseToRoot();
+				browseTo(null);
 				return true;
 			case R.id.mnuLogout:
 				evaluateJavascript("angular.element(document.body).injector().get('AndroidApi').v1.logout()");
@@ -265,18 +265,17 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 				"" : "/medic/_design/medic/_rewrite/");
 	}
 
-	private void browse(Uri url) {
+	private String getUrlToLoad(Uri url) {
 		if (url != null) {
-			container.load(url.toString(), null);
-		} else {
-			browseToRoot();
+			return url.toString();
 		}
+		return getRootUrl();
 	}
 
-	private void browseToRoot() {
-		String url = getRootUrl();
-		if(DEBUG) trace(this, "Pointing browser to %s", redactUrl(url));
-		container.load(url, null);
+	private void browseTo(Uri url) {
+		String urlToLoad = getUrlToLoad(url);
+		if(DEBUG) trace(this, "Pointing browser to %s", redactUrl(urlToLoad));
+		container.load(urlToLoad, null);
 	}
 
 	private void enableRemoteChromeDebugging() {

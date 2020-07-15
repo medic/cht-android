@@ -2,7 +2,8 @@
 <resources>
 	<string name="app_name">Medic Mobile</string>
 
-	<string name="fixed_app_url"/>
+	<string name="scheme">https</string>
+	<string name="app_host"/>
 
 	<string name="txtAppUrl">Webapp URL</string>
 	<string name="errAppUrl_serverNotFound">unable to contact server</string>

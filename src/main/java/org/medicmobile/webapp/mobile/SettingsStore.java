@@ -59,10 +59,10 @@ public abstract class SettingsStore {
 				SettingsStore.class.getName(),
 				Context.MODE_PRIVATE);
 
-		String fixedAppUrl = ctx.getResources().getString(R.string.fixed_app_url);
+		String appHost = ctx.getResources().getString(R.string.app_host);
 		String scheme = ctx.getResources().getString(R.string.scheme);
-		if(fixedAppUrl.length() > 0) {
-			return new BrandedSettingsStore(prefs, scheme + "://" + fixedAppUrl);
+		if(appHost.length() > 0) {
+			return new BrandedSettingsStore(prefs, scheme + "://" + appHost);
 		}
 
 		return new UnbrandedSettingsStore(prefs);
