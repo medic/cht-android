@@ -210,6 +210,9 @@ android {
     livinggoods_innovation_ke {
       applicationId = 'org.medicmobile.webapp.mobile.livinggoods_innovation_ke'
     }
+    livinggoods_innovation_ke_ciha {
+      applicationId = 'org.medicmobile.webapp.mobile.livinggoods_innovation_ke_ciha'
+    }
     livinggoods_innovation_ke_supervisor {
       applicationId = 'org.medicmobile.webapp.mobile.livinggoods_innovation_ke_supervisor'
     }
