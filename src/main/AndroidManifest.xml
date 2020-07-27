@@ -47,5 +47,13 @@
         android:screenOrientation="portrait"/>
     <activity android:name="SettingsDialogActivity"
         android:screenOrientation="portrait"/>
+    <activity android:name="AppUrlIntentActivity" android:launchMode="singleInstance">
+      <intent-filter>
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <data android:scheme="@string/scheme" android:host="@string/app_host" android:pathPattern=".*"/>
+      </intent-filter>
+    </activity>
   </application>
 </manifest>
