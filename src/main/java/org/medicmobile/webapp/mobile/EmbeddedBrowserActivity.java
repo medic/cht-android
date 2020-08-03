@@ -324,7 +324,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	}
 
 	@Override
-	public void onRequestPermissionsResult( int requestCode, String[] permissions, int[] grantResults) {
+	public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
 		if (requestCode != ACCESS_FINE_LOCATION_PERMISSION_REQUEST) {
 			return;
 		}
