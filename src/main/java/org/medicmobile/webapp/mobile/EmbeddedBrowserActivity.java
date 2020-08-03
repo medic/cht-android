@@ -1,13 +1,15 @@
 package org.medicmobile.webapp.mobile;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
-import android.location.LocationManager;
 import android.app.ActivityManager;
 import android.net.Uri;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -15,6 +17,7 @@ import android.view.View;
 import android.view.Window;
 import android.webkit.ValueCallback;
 import android.widget.Toast;
+import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 
 import java.io.ByteArrayInputStream;
 import java.util.Collections;
@@ -46,8 +49,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	static final int GRAB_PHOTO = (0 << 3) | NON_SIMPRINTS_FLAGS;
 	static final int GRAB_MRDT_PHOTO = (1 << 3) | NON_SIMPRINTS_FLAGS;
 
-	private static final long FIVE_MINS = 5 * 60 * 1000;
-	private static final float ANY_DISTANCE = 0f;
+	private final static int ACCESS_FINE_LOCATION_PERMISSION_REQUEST = 1;
 
 	private static final ValueCallback<String> IGNORE_RESULT = new ValueCallback<String>() {
 		public void onReceiveValue(String result) { /* ignore */ }
@@ -311,14 +313,31 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		});
 	}
 
+	public boolean getLocationPermissions() {
+		if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PERMISSION_GRANTED) {
+			return true;
+		}
+
+		String[] permissions = { Manifest.permission.ACCESS_FINE_LOCATION };
+		ActivityCompat.requestPermissions(this, permissions, ACCESS_FINE_LOCATION_PERMISSION_REQUEST);
+		return false;
+	}
+
+	@Override
+	public void onRequestPermissionsResult( int requestCode, String[] permissions, int[] grantResults) {
+		if (requestCode != ACCESS_FINE_LOCATION_PERMISSION_REQUEST) {
+			return;
+		}
+		String javaScript = "angular.element(document.body).injector().get('AndroidApi').v1.locationPermission();";
+		evaluateJavascript(String.format(javaScript));
+	}
+
 	@SuppressLint("SetJavaScriptEnabled")
 	private void enableJavascript(XWalkView container) {
 		container.getSettings().setJavaScriptEnabled(true);
 
 		MedicAndroidJavascript maj = new MedicAndroidJavascript(this);
 		maj.setAlert(new Alert(this));
-
-		maj.setLocationManager((LocationManager) this.getSystemService(Context.LOCATION_SERVICE));
 
 		maj.setActivityManager((ActivityManager) this.getSystemService(Context.ACTIVITY_SERVICE));
 

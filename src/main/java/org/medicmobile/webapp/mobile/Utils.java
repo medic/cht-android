@@ -37,11 +37,11 @@ final class Utils {
 
 	static void startAppActivityChain(Activity a) {
 		if(SettingsStore.in(a).hasWebappSettings()) {
-			MmPromptForPermissionsActivity.startPermissionsRequestChainFrom(a);
+			a.startActivity(new Intent(a, EmbeddedBrowserActivity.class));
 		} else {
 			a.startActivity(new Intent(a, SettingsDialogActivity.class));
-			a.finish();
 		}
+		a.finish();
 	}
 
 	public static ProgressDialog showSpinner(Context ctx, int messageId) {

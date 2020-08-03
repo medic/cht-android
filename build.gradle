@@ -173,6 +173,8 @@ android {
       // for `unbranded` - it will use the defaults in
       // src/main
 
+      applicationId = 'org.medicmobile.webapp.mobile.unbranded'
+
       simprintsApiKey = 'f4c47c4e-d6ee-444f-b16e-22a4761b1f3c'
       simprintsModuleId = 'simprints.app'
       simprintsUserId = 'test@simprints.app'
