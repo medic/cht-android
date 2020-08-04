@@ -70,8 +70,7 @@ def getVersionName = {
 }
 
 android {
-  compileSdkVersion 28
-  buildToolsVersion '28.0.2'
+  compileSdkVersion 29
   packagingOptions {
     exclude 'META-INF/LICENSE'
     exclude 'META-INF/NOTICE'
@@ -82,7 +81,7 @@ android {
     versionName getVersionName()
     archivesBaseName = "${project.name}-${versionName}"
     minSdkVersion 19
-    targetSdkVersion 28
+    targetSdkVersion 29
     // When upgrading targetSdkVersion, check that the app menu still works on newer devices.
   }
 
