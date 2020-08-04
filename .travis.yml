@@ -7,7 +7,7 @@ android:
   - platform-tools
   - extra-android-m2repository
   - build-tools-29.0.2
-  - android-28
+  - android-29
 env:
 - GRADLE_OPTS="-XX:MaxPermSize=2048M"
 stages:
