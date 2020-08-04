@@ -49,7 +49,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	static final int GRAB_PHOTO = (0 << 3) | NON_SIMPRINTS_FLAGS;
 	static final int GRAB_MRDT_PHOTO = (1 << 3) | NON_SIMPRINTS_FLAGS;
 
-	private final static int ACCESS_FINE_LOCATION_PERMISSION_REQUEST = 1;
+	private final static int ACCESS_FINE_LOCATION_PERMISSION_REQUEST = (int)Math.random();
 
 	private static final ValueCallback<String> IGNORE_RESULT = new ValueCallback<String>() {
 		public void onReceiveValue(String result) { /* ignore */ }
