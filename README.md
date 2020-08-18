@@ -29,11 +29,12 @@ To add a new brand:
 1. add icons, strings etc. in `src/<new_brand>`
 1. to enable automated deployments, add the `new_brand` to `.travis.yml`
 
-# Publishing
+# Releasing
 
-Create a git tag starting with `v`, e.g. `v1.2.3` and push the tag to GitHub. 
-
-Creating this tag will trigger a Travis CI to build, sign, and properly version the build. The release-ready APKs are available for side-loading from [GitHub Releases](https://github.com/medic/medic-android/releases) and are uploaded to the Google Play Console in the "alpha" channel. To release to the public, click "Release to Production" or "Release to Beta" via the Google Play Console for each flavor.
+1. Create a git tag starting with `v`, e.g. `v1.2.3` and push the tag to GitHub. 
+2. Creating this tag will trigger Travis CI to build, sign, and properly version the build. The release-ready APKs are available for side-loading from [GitHub Releases](https://github.com/medic/medic-android/releases) and are uploaded to the Google Play Console in the "alpha" channel for each flavor.
+3. Announce the release on the [CHT forum](https://forum.communityhealthtoolkit.org), under the "Product - Releases" category.
+4. Each flavor is then individually released to users via "Release Management" in the Google Play Console. Once a flavor has been tested and is ready to go live, click Release to Production
 
 ## Copyright
 
