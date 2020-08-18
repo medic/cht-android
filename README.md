@@ -32,7 +32,7 @@ To add a new brand:
 # Releasing
 
 1. Create a git tag starting with `v`, e.g. `v1.2.3` and push the tag to GitHub. 
-2. Creating this tag will trigger a Travis CI to build, sign, and properly version the build. The release-ready APKs are available for side-loading from [GitHub Releases](https://github.com/medic/medic-android/releases) and are uploaded to the Google Play Console in the "alpha" channel for each flavor.
+2. Creating this tag will trigger Travis CI to build, sign, and properly version the build. The release-ready APKs are available for side-loading from [GitHub Releases](https://github.com/medic/medic-android/releases) and are uploaded to the Google Play Console in the "alpha" channel for each flavor.
 3. Announce the release on the [CHT forum](https://forum.communityhealthtoolkit.org), under the "Product - Releases" category.
 4. When a project is ready to update their flavor the project manager will click "Release to Production" or "Release to Beta" via the Google Play Console.
 
