@@ -1,16 +1,14 @@
 package org.medicmobile.webapp.mobile;
 
-import android.Manifest.permission;
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
-import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
 import android.app.ActivityManager;
 import android.net.Uri;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -19,6 +17,7 @@ import android.view.View;
 import android.view.Window;
 import android.webkit.ValueCallback;
 import android.widget.Toast;
+import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 
 import java.io.ByteArrayInputStream;
 import java.util.Collections;
@@ -32,7 +31,6 @@ import org.xwalk.core.XWalkView;
 import org.xwalk.core.XWalkWebResourceRequest;
 import org.xwalk.core.XWalkWebResourceResponse;
 
-import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static java.lang.Boolean.parseBoolean;
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static org.medicmobile.webapp.mobile.BuildConfig.DISABLE_APP_URL_VALIDATION;
@@ -51,8 +49,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	static final int GRAB_PHOTO = (0 << 3) | NON_SIMPRINTS_FLAGS;
 	static final int GRAB_MRDT_PHOTO = (1 << 3) | NON_SIMPRINTS_FLAGS;
 
-	private static final long FIVE_MINS = 5 * 60 * 1000;
-	private static final float ANY_DISTANCE = 0f;
+	private final static int ACCESS_FINE_LOCATION_PERMISSION_REQUEST = (int)Math.random();
 
 	private static final ValueCallback<String> IGNORE_RESULT = new ValueCallback<String>() {
 		public void onReceiveValue(String result) { /* ignore */ }
@@ -108,7 +105,6 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 
 		configureUseragent();
 
-		enableLocationUpdates();
 		setUpUiClient(container);
 		enableRemoteChromeDebugging();
 		enableJavascript(container);
@@ -326,6 +322,25 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		});
 	}
 
+	public boolean getLocationPermissions() {
+		if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PERMISSION_GRANTED) {
+			return true;
+		}
+
+		String[] permissions = { Manifest.permission.ACCESS_FINE_LOCATION };
+		ActivityCompat.requestPermissions(this, permissions, ACCESS_FINE_LOCATION_PERMISSION_REQUEST);
+		return false;
+	}
+
+	@Override
+	public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+		if (requestCode != ACCESS_FINE_LOCATION_PERMISSION_REQUEST) {
+			return;
+		}
+		String javaScript = "angular.element(document.body).injector().get('AndroidApi').v1.locationPermissionRequestResolved();";
+		evaluateJavascript(String.format(javaScript));
+	}
+
 	@SuppressLint("SetJavaScriptEnabled")
 	private void enableJavascript(XWalkView container) {
 		container.getSettings().setJavaScriptEnabled(true);
@@ -333,65 +348,11 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		MedicAndroidJavascript maj = new MedicAndroidJavascript(this);
 		maj.setAlert(new Alert(this));
 
-		maj.setLocationManager((LocationManager) this.getSystemService(Context.LOCATION_SERVICE));
-
 		maj.setActivityManager((ActivityManager) this.getSystemService(Context.ACTIVITY_SERVICE));
 
 		maj.setConnectivityManager((ConnectivityManager) this.getSystemService(Context.CONNECTIVITY_SERVICE));
 
 		container.addJavascriptInterface(maj, "medicmobile_android");
-	}
-
-	/**
-	 * Make the app poll the location providers periodically.  This should mean that calls
-	 * to MedicAndroidJavascript.getLocation() are reasonably up-to-date, and an initial
-	 * location is likely to have been resolved by the time the user first fills a form and
-	 * getLocation() is called.  However, longer-term we are likely to want a more explicit
-	 * async getLocation() implementation which is triggered only when needed.
-	 * @see https://github.com/medic/medic-projects/issues/2629
-	 * @deprecated @see https://github.com/medic/medic-webapp/issues/3781
-	 */
-	@Deprecated
-	private void enableLocationUpdates() {
-		if(ContextCompat.checkSelfPermission(this, permission.ACCESS_FINE_LOCATION) != PERMISSION_GRANTED) {
-			log("EmbeddedBrowserActivity.enableLocationUpdates() :: Cannot enable location updates: permission ACCESS_FINE_LOCATION not granted.");
-			return;
-		}
-
-		LocationManager m = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-
-		if(m == null) {
-			log("EmbeddedBrowserActivity.enableLocationUpdates() :: Cannot enable location updates: LOCATION_SERVICE could not be fetched.");
-			return;
-		}
-
-		requestLocationUpdates(m, LocationManager.GPS_PROVIDER);
-		requestLocationUpdates(m, LocationManager.NETWORK_PROVIDER);
-	}
-
-	private void requestLocationUpdates(LocationManager m, String locationProvider) {
-		try {
-			if(m.isProviderEnabled(locationProvider)) {
-				// Method bodies are empty because we need the location updates to be running constantly so
-				// that recent location can be requested when required from Javascript.
-				m.requestLocationUpdates(locationProvider, FIVE_MINS, ANY_DISTANCE, new LocationListener() {
-					@SuppressWarnings("PMD.UncommentedEmptyMethodBody")
-					public void onLocationChanged(Location location) {}
-					@SuppressWarnings("PMD.UncommentedEmptyMethodBody")
-					public void onProviderDisabled(String provider) {}
-					@SuppressWarnings("PMD.UncommentedEmptyMethodBody")
-					public void onProviderEnabled(String provider) {}
-					@SuppressWarnings("PMD.UncommentedEmptyMethodBody")
-					public void onStatusChanged(String provider, int status, Bundle extras) {}
-				});
-			} else {
-				log("EmbeddedBrowserActivity.requestLocationUpdates(%s) :: Cannot get updates: not enabled or phone does not have this feature.",
-						locationProvider);
-			}
-		} catch(SecurityException ex) {
-			log(ex, "EmbeddedBrowserActivity.requestLocationUpdates(%s) :: Exception thrown while checking provider.",
-					locationProvider);
-		}
 	}
 
 	private void enableStorage(XWalkView container) {

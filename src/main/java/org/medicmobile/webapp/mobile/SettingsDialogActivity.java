@@ -139,7 +139,7 @@ public class SettingsDialogActivity extends LockableActivity {
 	private void saveSettings(WebappSettings s) {
 		try {
 			settings.updateWith(s);
-			MmPromptForPermissionsActivity.startPermissionsRequestChainFrom(this);
+			this.backToWebview();
 		} catch(IllegalSettingsException ex) {
 			if(DEBUG) trace(ex, "Tried to save illegal setting.");
 			for(IllegalSetting error : ex.errors) {

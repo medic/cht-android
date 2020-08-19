@@ -43,8 +43,6 @@
         android:configChanges="orientation|screenSize"/>
     <activity android:name="FreeSpaceWarningActivity"
         android:screenOrientation="portrait"/>
-    <activity android:name="MmPromptForPermissionsActivity"
-        android:screenOrientation="portrait"/>
     <activity android:name="SettingsDialogActivity"
         android:screenOrientation="portrait"/>
     <activity android:name="AppUrlIntentActivity" android:launchMode="singleInstance">
