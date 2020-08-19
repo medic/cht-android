@@ -1,12 +1,8 @@
 package org.medicmobile.webapp.mobile;
 
-import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.app.ActivityManager.MemoryInfo;
 import android.app.DatePickerDialog;
-import android.location.Criteria;
-import android.location.Location;
-import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkCapabilities;
 import android.net.NetworkInfo;
@@ -47,7 +43,6 @@ public class MedicAndroidJavascript {
 	private final MrdtSupport mrdt;
 	private final SmsSender smsSender;
 
-	private LocationManager locationManager;
 	private ActivityManager activityManager;
 	private ConnectivityManager connectivityManager;
 	private Alert soundAlert;
@@ -61,10 +56,6 @@ public class MedicAndroidJavascript {
 
 	public void setAlert(Alert soundAlert) {
 		this.soundAlert = soundAlert;
-	}
-
-	public void setLocationManager(LocationManager locationManager) {
-		this.locationManager = locationManager;
 	}
 
 	public void setActivityManager(ActivityManager activityManager) {
@@ -122,32 +113,10 @@ public class MedicAndroidJavascript {
 				.put("tx", tx);
 	}
 
-	@Deprecated
 	@org.xwalk.core.JavascriptInterface
 	@android.webkit.JavascriptInterface
-	@SuppressLint("MissingPermission") // handled by catch(Exception)
-	/**
-	 * @deprecated Location should be fetched directly from the browser.
-	 * @see https://github.com/medic/medic-webapp/issues/3781
-	 */
-	public String getLocation() {
-		try {
-			if(locationManager == null) return jsonError("LocationManager not set.  Cannot retrieve location.");
-
-			String provider = locationManager.getBestProvider(new Criteria(), true);
-			if(provider == null) return jsonError("No location provider available.");
-
-			Location loc = locationManager.getLastKnownLocation(provider);
-
-			if(loc == null) return jsonError("Provider '" + provider + "' did not provide a location.");
-
-			return new JSONObject()
-					.put("lat", loc.getLatitude())
-					.put("long", loc.getLongitude())
-					.toString();
-		} catch(Exception ex) {
-			return jsonError("Problem fetching location: ", ex);
-		}
+	public boolean getLocationPermissions() {
+		return this.parent.getLocationPermissions();
 	}
 
 	@org.xwalk.core.JavascriptInterface
