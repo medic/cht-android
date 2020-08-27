@@ -11,7 +11,7 @@ Medic Mobile Android App
 4. Execute: `make` (will also push app unto phone)
 
 ## Connecting to the server locally
-Refer to https://github.com/medic/medic#testing-locally-with-devices.
+Refer to the [cht-core Developer Guide](https://github.com/medic/cht-core/blob/master/DEVELOPMENT.md#testing-locally-with-devices).
 
 # Branding
 
