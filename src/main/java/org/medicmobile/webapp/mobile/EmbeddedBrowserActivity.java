@@ -369,8 +369,9 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	private void enableUrlHandlers(XWalkView container) {
 		container.setResourceClient(new XWalkResourceClient(container) {
 			@Override public boolean shouldOverrideUrlLoading(XWalkView view, String url) {
-				if(url.startsWith("tel:") || url.startsWith("sms:")) {
-					Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+				Uri uri = Uri.parse(url);
+				if(url.startsWith("tel:") || url.startsWith("sms:") || !isUrlRelated(appUrl, uri)) {
+					Intent i = new Intent(Intent.ACTION_VIEW, uri);
 					view.getContext().startActivity(i);
 					return true;
 				}
