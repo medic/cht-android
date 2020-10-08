@@ -41,6 +41,9 @@ public class UtilsTest {
 		final String[] badUrls = {
 			"https://bad.domain/medic/_design/medic/_rewrite",
 			"blob:https://bad.domain/medic/_design/medic/_rewrite",
+			"tel:0040755458697",
+			"sms:0040733898569&body=Thisisthesmsbody",
+			"sms:0040733898569,0040788963214&body=Thisisthesmsbody",
 		};
 
 		for(String badUrl : badUrls) {
