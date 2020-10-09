@@ -47,6 +47,7 @@ jobs:
     - script:
       - fastlane deploy flavor:moh_zanzibar_training
       - fastlane deploy flavor:moh_zanzibar
+      - fastlane deploy flavor:msf_goma
     - script:
       - fastlane deploy flavor:musomali
       - fastlane deploy flavor:pih_malawi
@@ -55,8 +56,6 @@ jobs:
       - fastlane deploy flavor:simprints
       - fastlane deploy flavor:surveillance_covid19_kenya
       - fastlane deploy flavor:vhw_burundi
-    - script:
-        - fastlane deploy flavor:msf_goma
     - script:
 before_install:
 - openssl aes-256-cbc -K $encrypted_323c4a109760_key -iv $encrypted_323c4a109760_iv -in secrets.tar.gz.enc -out ./secrets.tar.gz -d
