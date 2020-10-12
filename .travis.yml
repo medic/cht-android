@@ -47,4 +47,4 @@ deploy:
   on:
     tags: true
     repo: medic/medic-android
-    branch: covid_moh_mali
+    branch: covid_moh_mali_310
