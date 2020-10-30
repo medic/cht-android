@@ -20,6 +20,7 @@ platform :android do
       apk_paths: [
         "build/outputs/apk/#{options[:flavor]}/release/medic-android-#{version}-#{options[:flavor]}-arm64-v8a-release.apk",
         "build/outputs/apk/#{options[:flavor]}/release/medic-android-#{version}-#{options[:flavor]}-armeabi-v7a-release.apk",
+        # TODO add other apks here
       ],
       skip_upload_aab: true,
       skip_upload_metadata: true,

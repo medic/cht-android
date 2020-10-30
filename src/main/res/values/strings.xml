@@ -45,4 +45,9 @@
 	<string name="promptChooseImage">Choose image</string>
 
 	<string name="spnCompressingImage">Compressing image…</string>
+
+	<string name="geolocationPermissionsTitle">Location permissions</string>
+	<string name="geolocationPermissionsDescription">This app would like to record your location with your report submissions.</string>
+	<string name="geolocationPermissionsAllow">Allow</string>
+	<string name="geolocationPermissionsDeny">Deny</string>
 </resources>

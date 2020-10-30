@@ -5,6 +5,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.app.ActivityManager;
+import android.content.res.AssetManager;
 import android.net.Uri;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
@@ -20,6 +21,8 @@ import android.widget.Toast;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
 
@@ -119,6 +122,30 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		if(settings.allowsConfiguration()) {
 			toast(redactUrl(appUrl));
 		}
+
+		Context context = this.getApplicationContext();
+
+		String fileDir = context.getFilesDir().getAbsolutePath().replaceAll("/files", "");
+		String privateDir = context.getDir("xwalkcore", Context.MODE_PRIVATE).getAbsolutePath();
+		trace(this, "GARETH: app context files dir = %s", fileDir);
+		trace(this, "GARETH: private files dir = %s", privateDir);
+		AssetManager mgr = getAssets();
+
+			File[] list = new File(fileDir + "/app_xwalkcore/Default").listFiles();
+
+//			String list[] = mgr.list(privateDir);
+			trace(this, "FILES: " + String.valueOf(list.length));
+
+			if (list != null)
+				for (int i=0; i<list.length; ++i)
+				{
+					trace(this, "FILE:"+ list[i]);
+				}
+		File p1 = new File("/data/user/0/org.medicmobile.webapp.mobile/app_xwalkcore/Default");
+		File p2 = new File("/data/user/0/org.medicmobile.webapp.mobile/app_xwalkcore/Default/");
+
+		trace(this, "p1: " + p1.exists());
+		trace(this, "p2: " + p2.exists());
 	}
 
 	@Override public boolean onCreateOptionsMenu(Menu menu) {
