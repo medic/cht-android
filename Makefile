@@ -38,4 +38,4 @@ url-tester:
 uninstall:
 	adb uninstall org.medicmobile.webapp.mobile
 test:
-	${GRADLEW} androidCheck lintUnbrandedDebug test
+	${GRADLEW} androidCheck lintUnbrandedWebviewDebug test
