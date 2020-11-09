@@ -160,8 +160,7 @@ android {
 
     webview {
       dimension 'version'
-      minSdkVersion 23 // Android 6
-      // minSdkVersion 29 // Android 10 TODO PUT THIS BACK
+      minSdkVersion 29 // Android 10
       versionNameSuffix '-webview'
     }
 
