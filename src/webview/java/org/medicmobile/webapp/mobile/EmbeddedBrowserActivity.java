@@ -13,7 +13,6 @@ import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
-import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -29,7 +28,6 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
 
-import java.io.File;
 import java.util.Arrays;
 
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
@@ -165,7 +163,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		container.evaluateJavascript(
 				"angular.element(document.body).injector().get('AndroidApi').v1.back()",
 				backButtonHandler);
-	};
+	}
 
 	@Override protected void onActivityResult(int requestCode, int resultCode, Intent i) {
 		try {
