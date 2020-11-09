@@ -125,25 +125,6 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 
 	@Override
 	protected void onStart() {
-
-		String fileDir = getApplicationContext().getFilesDir().getAbsolutePath().replaceAll("/files", "");
-		File[] list = new File(fileDir + "/app_xwalkcore").listFiles();
-		File[] list2 = new File(fileDir + "/app_webview/Default").listFiles();
-
-//			String list[] = mgr.list(privateDir);
-
-		if (list != null) {
-			for (File file : list) {
-				trace(this, "FILE:" + file);
-			}
-		}
-		if (list2 != null) {
-			for (File file : list2) {
-				trace(this, "FILE:" + file);
-			}
-		}
-		File p1 = new File("/data/user/0/org.medicmobile.webapp.mobile/app_xwalkcore/Default");
-		trace(this, "onstart p1: " + p1.exists());
 		new XWalkMigration(this).run();
 		super.onStart();
 	}
@@ -179,24 +160,12 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		}
 	}
 
-	@Override public boolean dispatchKeyEvent(KeyEvent event) {
-		// TODO replace with android webview standard way??? (described below)
-		if(event.getKeyCode() == KeyEvent.KEYCODE_BACK) {
-			// With standard android WebView, this would be handled by onBackPressed().  However, that
-			// method does not get called when using XWalkView, so we catch the back button here instead.
-			// TODO this causes issues with the Samsung long-back-press to trigger menu - the menu opens,
-			// but the app also handles the back press :¬/
-			if(event.getAction() == KeyEvent.ACTION_UP) {
-				container.evaluateJavascript(
-						"angular.element(document.body).injector().get('AndroidApi').v1.back()",
-						backButtonHandler);
-			}
-
-			return true;
-		} else {
-			return super.dispatchKeyEvent(event);
-		}
-	}
+	@Override public void onBackPressed() {
+		trace(this, "onBackPressed()");
+		container.evaluateJavascript(
+				"angular.element(document.body).injector().get('AndroidApi').v1.back()",
+				backButtonHandler);
+	};
 
 	@Override protected void onActivityResult(int requestCode, int resultCode, Intent i) {
 		try {
@@ -276,8 +245,8 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	}
 
 	private String getRootUrl() {
-		return appUrl/* + (DISABLE_APP_URL_VALIDATION ?
-				"" : "/medic/_design/medic/_rewrite/")*/;
+		return appUrl + (DISABLE_APP_URL_VALIDATION ?
+				"" : "/medic/_design/medic/_rewrite/");
 	}
 
 	private String getUrlToLoad(Uri url) {
