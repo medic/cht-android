@@ -12,6 +12,8 @@ public class FreeSpaceWarningActivity extends LockableActivity {
 	/** Recommended minimum free space on the device, in bytes */
 	static final long MINIMUM_SPACE = 200 * 1024 * 1024;
 
+	public FreeSpaceWarningActivity() {}
+
 	@Override public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		if(DEBUG) trace(this, "Starting...");

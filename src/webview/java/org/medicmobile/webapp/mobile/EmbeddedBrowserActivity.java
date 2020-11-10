@@ -70,6 +70,8 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	private PhotoGrabber photoGrabber;
 	private SmsSender smsSender;
 
+	public EmbeddedBrowserActivity() {}
+
 //> ACTIVITY LIFECYCLE METHODS
 	@Override public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -137,25 +139,27 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	}
 
 	@Override public boolean onOptionsItemSelected(MenuItem item) {
-		switch(item.getItemId()) {
-			case R.id.mnuGotoTestPages:
-				evaluateJavascript("window.location.href = 'https://medic.github.io/atp'");
-				return true;
-			case R.id.mnuSetUnlockCode:
-				changeCode();
-				return true;
-			case R.id.mnuSettings:
-				openSettings();
-				return true;
-			case R.id.mnuHardRefresh:
-				browseTo(null);
-				return true;
-			case R.id.mnuLogout:
-				evaluateJavascript("angular.element(document.body).injector().get('AndroidApi').v1.logout()");
-				return true;
-			default:
-				return super.onOptionsItemSelected(item);
+		if (item.getItemId() == R.id.mnuGotoTestPages) {
+			evaluateJavascript("window.location.href = 'https://medic.github.io/atp'");
+			return true;
 		}
+		if (item.getItemId() == R.id.mnuSetUnlockCode) {
+			changeCode();
+			return true;
+		}
+		if (item.getItemId() == R.id.mnuSettings) {
+			openSettings();
+			return true;
+		}
+		if (item.getItemId() == R.id.mnuHardRefresh) {
+			browseTo(null);
+			return true;
+		}
+		if (item.getItemId() == R.id.mnuLogout) {
+			evaluateJavascript("angular.element(document.body).injector().get('AndroidApi').v1.logout()");
+			return true;
+		}
+		return super.onOptionsItemSelected(item);
 	}
 
 	@Override public void onBackPressed() {

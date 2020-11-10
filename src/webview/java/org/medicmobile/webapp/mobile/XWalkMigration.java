@@ -1,5 +1,6 @@
 package org.medicmobile.webapp.mobile;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Build;
@@ -47,6 +48,7 @@ public class XWalkMigration {
 	private File xWalkRoot;
 	private File webviewRoot;
 
+	@SuppressLint("ObsoleteSdkInt")
 	public XWalkMigration(Activity a) {
 		activity = a;
 		context = a.getApplicationContext();

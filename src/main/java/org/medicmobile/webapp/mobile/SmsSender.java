@@ -1,5 +1,6 @@
 package org.medicmobile.webapp.mobile;
 
+import android.annotation.SuppressLint;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -126,6 +127,7 @@ class SmsSender {
 	/**
 	 * @see https://developer.android.com/reference/android/telephony/SmsMessage.html#createFromPdu%28byte[],%20java.lang.String%29
 	 */
+	@SuppressLint("ObsoleteSdkInt")
 	private  static SmsMessage createFromPdu(Intent intent) {
 		byte[] pdu = intent.getByteArrayExtra("pdu");
 		if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {

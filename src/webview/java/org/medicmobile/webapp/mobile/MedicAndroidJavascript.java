@@ -1,5 +1,6 @@
 package org.medicmobile.webapp.mobile;
 
+import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.app.ActivityManager.MemoryInfo;
 import android.app.DatePickerDialog;
@@ -210,6 +211,7 @@ public class MedicAndroidJavascript {
 		}
 	}
 
+	@SuppressLint("ObsoleteSdkInt")
 	@android.webkit.JavascriptInterface
 	public String getDeviceInfo() {
 		try {
