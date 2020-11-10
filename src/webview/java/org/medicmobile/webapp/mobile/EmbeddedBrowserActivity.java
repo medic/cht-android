@@ -70,8 +70,6 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	private PhotoGrabber photoGrabber;
 	private SmsSender smsSender;
 
-	public EmbeddedBrowserActivity() {}
-
 //> ACTIVITY LIFECYCLE METHODS
 	@Override public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);

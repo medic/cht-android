@@ -34,8 +34,6 @@ public class SettingsDialogActivity extends LockableActivity {
 	private ServerRepo serverRepo;
 	private int state;
 
-	public SettingsDialogActivity() {}
-
 	private static class AppUrlVerificationTask extends ActivityBackgroundTask<SettingsDialogActivity, String, Void, AppUrlVerification> {
 		AppUrlVerificationTask(SettingsDialogActivity a) {
 			super(a);
