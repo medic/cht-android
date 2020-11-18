@@ -52,8 +52,7 @@ def getVersionCode = {
     if (versionCode > 2100000000 / 10)
       throw new RuntimeException('versionCode bigger than max allowed by Google Play.')
   }
-
-  return versionCode
+  return versionCode * 10
 }
 
 def getVersionName = {
@@ -69,7 +68,6 @@ android {
   }
 
   defaultConfig {
-    versionCode getVersionCode()
     versionName getVersionName()
     archivesBaseName = "${project.name}-${versionName}"
     targetSdkVersion 29
@@ -162,12 +160,16 @@ android {
     webview {
       dimension 'version'
       minSdkVersion 29 // Android 10
+      // the APK with a higher minSdkVersion value must have a higher versionCode value
+      // https://developer.android.com/google/play/publishing/multiple-apks
+      versionCode getVersionCode() + 1;
       versionNameSuffix '-webview'
     }
 
     xwalk {
       dimension 'version'
       minSdkVersion 19 // Android 4.4
+      versionCode getVersionCode();
       versionNameSuffix '-xwalk'
     }
 

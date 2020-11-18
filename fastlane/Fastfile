@@ -9,7 +9,8 @@ platform :android do
   lane :deploy do |options|
     gradleTaskName = "assemble#{options[:flavor]}Release"
     version = ENV['TRAVIS_TAG'].empty? ? 'SNAPSHOT' : ENV['TRAVIS_TAG']
-    package_name = options[:flavor] == 'unbranded' ? "org.medicmobile.webapp.mobile" : "org.medicmobile.webapp.mobile.#{options[:flavor]}"
+    brand = options[:flavor].replace("Webview", "").replace("Xwalk", "")
+    package_name = brand == 'unbranded' ? "org.medicmobile.webapp.mobile" : "org.medicmobile.webapp.mobile.#{brand}"
 
     gradle(task: gradleTaskName)
 
