@@ -43,7 +43,7 @@ def getVersionCode = {
       throw new RuntimeException("Unexpected version number - should be of formatted as 'v1.2.3' or 'v1.2.3-alpha.4', but was: $System.env.TRAVIS_TAG")
 
     versionParts = versionParts.drop(1).collect { Integer.parseInt(it) }
-    int alphaPart = versionParts.length == 4 ? versionParts[3] : 99;
+    int alphaPart = versionParts.size() == 4 ? versionParts[3] : 99;
 
     if (versionParts[1] > 99 || versionParts[2] > 99 || alphaPart > 99)
       throw new RuntimeException('Version part greater than 99 not allowed.')
