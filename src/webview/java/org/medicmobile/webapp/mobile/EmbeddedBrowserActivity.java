@@ -209,6 +209,10 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 
 //> PUBLIC API
 	public void evaluateJavascript(final String js) {
+		evaluateJavascript(js, true);
+	}
+
+	public void evaluateJavascript(final String js, final boolean useLoadUrl) {
 		container.post(new Runnable() {
 			public void run() {
 				// `WebView.loadUrl()` seems to be significantly faster than
@@ -217,7 +221,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 				// to run JS, in which case we should switch to the second
 				// block.
 				// On switching to XWalkView, we assume the same applies.
-				if(true) { // NOPMD
+				if(useLoadUrl) { // NOPMD
 					container.loadUrl("javascript:" + js, null);
 				} else {
 					container.evaluateJavascript(js, IGNORE_RESULT);
@@ -377,8 +381,8 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 
 			@Override
 			public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
-				if(DEBUG) trace(this, "onReceivedLoadError() :: %s,%s,%s", view, request, error);
 				String failingUrl = request.getUrl().toString();
+				if(DEBUG) trace(this, "onReceivedLoadError() :: %s,%s,%s", failingUrl, error.getErrorCode(), error.getDescription());
 				if(!getRootUrl().equals(failingUrl)) {
 					super.onReceivedError(view, request, error);
 				} else {
@@ -388,12 +392,12 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 							"if(body) {" +
 							"  var content = document.createElement('div');" +
 							"  content.innerHTML = '" +
-									"<h1>Error loading page</h1>" +
-									"<p>[%s] %s</p>" +
-									"<button onclick=\"window.location.reload()\">Retry</button>" +
-									"';" +
+							"<h1>Error loading page</h1>" +
+							"<p>[%s] %s</p>" +
+							"<button onclick=\"window.location.reload()\">Retry</button>" +
+							"';" +
 							"  body.appendChild(content);" +
-							"}", error.getErrorCode(), error.getDescription()));
+							"}", error.getErrorCode(), error.getDescription()), false);
 				}
 			}
 		});
