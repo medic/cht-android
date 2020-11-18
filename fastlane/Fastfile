@@ -7,20 +7,21 @@ default_platform(:android)
 platform :android do
   desc "Build and deploy on Google Play"
   lane :deploy do |options|
-    gradleTaskName = "assemble#{options[:flavor]}Release"
     version = ENV['TRAVIS_TAG'].empty? ? 'SNAPSHOT' : ENV['TRAVIS_TAG']
-    brand = options[:flavor].replace("Webview", "").replace("Xwalk", "")
-    package_name = brand == 'unbranded' ? "org.medicmobile.webapp.mobile" : "org.medicmobile.webapp.mobile.#{brand}"
+    package_name = options[:flavor] == 'unbranded' ? "org.medicmobile.webapp.mobile" : "org.medicmobile.webapp.mobile.#{options[:flavor]}"
 
-    gradle(task: gradleTaskName)
+    gradle(task: "assemble#{options[:flavor]}WebviewRelease")
+    gradle(task: "assemble#{options[:flavor]}XwalkRelease")
 
     supply(
       package_name: package_name,
       track: "alpha",
       json_key: "playstore-secret.json",
       apk_paths: [
-        "build/outputs/apk/#{options[:flavor]}/release/medic-android-#{version}-#{options[:flavor]}-arm64-v8a-release.apk",
-        "build/outputs/apk/#{options[:flavor]}/release/medic-android-#{version}-#{options[:flavor]}-armeabi-v7a-release.apk",
+        "build/outputs/apk/#{options[:flavor]}Webview/release/medic-android-#{version}-#{options[:flavor]}-webview-arm64-v8a-release.apk",
+        "build/outputs/apk/#{options[:flavor]}Webview/release/medic-android-#{version}-#{options[:flavor]}-webview-armeabi-v7a-release.apk",
+        "build/outputs/apk/#{options[:flavor]}Xwalk/release/medic-android-#{version}-#{options[:flavor]}-xwalk-arm64-v8a-release.apk",
+        "build/outputs/apk/#{options[:flavor]}Xwalk/release/medic-android-#{version}-#{options[:flavor]}-xwalk-armeabi-v7a-release.apk",
       ],
       skip_upload_aab: true,
       skip_upload_metadata: true,

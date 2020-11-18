@@ -22,9 +22,7 @@ jobs:
       script: make test
 
     - stage: alpha
-      script:
-        - fastlane deploy flavor:unbrandedWebview
-        - fastlane deploy flavor:unbrandedXwalk
+      script: fastlane deploy flavor:unbranded
   
     - stage: deploy
     # flavors sorted alphabetically with three per job
