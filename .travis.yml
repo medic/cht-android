@@ -12,12 +12,17 @@ env:
 - GRADLE_OPTS="-XX:MaxPermSize=2048M"
 stages:
   - name: test
+  - name: alpha
+    if: tag =~ ^v.+-alpha\.[0-9]+$ # eg: v3.6.0-alpha.1
   - name: deploy
-    if: tag IS present
+    if: tag =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ # eg: v3.6.0
 jobs:
   include:
     - stage: test
       script: make test
+
+    - stage: alpha
+      script: fastlane deploy flavor:unbranded
   
     - stage: deploy
     # flavors sorted alphabetically with three per job
