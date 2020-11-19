@@ -2,10 +2,7 @@ package org.medicmobile.webapp.mobile;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.app.ActivityManager;
 import android.net.Uri;
@@ -271,7 +268,6 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	}
 
 	private void setUpUiClient(WebView container) {
-		final Activity self = this;
 		container.setWebChromeClient(new WebChromeClient() {
 			@Override public boolean onConsoleMessage(ConsoleMessage cm) {
 				if(!DEBUG) {
@@ -302,21 +298,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 				return true;
 			}
 			@Override public void onGeolocationPermissionsShowPrompt(final String origin, final GeolocationPermissions.Callback callback) {
-				AlertDialog.Builder builder = new AlertDialog.Builder(self);
-				builder.setTitle(R.string.geolocationPermissionsTitle);
-				builder.setMessage(R.string.geolocationPermissionsDescription).setCancelable(true)
-						.setPositiveButton(R.string.geolocationPermissionsAllow, new DialogInterface.OnClickListener() {
-							@Override public void onClick(DialogInterface dialog, int id) {
-								callback.invoke(origin, true, true);
-							}
-						})
-						.setNegativeButton(R.string.geolocationPermissionsDeny, new DialogInterface.OnClickListener() {
-							@Override public void onClick(DialogInterface dialog, int id) {
-								callback.invoke(origin, false, false);
-							}
-						});
-				AlertDialog alert = builder.create();
-				alert.show();
+				callback.invoke(origin, true, true);
 			}
 		});
 	}
