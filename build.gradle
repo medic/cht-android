@@ -186,6 +186,10 @@ android {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.medicmobiledemo'
     }
+    medicmobilegamma {
+      dimension = 'brand'
+      applicationId = 'org.medicmobile.webapp.mobile.medicmobilegamma'
+    }
 
     bracuganda {
       dimension = 'brand'
