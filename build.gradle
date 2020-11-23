@@ -180,6 +180,9 @@ android {
     medicmobiledemo {
       applicationId = 'org.medicmobile.webapp.mobile.medicmobiledemo'
     }
+    medicmobilegamma {
+      applicationId = 'org.medicmobile.webapp.mobile.medicmobilegamma'
+    }
 
     bracuganda {
       applicationId = 'org.medicmobile.webapp.mobile.bracuganda'
