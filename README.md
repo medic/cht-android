@@ -3,7 +3,40 @@ Medic Mobile Android App
 
 <a href="https://travis-ci.org/medic/medic-android"><img src="https://travis-ci.org/medic/medic-android.svg"/></a>
 
-# Installation
+The medic-android application is a thin wrapper to load the [CHT Core Framework](https://github.com/medic/cht-core/) web application in a webview. This allows the application to be hardcoded to a specific CHT deployment and have a partner specific logo and display name. This app also provides some deeper integration with other android apps and native phone functions that are otherwise unavailable to webapps.
+
+# Release notes
+
+## 0.6.0
+
+### Upgrade notes
+
+In order to comply with Play Store policy it was necessary to switch from using crosswalk to webview for Android 10 and above. To make this transition smoother we have implemented a migration to copy patient data and session information into the webview implementation, however please note:
+
+1. When loading the application after upgrade you will need an internet connection in order to cache the application code.
+2. The migration can take a few minutes to complete so after upgrade the user may be shown a login screen. If this happens, restart the application periodically until the user is logged in and the app loads as per usual.
+
+Users on Android 9 and below will continue to use crosswalk and be unaffected by this change.
+
+### Changes
+
+- [improvement] [medic-android#106](https://github.com/medic/medic-android/issues/106): Update target SDK version to 29 for Play Store compliance
+
+## 0.5.0
+
+### Upgrade notes
+
+This release changes the way in which location data is collected to better align with Play Store policies. Now the information is gathered only when filling in a form as opposed to as soon as the app is loaded.
+
+*Note*: This breaks backwards compatibility with older versions of the CHT Core Framework which may mean that location data is no longer collected at all. Tt is recommended you upgrade to CHT v3.9.2 or later before upgrading the android app.
+
+### Changes
+
+- [feature] [cht-core#6380](https://github.com/medic/cht-core/issues/6380): Adds intent so opening deployment URLs will prompt to load in app
+- [improvement] [medic-android#111](https://github.com/medic/medic-android/issues/111): Compliance with Play Store developer policies for PII collection disclosure
+- [bug] [cht-core#6648](https://github.com/medic/cht-core/issues/6648): Blank screen when launching external apps from CHT Android app
+
+# Development
 
 1. Install Android SDK
 2. Clone the repo
