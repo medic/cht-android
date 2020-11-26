@@ -10,32 +10,28 @@ import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
-import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
+import android.webkit.ConsoleMessage;
+import android.webkit.GeolocationPermissions;
 import android.webkit.ValueCallback;
+import android.webkit.WebChromeClient;
+import android.webkit.WebResourceError;
+import android.webkit.WebResourceRequest;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.Toast;
+
+import java.util.Arrays;
+
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 
-import java.io.ByteArrayInputStream;
-import java.util.Collections;
-import java.util.Map;
-
-import org.xwalk.core.XWalkPreferences;
-import org.xwalk.core.XWalkResourceClient;
-import org.xwalk.core.XWalkSettings;
-import org.xwalk.core.XWalkUIClient;
-import org.xwalk.core.XWalkView;
-import org.xwalk.core.XWalkWebResourceRequest;
-import org.xwalk.core.XWalkWebResourceResponse;
-
-import static java.lang.Boolean.parseBoolean;
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static org.medicmobile.webapp.mobile.BuildConfig.DISABLE_APP_URL_VALIDATION;
 import static org.medicmobile.webapp.mobile.MedicLog.error;
-import static org.medicmobile.webapp.mobile.MedicLog.log;
 import static org.medicmobile.webapp.mobile.MedicLog.trace;
 import static org.medicmobile.webapp.mobile.MedicLog.warn;
 import static org.medicmobile.webapp.mobile.SimpleJsonClient2.redactUrl;
@@ -49,7 +45,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	static final int GRAB_PHOTO = (0 << 3) | NON_SIMPRINTS_FLAGS;
 	static final int GRAB_MRDT_PHOTO = (1 << 3) | NON_SIMPRINTS_FLAGS;
 
-	private final static int ACCESS_FINE_LOCATION_PERMISSION_REQUEST = (int)Math.random();
+	private final static int ACCESS_FINE_LOCATION_PERMISSION_REQUEST = (int)(Math.random() * 1000);
 
 	private static final ValueCallback<String> IGNORE_RESULT = new ValueCallback<String>() {
 		public void onReceiveValue(String result) { /* ignore */ }
@@ -63,7 +59,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		}
 	};
 
-	private XWalkView container;
+	private WebView container;
 	private SettingsStore settings;
 	private String appUrl;
 	private SimprintsSupport simprints;
@@ -75,7 +71,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	@Override public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		trace(this, "Starting XWalk webview...");
+		trace(this, "Starting webview...");
 
 		this.simprints = new SimprintsSupport(this);
 		this.photoGrabber = new PhotoGrabber(this);
@@ -101,7 +97,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 			webviewContainer.setBackgroundColor(R.drawable.warning_background);
 		}
 
-		container = (XWalkView) findViewById(R.id.wbvMain);
+		container = findViewById(R.id.wbvMain);
 
 		configureUseragent();
 
@@ -119,6 +115,13 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		if(settings.allowsConfiguration()) {
 			toast(redactUrl(appUrl));
 		}
+
+	}
+
+	@Override
+	protected void onStart() {
+		new XWalkMigration(this).run();
+		super.onStart();
 	}
 
 	@Override public boolean onCreateOptionsMenu(Menu menu) {
@@ -131,43 +134,34 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	}
 
 	@Override public boolean onOptionsItemSelected(MenuItem item) {
-		switch(item.getItemId()) {
-			case R.id.mnuGotoTestPages:
-				evaluateJavascript("window.location.href = 'https://medic.github.io/atp'");
-				return true;
-			case R.id.mnuSetUnlockCode:
-				changeCode();
-				return true;
-			case R.id.mnuSettings:
-				openSettings();
-				return true;
-			case R.id.mnuHardRefresh:
-				browseTo(null);
-				return true;
-			case R.id.mnuLogout:
-				evaluateJavascript("angular.element(document.body).injector().get('AndroidApi').v1.logout()");
-				return true;
-			default:
-				return super.onOptionsItemSelected(item);
+		if (item.getItemId() == R.id.mnuGotoTestPages) {
+			evaluateJavascript("window.location.href = 'https://medic.github.io/atp'");
+			return true;
 		}
+		if (item.getItemId() == R.id.mnuSetUnlockCode) {
+			changeCode();
+			return true;
+		}
+		if (item.getItemId() == R.id.mnuSettings) {
+			openSettings();
+			return true;
+		}
+		if (item.getItemId() == R.id.mnuHardRefresh) {
+			browseTo(null);
+			return true;
+		}
+		if (item.getItemId() == R.id.mnuLogout) {
+			evaluateJavascript("angular.element(document.body).injector().get('AndroidApi').v1.logout()");
+			return true;
+		}
+		return super.onOptionsItemSelected(item);
 	}
 
-	@Override public boolean dispatchKeyEvent(KeyEvent event) {
-		if(event.getKeyCode() == KeyEvent.KEYCODE_BACK) {
-			// With standard android WebView, this would be handled by onBackPressed().  However, that
-			// method does not get called when using XWalkView, so we catch the back button here instead.
-			// TODO this causes issues with the Samsung long-back-press to trigger menu - the menu opens,
-			// but the app also handles the back press :¬/
-			if(event.getAction() == KeyEvent.ACTION_UP) {
-				container.evaluateJavascript(
-						"angular.element(document.body).injector().get('AndroidApi').v1.back()",
-						backButtonHandler);
-			}
-
-			return true;
-		} else {
-			return super.dispatchKeyEvent(event);
-		}
+	@Override public void onBackPressed() {
+		trace(this, "onBackPressed()");
+		container.evaluateJavascript(
+				"angular.element(document.body).injector().get('AndroidApi').v1.back()",
+				backButtonHandler);
 	}
 
 	@Override protected void onActivityResult(int requestCode, int resultCode, Intent i) {
@@ -212,6 +206,10 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 
 //> PUBLIC API
 	public void evaluateJavascript(final String js) {
+		evaluateJavascript(js, true);
+	}
+
+	public void evaluateJavascript(final String js, final boolean useLoadUrl) {
 		container.post(new Runnable() {
 			public void run() {
 				// `WebView.loadUrl()` seems to be significantly faster than
@@ -220,8 +218,8 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 				// to run JS, in which case we should switch to the second
 				// block.
 				// On switching to XWalkView, we assume the same applies.
-				if(true) { // NOPMD
-					container.load("javascript:" + js, null);
+				if(useLoadUrl) { // NOPMD
+					container.loadUrl("javascript:" + js, null);
 				} else {
 					container.evaluateJavascript(js, IGNORE_RESULT);
 				}
@@ -230,24 +228,15 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	}
 
 	public void errorToJsConsole(String message, Object... extras) {
-		jsConsole("error", message, extras);
-	}
-
-	public void logToJsConsole(String message, Object... extras) {
-		jsConsole("log", message, extras);
+		String formatted = String.format(message, extras);
+		String escaped = formatted.replace("'", "\\'");
+		evaluateJavascript("console.error('" + escaped + "');");
 	}
 
 //> PRIVATE HELPERS
-	private void jsConsole(String type, String message, Object... extras) {
-		String formatted = String.format(message, extras);
-		String escaped = formatted.replace("'", "\\'");
-		evaluateJavascript("console." + type + "('" + escaped + "');");
-	}
-
 	private void configureUseragent() {
-		String current = container.getUserAgentString();
-
-		container.setUserAgentString(createUseragentFrom(current));
+		String current = WebSettings.getDefaultUserAgent(this);
+		container.getSettings().setUserAgentString(createUseragentFrom(current));
 	}
 
 	private void openSettings() {
@@ -271,16 +260,15 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	private void browseTo(Uri url) {
 		String urlToLoad = getUrlToLoad(url);
 		if(DEBUG) trace(this, "Pointing browser to %s", redactUrl(urlToLoad));
-		container.load(urlToLoad, null);
+		container.loadUrl(urlToLoad, null);
 	}
 
 	private void enableRemoteChromeDebugging() {
-		XWalkPreferences.setValue(XWalkPreferences.REMOTE_DEBUGGING, true);
+		WebView.setWebContentsDebuggingEnabled(true);
 	}
 
-	private void setUpUiClient(XWalkView container) {
-		container.setUIClient(new XWalkUIClient(container) {
-			/** Not applicable for Crosswalk.  TODO find alternative and remove this
+	private void setUpUiClient(WebView container) {
+		container.setWebChromeClient(new WebChromeClient() {
 			@Override public boolean onConsoleMessage(ConsoleMessage cm) {
 				if(!DEBUG) {
 					return super.onConsoleMessage(cm);
@@ -291,42 +279,35 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 						cm.lineNumber(),
 						cm.message());
 				return true;
-			} */
-
-			@Override public void openFileChooser(XWalkView view, ValueCallback<Uri> callback, String acceptType, String shouldCapture) {
-				if(DEBUG) trace(this, "openFileChooser() :: %s,%s,%s,%s", view, callback, acceptType, shouldCapture);
-
-				boolean capture = parseBoolean(shouldCapture);
-
-				if(photoGrabber.canHandle(acceptType, capture)) {
-					photoGrabber.chooser(callback, capture);
-				} else {
-					logToJsConsole("No file chooser is currently implemented for \"accept\" value: %s", acceptType);
-					warn(this, "openFileChooser() :: No file chooser is currently implemented for \"accept\" value: %s", acceptType);
-				}
 			}
+			@Override public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, WebChromeClient.FileChooserParams fileChooserParams){
+				if(DEBUG) trace(this, "onShowFileChooser() :: %s,%s,%s", webView, filePathCallback, fileChooserParams);
 
-			/*
-			 * TODO Crosswalk: re-enable this if required
-			public void onGeolocationPermissionsShowPrompt(
-					String origin,
-					GeolocationPermissions.Callback callback) {
-				// allow all location requests
-				// TODO this should be restricted to the domain
-				// set in Settings - issue #1603
-				trace(this, "onGeolocationPermissionsShowPrompt() :: origin=%s, callback=%s",
-						origin, callback);
+				boolean capture = fileChooserParams.isCaptureEnabled();
+				trace(this, "onShowFileChooser() capture :: %s", capture);
+				String[] acceptTypes = fileChooserParams.getAcceptTypes();
+				trace(this, "onShowFileChooser() acceptTypes :: %s", Arrays.toString(acceptTypes));
+
+				if(!photoGrabber.canHandle(acceptTypes, capture)) {
+					warn(this, "openFileChooser() :: No file chooser is currently implemented for \"accept\" value: %s", Arrays.toString(acceptTypes));
+					return false;
+				}
+
+				trace(this, "onShowFileChooser() opening chooser");
+				photoGrabber.chooser(filePathCallback, capture);
+				return true;
+			}
+			@Override public void onGeolocationPermissionsShowPrompt(final String origin, final GeolocationPermissions.Callback callback) {
 				callback.invoke(origin, true, true);
 			}
-			*/
 		});
 	}
 
 	public boolean getLocationPermissions() {
 		if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PERMISSION_GRANTED) {
+			trace(this, "PERMISSIONS GRANTED");
 			return true;
 		}
-
 		String[] permissions = { Manifest.permission.ACCESS_FINE_LOCATION };
 		ActivityCompat.requestPermissions(this, permissions, ACCESS_FINE_LOCATION_PERMISSION_REQUEST);
 		return false;
@@ -334,15 +315,16 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 
 	@Override
 	public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 		if (requestCode != ACCESS_FINE_LOCATION_PERMISSION_REQUEST) {
 			return;
 		}
 		String javaScript = "angular.element(document.body).injector().get('AndroidApi').v1.locationPermissionRequestResolved();";
-		evaluateJavascript(String.format(javaScript));
+		evaluateJavascript(javaScript);
 	}
 
 	@SuppressLint("SetJavaScriptEnabled")
-	private void enableJavascript(XWalkView container) {
+	private void enableJavascript(WebView container) {
 		container.getSettings().setJavaScriptEnabled(true);
 
 		MedicAndroidJavascript maj = new MedicAndroidJavascript(this);
@@ -355,66 +337,50 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		container.addJavascriptInterface(maj, "medicmobile_android");
 	}
 
-	private void enableStorage(XWalkView container) {
-		XWalkSettings settings = container.getSettings();
-
-		// N.B. in Crosswalk, database seems to be enabled by default
-
+	private void enableStorage(WebView container) {
+		WebSettings settings = container.getSettings();
 		settings.setDomStorageEnabled(true);
-
-		// N.B. in Crosswalk, appcache seems to work by default, and
-		// there is no option to set the storage path.
+		settings.setDatabaseEnabled(true);
 	}
 
-	private void enableUrlHandlers(XWalkView container) {
-		container.setResourceClient(new XWalkResourceClient(container) {
-			@Override public boolean shouldOverrideUrlLoading(XWalkView view, String url) {
-				if (isUrlRelated(appUrl, url)) {
-					// load all related URLs in XWALK
+	private void enableUrlHandlers(WebView container) {
+
+		container.setWebViewClient(new WebViewClient() {
+			@Override
+			public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+				Uri uri = request.getUrl();
+				if (isUrlRelated(appUrl, uri)) {
+					// load all related URLs in the webview
 					return false;
 				}
 
 				// let Android decide what to do with unrelated URLs
 				// unrelated URLs include `tel:` and `sms:` uri schemes
-				Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+				Intent i = new Intent(Intent.ACTION_VIEW, uri);
 				view.getContext().startActivity(i);
 				return true;
 			}
-			@Override public XWalkWebResourceResponse shouldInterceptLoadRequest(XWalkView view, XWalkWebResourceRequest request) {
-				if(isUrlRelated(appUrl, request.getUrl())) {
-					return null; // load as normal
-				} else {
-					warn(this, "shouldInterceptLoadRequest() :: Denying access to URL outside of expected domain: %s", request.getUrl());
 
-					Map<String, String> noHeaders = Collections.<String, String>emptyMap();
-					ByteArrayInputStream emptyResponse = new ByteArrayInputStream(new byte[0]);
-
-					return createXWalkWebResourceResponse(
-							"text/plain", "UTF-8", emptyResponse,
-							403, "Read access forbidden.", noHeaders);
-				}
-			}
-			@Override public void onReceivedLoadError(XWalkView view, int errorCode, String description, String failingUrl) {
-				if(errorCode == XWalkResourceClient.ERROR_OK) return;
-
-				log("EmbeddedBrowserActivity.onReceivedLoadError() :: [%s] %s :: %s", errorCode, failingUrl, description);
-
+			@Override
+			public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
+				String failingUrl = request.getUrl().toString();
+				if(DEBUG) trace(this, "onReceivedLoadError() :: %s,%s,%s", failingUrl, error.getErrorCode(), error.getDescription());
 				if(!getRootUrl().equals(failingUrl)) {
-					log("EmbeddedBrowserActivity.onReceivedLoadError() :: ignoring for non-root URL");
+					super.onReceivedError(view, request, error);
+				} else {
+					evaluateJavascript(String.format(
+							"var body = document.evaluate('/html/body', document);" +
+							"body = body.iterateNext();" +
+							"if(body) {" +
+							"  var content = document.createElement('div');" +
+							"  content.innerHTML = '" +
+							"<h1>Error loading page</h1>" +
+							"<p>[%s] %s</p>" +
+							"<button onclick=\"window.location.reload()\">Retry</button>" +
+							"';" +
+							"  body.appendChild(content);" +
+							"}", error.getErrorCode(), error.getDescription()), false);
 				}
-
-				evaluateJavascript(String.format(
-						"var body = document.evaluate('/html/body', document);" +
-						"body = body.iterateNext();" +
-						"if(body) {" +
-						"  var content = document.createElement('div');" +
-						"  content.innerHTML = '" +
-								"<h1>Error loading page</h1>" +
-								"<p>[%s] %s</p>" +
-								"<button onclick=\"window.location.reload()\">Retry</button>" +
-								"';" +
-						"  body.appendChild(content);" +
-						"}", errorCode, description));
 			}
 		});
 	}

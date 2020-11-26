@@ -3,7 +3,6 @@
 /*.log
 
 /local.properties
-/gradle.properties
 
 # IntelliJ IDEA files
 /.idea/
