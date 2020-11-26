@@ -8,7 +8,7 @@
 
   <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
   <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
-  <!-- uses-feature indicates to Adnroid 5+ that we want to use hardware to get the location.
+  <!-- uses-feature indicates to Android 5+ that we want to use hardware to get the location.
        see: https://developer.android.com/guide/topics/location/strategies#Permission -->
   <uses-feature android:name="android.hardware.location" android:required="false"/>
   <uses-feature android:name="android.hardware.location.gps" android:required="false"/>
@@ -20,16 +20,14 @@
   <uses-permission android:name="com.android.launcher.permission.INSTALL_SHORTCUT"/>
   <uses-permission android:name="com.android.launcher.permission.UNINSTALL_SHORTCUT"/>
 
-  <!-- READ_EXTERNAL_STORAGE required if users want to include photos from their phone;
-       WRITE_EXTERNAL_STORAGE required for taking new photos, and our resizing code.
-       WRITE implies READ. -->
-  <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+  <!-- READ_EXTERNAL_STORAGE required if users want to include photos from their phone  -->
+  <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
 
   <application android:label="@string/app_name"
       android:icon="@mipmap/ic_launcher"
       android:allowBackup="false"
       android:largeHeap="true"
-      tools:ignore="GoogleAppIndexingWarning">
+      tools:ignore="GoogleAppIndexingWarning,LockedOrientationActivity,Instantiatable">
     <activity android:name="StartupActivity">
       <intent-filter>
         <action android:name="android.intent.action.MAIN"/>
