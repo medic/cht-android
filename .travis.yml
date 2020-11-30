@@ -21,15 +21,10 @@ jobs:
     - stage: test
       script: make test
 
-    - stage: alpha
-      script: fastlane deploy flavor:unbranded
-      script: fastlane deploy flavor:medicmobilegamma
-  
     - stage: deploy
-      script: fastlane deploy flavor:unbranded
-      script: fastlane deploy flavor:medicmobilegamma
-      script: fastlane deploy flavor:medicmobiledemo
-
+      script: 
+       - fastlane deploy flavor:safaridoctors_kenya
+       - fastlane deploy flavor:surveillance_covid19_kenya
 #    - script:
 #      - fastlane deploy flavor:bracuganda
 #      - fastlane deploy flavor:cic_guatemala
