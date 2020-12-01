@@ -16,7 +16,11 @@ In order to comply with Play Store policy it was necessary to switch from using 
 1. When loading the application after upgrade you will need an internet connection in order to cache the application code.
 2. The migration can take a few minutes to complete so after upgrade the user may be shown a login screen. If this happens, restart the application periodically until the user is logged in and the app loads as per usual.
 
-Users on Android 9 and below will continue to use crosswalk and be unaffected by this change.
+We are planning improvements to [make the migration more user friendly](https://github.com/medic/medic-android/issues/134) in a future release.
+
+Users on Android 9 and below will continue to use crosswalk and be unaffected by this change. Because of this it is recommended that projects upgrade to v0.6.0 version of their app before issuing Android 10+ devices.
+
+Earlier releases are no longer accepted by the Google Play Store.
 
 ### Changes
 
