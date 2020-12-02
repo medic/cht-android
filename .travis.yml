@@ -27,42 +27,45 @@ jobs:
       script: fastlane build flavor:medicmobiledemo
   
     - stage: final
-      - script:
-        - fastlane build flavor:unbranded
-        - fastlane build flavor:medicmobilegamma
-        - fastlane build flavor:medicmobiledemo
-      - script:
-        - fastlane build flavor:bracuganda
-        - fastlane build flavor:cic_guatemala
-      - script:
-        - fastlane build flavor:cmmb_kenya
-        - fastlane build flavor:ebpp_indonesia
-        - fastlane build flavor:hope_through_health
-      - script:
-        - fastlane build flavor:livinggoods
-        - fastlane build flavor:livinggoodskenya
-        - fastlane build flavor:livinggoods_assisted_networks
-      - script:
-        - fastlane build flavor:livinggoods_innovation_ke
-        - fastlane build flavor:livinggoods_innovation_ke_supervisor
-        - fastlane build flavor:livinggoods_innovation_ke_hivst
-      - script:
-  #     - fastlane build flavor:moh_kenya_siaya_white
-        - fastlane build flavor:moh_kenya_siaya_red
-        - fastlane build flavor:moh_kenya_siaya_green
-        - fastlane build flavor:moh_kenya_siaya_black
-        - fastlane build flavor:moh_mali
-      - script:
-        - fastlane build flavor:moh_zanzibar_training
-        - fastlane build flavor:moh_zanzibar
-      - script:
-        - fastlane build flavor:musomali
-        - fastlane build flavor:pih_malawi
-        - fastlane build flavor:pih_malawi_supervisor
-      - script:
-        - fastlane build flavor:simprints
-        - fastlane build flavor:surveillance_covid19_kenya
-        - fastlane build flavor:vhw_burundi
+    # flavors sorted alphabetically with three per job
+      script:
+      - fastlane build flavor:unbranded
+      - fastlane build flavor:medicmobilegamma
+      - fastlane build flavor:medicmobiledemo
+    - script:
+      - fastlane build flavor:bracuganda
+      - fastlane build flavor:cic_guatemala
+      - fastlane build flavor:cmmb_kenya
+    - script:
+      - fastlane build flavor:covid_moh_mali
+      - fastlane build flavor:ebpp_indonesia
+      - fastlane build flavor:hope_through_health
+    - script:
+      - fastlane build flavor:livinggoods
+      - fastlane build flavor:livinggoodskenya
+      - fastlane build flavor:livinggoods_assisted_networks
+    - script:
+      - fastlane build flavor:livinggoods_innovation_ke
+      - fastlane build flavor:livinggoods_innovation_ke_supervisor
+      - fastlane build flavor:livinggoods_innovation_ke_hivst
+    - script:
+#     - fastlane build flavor:moh_kenya_siaya_white
+      - fastlane build flavor:moh_kenya_siaya_red
+      - fastlane build flavor:moh_kenya_siaya_green
+      - fastlane build flavor:moh_kenya_siaya_black
+      - fastlane build flavor:moh_mali
+    - script:
+      - fastlane build flavor:moh_zanzibar_training
+      - fastlane build flavor:moh_zanzibar
+    - script:
+      - fastlane build flavor:musomali
+      - fastlane build flavor:pih_malawi
+      - fastlane build flavor:pih_malawi_supervisor
+    - script:
+      - fastlane build flavor:simprints
+      - fastlane build flavor:surveillance_covid19_kenya
+      - fastlane build flavor:vhw_burundi
+    - script:
 before_install:
 - openssl aes-256-cbc -K $encrypted_323c4a109760_key -iv $encrypted_323c4a109760_iv -in secrets.tar.gz.enc -out ./secrets.tar.gz -d
 - tar -xf ./secrets.tar.gz
