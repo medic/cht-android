@@ -24,6 +24,7 @@ jobs:
     - stage: alpha
       script: fastlane deploy flavor:unbranded
       script: fastlane deploy flavor:medicmobilegamma
+      script: fastlane deploy flavor:covid_moh_mali
   
     - stage: deploy
       script: fastlane deploy flavor:unbranded
@@ -62,6 +63,7 @@ jobs:
 #      - fastlane deploy flavor:simprints
 #      - fastlane deploy flavor:surveillance_covid19_kenya
 #      - fastlane deploy flavor:vhw_burundi
+    
 before_install:
 - openssl aes-256-cbc -K $encrypted_323c4a109760_key -iv $encrypted_323c4a109760_iv -in secrets.tar.gz.enc -out ./secrets.tar.gz -d
 - tar -xf ./secrets.tar.gz
