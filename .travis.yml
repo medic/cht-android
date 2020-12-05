@@ -20,17 +20,10 @@ jobs:
   include:
     - stage: test
       script: make test
-
-    - stage: alpha
-      script: fastlane deploy flavor:unbranded
-      script: fastlane deploy flavor:medicmobilegamma
-      script: fastlane deploy flavor:covid_moh_mali
-  
+ 
     - stage: deploy
-      script: fastlane deploy flavor:unbranded
-      script: fastlane deploy flavor:medicmobilegamma
-      script: fastlane deploy flavor:medicmobiledemo
-
+      script: fastlane deploy flavor:covid_moh_mali
+      
 #    - script:
 #      - fastlane deploy flavor:bracuganda
 #      - fastlane deploy flavor:cic_guatemala

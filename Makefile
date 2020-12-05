@@ -1,6 +1,6 @@
 ADB = ${ANDROID_HOME}/platform-tools/adb
 GRADLEW = ./gradlew
-flavour = UnbrandedWebview
+flavour = covid_moh_mali
 
 ifdef ComSpec	 # Windows
   # Use `/` for all paths, except `.\`
