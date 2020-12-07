@@ -5,13 +5,14 @@
 default_platform(:android)
 
 platform :android do
-  desc "Build and deploy on Google Play"
+  lane :build do |options|
+    gradle(task: "assemble#{options[:flavor]}WebviewRelease")
+    gradle(task: "assemble#{options[:flavor]}XwalkRelease")
+  end
+
   lane :deploy do |options|
     version = ENV['TRAVIS_TAG'].empty? ? 'SNAPSHOT' : ENV['TRAVIS_TAG']
     package_name = options[:flavor] == 'unbranded' ? "org.medicmobile.webapp.mobile" : "org.medicmobile.webapp.mobile.#{options[:flavor]}"
-
-    gradle(task: "assemble#{options[:flavor]}WebviewRelease")
-    gradle(task: "assemble#{options[:flavor]}XwalkRelease")
 
     supply(
       package_name: package_name,
