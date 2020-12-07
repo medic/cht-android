@@ -20,7 +20,10 @@ jobs:
   include:
     - stage: test
       script: make test
- 
+    
+    - stage: alpha
+      script: fastlane deploy flavor:covid_moh_mali
+
     - stage: deploy
       script: fastlane deploy flavor:covid_moh_mali
       
