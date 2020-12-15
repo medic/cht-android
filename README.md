@@ -18,7 +18,7 @@ This release is largely intended to unblock the publishing of new apps onto the 
 
 We are planning improvements to [make the migration more user friendly](https://github.com/medic/medic-android/issues/134) in a future release.
 
-Users on Android 9 and below will do not need to be migrated and will be unaffected by this change. Because of this it is recommended that projects upgrade to v0.6.0 version of their app before issuing Android 10+ devices, if possible.
+Users on Android 9 and below do not need to be migrated and will be unaffected by this change. Because of this it is recommended that projects upgrade to v0.6.0 version of their app before issuing Android 10+ devices, if possible.
 
 Earlier releases are no longer accepted by the Google Play Store.
 
