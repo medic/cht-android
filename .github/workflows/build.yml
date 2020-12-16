@@ -1,0 +1,11 @@
+name: Build, test, publish
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    name: Test
+    runs-on: ubuntu-18.04
+    steps:
+    - name: make test
+      run: make test
