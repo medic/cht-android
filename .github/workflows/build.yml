@@ -8,5 +8,14 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
     - uses: actions/checkout@v2
-    - name: make test
-      run: make test
+# REENABLE - disabled for speed...
+#    - name: test
+#      run: make test
+# DELETE - kept for reference
+#    - name: build
+#      run: fastlane build flavor:unbranded
+    - name: build
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: build
+        flavor: unbranded
