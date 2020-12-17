@@ -335,8 +335,12 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		if (requestCode != ACCESS_FINE_LOCATION_PERMISSION_REQUEST) {
 			return;
 		}
-		String javaScript = "angular.element(document.body).injector().get('AndroidApi').v1.locationPermissionRequestResolved();";
-		evaluateJavascript(String.format(javaScript));
+		locationRequestResolved();
+	}
+
+	public void locationRequestResolved() {
+		evaluateJavascript(
+			String.format("angular.element(document.body).injector().get('AndroidApi').v1.locationPermissionRequestResolved();"));
 	}
 
 	@SuppressLint("SetJavaScriptEnabled")

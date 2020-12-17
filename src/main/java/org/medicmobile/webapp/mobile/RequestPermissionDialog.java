@@ -1,7 +1,6 @@
 package org.medicmobile.webapp.mobile;
 
 import android.Manifest;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.support.v4.app.ActivityCompat;
@@ -27,11 +26,12 @@ public class RequestPermissionDialog {
 	 * Show the confirmation dialog unless the user has previously denied
 	 * to share the location from this same dialog.
 	 */
-	public static void show(final Activity activity, final int requestCode) {
+	public static void show(final EmbeddedBrowserActivity activity, final int requestCode) {
 		final SettingsStore settings = SettingsStore.in(activity);
 		if (settings.hasUserDeniedGeolocation()) {
 			trace(activity, "RequestPermissionDialog.show() :: " +
 					"user has previously denied to share location");
+			activity.locationRequestResolved();
 			return;
 		}
 		AlertDialog.Builder builder = new AlertDialog.Builder(activity);
@@ -52,6 +52,7 @@ public class RequestPermissionDialog {
 				public void onClick(DialogInterface dialog, int id) {
 					trace(activity, "RequestPermissionDialog.show() :: " +
 							"user denied to share the location");
+					activity.locationRequestResolved();
 					try {
 						settings.setUserDeniedGeolocation();
 					} catch (SettingsException e) {
