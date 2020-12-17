@@ -45,11 +45,32 @@ public abstract class SettingsStore {
 		ed.putString("unlock-code", unlockCode);
 
 		if(!ed.commit()) throw new SettingsException(
-				"Failed to save to SharedPreferences.");
+				"Failed to save 'unlock-code' to SharedPreferences.");
 	}
 
 	String get(String key) {
 		return prefs.getString(key, null);
+	}
+
+	/**
+	 * Returns true if the user has accepted to provide its geolocation data.
+	 * The rejection is taken from the first dialog with the "prominent" disclosure
+	 * about the location data, not from the native dialog displayed by Android.
+	 *
+	 * @see RequestPermissionDialog
+	 */
+	boolean hasUserDeniedGeolocation() {
+		return prefs.getBoolean("denied-geolocation", false);
+	}
+
+	/**
+	 * @see #hasUserDeniedGeolocation()
+	 */
+	void setUserDeniedGeolocation() throws SettingsException {
+		SharedPreferences.Editor ed = prefs.edit();
+		ed.putBoolean("denied-geolocation", true);
+		if(!ed.commit()) throw new SettingsException(
+				"Failed to save 'denied-geolocation' to SharedPreferences.");
 	}
 
 	static SettingsStore in(Context ctx) {

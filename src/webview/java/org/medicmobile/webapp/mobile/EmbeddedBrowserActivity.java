@@ -8,7 +8,6 @@ import android.app.ActivityManager;
 import android.net.Uri;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -298,6 +297,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 				return true;
 			}
 			@Override public void onGeolocationPermissionsShowPrompt(final String origin, final GeolocationPermissions.Callback callback) {
+				trace(this, "onGeolocationPermissionsShowPrompt() :: origin=%s, callback=%s", origin, callback);
 				callback.invoke(origin, true, true);
 			}
 		});
@@ -305,11 +305,10 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 
 	public boolean getLocationPermissions() {
 		if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PERMISSION_GRANTED) {
-			trace(this, "PERMISSIONS GRANTED");
+			trace(this, "getLocationPermissions() :: already granted");
 			return true;
 		}
-		String[] permissions = { Manifest.permission.ACCESS_FINE_LOCATION };
-		ActivityCompat.requestPermissions(this, permissions, ACCESS_FINE_LOCATION_PERMISSION_REQUEST);
+		RequestPermissionDialog.show(this, ACCESS_FINE_LOCATION_PERMISSION_REQUEST);
 		return false;
 	}
 
