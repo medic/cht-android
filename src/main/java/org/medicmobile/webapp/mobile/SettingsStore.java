@@ -53,7 +53,7 @@ public abstract class SettingsStore {
 	}
 
 	/**
-	 * Returns true if the user has accepted to provide its geolocation data.
+	 * Returns true if the user has denied to provide its geolocation data.
 	 * The rejection is taken from the first dialog with the "prominent" disclosure
 	 * about the location data, not from the native dialog displayed by Android.
 	 *
