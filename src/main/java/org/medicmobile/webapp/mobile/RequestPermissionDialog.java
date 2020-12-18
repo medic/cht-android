@@ -34,21 +34,22 @@ public abstract class RequestPermissionDialog {
 			activity.locationRequestResolved();
 			return;
 		}
+		String message = activity.getResources().getString(R.string.locRequest_message);
+		String appName = activity.getResources().getString(R.string.app_name);
 		AlertDialog.Builder builder = new AlertDialog.Builder(activity);
-		// TODO Define the final message and localize
 		AlertDialog alert = builder
-			.setTitle("Use your location")
+			.setTitle(R.string.locRequest_title)
 			.setIcon(android.R.drawable.ic_menu_mylocation)
-			.setMessage("This app collects location data to enable [feature], [feature], ...")
+			.setMessage(String.format(message, appName))
 			.setCancelable(true)
-			.setPositiveButton("Turn on", new DialogInterface.OnClickListener() {
+			.setPositiveButton(R.string.locRequest_okButton, new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface dialog, int id) {
 					trace(activity, "RequestPermissionDialog.show() :: " +
 							"user accepted to share the location");
 					ActivityCompat.requestPermissions(activity, LOCATION_PERMISSIONS, requestCode);
 				}
 			})
-			.setNegativeButton("No thanks", new DialogInterface.OnClickListener() {
+			.setNegativeButton(R.string.locRequest_denyButton, new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface dialog, int id) {
 					trace(activity, "RequestPermissionDialog.show() :: " +
 							"user denied to share the location");
