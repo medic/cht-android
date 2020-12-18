@@ -18,7 +18,7 @@ import static org.medicmobile.webapp.mobile.MedicLog.trace;
  * confirmation, the request to the API is omitted and the decision recorded to avoid
  * requesting the same next time.
  */
-public class RequestPermissionDialog {
+public abstract class RequestPermissionDialog {
 
 	private static final String[] LOCATION_PERMISSIONS = { Manifest.permission.ACCESS_FINE_LOCATION };
 
