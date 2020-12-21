@@ -4,7 +4,7 @@ on: [push, pull_request]
 
 jobs:
   build:
-    name: Test
+    name: Build
     runs-on: ubuntu-18.04
     steps:
     - uses: actions/checkout@v2
@@ -17,7 +17,11 @@ jobs:
         ruby-version: 2.6
     - name: Set up fastlane
       run: gem install fastlane --no-document --quiet
-    - name: Build
+    - name: Unpack secrets
+      run:
+        - openssl aes-256-cbc -K $ANDROID_SECRETS_KEY -iv $ANDROID_SECRETS_IV -in secrets.tar.gz.enc -out ./secrets.tar.gz -d
+        - tar -xf ./secrets.tar.gz
+    - name: Assemble
       uses: maierj/fastlane-action@v1.4.0
       with:
         lane: build
