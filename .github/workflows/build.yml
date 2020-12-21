@@ -27,6 +27,11 @@ jobs:
         tar -xf ./secrets.tar.gz
     - name: Assemble
       uses: maierj/fastlane-action@v1.4.0
+      env:
+        ANDROID_KEYSTORE_PATH: ${{ secrets.ANDROID_KEYSTORE_PATH }}
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+        ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
       with:
         lane: build
         options: '{ "flavor": "unbranded" }'
