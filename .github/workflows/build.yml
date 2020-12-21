@@ -1,4 +1,4 @@
-name: Build, test, publish
+name: Build and test
 
 on: [push, pull_request]
 
@@ -8,9 +8,8 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
     - uses: actions/checkout@v2
-# REENABLE - disabled for speed...
-#    - name: Test
-#      run: make test
+    - name: Test
+      run: make test
     - name: Set up ruby
       uses: ruby/setup-ruby@v1
       with:
@@ -22,10 +21,9 @@ jobs:
         ANDROID_SECRETS_KEY: ${{ secrets.ANDROID_SECRETS_KEY }}
         ANDROID_SECRETS_IV: ${{ secrets.ANDROID_SECRETS_IV }}
       run: |
-        ${{ secrets.SuperSecret }}
         openssl aes-256-cbc -K $ANDROID_SECRETS_KEY -iv $ANDROID_SECRETS_IV -in secrets.tar.gz.enc -out ./secrets.tar.gz -d
         tar -xf ./secrets.tar.gz
-    - name: Assemble
+    - name: Assemble unbranded
       uses: maierj/fastlane-action@v1.4.0
       env:
         ANDROID_KEYSTORE_PATH: ${{ secrets.ANDROID_KEYSTORE_PATH }}
@@ -35,11 +33,3 @@ jobs:
       with:
         lane: build
         options: '{ "flavor": "unbranded" }'
-    - name: Release
-      uses: softprops/action-gh-release@v1
-      if: startsWith(github.ref, 'refs/tags/')
-      with:
-        draft: true
-        files: build/outputs/apk/**/*.apk
-      env:
-        GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
