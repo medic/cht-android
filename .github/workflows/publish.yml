@@ -2,8 +2,7 @@ name: Build and publish
 
 on:
   push:
-    tags:
-      - *.*.*
+    tags: '*.*.*'
 
 env:
   ANDROID_KEYSTORE_PATH: ${{ secrets.ANDROID_KEYSTORE_PATH }}
