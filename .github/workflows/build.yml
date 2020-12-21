@@ -9,19 +9,32 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 # REENABLE - disabled for speed...
-#    - name: test
+#    - name: Test
 #      run: make test
-# DELETE - kept for reference
-#    - name: build
-#      run: fastlane build flavor:unbranded
-    - name: set up ruby
+    - name: Set up ruby
       uses: ruby/setup-ruby@v1
       with:
         ruby-version: 2.6
-    - name: set up fastlane
+    - name: Set up fastlane
       run: gem install fastlane --no-document --quiet
-    - name: build
+    - name: Build
       uses: maierj/fastlane-action@v1.4.0
       with:
         lane: build
         options: '{ "flavor": "unbranded" }'
+
+
+# Publish to GH
+# https://github.com/softprops/action-gh-release
+#jobs:
+#  build:
+#    runs-on: ubuntu-18.04
+#    steps:
+#      - name: Release
+#        uses: softprops/action-gh-release@v1
+#        if: startsWith(github.ref, 'refs/tags/')
+#        with:
+#          files: build/outputs/apk/**/*.apk
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#
