@@ -8,6 +8,7 @@ import android.app.ActivityManager;
 import android.net.Uri;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -49,6 +50,10 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	static final int GRAB_MRDT_PHOTO = (1 << 3) | NON_SIMPRINTS_FLAGS;
 
 	private final static int ACCESS_FINE_LOCATION_PERMISSION_REQUEST = (int)Math.random();
+
+	private static final int DISCLOSURE_LOCATION_PERMISSION_REQUEST = 1122331;
+
+	private static final String[] LOCATION_PERMISSIONS = { Manifest.permission.ACCESS_FINE_LOCATION };
 
 	private static final ValueCallback<String> IGNORE_RESULT = new ValueCallback<String>() {
 		public void onReceiveValue(String result) { /* ignore */ }
@@ -184,6 +189,25 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 						return;
 					default:
 						trace(this, "onActivityResult() :: no handling for requestCode=%s", requestCode);
+				}
+			} else if(requestCode == DISCLOSURE_LOCATION_PERMISSION_REQUEST) {
+				// User accepted or denied to allow the app to access
+				// location data in RequestPermissionActivity
+				if (resultCode == RESULT_OK) {                    // user accepted
+					// Request to Android location data access
+					ActivityCompat.requestPermissions(
+							this,
+							LOCATION_PERMISSIONS,
+							ACCESS_FINE_LOCATION_PERMISSION_REQUEST);
+				} else if (resultCode == RESULT_CANCELED) {        // user rejected
+					try {
+						this.locationRequestResolved();
+						settings.setUserDeniedGeolocation();
+					} catch (SettingsException e) {
+						error(e, "Error recording negative to access location");
+					} catch (Exception e) {
+						error(e, "Unknown Error recording negative to access location");
+					}
 				}
 			} else {
 				String js = simprints.process(requestCode, i);
@@ -326,7 +350,14 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 			trace(this, "getLocationPermissions() :: already granted");
 			return true;
 		}
-		RequestPermissionDialog.show(this, ACCESS_FINE_LOCATION_PERMISSION_REQUEST);
+		if (settings.hasUserDeniedGeolocation()) {
+			trace(this, "getLocationPermissions() :: user has previously denied to share location");
+			return false;
+		}
+		trace(this, "getLocationPermissions() :: location never granted, requesting access...");
+		startActivityForResult(
+				new Intent(this, RequestPermissionActivity.class),
+				DISCLOSURE_LOCATION_PERMISSION_REQUEST);
 		return false;
 	}
 

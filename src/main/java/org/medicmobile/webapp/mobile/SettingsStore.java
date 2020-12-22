@@ -54,10 +54,8 @@ public abstract class SettingsStore {
 
 	/**
 	 * Returns true if the user has denied to provide its geolocation data.
-	 * The rejection is taken from the first dialog with the "prominent" disclosure
+	 * The rejection is taken from the first view with the "prominent" disclosure
 	 * about the location data, not from the native dialog displayed by Android.
-	 *
-	 * @see RequestPermissionDialog
 	 */
 	boolean hasUserDeniedGeolocation() {
 		return prefs.getBoolean("denied-geolocation", false);

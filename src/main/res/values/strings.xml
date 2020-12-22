@@ -48,6 +48,8 @@
 
 	<string name="locRequest_title">Location Access</string>
 	<string name="locRequest_message">%s collects location data when you submit a form to analyze and improve health outcomes in your area. Select \"Allow while using the app\" on the next screen to turn on your location access.</string>
-	<string name="locRequest_okButton">OK</string>
+	<string name="locRequest_okButton">Turn on</string>
 	<string name="locRequest_denyButton">No thanks</string>
+    <string name="locRequest_IconDescription">My location icon</string>
+	<string name="locRequest_mapIconDescription">Location in map icon</string>
 </resources>
