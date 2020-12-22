@@ -23,7 +23,7 @@ public class RequestPermissionActivity extends LockableActivity {
 		super.onCreate(savedInstanceState);
 		this.requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.request_permission);
-		String message = getResources().getString(R.string.locRequest_message);
+		String message = getResources().getString(R.string.locRequestMessage);
 		String appName = getResources().getString(R.string.app_name);
 		TextView field = (TextView) findViewById(R.id.locMessageText);
 		field.setText(String.format(message, appName));

@@ -12,7 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="100dp"
-        android:contentDescription="@string/locRequest_IconDescription"
+        android:contentDescription="@string/locRequestIconDescription"
         android:scaleType="center"
         android:src="@drawable/location_pin" />
 
@@ -25,7 +25,7 @@
         android:layout_marginTop="10dp"
         android:gravity="center"
         android:padding="10dp"
-        android:text="@string/locRequest_title"
+        android:text="@string/locRequestTitle"
         android:textSize="18sp"
         android:textStyle="bold" />
 
@@ -37,7 +37,7 @@
         android:layout_marginTop="10dp"
         android:gravity="center"
         android:padding="20dp"
-        android:text="@string/locRequest_message"
+        android:text="@string/locRequestMessage"
         android:textSize="18sp" />
 
     <LinearLayout
@@ -56,7 +56,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:onClick="onClickNegative"
-            android:text="@string/locRequest_denyButton"
+            android:text="@string/locRequestDenyButton"
             tools:ignore="OnClick" />
 
         <View
@@ -70,7 +70,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:onClick="onClickOk"
-            android:text="@string/locRequest_okButton"
+            android:text="@string/locRequestOkButton"
             tools:ignore="OnClick" />
     </LinearLayout>
 
