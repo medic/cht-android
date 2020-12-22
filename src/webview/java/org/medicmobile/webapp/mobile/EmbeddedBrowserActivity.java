@@ -46,7 +46,9 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	static final int GRAB_MRDT_PHOTO = (1 << 3) | NON_SIMPRINTS_FLAGS;
 	private static final int ACCESS_FINE_LOCATION_PERMISSION_REQUEST = (int)(Math.random() * 1000);
 
-	private static final int DISCLOSURE_LOCATION_PERMISSION_REQUEST = 1122331;
+	// Use different ranges of random values for other request codes caught by the same method,
+	// eg. (int)(Math.random() * 1000) + 1000
+	private static final int DISCLOSURE_LOCATION_PERMISSION_REQUEST = (int)(Math.random() * 1000);
 
 	private static final String[] LOCATION_PERMISSIONS = { Manifest.permission.ACCESS_FINE_LOCATION };
 
