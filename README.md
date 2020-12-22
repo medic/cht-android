@@ -1,8 +1,6 @@
 Medic Mobile Android App
 ========================
 
-<a href="https://travis-ci.org/medic/medic-android"><img src="https://travis-ci.org/medic/medic-android.svg"/></a>
-
 The medic-android application is a thin wrapper to load the [CHT Core Framework](https://github.com/medic/cht-core/) web application in a webview. This allows the application to be hardcoded to a specific CHT deployment and have a partner specific logo and display name. This app also provides some deeper integration with other android apps and native phone functions that are otherwise unavailable to webapps.
 
 # Release notes
@@ -64,7 +62,7 @@ To add a new brand:
 
 1. add `productFlavors { <new_brand> { ... } }` in `build.gradle`
 1. add icons, strings etc. in `src/<new_brand>`
-1. to enable automated deployments, add the `new_brand` to `.travis.yml`
+1. to enable automated deployments, add the `new_brand` to `.github/workflows/publish.yml`
 
 # Releasing
 

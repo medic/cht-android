@@ -36,11 +36,11 @@ def simprintsApiKey, simprintsModuleId, simprintsUserId
 
 def getVersionCode = {
   int versionCode = 1
-  if(System.env.TRAVIS == 'true' && System.env.TRAVIS_TAG && System.env.TRAVIS_TAG.startsWith('v')) {
-    def versionParts = System.env.TRAVIS_TAG.split(/[^0-9]+/)
+  if(System.env.CI == 'true' && System.env.RELEASE_VERSION && System.env.RELEASE_VERSION.startsWith('v')) {
+    def versionParts = System.env.RELEASE_VERSION.split(/[^0-9]+/)
 
     if (versionParts.length != 4 && versionParts.length != 5)
-      throw new RuntimeException("Unexpected version number - should be of formatted as 'v1.2.3' or 'v1.2.3-alpha.4', but was: $System.env.TRAVIS_TAG")
+      throw new RuntimeException("Unexpected version number - should be of formatted as 'v1.2.3' or 'v1.2.3-alpha.4', but was: $System.env.RELEASE_VERSION")
 
     versionParts = versionParts.drop(1).collect { Integer.parseInt(it) }
     int alphaPart = versionParts.size() == 4 ? versionParts[3] : 99;
@@ -56,7 +56,7 @@ def getVersionCode = {
 }
 
 def getVersionName = {
-  System.env.TRAVIS_TAG ?: 'SNAPSHOT'
+  System.env.RELEASE_VERSION ?: 'SNAPSHOT'
 }
 
 android {
@@ -146,7 +146,7 @@ android {
 
     xmlReport false
 
-    if(System.env.TRAVIS == 'true') {
+    if(System.env.CI == 'true') {
       abortOnError true
       htmlReport false
       textReport true
