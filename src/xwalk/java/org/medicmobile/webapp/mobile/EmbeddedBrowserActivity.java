@@ -205,8 +205,6 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 						settings.setUserDeniedGeolocation();
 					} catch (SettingsException e) {
 						error(e, "Error recording negative to access location");
-					} catch (Exception e) {
-						error(e, "Unknown Error recording negative to access location");
 					}
 				}
 			} else {

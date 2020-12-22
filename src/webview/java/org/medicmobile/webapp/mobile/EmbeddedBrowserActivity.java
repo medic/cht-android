@@ -198,8 +198,6 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 						settings.setUserDeniedGeolocation();
 					} catch (SettingsException e) {
 						error(e, "Error recording negative to access location");
-					} catch (Exception e) {
-						error(e, "Unknown Error recording negative to access location");
 					}
 				}
 			} else {
@@ -320,7 +318,6 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 				return true;
 			}
 			@Override public void onGeolocationPermissionsShowPrompt(final String origin, final GeolocationPermissions.Callback callback) {
-				trace(this, "onGeolocationPermissionsShowPrompt() :: origin=%s, callback=%s", origin, callback);
 				callback.invoke(origin, true, true);
 			}
 		});
