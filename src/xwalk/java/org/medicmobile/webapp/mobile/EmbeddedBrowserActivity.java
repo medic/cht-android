@@ -352,6 +352,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		}
 		if (settings.hasUserDeniedGeolocation()) {
 			trace(this, "getLocationPermissions() :: user has previously denied to share location");
+			this.locationRequestResolved();
 			return false;
 		}
 		trace(this, "getLocationPermissions() :: location never granted, requesting access...");
