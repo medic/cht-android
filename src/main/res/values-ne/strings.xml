@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<string name="locRequestTitle">स्थान पहुँच</string>
+	<string name="locRequestMessage">यो अनुप्रयोगले डेटा डेटा सlects्कलन गर्दछ जब तपाईं आफ्नो क्षेत्रको स्वास्थ्य परिणामहरूको विश्लेषण र सुधार गर्न फारम बुझाउनुहुन्छ। अर्को स्क्रिनमा तपाईको स्थान पहुँच सक्रिय गर्न "अनुप्रयोग प्रयोग गर्ने बेला मात्रै अनुमति दिनुहोस्" चयन गर्नुहोस्।</string>
+	<string name="locRequestOkButton">खोल्नुहोस्</string>
+	<string name="locRequestDenyButton">धन्यबाद</string>
+	<string name="locRequestIconDescription">मेरो स्थान आइकन</string>
+	<string name="locRequestMapIconDescription">नक्शा आइकनमा स्थान</string>
+</resources>

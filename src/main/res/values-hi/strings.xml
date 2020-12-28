@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<string name="locRequestTitle">स्थान का उपयोग</string>
+	<string name="locRequestMessage">जब आप अपने क्षेत्र में स्वास्थ्य परिणामों का विश्लेषण और सुधार करने के लिए फ़ॉर्म सबमिट करते हैं तो यह ऐप स्थान डेटा एकत्र करता है। अपने स्थान का उपयोग चालू करने के लिए अगली स्क्रीन पर "एप्लिकेशन का उपयोग करते समय अनुमति दें" का चयन करें।</string>
+	<string name="locRequestOkButton">चालू करो</string>
+	<string name="locRequestDenyButton">जी नहीं, धन्यवाद</string>
+	<string name="locRequestIconDescription">मेरा स्थान आइकन</string>
+	<string name="locRequestMapIconDescription">मानचित्र आइकन में स्थान</string>
+</resources>

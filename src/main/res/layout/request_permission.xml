@@ -11,7 +11,7 @@
         android:id="@+id/locIcon"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="100dp"
+        android:layout_marginTop="80dp"
         android:contentDescription="@string/locRequestIconDescription"
         android:scaleType="center"
         android:src="@drawable/location_pin" />
@@ -22,7 +22,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/locIcon"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="8dp"
         android:gravity="center"
         android:padding="10dp"
         android:text="@string/locRequestTitle"
