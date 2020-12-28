@@ -171,7 +171,8 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 
 	@Override protected void onActivityResult(int requestCode, int resultCode, Intent i) {
 		try {
-			trace(this, "onActivityResult() :: requestCode=%s, resultCode=%s", requestCode, resultCode);
+			trace(this, "onActivityResult() :: requestCode=%s, resultCode=%s",
+					requestCodeToString(requestCode), resultCode);
 			if((requestCode & NON_SIMPRINTS_FLAGS) == NON_SIMPRINTS_FLAGS) {
 				switch(requestCode) {
 					case GRAB_PHOTO:
@@ -183,7 +184,8 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 						evaluateJavascript(js);
 						return;
 					default:
-						trace(this, "onActivityResult() :: no handling for requestCode=%s", requestCode);
+						trace(this, "onActivityResult() :: no handling for requestCode=%s",
+								requestCodeToString(requestCode));
 				}
 			} else if(requestCode == DISCLOSURE_LOCATION_PERMISSION_REQUEST) {
 				// User accepted or denied to allow the app to access
@@ -209,8 +211,19 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 			}
 		} catch(Exception ex) {
 			String action = i == null ? null : i.getAction();
-			warn(ex, "Problem handling intent %s (%s) with requestCode=%s & resultCode=%s", i, action, requestCode, resultCode);
+			warn(ex, "Problem handling intent %s (%s) with requestCode=%s & resultCode=%s",
+					i, action, requestCodeToString(requestCode), resultCode);
 		}
+	}
+
+	private String requestCodeToString(int requestCode) {
+		if (requestCode == ACCESS_FINE_LOCATION_PERMISSION_REQUEST) {
+			return "ACCESS_FINE_LOCATION_PERMISSION_REQUEST";
+		}
+		if (requestCode == DISCLOSURE_LOCATION_PERMISSION_REQUEST) {
+			return "DISCLOSURE_LOCATION_PERMISSION_REQUEST";
+		}
+		return String.valueOf(requestCode);
 	}
 
 //> ACCESSORS
@@ -335,7 +348,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 			this.locationRequestResolved();
 			return false;
 		}
-		trace(this, "getLocationPermissions() :: location never granted, requesting access...");
+		trace(this, "getLocationPermissions() :: location not granted before, requesting access...");
 		startActivityForResult(
 				new Intent(this, RequestPermissionActivity.class),
 				DISCLOSURE_LOCATION_PERMISSION_REQUEST);
