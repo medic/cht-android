@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-	<string name="locRequestTitle">Accès à la localisation</string>
-	<string name="locRequestMessage">%s recueille des données de localisation lorsque vous soumettez un formulaire pour analyser et améliorer les résultats de santé dans votre région. Sélectionnez \"Autoriser seulement si l\'appli est en cours d\'utilisation\" sur l\'écran suivant pour activer votre accès à la localisation.</string>
+	<string name="locRequestTitle">Accès à la position</string>
+	<string name="locRequestMessage">%s recueille des données de localisation lorsque vous soumettez un formulaire pour analyser et améliorer les résultats de santé dans votre région. Sélectionnez \"Autoriser seulement si l\'appli est en cours d\'utilisation\" sur l\'écran suivant pour activer votre accès à la position.</string>
 	<string name="locRequestOkButton">Allumer</string>
 	<string name="locRequestDenyButton">Non merci</string>
 	<string name="locRequestIconDescription">Icône de mon emplacement</string>
