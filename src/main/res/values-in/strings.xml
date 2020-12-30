@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 	<string name="locRequestTitle">Akses lokasi</string>
-	<string name="locRequestMessage">%s mengumpulkan data lokasi saat Anda mengirimkan formulir untuk menganalisis dan meningkatkan hasil kesehatan di wilayah Anda. Pilih \"Izinkan hanya saat menggunakan aplikasi\" di layar berikutnya untuk mengaktifkan akses lokasi Anda.</string>
+	<string name="locRequestMessage">%s mengumpulkan data lokasi untuk menganalisis dan meningkatkan hasil kesehatan di wilayah Anda. Untuk mengizinkan akses lokasi, pilih \"Nyalakan\", lalu konfirmasikan permintaan berikutnya.</string>
 	<string name="locRequestOkButton">Nyalakan</string>
 	<string name="locRequestDenyButton">Tidak, terima kasih</string>
 	<string name="locRequestIconDescription">Ikon lokasiku</string>

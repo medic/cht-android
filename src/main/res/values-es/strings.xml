@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 	<string name="locRequestTitle">Acceso a la ubicación</string>
-	<string name="locRequestMessage">%s recolecta información de la ubicación cuando envías un formulario para analizar y mejorar resultados de salud en tu área. Selecciona \"Permitir solo con la app en uso\" en la siguiente pantalla para activar el acceso a tu ubicación.</string>
-	<string name="locRequestOkButton">Permitir</string>
+	<string name="locRequestMessage">%s recolecta información de la ubicación para analizar y mejorar resultados de salud en tu área. Para permitir el acceso a la ubicación selecciona \"Activar\", y luego confirma en el próximo diálogo.</string>
+	<string name="locRequestOkButton">Activar</string>
 	<string name="locRequestDenyButton">No gracias</string>
 	<string name="locRequestIconDescription">Ícono de mi ubicación</string>
 	<string name="locRequestMapIconDescription">Ícono de ubicación en el mapa</string>
