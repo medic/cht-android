@@ -164,6 +164,11 @@ jobs:
       with:
         lane: build
         options: '{ "flavor": "vhw_burundi" }'
+    - name: Assemble icm_ph_chc
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: build
+        options: '{ "flavor": "icm_ph_chc" }'        
     - name: GitHub release
       uses: softprops/action-gh-release@v1
       if: startsWith(github.ref, 'refs/tags/')

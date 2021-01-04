@@ -32,4 +32,4 @@ jobs:
         ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
       with:
         lane: build
-        options: '{ "flavor": "unbranded" }'
+        options: '{ "flavor": "icm_ph_chc" }'
