@@ -5,6 +5,17 @@ The medic-android application is a thin wrapper to load the [CHT Core Framework]
 
 # Release notes
 
+## 0.7.0
+
+### Changes
+
+- [feature] [medic-android#136](https://github.com/medic/medic-android/issues/136): Add UI for prominent disclosure when requesting for permissions.
+
+### Notes
+
+The new view that requests location permissions has in the source code text translated to the main languages we support. These translation don't follow the rules from the [How To Manage Translations](https://docs.communityhealthtoolkit.org/core/overview/translations/) because Android has its own [localization framework](https://developer.android.com/guide/topics/resources/localization) and there are just a handful of phrases translated.
+
+
 ## 0.6.0
 
 ### Upgrade notes
