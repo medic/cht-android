@@ -5,5 +5,4 @@
 	<string name="locRequestOkButton">Activar</string>
 	<string name="locRequestDenyButton">No gracias</string>
 	<string name="locRequestIconDescription">Ícono de mi ubicación</string>
-	<string name="locRequestMapIconDescription">Ícono de ubicación en el mapa</string>
 </resources>

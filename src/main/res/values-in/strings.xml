@@ -5,5 +5,4 @@
 	<string name="locRequestOkButton">Nyalakan</string>
 	<string name="locRequestDenyButton">Tidak, terima kasih</string>
 	<string name="locRequestIconDescription">Ikon lokasiku</string>
-	<string name="locRequestMapIconDescription">Lokasi di ikon peta</string>
 </resources>

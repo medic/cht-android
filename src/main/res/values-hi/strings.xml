@@ -5,5 +5,4 @@
 	<string name="locRequestOkButton">चालू करो</string>
 	<string name="locRequestDenyButton">जी नहीं, धन्यवाद</string>
 	<string name="locRequestIconDescription">मेरा स्थान आइकन</string>
-	<string name="locRequestMapIconDescription">मानचित्र आइकन में स्थान</string>
 </resources>

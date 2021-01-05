@@ -5,5 +5,4 @@
 	<string name="locRequestOkButton">Activer</string>
 	<string name="locRequestDenyButton">Non merci</string>
 	<string name="locRequestIconDescription">Icône de mon emplacement</string>
-	<string name="locRequestMapIconDescription">Emplacement dans l\'icône de la carte</string>
 </resources>
