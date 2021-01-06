@@ -9,7 +9,7 @@ The medic-android application is a thin wrapper to load the [CHT Core Framework]
 
 ### Changes
 
-- [feature] [medic-android#136](https://github.com/medic/medic-android/issues/136): Add UI for prominent disclosure when requesting for permissions.
+- [feature] [medic-android#136](https://github.com/medic/medic-android/issues/136): Add UI for prominent disclosure when requesting location permissions.
 
 ### Notes
 
