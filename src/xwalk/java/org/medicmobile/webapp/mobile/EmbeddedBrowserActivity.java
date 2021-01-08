@@ -44,16 +44,21 @@ import static org.medicmobile.webapp.mobile.Utils.isUrlRelated;
 
 @SuppressWarnings({ "PMD.GodClass", "PMD.TooManyMethods" })
 public class EmbeddedBrowserActivity extends LockableActivity {
-	/** Any activity result with all 3 low bits set is _not_ a simprints result. */
+	/**
+	 * Any activity result with all 3 low bits set is _not_ a simprints result.
+	 *
+	 * The following block of bit-shifted integers are intended for use in the subsystem seen
+	 * in the onActivityResult below. These integers respect the reserved block of integers
+	 * which are used by simprints. Simprint intents are started in the webapp where a matching
+	 * bitmask is used to respect the scheme on that side of things.
+	 * */
 	private static final int NON_SIMPRINTS_FLAGS = 0x7;
 	static final int GRAB_PHOTO = (0 << 3) | NON_SIMPRINTS_FLAGS;
 	static final int GRAB_MRDT_PHOTO = (1 << 3) | NON_SIMPRINTS_FLAGS;
+	static final int DISCLOSURE_LOCATION_PERMISSION_REQUEST = (2 << 3) | NON_SIMPRINTS_FLAGS;
 
-	private final static int ACCESS_FINE_LOCATION_PERMISSION_REQUEST = (int)(Math.random() * 1000);
-
-	// Use different ranges of random values for other request codes caught by the same method,
-	// eg. (int)(Math.random() * 1000) + 1000
-	private static final int DISCLOSURE_LOCATION_PERMISSION_REQUEST = (int)(Math.random() * 1000);
+	// Arbitrarily selected value
+	private static final int ACCESS_FINE_LOCATION_PERMISSION_REQUEST = 7038678; // Arbitrarily selected value
 
 	private static final String[] LOCATION_PERMISSIONS = { Manifest.permission.ACCESS_FINE_LOCATION };
 
@@ -190,26 +195,27 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 						trace(this, "Execing JS: %s", js);
 						evaluateJavascript(js);
 						return;
+					case DISCLOSURE_LOCATION_PERMISSION_REQUEST:
+						// User accepted or denied to allow the app to access
+						// location data in RequestPermissionActivity
+						if (resultCode == RESULT_OK) {                    // user accepted
+							// Request to Android location data access
+							ActivityCompat.requestPermissions(
+									this,
+									LOCATION_PERMISSIONS,
+									ACCESS_FINE_LOCATION_PERMISSION_REQUEST);
+						} else if (resultCode == RESULT_CANCELED) {        // user rejected
+							try {
+								this.locationRequestResolved();
+								settings.setUserDeniedGeolocation();
+							} catch (SettingsException e) {
+								error(e, "Error recording negative to access location");
+							}
+						}
+						return;
 					default:
 						trace(this, "onActivityResult() :: no handling for requestCode=%s",
 								requestCodeToString(requestCode));
-				}
-			} else if(requestCode == DISCLOSURE_LOCATION_PERMISSION_REQUEST) {
-				// User accepted or denied to allow the app to access
-				// location data in RequestPermissionActivity
-				if (resultCode == RESULT_OK) {                    // user accepted
-					// Request to Android location data access
-					ActivityCompat.requestPermissions(
-							this,
-							LOCATION_PERMISSIONS,
-							ACCESS_FINE_LOCATION_PERMISSION_REQUEST);
-				} else if (resultCode == RESULT_CANCELED) {        // user rejected
-					try {
-						this.locationRequestResolved();
-						settings.setUserDeniedGeolocation();
-					} catch (SettingsException e) {
-						error(e, "Error recording negative to access location");
-					}
 				}
 			} else {
 				String js = simprints.process(requestCode, i);
