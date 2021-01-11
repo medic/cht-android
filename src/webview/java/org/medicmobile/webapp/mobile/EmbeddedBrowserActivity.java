@@ -49,12 +49,12 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	 * bitmask is used to respect the scheme on that side of things.
 	 * */
 	private static final int NON_SIMPRINTS_FLAGS = 0x7;
-	static final int GRAB_PHOTO = (0 << 3) | NON_SIMPRINTS_FLAGS;
-	static final int GRAB_MRDT_PHOTO = (1 << 3) | NON_SIMPRINTS_FLAGS;
-	static final int DISCLOSURE_LOCATION_PERMISSION_REQUEST = (2 << 3) | NON_SIMPRINTS_FLAGS;
+	static final int GRAB_PHOTO_ACTIVITY_REQUEST_CODE = (0 << 3) | NON_SIMPRINTS_FLAGS;
+	static final int GRAB_MRDT_PHOTO_ACTIVITY_REQUEST_CODE = (1 << 3) | NON_SIMPRINTS_FLAGS;
+	static final int DISCLOSURE_LOCATION_ACTIVITY_REQUEST_CODE = (2 << 3) | NON_SIMPRINTS_FLAGS;
 
 	// Arbitrarily selected value
-	private static final int ACCESS_FINE_LOCATION_PERMISSION_REQUEST = 7038678;
+	private static final int ACCESS_FINE_LOCATION_PERMISSION_REQUEST_CODE = 7038678;
 
 	private static final String[] LOCATION_PERMISSIONS = { Manifest.permission.ACCESS_FINE_LOCATION };
 
@@ -181,15 +181,15 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 					requestCodeToString(requestCode), resultCode);
 			if((requestCode & NON_SIMPRINTS_FLAGS) == NON_SIMPRINTS_FLAGS) {
 				switch(requestCode) {
-					case GRAB_PHOTO:
+					case GRAB_PHOTO_ACTIVITY_REQUEST_CODE:
 						photoGrabber.process(requestCode, resultCode, i);
 						return;
-					case GRAB_MRDT_PHOTO:
+					case GRAB_MRDT_PHOTO_ACTIVITY_REQUEST_CODE:
 						String js = mrdt.process(requestCode, resultCode, i);
 						trace(this, "Execing JS: %s", js);
 						evaluateJavascript(js);
 						return;
-					case DISCLOSURE_LOCATION_PERMISSION_REQUEST:
+					case DISCLOSURE_LOCATION_ACTIVITY_REQUEST_CODE:
 						// User accepted or denied to allow the app to access
 						// location data in RequestPermissionActivity
 						if (resultCode == RESULT_OK) {                    // user accepted
@@ -197,7 +197,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 							ActivityCompat.requestPermissions(
 									this,
 									LOCATION_PERMISSIONS,
-									ACCESS_FINE_LOCATION_PERMISSION_REQUEST);
+									ACCESS_FINE_LOCATION_PERMISSION_REQUEST_CODE);
 						} else if (resultCode == RESULT_CANCELED) {        // user rejected
 							try {
 								this.locationRequestResolved();
@@ -224,11 +224,11 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	}
 
 	private String requestCodeToString(int requestCode) {
-		if (requestCode == ACCESS_FINE_LOCATION_PERMISSION_REQUEST) {
-			return "ACCESS_FINE_LOCATION_PERMISSION_REQUEST";
+		if (requestCode == ACCESS_FINE_LOCATION_PERMISSION_REQUEST_CODE) {
+			return "ACCESS_FINE_LOCATION_PERMISSION_REQUEST_CODE";
 		}
-		if (requestCode == DISCLOSURE_LOCATION_PERMISSION_REQUEST) {
-			return "DISCLOSURE_LOCATION_PERMISSION_REQUEST";
+		if (requestCode == DISCLOSURE_LOCATION_ACTIVITY_REQUEST_CODE) {
+			return "DISCLOSURE_LOCATION_ACTIVITY_REQUEST_CODE";
 		}
 		return String.valueOf(requestCode);
 	}
@@ -358,14 +358,14 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		trace(this, "getLocationPermissions() :: location not granted before, requesting access...");
 		startActivityForResult(
 				new Intent(this, RequestPermissionActivity.class),
-				DISCLOSURE_LOCATION_PERMISSION_REQUEST);
+				DISCLOSURE_LOCATION_ACTIVITY_REQUEST_CODE);
 		return false;
 	}
 
 	@Override
 	public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
 		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-		if (requestCode != ACCESS_FINE_LOCATION_PERMISSION_REQUEST) {
+		if (requestCode != ACCESS_FINE_LOCATION_PERMISSION_REQUEST_CODE) {
 			return;
 		}
 		locationRequestResolved();
