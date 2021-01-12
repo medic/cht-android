@@ -11,7 +11,7 @@ platform :android do
   end
 
   lane :deploy do |options|
-    version = ENV['TRAVIS_TAG'].empty? ? 'SNAPSHOT' : ENV['TRAVIS_TAG']
+    version = ENV['RELEASE_VERSION'].empty? ? 'SNAPSHOT' : ENV['RELEASE_VERSION']
     package_name = options[:flavor] == 'unbranded' ? "org.medicmobile.webapp.mobile" : "org.medicmobile.webapp.mobile.#{options[:flavor]}"
 
     supply(

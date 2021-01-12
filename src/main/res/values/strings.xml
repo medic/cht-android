@@ -45,4 +45,10 @@
 	<string name="promptChooseImage">Choose image</string>
 
 	<string name="spnCompressingImage">Compressing image…</string>
+
+	<string name="locRequestTitle">Location access</string>
+	<string name="locRequestMessage">%s collects location data to analyze and improve health outcomes in your area. To permit location access select \"Turn on\", and then confirm the next prompt.</string>
+	<string name="locRequestOkButton">Turn on</string>
+	<string name="locRequestDenyButton">No thanks</string>
+	<string name="locRequestIconDescription">My location icon</string>
 </resources>
