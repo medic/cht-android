@@ -40,12 +40,23 @@ import static org.medicmobile.webapp.mobile.Utils.isUrlRelated;
 
 @SuppressWarnings({ "PMD.GodClass", "PMD.TooManyMethods" })
 public class EmbeddedBrowserActivity extends LockableActivity {
-	/** Any activity result with all 3 low bits set is _not_ a simprints result. */
+	/**
+	 * Any activity result with all 3 low bits set is _not_ a simprints result.
+	 *
+	 * The following block of bit-shifted integers are intended for use in the subsystem seen
+	 * in the onActivityResult below. These integers respect the reserved block of integers
+	 * which are used by simprints. Simprint intents are started in the webapp where a matching
+	 * bitmask is used to respect the scheme on that side of things.
+	 * */
 	private static final int NON_SIMPRINTS_FLAGS = 0x7;
-	static final int GRAB_PHOTO = (0 << 3) | NON_SIMPRINTS_FLAGS;
-	static final int GRAB_MRDT_PHOTO = (1 << 3) | NON_SIMPRINTS_FLAGS;
+	static final int GRAB_PHOTO_ACTIVITY_REQUEST_CODE = (0 << 3) | NON_SIMPRINTS_FLAGS;
+	static final int GRAB_MRDT_PHOTO_ACTIVITY_REQUEST_CODE = (1 << 3) | NON_SIMPRINTS_FLAGS;
+	static final int DISCLOSURE_LOCATION_ACTIVITY_REQUEST_CODE = (2 << 3) | NON_SIMPRINTS_FLAGS;
 
-	private final static int ACCESS_FINE_LOCATION_PERMISSION_REQUEST = (int)(Math.random() * 1000);
+	// Arbitrarily selected value
+	private static final int ACCESS_FINE_LOCATION_PERMISSION_REQUEST_CODE = 7038678;
+
+	private static final String[] LOCATION_PERMISSIONS = { Manifest.permission.ACCESS_FINE_LOCATION };
 
 	private static final ValueCallback<String> IGNORE_RESULT = new ValueCallback<String>() {
 		public void onReceiveValue(String result) { /* ignore */ }
@@ -166,19 +177,39 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 
 	@Override protected void onActivityResult(int requestCode, int resultCode, Intent i) {
 		try {
-			trace(this, "onActivityResult() :: requestCode=%s, resultCode=%s", requestCode, resultCode);
+			trace(this, "onActivityResult() :: requestCode=%s, resultCode=%s",
+					requestCodeToString(requestCode), resultCode);
 			if((requestCode & NON_SIMPRINTS_FLAGS) == NON_SIMPRINTS_FLAGS) {
 				switch(requestCode) {
-					case GRAB_PHOTO:
+					case GRAB_PHOTO_ACTIVITY_REQUEST_CODE:
 						photoGrabber.process(requestCode, resultCode, i);
 						return;
-					case GRAB_MRDT_PHOTO:
+					case GRAB_MRDT_PHOTO_ACTIVITY_REQUEST_CODE:
 						String js = mrdt.process(requestCode, resultCode, i);
 						trace(this, "Execing JS: %s", js);
 						evaluateJavascript(js);
 						return;
+					case DISCLOSURE_LOCATION_ACTIVITY_REQUEST_CODE:
+						// User accepted or denied to allow the app to access
+						// location data in RequestPermissionActivity
+						if (resultCode == RESULT_OK) {                    // user accepted
+							// Request to Android location data access
+							ActivityCompat.requestPermissions(
+									this,
+									LOCATION_PERMISSIONS,
+									ACCESS_FINE_LOCATION_PERMISSION_REQUEST_CODE);
+						} else if (resultCode == RESULT_CANCELED) {        // user rejected
+							try {
+								this.locationRequestResolved();
+								settings.setUserDeniedGeolocation();
+							} catch (SettingsException e) {
+								error(e, "Error recording negative to access location");
+							}
+						}
+						return;
 					default:
-						trace(this, "onActivityResult() :: no handling for requestCode=%s", requestCode);
+						trace(this, "onActivityResult() :: no handling for requestCode=%s",
+								requestCodeToString(requestCode));
 				}
 			} else {
 				String js = simprints.process(requestCode, i);
@@ -187,8 +218,19 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 			}
 		} catch(Exception ex) {
 			String action = i == null ? null : i.getAction();
-			warn(ex, "Problem handling intent %s (%s) with requestCode=%s & resultCode=%s", i, action, requestCode, resultCode);
+			warn(ex, "Problem handling intent %s (%s) with requestCode=%s & resultCode=%s",
+					i, action, requestCodeToString(requestCode), resultCode);
 		}
+	}
+
+	private String requestCodeToString(int requestCode) {
+		if (requestCode == ACCESS_FINE_LOCATION_PERMISSION_REQUEST_CODE) {
+			return "ACCESS_FINE_LOCATION_PERMISSION_REQUEST_CODE";
+		}
+		if (requestCode == DISCLOSURE_LOCATION_ACTIVITY_REQUEST_CODE) {
+			return "DISCLOSURE_LOCATION_ACTIVITY_REQUEST_CODE";
+		}
+		return String.valueOf(requestCode);
 	}
 
 //> ACCESSORS
@@ -305,22 +347,33 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 
 	public boolean getLocationPermissions() {
 		if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PERMISSION_GRANTED) {
-			trace(this, "PERMISSIONS GRANTED");
+			trace(this, "getLocationPermissions() :: already granted");
 			return true;
 		}
-		String[] permissions = { Manifest.permission.ACCESS_FINE_LOCATION };
-		ActivityCompat.requestPermissions(this, permissions, ACCESS_FINE_LOCATION_PERMISSION_REQUEST);
+		if (settings.hasUserDeniedGeolocation()) {
+			trace(this, "getLocationPermissions() :: user has previously denied to share location");
+			this.locationRequestResolved();
+			return false;
+		}
+		trace(this, "getLocationPermissions() :: location not granted before, requesting access...");
+		startActivityForResult(
+				new Intent(this, RequestPermissionActivity.class),
+				DISCLOSURE_LOCATION_ACTIVITY_REQUEST_CODE);
 		return false;
 	}
 
 	@Override
 	public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
 		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-		if (requestCode != ACCESS_FINE_LOCATION_PERMISSION_REQUEST) {
+		if (requestCode != ACCESS_FINE_LOCATION_PERMISSION_REQUEST_CODE) {
 			return;
 		}
-		String javaScript = "angular.element(document.body).injector().get('AndroidApi').v1.locationPermissionRequestResolved();";
-		evaluateJavascript(javaScript);
+		locationRequestResolved();
+	}
+
+	public void locationRequestResolved() {
+		evaluateJavascript(
+			"angular.element(document.body).injector().get('AndroidApi').v1.locationPermissionRequestResolved();");
 	}
 
 	@SuppressLint("SetJavaScriptEnabled")

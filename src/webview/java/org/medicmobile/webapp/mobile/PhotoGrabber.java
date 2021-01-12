@@ -17,7 +17,7 @@ import static android.app.Activity.RESULT_OK;
 import static android.provider.MediaStore.ACTION_IMAGE_CAPTURE;
 import static com.mvc.imagepicker.ImagePicker.getImageFromResult;
 import static com.mvc.imagepicker.ImagePicker.getPickImageIntent;
-import static org.medicmobile.webapp.mobile.EmbeddedBrowserActivity.GRAB_PHOTO;
+import static org.medicmobile.webapp.mobile.EmbeddedBrowserActivity.GRAB_PHOTO_ACTIVITY_REQUEST_CODE;
 import static org.medicmobile.webapp.mobile.MedicLog.log;
 import static org.medicmobile.webapp.mobile.MedicLog.trace;
 import static org.medicmobile.webapp.mobile.MedicLog.warn;
@@ -112,14 +112,14 @@ class PhotoGrabber {
 	}
 
 	private void takePhoto() {
-		a.startActivityForResult(cameraIntent(), GRAB_PHOTO);
+		a.startActivityForResult(cameraIntent(), GRAB_PHOTO_ACTIVITY_REQUEST_CODE);
 	}
 
 	private void pickImage() {
 		trace(this, "picking image intent");
 		Intent i = getPickImageIntent(a, a.getString(R.string.promptChooseImage));
 		trace(this, "starting activity :: %s", i);
-		a.startActivityForResult(i, GRAB_PHOTO);
+		a.startActivityForResult(i, GRAB_PHOTO_ACTIVITY_REQUEST_CODE);
 	}
 
 	private boolean canStartCamera() {
