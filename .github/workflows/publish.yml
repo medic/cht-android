@@ -151,6 +151,11 @@ jobs:
       with:
         lane: build
         options: '{ "flavor": "pih_malawi_supervisor" }'
+    - name: Assemble safaridoctors_kenya
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: build
+        options: '{ "flavor": "safaridoctors_kenya" }'
     - name: Assemble simprints
       uses: maierj/fastlane-action@v1.4.0
       with:
