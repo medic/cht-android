@@ -1,11 +1,20 @@
 Medic Mobile Android App
 ========================
 
-<a href="https://travis-ci.org/medic/medic-android"><img src="https://travis-ci.org/medic/medic-android.svg"/></a>
-
 The medic-android application is a thin wrapper to load the [CHT Core Framework](https://github.com/medic/cht-core/) web application in a webview. This allows the application to be hardcoded to a specific CHT deployment and have a partner specific logo and display name. This app also provides some deeper integration with other android apps and native phone functions that are otherwise unavailable to webapps.
 
 # Release notes
+
+## 0.7.0
+
+### Changes
+
+- [feature] [medic-android#136](https://github.com/medic/medic-android/issues/136): Add UI for prominent disclosure when requesting location permissions.
+
+### Notes
+
+The text used in the new location permission request is in the Android wrapper app itself (`medic-android`), and translated differently than [CHT Core labels](https://docs.communityhealthtoolkit.org/core/overview/translations/). Any additions or modifications to translations in `medic-android` are done in the `strings.xml` files according to the [Android localization framework](https://developer.android.com/guide/topics/resources/localization).
+
 
 ## 0.6.0
 
@@ -64,7 +73,7 @@ To add a new brand:
 
 1. add `productFlavors { <new_brand> { ... } }` in `build.gradle`
 1. add icons, strings etc. in `src/<new_brand>`
-1. to enable automated deployments, add the `new_brand` to `.travis.yml`
+1. to enable automated deployments, add the `new_brand` to `.github/workflows/publish.yml`
 
 # Releasing
 

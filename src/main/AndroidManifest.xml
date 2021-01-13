@@ -43,6 +43,8 @@
         android:screenOrientation="portrait"/>
     <activity android:name="SettingsDialogActivity"
         android:screenOrientation="portrait"/>
+    <activity android:name="RequestPermissionActivity"
+        android:screenOrientation="portrait"/>
     <activity android:name="AppUrlIntentActivity" android:launchMode="singleInstance">
       <intent-filter>
         <action android:name="android.intent.action.VIEW" />

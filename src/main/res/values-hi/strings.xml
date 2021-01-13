@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<string name="locRequestTitle">स्थान का उपयोग</string>
+	<string name="locRequestMessage">यह ऐप आपके क्षेत्र में स्वास्थ्य परिणामों का विश्लेषण और सुधार करने के लिए स्थान डेटा एकत्र करता है। स्थान पहुंच की अनुमति देने के लिए "चालू करें" चुनें, और फिर अगले संकेत की पुष्टि करें।</string>
+	<string name="locRequestOkButton">चालू करो</string>
+	<string name="locRequestDenyButton">जी नहीं, धन्यवाद</string>
+	<string name="locRequestIconDescription">मेरा स्थान आइकन</string>
+</resources>

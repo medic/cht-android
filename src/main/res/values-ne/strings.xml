@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<string name="locRequestTitle">स्थान पहुँच</string>
+	<string name="locRequestMessage">यो अनुप्रयोगले विश्लेषण गर्दछ र तपाईंको क्षेत्रमा स्वास्थ्य परिणामहरू सुधार गर्न स्थान डाटा संकलन गर्दछ। स्थान पहुँचलाई अनुमति दिन "खोल्नुहोस्" चयन गर्नुहोस्, र त्यसपछि अर्को प्रॉम्प्ट पुष्टि गर्नुहोस्।</string>
+	<string name="locRequestOkButton">खोल्नुहोस्</string>
+	<string name="locRequestDenyButton">धन्यबाद</string>
+	<string name="locRequestIconDescription">मेरो स्थान आइकन</string>
+</resources>
