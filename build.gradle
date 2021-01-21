@@ -299,6 +299,10 @@ android {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.surveillance_covid19_kenya'
     }
+    trippleeighty {
+      dimension = 'brand'
+      applicationId = 'org.medicmobile.webapp.mobile.trippleeighty'
+    }
     covid_moh_mali {
       dimension = 'brand'
       applicationId = "org.medicmobile.webapp.mobile.covid_moh_mali"
