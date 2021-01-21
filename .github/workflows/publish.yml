@@ -166,6 +166,11 @@ jobs:
       with:
         lane: build
         options: '{ "flavor": "surveillance_covid19_kenya" }'
+    - name: Assemble trippleeighty
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: build
+        options: '{ "flavor": "trippleeighty" }'
     - name: Assemble vhw_burundi
       uses: maierj/fastlane-action@v1.4.0
       with:
