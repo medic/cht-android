@@ -279,6 +279,10 @@ android {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.pih_malawi_supervisor'
     }
+    safaridoctors_kenya {
+      dimension = 'brand'
+      applicationId = 'org.medicmobile.webapp.mobile.safaridoctors_kenya'
+    }
     simprints {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.simprints'
