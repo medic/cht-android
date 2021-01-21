@@ -41,7 +41,7 @@ Earlier releases are no longer accepted by the Google Play Store.
 
 This release changes the way in which location data is collected to better align with Play Store policies. Now the information is gathered only when filling in a form as opposed to as soon as the app is loaded.
 
-*Note*: This breaks backwards compatibility with older versions of the CHT Core Framework which may mean that location data is no longer collected at all. Tt is recommended you upgrade to CHT v3.9.2 or later before upgrading the android app.
+*Note*: This breaks backwards compatibility with older versions of the CHT Core Framework which may mean that location data is no longer collected at all. It is recommended you upgrade to CHT v3.9.2 or later before upgrading the android app.
 
 ### Changes
 
