@@ -311,6 +311,10 @@ android {
       dimension = 'brand'
       applicationId = "org.medicmobile.webapp.mobile.icm_ph_chc"
     }
+    unbranded_test {
+      dimension = 'brand'
+      applicationId = "org.medicmobile.webapp.mobile.unbranded_test"
+    }
   }
 
   splits {
