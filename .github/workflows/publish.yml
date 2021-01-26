@@ -171,6 +171,11 @@ jobs:
       with:
         lane: build
         options: '{ "flavor": "trippleeighty" }'
+    - name: Assemble unbranded_test
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: build
+        options: '{ "flavor": "unbranded_test" }'
     - name: Assemble vhw_burundi
       uses: maierj/fastlane-action@v1.4.0
       with:
