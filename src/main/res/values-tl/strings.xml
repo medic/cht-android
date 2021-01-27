@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<string name="locRequestTitle">Pag-access sa Lokasyon</string>
+	<string name="locRequestMessage">Ang %s ay naglilikom ng mga impormasyon patungkol sa lugar para pag-aralan at mapabuti ang resulta ng pangkalusugan sa inyong lugar. Para mapahintulutan na maka-acess sa lokasyon, pindutin ang \"Buksan\", at kumpirmahin ang susunod na lalabas.</string>
+	<string name="locRequestOkButton">Buksan</string>
+	<string name="locRequestDenyButton">Hindi na, Salamat na lang</string>
+	<string name="locRequestIconDescription">Ang icon ng lokasyon ko</string>
+</resources>

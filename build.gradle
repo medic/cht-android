@@ -307,6 +307,10 @@ android {
       dimension = 'brand'
       applicationId = "org.medicmobile.webapp.mobile.covid_moh_mali"
     }
+    icm_ph_chc {
+      dimension = 'brand'
+      applicationId = "org.medicmobile.webapp.mobile.icm_ph_chc"
+    }
   }
 
   splits {
