@@ -91,11 +91,6 @@ jobs:
       with:
         lane: build
         options: '{ "flavor": "livinggoods_assisted_networks" }'
-    - name: Assemble livinggoods_innovation_ke
-      uses: maierj/fastlane-action@v1.4.0
-      with:
-        lane: build
-        options: '{ "flavor": "livinggoods_innovation_ke" }'
     - name: Assemble livinggoods_innovation_ke_supervisor
       uses: maierj/fastlane-action@v1.4.0
       with:
