@@ -227,10 +227,6 @@ android {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.livinggoods_assisted_networks'
     }
-    livinggoods_innovation_ke {
-      dimension = 'brand'
-      applicationId = 'org.medicmobile.webapp.mobile.livinggoods_innovation_ke'
-    }
     livinggoods_innovation_ke_supervisor {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.livinggoods_innovation_ke_supervisor'
@@ -310,6 +306,10 @@ android {
     icm_ph_chc {
       dimension = 'brand'
       applicationId = "org.medicmobile.webapp.mobile.icm_ph_chc"
+    }
+    unbranded_test {
+      dimension = 'brand'
+      applicationId = "org.medicmobile.webapp.mobile.unbranded_test"
     }
   }
 
