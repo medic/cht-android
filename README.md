@@ -5,6 +5,18 @@ The medic-android application is a thin wrapper to load the [CHT Core Framework]
 
 # Release notes
 
+### 0.7.3
+
+### Changes
+
+- [improvement] [medic-android#148](https://github.com/medic/medic-android/issues/148): Remove storage access for most flavors that don't use the permission
+- [improvement] New flavors added, and "livinggoods_innovation_ke" removed
+- [improvement] Add new translations for the prominent disclosure for location access: Tagalog (tel), Illonggo (hil), and Bisaya (ceb), and fixed translation string for the disclosure in Nepal (ne)
+
+### Notes
+
+A new flavor `unbranded_test` was added with the storage permission removed for testing, while `unbranded` flavor keeps the permission from the global manifest.
+
 ## 0.7.0
 
 ### Changes
