@@ -303,6 +303,10 @@ android {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.trippleeighty'
     }
+    trippleeighty_gem {
+      dimension = 'brand'
+      applicationId = 'org.medicmobile.webapp.mobile.trippleeighty_gem'
+    }
     covid_moh_mali {
       dimension = 'brand'
       applicationId = "org.medicmobile.webapp.mobile.covid_moh_mali"

@@ -15,172 +15,177 @@ jobs:
     name: Build
     runs-on: ubuntu-18.04
     steps:
-    - uses: actions/checkout@v2
-    - name: Set release version
-      run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
-    - name: Set up ruby
-      uses: ruby/setup-ruby@v1
-      with:
-        ruby-version: 2.6
-    - name: Set up fastlane
-      run: gem install fastlane --no-document --quiet
-    - name: Unpack secrets
-      env:
-        ANDROID_SECRETS_KEY: ${{ secrets.ANDROID_SECRETS_KEY }}
-        ANDROID_SECRETS_IV: ${{ secrets.ANDROID_SECRETS_IV }}
-      run: |
-        openssl aes-256-cbc -K $ANDROID_SECRETS_KEY -iv $ANDROID_SECRETS_IV -in secrets.tar.gz.enc -out ./secrets.tar.gz -d
-        tar -xf ./secrets.tar.gz
-    - name: Assemble unbranded
-      uses: maierj/fastlane-action@v1.4.0
-      with:
-        lane: build
-        options: '{ "flavor": "unbranded" }'
-    - name: Assemble gamma
-      uses: maierj/fastlane-action@v1.4.0
-      with:
-        lane: build
-        options: '{ "flavor": "medicmobilegamma" }'
-    - name: Assemble demo
-      uses: maierj/fastlane-action@v1.4.0
-      with:
-        lane: build
-        options: '{ "flavor": "medicmobiledemo" }'
-    - name: Assemble bracuganda
-      uses: maierj/fastlane-action@v1.4.0
-      with:
-        lane: build
-        options: '{ "flavor": "bracuganda" }'
-    - name: Assemble cic_guatemala
-      uses: maierj/fastlane-action@v1.4.0
-      with:
-        lane: build
-        options: '{ "flavor": "cic_guatemala" }'
-    - name: Assemble cmmb_kenya
-      uses: maierj/fastlane-action@v1.4.0
-      with:
-        lane: build
-        options: '{ "flavor": "cmmb_kenya" }'
-    - name: Assemble covid_moh_mali
-      uses: maierj/fastlane-action@v1.4.0
-      with:
-        lane: build
-        options: '{ "flavor": "covid_moh_mali" }'
-    - name: Assemble ebpp_indonesia
-      uses: maierj/fastlane-action@v1.4.0
-      with:
-        lane: build
-        options: '{ "flavor": "ebpp_indonesia" }'
-    - name: Assemble hope_through_health
-      uses: maierj/fastlane-action@v1.4.0
-      with:
-        lane: build
-        options: '{ "flavor": "hope_through_health" }'
-    - name: Assemble livinggoods
-      uses: maierj/fastlane-action@v1.4.0
-      with:
-        lane: build
-        options: '{ "flavor": "livinggoods" }'
-    - name: Assemble livinggoodskenya
-      uses: maierj/fastlane-action@v1.4.0
-      with:
-        lane: build
-        options: '{ "flavor": "livinggoodskenya" }'
-    - name: Assemble livinggoods_assisted_networks
-      uses: maierj/fastlane-action@v1.4.0
-      with:
-        lane: build
-        options: '{ "flavor": "livinggoods_assisted_networks" }'
-    - name: Assemble livinggoods_innovation_ke
-      uses: maierj/fastlane-action@v1.4.0
-      with:
-        lane: build
-        options: '{ "flavor": "livinggoods_innovation_ke" }'
-    - name: Assemble livinggoods_innovation_ke_supervisor
-      uses: maierj/fastlane-action@v1.4.0
-      with:
-        lane: build
-        options: '{ "flavor": "livinggoods_innovation_ke_supervisor" }'
-    - name: Assemble livinggoods_innovation_ke_hivst
-      uses: maierj/fastlane-action@v1.4.0
-      with:
-        lane: build
-        options: '{ "flavor": "livinggoods_innovation_ke_hivst" }'
-    - name: Assemble moh_kenya_siaya_red
-      uses: maierj/fastlane-action@v1.4.0
-      with:
-        lane: build
-        options: '{ "flavor": "moh_kenya_siaya_red" }'
-    - name: Assemble moh_kenya_siaya_green
-      uses: maierj/fastlane-action@v1.4.0
-      with:
-        lane: build
-        options: '{ "flavor": "moh_kenya_siaya_green" }'
-    - name: Assemble moh_kenya_siaya_black
-      uses: maierj/fastlane-action@v1.4.0
-      with:
-        lane: build
-        options: '{ "flavor": "moh_kenya_siaya_black" }'
-    - name: Assemble moh_mali
-      uses: maierj/fastlane-action@v1.4.0
-      with:
-        lane: build
-        options: '{ "flavor": "moh_mali" }'
-    - name: Assemble moh_zanzibar_training
-      uses: maierj/fastlane-action@v1.4.0
-      with:
-        lane: build
-        options: '{ "flavor": "moh_zanzibar_training" }'
-    - name: Assemble moh_zanzibar
-      uses: maierj/fastlane-action@v1.4.0
-      with:
-        lane: build
-        options: '{ "flavor": "moh_zanzibar" }'
-    - name: Assemble musomali
-      uses: maierj/fastlane-action@v1.4.0
-      with:
-        lane: build
-        options: '{ "flavor": "musomali" }'
-    - name: Assemble pih_malawi
-      uses: maierj/fastlane-action@v1.4.0
-      with:
-        lane: build
-        options: '{ "flavor": "pih_malawi" }'
-    - name: Assemble pih_malawi_supervisor
-      uses: maierj/fastlane-action@v1.4.0
-      with:
-        lane: build
-        options: '{ "flavor": "pih_malawi_supervisor" }'
-    - name: Assemble safaridoctors_kenya
-      uses: maierj/fastlane-action@v1.4.0
-      with:
-        lane: build
-        options: '{ "flavor": "safaridoctors_kenya" }'
-    - name: Assemble simprints
-      uses: maierj/fastlane-action@v1.4.0
-      with:
-        lane: build
-        options: '{ "flavor": "simprints" }'
-    - name: Assemble surveillance_covid19_kenya
-      uses: maierj/fastlane-action@v1.4.0
-      with:
-        lane: build
-        options: '{ "flavor": "surveillance_covid19_kenya" }'
-    - name: Assemble trippleeighty
-      uses: maierj/fastlane-action@v1.4.0
-      with:
-        lane: build
-        options: '{ "flavor": "trippleeighty" }'
-    - name: Assemble vhw_burundi
-      uses: maierj/fastlane-action@v1.4.0
-      with:
-        lane: build
-        options: '{ "flavor": "vhw_burundi" }'
-    - name: GitHub release
-      uses: softprops/action-gh-release@v1
-      if: startsWith(github.ref, 'refs/tags/')
-      with:
-        draft: true
-        files: build/outputs/apk/**/*.apk
-      env:
-        GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+      - uses: actions/checkout@v2
+      - name: Set release version
+        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+      - name: Set up ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 2.6
+      - name: Set up fastlane
+        run: gem install fastlane --no-document --quiet
+      - name: Unpack secrets
+        env:
+          ANDROID_SECRETS_KEY: ${{ secrets.ANDROID_SECRETS_KEY }}
+          ANDROID_SECRETS_IV: ${{ secrets.ANDROID_SECRETS_IV }}
+        run: |
+          openssl aes-256-cbc -K $ANDROID_SECRETS_KEY -iv $ANDROID_SECRETS_IV -in secrets.tar.gz.enc -out ./secrets.tar.gz -d
+          tar -xf ./secrets.tar.gz
+      - name: Assemble unbranded
+        uses: maierj/fastlane-action@v1.4.0
+        with:
+          lane: build
+          options: '{ "flavor": "unbranded" }'
+      - name: Assemble gamma
+        uses: maierj/fastlane-action@v1.4.0
+        with:
+          lane: build
+          options: '{ "flavor": "medicmobilegamma" }'
+      - name: Assemble demo
+        uses: maierj/fastlane-action@v1.4.0
+        with:
+          lane: build
+          options: '{ "flavor": "medicmobiledemo" }'
+      - name: Assemble bracuganda
+        uses: maierj/fastlane-action@v1.4.0
+        with:
+          lane: build
+          options: '{ "flavor": "bracuganda" }'
+      - name: Assemble cic_guatemala
+        uses: maierj/fastlane-action@v1.4.0
+        with:
+          lane: build
+          options: '{ "flavor": "cic_guatemala" }'
+      - name: Assemble cmmb_kenya
+        uses: maierj/fastlane-action@v1.4.0
+        with:
+          lane: build
+          options: '{ "flavor": "cmmb_kenya" }'
+      - name: Assemble covid_moh_mali
+        uses: maierj/fastlane-action@v1.4.0
+        with:
+          lane: build
+          options: '{ "flavor": "covid_moh_mali" }'
+      - name: Assemble ebpp_indonesia
+        uses: maierj/fastlane-action@v1.4.0
+        with:
+          lane: build
+          options: '{ "flavor": "ebpp_indonesia" }'
+      - name: Assemble hope_through_health
+        uses: maierj/fastlane-action@v1.4.0
+        with:
+          lane: build
+          options: '{ "flavor": "hope_through_health" }'
+      - name: Assemble livinggoods
+        uses: maierj/fastlane-action@v1.4.0
+        with:
+          lane: build
+          options: '{ "flavor": "livinggoods" }'
+      - name: Assemble livinggoodskenya
+        uses: maierj/fastlane-action@v1.4.0
+        with:
+          lane: build
+          options: '{ "flavor": "livinggoodskenya" }'
+      - name: Assemble livinggoods_assisted_networks
+        uses: maierj/fastlane-action@v1.4.0
+        with:
+          lane: build
+          options: '{ "flavor": "livinggoods_assisted_networks" }'
+      - name: Assemble livinggoods_innovation_ke
+        uses: maierj/fastlane-action@v1.4.0
+        with:
+          lane: build
+          options: '{ "flavor": "livinggoods_innovation_ke" }'
+      - name: Assemble livinggoods_innovation_ke_supervisor
+        uses: maierj/fastlane-action@v1.4.0
+        with:
+          lane: build
+          options: '{ "flavor": "livinggoods_innovation_ke_supervisor" }'
+      - name: Assemble livinggoods_innovation_ke_hivst
+        uses: maierj/fastlane-action@v1.4.0
+        with:
+          lane: build
+          options: '{ "flavor": "livinggoods_innovation_ke_hivst" }'
+      - name: Assemble moh_kenya_siaya_red
+        uses: maierj/fastlane-action@v1.4.0
+        with:
+          lane: build
+          options: '{ "flavor": "moh_kenya_siaya_red" }'
+      - name: Assemble moh_kenya_siaya_green
+        uses: maierj/fastlane-action@v1.4.0
+        with:
+          lane: build
+          options: '{ "flavor": "moh_kenya_siaya_green" }'
+      - name: Assemble moh_kenya_siaya_black
+        uses: maierj/fastlane-action@v1.4.0
+        with:
+          lane: build
+          options: '{ "flavor": "moh_kenya_siaya_black" }'
+      - name: Assemble moh_mali
+        uses: maierj/fastlane-action@v1.4.0
+        with:
+          lane: build
+          options: '{ "flavor": "moh_mali" }'
+      - name: Assemble moh_zanzibar_training
+        uses: maierj/fastlane-action@v1.4.0
+        with:
+          lane: build
+          options: '{ "flavor": "moh_zanzibar_training" }'
+      - name: Assemble moh_zanzibar
+        uses: maierj/fastlane-action@v1.4.0
+        with:
+          lane: build
+          options: '{ "flavor": "moh_zanzibar" }'
+      - name: Assemble musomali
+        uses: maierj/fastlane-action@v1.4.0
+        with:
+          lane: build
+          options: '{ "flavor": "musomali" }'
+      - name: Assemble pih_malawi
+        uses: maierj/fastlane-action@v1.4.0
+        with:
+          lane: build
+          options: '{ "flavor": "pih_malawi" }'
+      - name: Assemble pih_malawi_supervisor
+        uses: maierj/fastlane-action@v1.4.0
+        with:
+          lane: build
+          options: '{ "flavor": "pih_malawi_supervisor" }'
+      - name: Assemble safaridoctors_kenya
+        uses: maierj/fastlane-action@v1.4.0
+        with:
+          lane: build
+          options: '{ "flavor": "safaridoctors_kenya" }'
+      - name: Assemble simprints
+        uses: maierj/fastlane-action@v1.4.0
+        with:
+          lane: build
+          options: '{ "flavor": "simprints" }'
+      - name: Assemble surveillance_covid19_kenya
+        uses: maierj/fastlane-action@v1.4.0
+        with:
+          lane: build
+          options: '{ "flavor": "surveillance_covid19_kenya" }'
+      - name: Assemble trippleeighty
+        uses: maierj/fastlane-action@v1.4.0
+        with:
+          lane: build
+          options: '{ "flavor": "trippleeighty" }'
+      - name: Assemble trippleeighty_gem
+        uses: maierj/fastlane-action@v1.4.0
+        with:
+          lane: build
+          options: '{ "flavor": "trippleeighty_gem" }'
+      - name: Assemble vhw_burundi
+        uses: maierj/fastlane-action@v1.4.0
+        with:
+          lane: build
+          options: '{ "flavor": "vhw_burundi" }'
+      - name: GitHub release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          draft: true
+          files: build/outputs/apk/**/*.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
