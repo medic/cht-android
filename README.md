@@ -1,4 +1,4 @@
-Medic Mobile Android App
+Medic Android App
 ========================
 
 The medic-android application is a thin wrapper to load the [CHT Core Framework](https://github.com/medic/cht-core/) web application in a webview. This allows the application to be hardcoded to a specific CHT deployment and have a partner specific logo and display name. This app also provides some deeper integration with other android apps and native phone functions that are otherwise unavailable to webapps.
@@ -106,7 +106,7 @@ To add a new brand:
 
 # Copyright
 
-Copyright 2013-2020 Medic Mobile, Inc. <hello@medicmobile.org>
+Copyright 2013-2021 Medic Mobile, Inc. <hello@medic.org>
 
 # License
 
