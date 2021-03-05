@@ -43,6 +43,7 @@ public class MedicAndroidJavascript {
 	private final SimprintsSupport simprints;
 	private final MrdtSupport mrdt;
 	private final SmsSender smsSender;
+	private final CloudWorksRDT cloudWorksRDT;
 
 	private ActivityManager activityManager;
 	private ConnectivityManager connectivityManager;
@@ -53,6 +54,7 @@ public class MedicAndroidJavascript {
 		this.simprints = parent.getSimprintsSupport();
 		this.mrdt = parent.getMrdtSupport();
 		this.smsSender = parent.getSmsSender();
+		this.cloudWorksRDT = parent.getCloudWorksRDT();
 	}
 
 	public void setAlert(Alert soundAlert) {
@@ -193,6 +195,15 @@ public class MedicAndroidJavascript {
 	@android.webkit.JavascriptInterface
 	public boolean sms_available() {
 		return smsSender != null;
+	}
+
+	@android.webkit.JavascriptInterface
+	public void cw_createProvisioningRDTest(String sessionId, String patientName, String patientId) {
+		try {
+			this.cloudWorksRDT.createProvisioningRDTest(sessionId, patientName, patientId);
+		} catch(Exception ex) {
+			logException(ex);
+		}
 	}
 
 	/**
