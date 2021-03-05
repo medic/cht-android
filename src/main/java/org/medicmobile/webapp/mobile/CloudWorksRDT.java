@@ -3,6 +3,12 @@ package org.medicmobile.webapp.mobile;
 import android.app.Activity;
 import android.content.Intent;
 
+import org.rdtoolkit.support.interop.RdtIntentBuilder;
+import org.rdtoolkit.support.interop.RdtUtils;
+import org.rdtoolkit.support.model.session.ProvisionMode;
+import org.rdtoolkit.support.model.session.TestSession;
+import org.rdtoolkit.support.model.session.TestSession.TestResult;
+
 import static android.app.Activity.RESULT_OK;
 import static org.medicmobile.webapp.mobile.EmbeddedBrowserActivity.CW_RDT_PROVISION_ACTIVITY_REQUEST_CODE;
 import static org.medicmobile.webapp.mobile.EmbeddedBrowserActivity.CW_RDT_CAPTURE_ACTIVITY_REQUEST_CODE;
@@ -21,6 +27,7 @@ public class CloudWorksRDT {
 
 		switch(requestCode) {
 			case CW_RDT_PROVISION_ACTIVITY_REQUEST_CODE: {
+				System.out.println(String.format("HOLA! it is the intent resolving: %s %s", resultCode, intentData));
 				if (resultCode == RESULT_OK) {
 					TestSession session = RdtUtils.getRdtSession(intentData);
 					System.out.println(String.format("Test will be available to read at %s", session.getTimeResolved().toString()));
@@ -39,7 +46,8 @@ public class CloudWorksRDT {
 		}
 	}
 
-	Intent createProvisioningRDTest(String sessionId, String patientName, String patientID) {
+	Intent createProvisioningRDTest(String sessionId, String patientName, String patientId) {
+		System.out.println(String.format("HOLA! it is creating an intention for provisioning: %s %s %s", sessionId, patientName, patientId));
 		return RdtIntentBuilder.forProvisioning()
 				// Explicitly declare an ID for the session
 				.setSessionId(sessionId)
@@ -48,7 +56,7 @@ public class CloudWorksRDT {
 				// Text to differentiate running tests
 				.setFlavorOne(patientName)
 				// Text to differentiate running tests
-				.setFlavorTwo(patientID)
+				.setFlavorTwo(patientId)
 				.build();
 	}
 

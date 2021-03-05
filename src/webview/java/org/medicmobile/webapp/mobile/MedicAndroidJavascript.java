@@ -200,6 +200,7 @@ public class MedicAndroidJavascript {
 	@android.webkit.JavascriptInterface
 	public void cw_createProvisioningRDTest(String sessionId, String patientName, String patientId) {
 		try {
+			System.out.println(String.format("HOLA! it reached the app from webapp!: %s %s %s", sessionId, patientName, patientId));
 			this.cloudWorksRDT.createProvisioningRDTest(sessionId, patientName, patientId);
 		} catch(Exception ex) {
 			logException(ex);

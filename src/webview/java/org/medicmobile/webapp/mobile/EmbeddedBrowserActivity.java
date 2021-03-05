@@ -8,8 +8,8 @@ import android.app.ActivityManager;
 import android.net.Uri;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -213,8 +213,6 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 						}
 						return;
 					case CW_RDT_PROVISION_ACTIVITY_REQUEST_CODE:
-						this.cloudWorksRDT.process(requestCode, resultCode, i);
-						return;
 					case CW_RDT_CAPTURE_ACTIVITY_REQUEST_CODE:
 						this.cloudWorksRDT.process(requestCode, resultCode, i);
 						return;
