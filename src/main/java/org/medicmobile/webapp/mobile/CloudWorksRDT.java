@@ -48,7 +48,7 @@ public class CloudWorksRDT {
 
 	Intent createProvisioningRDTest(String sessionId, String patientName, String patientId) {
 		System.out.println(String.format("HOLA! it is creating an intention for provisioning: %s %s %s", sessionId, patientName, patientId));
-		return RdtIntentBuilder.forProvisioning()
+		Intent i = RdtIntentBuilder.forProvisioning()
 				// Explicitly declare an ID for the session
 				.setSessionId(sessionId)
 				// Let the user choose any available RDT which provides a PF and a PV result
@@ -58,6 +58,10 @@ public class CloudWorksRDT {
 				// Text to differentiate running tests
 				.setFlavorTwo(patientId)
 				.build();
+		if (i.resolveActivity(ctx.getPackageManager()) != null) {
+			ctx.startActivity(i);
+		}
+		return i;
 	}
 
 	Intent createCaptureRDTest(String sessionId) {
