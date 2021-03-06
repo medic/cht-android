@@ -52,8 +52,8 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	static final int GRAB_PHOTO_ACTIVITY_REQUEST_CODE = (0 << 3) | NON_SIMPRINTS_FLAGS;
 	static final int GRAB_MRDT_PHOTO_ACTIVITY_REQUEST_CODE = (1 << 3) | NON_SIMPRINTS_FLAGS;
 	static final int DISCLOSURE_LOCATION_ACTIVITY_REQUEST_CODE = (2 << 3) | NON_SIMPRINTS_FLAGS;
-	static final int CW_RDT_PROVISION_ACTIVITY_REQUEST_CODE = (3 << 3) | NON_SIMPRINTS_FLAGS;
-	static final int CW_RDT_CAPTURE_ACTIVITY_REQUEST_CODE = (4 << 3) | NON_SIMPRINTS_FLAGS;
+	static final int RDTOOLKIT_PROVISION_ACTIVITY_REQUEST_CODE = (3 << 3) | NON_SIMPRINTS_FLAGS;
+	static final int RDTOOLKIT_CAPTURE_ACTIVITY_REQUEST_CODE = (4 << 3) | NON_SIMPRINTS_FLAGS;
 
 	// Arbitrarily selected value
 	private static final int ACCESS_FINE_LOCATION_PERMISSION_REQUEST_CODE = 7038678;
@@ -79,7 +79,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	private MrdtSupport mrdt;
 	private PhotoGrabber photoGrabber;
 	private SmsSender smsSender;
-	private CloudWorksRDT cloudWorksRDT;
+	private RDToolkitSupport rdToolkitSupport;
 
 
 //> ACTIVITY LIFECYCLE METHODS
@@ -91,7 +91,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		this.simprints = new SimprintsSupport(this);
 		this.photoGrabber = new PhotoGrabber(this);
 		this.mrdt = new MrdtSupport(this);
-		this.cloudWorksRDT = new CloudWorksRDT(this);
+		this.rdToolkitSupport = new RDToolkitSupport(this);
 		try {
 			this.smsSender = new SmsSender(this);
 		} catch(Exception ex) {
@@ -212,9 +212,11 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 							}
 						}
 						return;
-					case CW_RDT_PROVISION_ACTIVITY_REQUEST_CODE:
-					case CW_RDT_CAPTURE_ACTIVITY_REQUEST_CODE:
-						this.cloudWorksRDT.process(requestCode, resultCode, i);
+					case RDTOOLKIT_PROVISION_ACTIVITY_REQUEST_CODE:
+					case RDTOOLKIT_CAPTURE_ACTIVITY_REQUEST_CODE:
+						String jsResponse = this.rdToolkitSupport.process(requestCode, resultCode, i);
+						trace(this, "RDToolkit execing JavaScript: %s", jsResponse);
+						evaluateJavascript(jsResponse);
 						return;
 					default:
 						trace(this, "onActivityResult() :: no handling for requestCode=%s",
@@ -255,7 +257,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		return this.smsSender;
 	}
 
-	CloudWorksRDT getCloudWorksRDT() { return this.cloudWorksRDT; }
+	RDToolkitSupport getRdToolkitSupport() { return this.rdToolkitSupport; }
 
 //> PUBLIC API
 	public void evaluateJavascript(final String js) {

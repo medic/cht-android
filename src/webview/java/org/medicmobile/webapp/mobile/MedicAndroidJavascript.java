@@ -43,7 +43,7 @@ public class MedicAndroidJavascript {
 	private final SimprintsSupport simprints;
 	private final MrdtSupport mrdt;
 	private final SmsSender smsSender;
-	private final CloudWorksRDT cloudWorksRDT;
+	private final RDToolkitSupport rdToolkitSupport;
 
 	private ActivityManager activityManager;
 	private ConnectivityManager connectivityManager;
@@ -54,7 +54,7 @@ public class MedicAndroidJavascript {
 		this.simprints = parent.getSimprintsSupport();
 		this.mrdt = parent.getMrdtSupport();
 		this.smsSender = parent.getSmsSender();
-		this.cloudWorksRDT = parent.getCloudWorksRDT();
+		this.rdToolkitSupport = parent.getRdToolkitSupport();
 	}
 
 	public void setAlert(Alert soundAlert) {
@@ -198,10 +198,23 @@ public class MedicAndroidJavascript {
 	}
 
 	@android.webkit.JavascriptInterface
-	public void cw_createProvisioningRDTest(String sessionId, String patientName, String patientId) {
+	public void rdToolkit_provisionRDTest(String sessionId, String patientName, String patientId) {
 		try {
-			System.out.println(String.format("HOLA! it reached the app from webapp!: %s %s %s", sessionId, patientName, patientId));
-			this.cloudWorksRDT.createProvisioningRDTest(sessionId, patientName, patientId);
+			System.out.println(String.format("HOLA! it reached the app from webapp to provision test!: %s %s %s", sessionId, patientName, patientId));
+			this.rdToolkitSupport.createProvisioningRDTest(
+					"cc571ef2-7778-43a0-8bcf-47f7ea42801c",
+					patientName,
+					"aa571ef2-7778-43a0-8bcf-47f7ea42801c");
+		} catch(Exception ex) {
+			logException(ex);
+		}
+	}
+
+	@android.webkit.JavascriptInterface
+	public void rdToolkit_captureRDTest(String sessionId) {
+		try {
+			System.out.println(String.format("HOLA! it reached the app from webapp to capture test!: %s", sessionId));
+			this.rdToolkitSupport.createCaptureRDTest("cc571ef2-7778-43a0-8bcf-47f7ea42801c");
 		} catch(Exception ex) {
 			logException(ex);
 		}
