@@ -43,7 +43,7 @@ public class RDToolkitSupport {
 						JSONObject response = json(
 								"sessionId", session.getSessionId(),
 								"timeResolved", session.getTimeResolved(),
-								"TimeStarted", session.getTimeStarted(),
+								"timeStarted", session.getTimeStarted(),
 								"state", session.getState()
 						);
 
