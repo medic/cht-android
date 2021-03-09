@@ -100,7 +100,7 @@ To add a new brand:
 
 1. Create a git tag starting with `v`, e.g. `v1.2.3` and push the tag to GitHub. 
 2. The exact same process as Step 3 above.
-3. Publish the unbranded, demo, and gamma flavors to the Play Store.
+3. Publish the unbranded, demo, simprints, and gamma flavors to the Play Store.
 4. Announce the release on the [CHT forum](https://forum.communityhealthtoolkit.org), under the "Product - Releases" category.
 5. Each flavor is then individually released to users via "Release Management" in the Google Play Console. Once a flavor has been tested and is ready to go live, click Release to Production
 
