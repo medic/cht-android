@@ -3,6 +3,7 @@ package org.medicmobile.webapp.mobile;
 import android.app.Activity;
 import android.content.Intent;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.rdtoolkit.support.interop.RdtIntentBuilder;
 import org.rdtoolkit.support.interop.RdtUtils;
@@ -13,6 +14,7 @@ import org.rdtoolkit.support.model.session.TestSession.TestResult;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
 
 import static android.app.Activity.RESULT_OK;
 import static org.medicmobile.webapp.mobile.EmbeddedBrowserActivity.RDTOOLKIT_PROVISION_ACTIVITY_REQUEST_CODE;
@@ -39,7 +41,7 @@ public class RDToolkitSupport {
 				if (resultCode == RESULT_OK) {
 					try {
 						TestSession session = RdtUtils.getRdtSession(intentData);
-						log("RDToolkit provisioned test for sessionId: %s, will be available to read at %s", session.getSessionId(), session.getTimeResolved().toString());
+						log("RDToolkit provisioned test for sessionId: %s, will be available to read at %s, see session: %s", session.getSessionId(), session.getTimeResolved().toString(), session);
 						JSONObject response = json(
 								"sessionId", session.getSessionId(),
 								"timeResolved", session.getTimeResolved(),
@@ -61,7 +63,8 @@ public class RDToolkitSupport {
 						TestSession session = RdtUtils.getRdtSession(intentData);
 						TestResult result = session.getResult();
 						log("RDToolkit test completed for sessionId: %s, see result: %s", session.getSessionId(), result);
-						/* ToDo fix chopped image
+
+						/* ToDo fix image path to base64
 						InputStream mainImage = ctx.getContentResolver().openInputStream(Uri.parse(result.getMainImage()));
 						String mainImageBase64 = Base64.encodeToString(getBytes(mainImage), Base64.NO_WRAP);
 
@@ -71,12 +74,23 @@ public class RDToolkitSupport {
 							croppedImageBase64 = Base64.encodeToString(getBytes(croppedImage), Base64.NO_WRAP);
 						}
 						*/
+
+						Map<String, String> resultMap = result.getResults();
+						JSONArray jsonResult = new JSONArray();
+
+						for (Map.Entry<String,String> entry : resultMap.entrySet()) {
+							jsonResult.put(json(
+									"test", entry.getKey(),
+									"result", entry.getValue()
+							));
+						}
+
 						JSONObject response = json(
 								"sessionId", session.getSessionId(),
 								"timeRead", result.getTimeRead(),
 								"mainImage", "", // , mainImageBase64,
 								"croppedImage", "", // , croppedImageBase64,
-								"results", result.getResults()
+								"results", jsonResult
 						);
 
 						return sendCapturedResponseToJavaScriptApp(response);
