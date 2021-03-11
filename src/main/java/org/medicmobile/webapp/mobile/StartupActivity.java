@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 
-import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static org.medicmobile.webapp.mobile.MedicLog.trace;
 import static org.medicmobile.webapp.mobile.Utils.createUseragentFrom;
 import static org.medicmobile.webapp.mobile.Utils.startAppActivityChain;
@@ -12,7 +11,7 @@ import static org.medicmobile.webapp.mobile.Utils.startAppActivityChain;
 public class StartupActivity extends Activity {
 	@Override public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		if(DEBUG) trace(this, "Starting...");
+		trace(this, "onCreate()");
 
 		configureAndStartNextActivity();
 

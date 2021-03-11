@@ -77,7 +77,7 @@ final class SimprintsSupport {
 						}
 					}
 
-					log("Simprints ident returned IDs: " + result + "; requestId=" + requestId);
+					log(this, "Simprints ident returned IDs: " + result + "; requestId=" + requestId);
 
 					return jsResponse("identify", requestId, result);
 				} catch(JSONException ex) {
@@ -91,7 +91,7 @@ final class SimprintsSupport {
 					if(i == null || !i.hasExtra(SIMPRINTS_REGISTRATION)) return "console.log('No registration data returned from simprints app.')";
 					Registration registration = i.getParcelableExtra(SIMPRINTS_REGISTRATION);
 					String id = registration.getGuid();
-					log("Simprints registration returned ID: " + id + "; requestId=" + requestCode);
+					log(this, "Simprints registration returned ID: " + id + "; requestId=" + requestCode);
 					return jsResponse("register", requestId, json("id", id));
 				} catch(JSONException ex) {
 					warn(ex, "Problem serialising simprints registration result.");

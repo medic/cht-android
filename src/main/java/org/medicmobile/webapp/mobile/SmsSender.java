@@ -38,7 +38,7 @@ class SmsSender {
 
 		parent.registerReceiver(new BroadcastReceiver() {
 			@Override public void onReceive(Context ctx, Intent intent) {
-				log("BroadcastReceiver.onReceive() :: %s", intent.getAction());
+				log(this, "onReceive() :: %s", intent.getAction());
 
 				try {
 					switch(intent.getAction()) {
@@ -158,11 +158,11 @@ class SmsSender {
 
 	//> PUBLIC API
 		public void handle(Intent intent) {
-			log("Received delivery report for message %s.", describe(intent));
+			log(this, "Received delivery report for message: %s", describe(intent));
 
 			int status = createFromPdu(intent).getStatus();
 
-			log("Delivery status: 0x" + toHexString(status));
+			log(this, "Delivery status: 0x" + toHexString(status));
 
 			if((status & GSM_STATUS_MASK) == status) {
 				handleGsmDelivery(intent, status);
@@ -235,17 +235,17 @@ class SmsSender {
 			} else throw new IllegalStateException("Unexpected status (> 0x7F) : 0x" + toHexString(status));
 
 			reportStatus(intent, "FAILED", fDetail);
-			log("Delivering message to %s failed (cause: %s)", describe(intent), fDetail);
+			log(this, "Delivering message to %s failed (cause: %s)", describe(intent), fDetail);
 		}
 
 		private void handleCdmaDelivery() {
-			log("Delivery reports not yet supported on CDMA devices.");
+			log(this, "Delivery reports not yet supported on CDMA devices.");
 		}
 	}
 
 	class SendingReportHandler {
 		void handle(Intent intent, int resultCode) {
-			log("Received sending report for message %s.", describe(intent));
+			log(this, "Received sending report for message: %s", describe(intent));
 
 			if(resultCode == RESULT_OK) {
 				reportStatus(intent, "SENT");
@@ -268,7 +268,7 @@ class SmsSender {
 						failureReason = "unknown; resultCode=" + resultCode;
 				}
 				reportStatus(intent, "FAILED", failureReason);
-				log("Sending message %s failed.  Cause: %s", describe(intent), failureReason);
+				log(this, "Sending message %s failed. Cause: %s", describe(intent), failureReason);
 			}
 		}
 

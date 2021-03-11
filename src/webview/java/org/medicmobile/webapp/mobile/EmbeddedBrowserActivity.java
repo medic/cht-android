@@ -301,7 +301,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 
 	private void browseTo(Uri url) {
 		String urlToLoad = getUrlToLoad(url);
-		if(DEBUG) trace(this, "Pointing browser to %s", redactUrl(urlToLoad));
+		trace(this, "Pointing browser to: %s", redactUrl(urlToLoad));
 		container.loadUrl(urlToLoad, null);
 	}
 
@@ -323,7 +323,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 				return true;
 			}
 			@Override public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, WebChromeClient.FileChooserParams fileChooserParams){
-				if(DEBUG) trace(this, "onShowFileChooser() :: %s,%s,%s", webView, filePathCallback, fileChooserParams);
+				trace(this, "onShowFileChooser() :: webView: %s,filePathCallback: %s,fileChooserParams: %s", webView, filePathCallback, fileChooserParams);
 
 				boolean capture = fileChooserParams.isCaptureEnabled();
 				trace(this, "onShowFileChooser() capture :: %s", capture);
@@ -417,8 +417,9 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 			@Override
 			public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
 				String failingUrl = request.getUrl().toString();
-				if(DEBUG) trace(this, "onReceivedLoadError() :: %s,%s,%s", failingUrl, error.getErrorCode(), error.getDescription());
-				if(!getRootUrl().equals(failingUrl)) {
+				trace(this, "onReceivedLoadError() :: url: %s, error code: %s, description: %s",
+						failingUrl, error.getErrorCode(), error.getDescription());
+				if (!getRootUrl().equals(failingUrl)) {
 					super.onReceivedError(view, request, error);
 				} else {
 					evaluateJavascript(String.format(

@@ -59,7 +59,7 @@ public class SettingsDialogActivity extends LockableActivity {
 
 	@Override public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		if(DEBUG) trace(this, "Starting...");
+		trace(this, "onCreate()");
 
 		this.settings = SettingsStore.in(this);
 		this.serverRepo = new ServerRepo(this);
@@ -100,7 +100,7 @@ public class SettingsDialogActivity extends LockableActivity {
 
 //> EVENT HANDLERS
 	public void verifyAndSave(View view) {
-		if(DEBUG) trace(this, "verifyAndSave");
+		trace(this, "verifyAndSave()");
 
 		submitButton().setEnabled(false);
 		cancelButton().setEnabled(false);
@@ -111,7 +111,7 @@ public class SettingsDialogActivity extends LockableActivity {
 	}
 
 	public void cancelSettingsEdit(View view) {
-		if(DEBUG) trace(this, "cancelSettingsEdit");
+		trace(this, "cancelSettingsEdit()");
 		backToWebview();
 	}
 
@@ -141,12 +141,12 @@ public class SettingsDialogActivity extends LockableActivity {
 			settings.updateWith(s);
 			this.backToWebview();
 		} catch(IllegalSettingsException ex) {
-			if(DEBUG) trace(ex, "Tried to save illegal setting.");
+			trace(ex, "Tried to save illegal setting.");
 			for(IllegalSetting error : ex.errors) {
 				showError(error);
 			}
 		} catch(SettingsException ex) {
-			if(DEBUG) trace(ex, "Problem savung settings.");
+			trace(ex, "Problem saving settings.");
 			submitButton().setError(ex.getMessage());
 		}
 	}
@@ -217,7 +217,7 @@ class ServerMetadata {
 	}
 
 	ServerMetadata(String name, String url) {
-		if(DEBUG) trace(this, "constructor :: name:%s, url:%s", name, redactUrl(url));
+		trace(this, "ServerMetadata() :: name: %s, url: %s", name, redactUrl(url));
 		this.name = name;
 		this.url = url;
 	}

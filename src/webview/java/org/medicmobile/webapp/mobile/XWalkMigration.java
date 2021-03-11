@@ -4,7 +4,6 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Build;
-
 import java.io.File;
 
 import static org.medicmobile.webapp.mobile.MedicLog.trace;

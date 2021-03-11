@@ -7,7 +7,6 @@ import java.util.regex.*;
 
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static org.medicmobile.webapp.mobile.SimpleJsonClient2.redactUrl;
-import static org.medicmobile.webapp.mobile.MedicLog.log;
 import static org.medicmobile.webapp.mobile.MedicLog.trace;
 
 @SuppressWarnings("PMD.ShortMethodName")
@@ -72,7 +71,7 @@ public abstract class SettingsStore {
 	}
 
 	static SettingsStore in(Context ctx) {
-		if(DEBUG) log("Loading settings for context %s...", ctx);
+		trace(SettingsStore.class, "Loading settings for context %s...", ctx);
 
 		SharedPreferences prefs = ctx.getSharedPreferences(
 				SettingsStore.class.getName(),
@@ -137,7 +136,7 @@ class WebappSettings {
 	public final String appUrl;
 
 	public WebappSettings(String appUrl) {
-		if(DEBUG) trace(this, "WebappSettings() appUrl=%s", redactUrl(appUrl));
+		trace(this, "WebappSettings() :: appUrl: %s", redactUrl(appUrl));
 		this.appUrl = appUrl;
 	}
 
