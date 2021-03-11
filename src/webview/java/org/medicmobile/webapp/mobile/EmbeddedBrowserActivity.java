@@ -15,6 +15,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.webkit.ConsoleMessage;
+import android.webkit.CookieManager;
 import android.webkit.GeolocationPermissions;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
@@ -32,6 +33,7 @@ import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static org.medicmobile.webapp.mobile.BuildConfig.DISABLE_APP_URL_VALIDATION;
 import static org.medicmobile.webapp.mobile.MedicLog.error;
+import static org.medicmobile.webapp.mobile.MedicLog.log;
 import static org.medicmobile.webapp.mobile.MedicLog.trace;
 import static org.medicmobile.webapp.mobile.MedicLog.warn;
 import static org.medicmobile.webapp.mobile.SimpleJsonClient2.redactUrl;
@@ -77,6 +79,8 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	private MrdtSupport mrdt;
 	private PhotoGrabber photoGrabber;
 	private SmsSender smsSender;
+
+	private boolean isMigrationRunning = false;
 
 //> ACTIVITY LIFECYCLE METHODS
 	@Override public void onCreate(Bundle savedInstanceState) {
@@ -131,7 +135,17 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 
 	@Override
 	protected void onStart() {
-		new XWalkMigration(this).run();
+		trace(this, "onStart() :: Checking Crosswalk migration ...");
+		XWalkMigration xWalkMigration = new XWalkMigration(this);
+		if (xWalkMigration.hasToMigrate()) {
+			log(this, "onStart() :: Running Crosswalk migration ...");
+			//TODO display waiting...
+			isMigrationRunning = true;
+			xWalkMigration.run();
+		} else {
+			trace(this, "onStart() :: Crosswalk installation not found - skipping migration");
+		}
+		trace(this, "onStart() :: Checking Crosswalk migration done.");
 		super.onStart();
 	}
 
@@ -434,6 +448,26 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 							"';" +
 							"  body.appendChild(content);" +
 							"}", error.getErrorCode(), error.getDescription()), false);
+				}
+			}
+
+			@Override
+			public void onPageFinished(WebView view, String url) {
+				trace(this, "onPageFinished() :: url: %s, isMigrationRunning: %s", url, isMigrationRunning);
+				if (isMigrationRunning && url.contains("/login")) {
+					isMigrationRunning = false;
+					CookieManager cookieManager = CookieManager.getInstance();
+					String cookie = cookieManager.getCookie(appUrl);
+					if (cookie == null) {
+						log(this, "onPageFinished() :: Migration process in progress, and " +
+								"cookies were not loaded, restarting ...");
+						Context context = view.getContext();
+						Intent intent = new Intent(context, StartupActivity.class);
+						intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+						context.startActivity(intent);
+						Runtime.getRuntime().exit(0);
+					}
+					trace(this, "onPageFinished() :: Cookies loaded, skipping restart");
 				}
 			}
 		});

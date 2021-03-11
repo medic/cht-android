@@ -14,8 +14,6 @@ import static org.medicmobile.webapp.mobile.MedicLog.trace;
 public class XWalkMigration {
 	public static final String TAG = "Migration";
 
-	private static boolean hasRun = false;
-
 	private static String xWalkPath = "app_xwalkcore/Default";
 
 	// Root dir for system webview data used by Android 4.4+
@@ -52,22 +50,17 @@ public class XWalkMigration {
 		activity = a;
 		context = a.getApplicationContext();
 		isModernAndroid = Build.VERSION.SDK_INT >= 19;
-		trace(this, "Set up Crosswalk migration, %s, %s, %s", hasRun, activity, context);
 	}
 
-	public void run() {
-		trace(this, "Running Crosswalk migration");
-
+	/**
+	 * Check whether the migration needs to be done.
+	 */
+	public boolean hasToMigrate() {
 		boolean found = lookForXwalk(context.getFilesDir());
 		if (!found) {
-			lookForXwalk(context.getExternalFilesDir(null));
+			found = lookForXwalk(context.getExternalFilesDir(null));
 		}
-
-		if (found) {
-			migrateData();
-		} else {
-			trace(this, "Crosswalk directory not found - skipping migration");
-		}
+		return found;	// if Crosswalk directory found => need to migrate
 	}
 
 	private boolean lookForXwalk(File filesPath) {
@@ -82,7 +75,10 @@ public class XWalkMigration {
 		return found;
 	}
 
-	private void migrateData() {
+	/**
+	 * Migrate the data from XWalk to Webview
+	 */
+	public void run() {
 		xWalkRoot = constructFilePaths(appRoot, xWalkPath);
 
 		webviewRoot = constructFilePaths(appRoot, getWebviewPath());
@@ -100,7 +96,7 @@ public class XWalkMigration {
 			for (String dirName : modernAndroidStorage) {
 				if (testFileExists(xWalkRoot, dirName)) {
 					moveDirFromXWalkToWebView(dirName);
-					trace(this, "Moved " + dirName + " from XWalk to System Webview");
+					trace(this, "Moved %s from XWalk to System Webview", dirName);
 					hasMigratedData = true;
 				}
 			}
@@ -142,17 +138,17 @@ public class XWalkMigration {
 	}
 
 	private void restartCordova() {
-		trace(this, "restarting EmbeddedBrowserActivity");
+		trace(this, "Restarting EmbeddedBrowserActivity");
 		activity.recreate();
 	}
 
 
 	private boolean testFileExists(File root, String name) {
 		boolean status = false;
-		if (!name.equals("")) {
+		if (!name.isEmpty()) {
 			File newPath = constructFilePaths(root.toString(), name);
 			status = newPath.exists();
-			trace(this, "exists '" + newPath.getAbsolutePath() + ": " + status);
+			trace(this, "testFileExists() :: '%s': %s", newPath.getAbsolutePath(), status);
 		}
 		return status;
 	}
