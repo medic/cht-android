@@ -92,7 +92,6 @@ public class RDToolkitSupport {
 	}
 
 	Intent createProvisioningRDTest(String sessionId, String patientName, String patientId) {
-		System.out.println(String.format("HOLA! it is creating a provisioning intent: %s %s %s", sessionId, patientName, patientId));
 		Intent intent = RdtIntentBuilder
 				.forProvisioning()
 				// Type of test to choose from
@@ -115,7 +114,6 @@ public class RDToolkitSupport {
 	}
 
 	Intent createCaptureRDTest(String sessionId) {
-		System.out.println(String.format("HOLA! it is creating a capture intent: %s", sessionId));
 		Intent intent = RdtIntentBuilder
 				.forCapture()
 				// Unique ID for RDT test
@@ -132,21 +130,25 @@ public class RDToolkitSupport {
 //> PRIVATE HELPERS
 
 	private String sendProvisionedResponseToJavaScriptApp(Object response) {
-		String javaScript = "const api = angular.element(document.body).injector().get('AndroidApi');" +
+		String javaScript = "try {" +
+				"const api = angular.element(document.body).injector().get('AndroidApi');" +
 				"if (api.v1.rdToolkitProvisionedTestResponse) {" +
-				"	api.v1.rdToolkitProvisionedTestResponse('\"%s\"');" +
-				"}";
+				"	api.v1.rdToolkitProvisionedTestResponse(%s);" +
+				"}" +
+				"} catch (e) { alert(e); }";
 
 		return safeFormat(javaScript, response);
 	}
 
 	private String sendCapturedResponseToJavaScriptApp(Object response) {
-		String javaScript = "const api = angular.element(document.body).injector().get('AndroidApi');" +
+		String javaScript = "try {" +
+				"const api = angular.element(document.body).injector().get('AndroidApi');" +
 				"if (api.v1.rdToolkitCapturedTestResponse) {" +
-				"	api.v1.rdToolkitCapturedTestResponse('\"%s\"');" +
-				"}";
+				"	api.v1.rdToolkitCapturedTestResponse(%s);" +
+				"}" +
+				"} catch (e) { alert(e); }";
 
-		return safeFormat(javaScript, response);
+		return safeFormat(javaScript, response, response);
 	}
 
 	// ToDo find better alternative or move to utils.

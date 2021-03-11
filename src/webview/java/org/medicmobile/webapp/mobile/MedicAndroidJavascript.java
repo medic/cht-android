@@ -200,11 +200,7 @@ public class MedicAndroidJavascript {
 	@android.webkit.JavascriptInterface
 	public void rdToolkit_provisionRDTest(String sessionId, String patientName, String patientId) {
 		try {
-			System.out.println(String.format("HOLA! it reached the app from webapp to provision test!: %s %s %s", sessionId, patientName, patientId));
-			this.rdToolkitSupport.createProvisioningRDTest(
-					"cc571ef2-7778-43a0-8bcf-47f7ea42801c",
-					patientName,
-					"aa571ef2-7778-43a0-8bcf-47f7ea42801c");
+			this.rdToolkitSupport.createProvisioningRDTest(sessionId, patientName, patientId);
 		} catch(Exception ex) {
 			logException(ex);
 		}
@@ -213,8 +209,7 @@ public class MedicAndroidJavascript {
 	@android.webkit.JavascriptInterface
 	public void rdToolkit_captureRDTest(String sessionId) {
 		try {
-			System.out.println(String.format("HOLA! it reached the app from webapp to capture test!: %s", sessionId));
-			this.rdToolkitSupport.createCaptureRDTest("cc571ef2-7778-43a0-8bcf-47f7ea42801c");
+			this.rdToolkitSupport.createCaptureRDTest(sessionId);
 		} catch(Exception ex) {
 			logException(ex);
 		}
