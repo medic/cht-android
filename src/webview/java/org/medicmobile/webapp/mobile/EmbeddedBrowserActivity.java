@@ -140,8 +140,8 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		XWalkMigration xWalkMigration = new XWalkMigration(this.getApplicationContext());
 		if (xWalkMigration.hasToMigrate()) {
 			log(this, "onStart() :: Running Crosswalk migration ...");
-			//TODO display waiting...
 			isMigrationRunning = true;
+			startActivity(new Intent(this, UpgradingActivity.class));
 			xWalkMigration.run();
 		} else {
 			trace(this, "onStart() :: Crosswalk installation not found - skipping migration");

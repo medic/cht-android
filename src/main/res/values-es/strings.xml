@@ -5,4 +5,8 @@
 	<string name="locRequestOkButton">Activar</string>
 	<string name="locRequestDenyButton">No gracias</string>
 	<string name="locRequestIconDescription">Ícono de mi ubicación</string>
+
+	<string name="loadingIconDescription">Cargando…</string>
+	<string name="upgradingTitle">Actualizando la app</string>
+	<string name="upgradingMessage">Estás actualizando a la última versión. Por favor aguarda mientras tus datos son migrados.</string>
 </resources>
