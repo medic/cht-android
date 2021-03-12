@@ -5,6 +5,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.app.ActivityManager;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
@@ -136,7 +137,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	@Override
 	protected void onStart() {
 		trace(this, "onStart() :: Checking Crosswalk migration ...");
-		XWalkMigration xWalkMigration = new XWalkMigration(this);
+		XWalkMigration xWalkMigration = new XWalkMigration(this.getApplicationContext());
 		if (xWalkMigration.hasToMigrate()) {
 			log(this, "onStart() :: Running Crosswalk migration ...");
 			//TODO display waiting...
@@ -452,14 +453,14 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 			}
 
 			@Override
-			public void onPageFinished(WebView view, String url) {
-				trace(this, "onPageFinished() :: url: %s, isMigrationRunning: %s", url, isMigrationRunning);
+			public void onPageStarted(WebView view, String url, Bitmap favicon) {
+				trace(this, "onPageStarted() :: url: %s, isMigrationRunning: %s", url, isMigrationRunning);
 				if (isMigrationRunning && url.contains("/login")) {
 					isMigrationRunning = false;
 					CookieManager cookieManager = CookieManager.getInstance();
 					String cookie = cookieManager.getCookie(appUrl);
 					if (cookie == null) {
-						log(this, "onPageFinished() :: Migration process in progress, and " +
+						log(this, "onPageStarted() :: Migration process in progress, and " +
 								"cookies were not loaded, restarting ...");
 						Context context = view.getContext();
 						Intent intent = new Intent(context, StartupActivity.class);
@@ -467,7 +468,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 						context.startActivity(intent);
 						Runtime.getRuntime().exit(0);
 					}
-					trace(this, "onPageFinished() :: Cookies loaded, skipping restart");
+					trace(this, "onPageStarted() :: Cookies loaded, skipping restart");
 				}
 			}
 		});
