@@ -40,6 +40,7 @@ import static org.medicmobile.webapp.mobile.MedicLog.warn;
 import static org.medicmobile.webapp.mobile.SimpleJsonClient2.redactUrl;
 import static org.medicmobile.webapp.mobile.Utils.createUseragentFrom;
 import static org.medicmobile.webapp.mobile.Utils.isUrlRelated;
+import static org.medicmobile.webapp.mobile.Utils.restartApp;
 
 @SuppressWarnings({ "PMD.GodClass", "PMD.TooManyMethods" })
 public class EmbeddedBrowserActivity extends LockableActivity {
@@ -452,8 +453,14 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 				}
 			}
 
-			@Override
-			public void onPageStarted(WebView view, String url, Bitmap favicon) {
+			// Check how the migration process is going if it was started.
+			// Because most of the cases after the XWalk -> Webview migration process ends
+			// the cookies are not available for unknowns reasons, making the webapp to
+			// redirect the user to the login page instead of the main page.
+			// If these conditions are met: migration running + /login page + no cookies,
+			// the app is restarted to refresh the Webview and prevent the user to
+			// login again.
+			@Override public void onPageStarted(WebView view, String url, Bitmap favicon) {
 				trace(this, "onPageStarted() :: url: %s, isMigrationRunning: %s", url, isMigrationRunning);
 				if (isMigrationRunning && url.contains("/login")) {
 					isMigrationRunning = false;
@@ -462,11 +469,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 					if (cookie == null) {
 						log(this, "onPageStarted() :: Migration process in progress, and " +
 								"cookies were not loaded, restarting ...");
-						Context context = view.getContext();
-						Intent intent = new Intent(context, StartupActivity.class);
-						intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-						context.startActivity(intent);
-						Runtime.getRuntime().exit(0);
+						restartApp(view.getContext());
 					}
 					trace(this, "onPageStarted() :: Cookies loaded, skipping restart");
 				}

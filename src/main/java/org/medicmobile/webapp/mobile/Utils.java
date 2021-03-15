@@ -70,4 +70,11 @@ final class Utils {
 		return String.format("%s %s/%s",
 				current, APPLICATION_ID, VERSION_NAME);
 	}
+
+	static void restartApp(Context context) {
+		Intent intent = new Intent(context, StartupActivity.class);
+		intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+		context.startActivity(intent);
+		Runtime.getRuntime().exit(0);
+	}
 }
