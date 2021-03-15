@@ -9,6 +9,9 @@ import android.net.Uri;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.time.ZoneOffset;
+import java.util.Date;
+
 import static org.medicmobile.webapp.mobile.BuildConfig.APPLICATION_ID;
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static org.medicmobile.webapp.mobile.BuildConfig.VERSION_NAME;
@@ -69,5 +72,17 @@ final class Utils {
 
 		return String.format("%s %s/%s",
 				current, APPLICATION_ID, VERSION_NAME);
+	}
+
+	/**
+	 * Returns ISO format by using OffsetDateTime Thread-safe class
+	 * @param date UTC date
+	 * @return
+	 */
+	static String getISODate(Date date) {
+		return date
+				.toInstant()
+				.atOffset(ZoneOffset.UTC) // Thread-safe
+				.toString();
 	}
 }

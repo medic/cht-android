@@ -197,24 +197,6 @@ public class MedicAndroidJavascript {
 		return smsSender != null;
 	}
 
-	@android.webkit.JavascriptInterface
-	public void rdToolkit_provisionRDTest(String sessionId, String patientName, String patientId) {
-		try {
-			this.rdToolkitSupport.createProvisioningRDTest(sessionId, patientName, patientId);
-		} catch(Exception ex) {
-			logException(ex);
-		}
-	}
-
-	@android.webkit.JavascriptInterface
-	public void rdToolkit_captureRDTest(String sessionId) {
-		try {
-			this.rdToolkitSupport.createCaptureRDTest(sessionId);
-		} catch(Exception ex) {
-			logException(ex);
-		}
-	}
-
 	/**
 	 * @param id id associated with this message, e.g. a pouchdb docId
 	 * @param destination the recipient phone number for this message
@@ -228,6 +210,24 @@ public class MedicAndroidJavascript {
 		} catch(Exception ex) {
 			logException(ex);
 			throw ex;
+		}
+	}
+
+	@android.webkit.JavascriptInterface
+	public void rdToolkit_provisionRDTest(String sessionId, String patientName, String patientId) {
+		try {
+			this.rdToolkitSupport.provisionRDTest(sessionId, patientName, patientId);
+		} catch(Exception ex) {
+			logException(ex);
+		}
+	}
+
+	@android.webkit.JavascriptInterface
+	public void rdToolkit_captureRDTest(String sessionId) {
+		try {
+			this.rdToolkitSupport.captureRDTest(sessionId);
+		} catch(Exception ex) {
+			logException(ex);
 		}
 	}
 
@@ -376,7 +376,7 @@ public class MedicAndroidJavascript {
 	}
 
 	private void logException(Exception ex) {
-		log(ex, "Execption thrown in JavascriptInterface function.");
+		log(ex, "Exception thrown in JavascriptInterface function.");
 
 		StringWriter sw = new StringWriter();
 		PrintWriter pw = new PrintWriter(sw);
@@ -385,7 +385,7 @@ public class MedicAndroidJavascript {
 				.replace("\n", "; ")
 				.replace("\t", " ");
 
-		parent.errorToJsConsole("Execption thrown in JavascriptInterface function: %s", stacktrace);
+		parent.errorToJsConsole("Exception thrown in JavascriptInterface function: %s", stacktrace);
 	}
 
 //> STATIC HELPERS

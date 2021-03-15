@@ -214,9 +214,9 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 						return;
 					case RDTOOLKIT_PROVISION_ACTIVITY_REQUEST_CODE:
 					case RDTOOLKIT_CAPTURE_ACTIVITY_REQUEST_CODE:
-						String jsResponse = this.rdToolkitSupport.process(requestCode, resultCode, i);
-						trace(this, "RDToolkit execing JavaScript: %s", jsResponse);
-						evaluateJavascript(jsResponse);
+						String jsCode = rdToolkitSupport.process(requestCode, resultCode, i);
+						trace(this, "RDToolkit executing JavaScript: %s", jsCode);
+						evaluateJavascript(jsCode);
 						return;
 					default:
 						trace(this, "onActivityResult() :: no handling for requestCode=%s",
