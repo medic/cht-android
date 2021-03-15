@@ -136,7 +136,7 @@ class WebappSettings {
 	public final String appUrl;
 
 	public WebappSettings(String appUrl) {
-		trace(this, "WebappSettings() :: appUrl: %s", redactUrl(appUrl));
+		if(DEBUG) trace(this, "WebappSettings() :: appUrl: %s", redactUrl(appUrl));
 		this.appUrl = appUrl;
 	}
 
