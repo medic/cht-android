@@ -12,9 +12,6 @@ import org.rdtoolkit.support.model.session.ProvisionMode;
 import org.rdtoolkit.support.model.session.TestSession;
 import org.rdtoolkit.support.model.session.TestSession.TestResult;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.Map;
 
 import static android.app.Activity.RESULT_OK;
@@ -167,17 +164,6 @@ public class RDToolkitSupport {
 			));
 		}
 
-		/* ToDo fix image path to base64
-		InputStream mainImage = ctx.getContentResolver().openInputStream(Uri.parse(result.getMainImage()));
-		String mainImageBase64 = Base64.encodeToString(getBytes(mainImage), Base64.NO_WRAP);
-
-		String croppedImageBase64 = "";
-		if (result.getImages().size() > 0 && result.getImages().containsKey("cropped")) {
-			InputStream croppedImage = ctx.getContentResolver().openInputStream(Uri.parse(result.getImages().get("cropped")));
-			croppedImageBase64 = Base64.encodeToString(getBytes(croppedImage), Base64.NO_WRAP);
-		}
-		*/
-
 		return json(
 				"sessionId", session.getSessionId(),
 				"state", session.getState(),
@@ -188,20 +174,6 @@ public class RDToolkitSupport {
 				"croppedImage", "", // , croppedImageBase64,
 				"results", jsonResult
 		);
-	}
-
-	// ToDo find better alternative or move to utils.
-	private byte[] getBytes(InputStream inputStream) throws IOException {
-		ByteArrayOutputStream byteBuffer = new ByteArrayOutputStream();
-		int bufferSize = 1024;
-		byte[] buffer = new byte[bufferSize];
-		int len = 0;
-
-		while ((len = inputStream.read(buffer)) != -1) {
-			byteBuffer.write(buffer, 0, len);
-		}
-
-		return byteBuffer.toByteArray();
 	}
 
 }
