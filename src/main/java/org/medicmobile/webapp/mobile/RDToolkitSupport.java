@@ -149,31 +149,38 @@ public class RDToolkitSupport {
 		TestSession session = RdtUtils.getRdtSession(intentData);
 		TestResult result = session.getResult();
 		log(
-				"RDToolkit test completed for sessionId: %s, see result: %s",
-				session.getSessionId(),
+				"RDToolkit test completed for session: %s, see result: %s",
+				session,
 				result
 		);
-
-		Map<String, String> resultMap = result.getResults();
-		JSONArray jsonResult = new JSONArray();
-
-		for (Map.Entry<String,String> entry : resultMap.entrySet()) {
-			jsonResult.put(json(
-					"test", entry.getKey(),
-					"result", entry.getValue()
-			));
-		}
 
 		return json(
 				"sessionId", session.getSessionId(),
 				"state", session.getState(),
 				"timeResolved", getISODate(session.getTimeResolved()),
 				"timeStarted", getISODate(session.getTimeStarted()),
-				"timeRead", getISODate(result.getTimeRead()),
-				"mainImage", "", // , mainImageBase64,
-				"croppedImage", "", // , croppedImageBase64,
-				"results", jsonResult
+				"timeRead", result == null ? "" : getISODate(result.getTimeRead()),
+				"mainImage", "", // ToDo get image and send it as Base64
+				"croppedImage", "", // ToDo get image and send it as Base64
+				"results", parseResultsToJson(result)
 		);
+	}
+
+	private JSONArray parseResultsToJson(TestResult result) throws JSONException {
+		JSONArray jsonResult = new JSONArray();
+
+		if (result != null) {
+			Map<String, String> resultMap = result.getResults();
+
+			for (Map.Entry<String,String> entry : resultMap.entrySet()) {
+				jsonResult.put(json(
+						"test", entry.getKey(),
+						"result", entry.getValue()
+				));
+			}
+		}
+
+		return jsonResult;
 	}
 
 }
