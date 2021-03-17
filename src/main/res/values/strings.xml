@@ -51,4 +51,8 @@
 	<string name="locRequestOkButton">Turn on</string>
 	<string name="locRequestDenyButton">No thanks</string>
 	<string name="locRequestIconDescription">My location icon</string>
+
+	<string name="loadingIconDescription">Loading…</string>
+	<string name="upgradingTitle">Upgrading your app</string>
+	<string name="upgradingMessage">You\'re upgrading to the latest version. Please wait while your data is being migrated.</string>
 </resources>

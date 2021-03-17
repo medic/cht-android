@@ -32,7 +32,6 @@ import org.xwalk.core.XWalkWebResourceRequest;
 import org.xwalk.core.XWalkWebResourceResponse;
 
 import static java.lang.Boolean.parseBoolean;
-import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static org.medicmobile.webapp.mobile.BuildConfig.DISABLE_APP_URL_VALIDATION;
 import static org.medicmobile.webapp.mobile.MedicLog.error;
 import static org.medicmobile.webapp.mobile.MedicLog.log;
@@ -312,7 +311,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 
 	private void browseTo(Uri url) {
 		String urlToLoad = getUrlToLoad(url);
-		if(DEBUG) trace(this, "Pointing browser to %s", redactUrl(urlToLoad));
+		trace(this, "Pointing browser to: %s", redactUrl(urlToLoad));
 		container.load(urlToLoad, null);
 	}
 
@@ -336,7 +335,8 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 			} */
 
 			@Override public void openFileChooser(XWalkView view, ValueCallback<Uri> callback, String acceptType, String shouldCapture) {
-				if(DEBUG) trace(this, "openFileChooser() :: %s,%s,%s,%s", view, callback, acceptType, shouldCapture);
+				trace(this, "openFileChooser() :: view: %s, callback: %s, acceptType: %s, shouldCapture: %s",
+						view, callback, acceptType, shouldCapture);
 
 				boolean capture = parseBoolean(shouldCapture);
 
@@ -450,10 +450,11 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 			@Override public void onReceivedLoadError(XWalkView view, int errorCode, String description, String failingUrl) {
 				if(errorCode == XWalkResourceClient.ERROR_OK) return;
 
-				log("EmbeddedBrowserActivity.onReceivedLoadError() :: [%s] %s :: %s", errorCode, failingUrl, description);
+				log(this, "onReceivedLoadError() :: [%s] %s :: %s",
+						errorCode, failingUrl, description);
 
 				if(!getRootUrl().equals(failingUrl)) {
-					log("EmbeddedBrowserActivity.onReceivedLoadError() :: ignoring for non-root URL");
+					log(this, "onReceivedLoadError() :: ignoring for non-root URL");
 				}
 
 				evaluateJavascript(String.format(

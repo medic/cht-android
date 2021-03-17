@@ -206,7 +206,10 @@ class PhotoGrabber {
 	private File tempFile() throws IOException {
 		File imageCacheDir = new File(a.getCacheDir(), "medic-form-photos");
 		boolean mkdirSuccess = imageCacheDir.mkdirs();
-		if(!mkdirSuccess) log("tempFile() :: imageCacheDir.mkdirs() failed.  This may cause problems with taking photos.");
+		if(!mkdirSuccess) {
+			log(this, "tempFile() :: imageCacheDir.mkdirs() failed. " +
+					"This may cause problems with taking photos.");
+		}
 		return File.createTempFile("photo", ".jpg", imageCacheDir);
 	}
 }

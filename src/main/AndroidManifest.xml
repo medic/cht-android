@@ -39,6 +39,9 @@
     <activity android:name="EmbeddedBrowserActivity"
         android:screenOrientation="portrait"
         android:configChanges="orientation|screenSize"/>
+    <activity android:name="UpgradingActivity"
+        android:screenOrientation="portrait"
+        android:configChanges="orientation|screenSize"/>
     <activity android:name="FreeSpaceWarningActivity"
         android:screenOrientation="portrait"/>
     <activity android:name="SettingsDialogActivity"

@@ -5,6 +5,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.app.ActivityManager;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
@@ -15,6 +16,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.webkit.ConsoleMessage;
+import android.webkit.CookieManager;
 import android.webkit.GeolocationPermissions;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
@@ -32,11 +34,13 @@ import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static org.medicmobile.webapp.mobile.BuildConfig.DISABLE_APP_URL_VALIDATION;
 import static org.medicmobile.webapp.mobile.MedicLog.error;
+import static org.medicmobile.webapp.mobile.MedicLog.log;
 import static org.medicmobile.webapp.mobile.MedicLog.trace;
 import static org.medicmobile.webapp.mobile.MedicLog.warn;
 import static org.medicmobile.webapp.mobile.SimpleJsonClient2.redactUrl;
 import static org.medicmobile.webapp.mobile.Utils.createUseragentFrom;
 import static org.medicmobile.webapp.mobile.Utils.isUrlRelated;
+import static org.medicmobile.webapp.mobile.Utils.restartApp;
 
 @SuppressWarnings({ "PMD.GodClass", "PMD.TooManyMethods" })
 public class EmbeddedBrowserActivity extends LockableActivity {
@@ -77,6 +81,8 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	private MrdtSupport mrdt;
 	private PhotoGrabber photoGrabber;
 	private SmsSender smsSender;
+
+	private boolean isMigrationRunning = false;
 
 //> ACTIVITY LIFECYCLE METHODS
 	@Override public void onCreate(Bundle savedInstanceState) {
@@ -131,7 +137,17 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 
 	@Override
 	protected void onStart() {
-		new XWalkMigration(this).run();
+		trace(this, "onStart() :: Checking Crosswalk migration ...");
+		XWalkMigration xWalkMigration = new XWalkMigration(this.getApplicationContext());
+		if (xWalkMigration.hasToMigrate()) {
+			log(this, "onStart() :: Running Crosswalk migration ...");
+			isMigrationRunning = true;
+			startActivity(new Intent(this, UpgradingActivity.class));
+			xWalkMigration.run();
+		} else {
+			trace(this, "onStart() :: Crosswalk installation not found - skipping migration");
+		}
+		trace(this, "onStart() :: Checking Crosswalk migration done.");
 		super.onStart();
 	}
 
@@ -301,7 +317,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 
 	private void browseTo(Uri url) {
 		String urlToLoad = getUrlToLoad(url);
-		if(DEBUG) trace(this, "Pointing browser to %s", redactUrl(urlToLoad));
+		trace(this, "Pointing browser to: %s", redactUrl(urlToLoad));
 		container.loadUrl(urlToLoad, null);
 	}
 
@@ -323,7 +339,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 				return true;
 			}
 			@Override public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, WebChromeClient.FileChooserParams fileChooserParams){
-				if(DEBUG) trace(this, "onShowFileChooser() :: %s,%s,%s", webView, filePathCallback, fileChooserParams);
+				trace(this, "onShowFileChooser() :: webView: %s,filePathCallback: %s,fileChooserParams: %s", webView, filePathCallback, fileChooserParams);
 
 				boolean capture = fileChooserParams.isCaptureEnabled();
 				trace(this, "onShowFileChooser() capture :: %s", capture);
@@ -417,8 +433,9 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 			@Override
 			public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
 				String failingUrl = request.getUrl().toString();
-				if(DEBUG) trace(this, "onReceivedLoadError() :: %s,%s,%s", failingUrl, error.getErrorCode(), error.getDescription());
-				if(!getRootUrl().equals(failingUrl)) {
+				trace(this, "onReceivedLoadError() :: url: %s, error code: %s, description: %s",
+						failingUrl, error.getErrorCode(), error.getDescription());
+				if (!getRootUrl().equals(failingUrl)) {
 					super.onReceivedError(view, request, error);
 				} else {
 					evaluateJavascript(String.format(
@@ -433,6 +450,28 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 							"';" +
 							"  body.appendChild(content);" +
 							"}", error.getErrorCode(), error.getDescription()), false);
+				}
+			}
+
+			// Check how the migration process is going if it was started.
+			// Because most of the cases after the XWalk -> Webview migration process ends
+			// the cookies are not available for unknowns reasons, making the webapp to
+			// redirect the user to the login page instead of the main page.
+			// If these conditions are met: migration running + /login page + no cookies,
+			// the app is restarted to refresh the Webview and prevent the user to
+			// login again.
+			@Override public void onPageStarted(WebView view, String url, Bitmap favicon) {
+				trace(this, "onPageStarted() :: url: %s, isMigrationRunning: %s", url, isMigrationRunning);
+				if (isMigrationRunning && url.contains("/login")) {
+					isMigrationRunning = false;
+					CookieManager cookieManager = CookieManager.getInstance();
+					String cookie = cookieManager.getCookie(appUrl);
+					if (cookie == null) {
+						log(this, "onPageStarted() :: Migration process in progress, and " +
+								"cookies were not loaded, restarting ...");
+						restartApp(view.getContext());
+					}
+					trace(this, "onPageStarted() :: Cookies loaded, skipping restart");
 				}
 			}
 		});

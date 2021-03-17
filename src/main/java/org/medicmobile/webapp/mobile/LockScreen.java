@@ -11,7 +11,6 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static org.medicmobile.webapp.mobile.MedicLog.trace;
 import static org.medicmobile.webapp.mobile.MedicLog.warn;
 
@@ -42,7 +41,7 @@ public class LockScreen extends Activity {
 
 	@Override public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		if(DEBUG) trace(this, "Starting...");
+		trace(this, "onCreate()");
 
 		task = Task.valueOf(getIntent().getStringExtra(X_TASK));
 

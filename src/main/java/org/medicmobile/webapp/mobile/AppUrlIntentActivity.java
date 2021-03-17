@@ -14,7 +14,7 @@ public class AppUrlIntentActivity extends Activity {
 		Intent appLinkIntent = getIntent();
 		Uri appLinkData = appLinkIntent.getData();
 
-		if(DEBUG) trace(this, "TOKEN LOGIN=%s", appLinkData.toString());
+		if(DEBUG) trace(this, "onCreate() :: Token Login: %s", appLinkData.toString());
 
 		startActivity(new Intent(Intent.ACTION_VIEW, appLinkData, this, EmbeddedBrowserActivity.class));
 		finish();
