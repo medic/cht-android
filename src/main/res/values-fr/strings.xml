@@ -9,4 +9,11 @@
 	<string name="loadingIconDescription">Chargement en cours…</string>
 	<string name="upgradingTitle">Mise à jour de votre application</string>
 	<string name="upgradingMessage">Vous passez à la nouvelle version. Veuillez patienter pendant la preparation de vos données.</string>
+
+	<string name="connErrorTitle">Pas de connexion Internet</string>
+	<string name="connErrorMessage">Vous ne semblez pas connecté à Internet. Veuillez vérifier votre connexion et réessayer.</string>
+	<string name="connErrorRetry">RECOMMENCEZ</string>
+
+	<string name="backToExit">Veuillez appuyer à nouveau pour quitter</string>
+	<string name="waitMigration">Veuillez attendre la fin du processus de migration</string>
 </resources>

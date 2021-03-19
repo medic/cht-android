@@ -3,6 +3,10 @@ package org.medicmobile.webapp.mobile;
 import android.os.Bundle;
 import android.view.Window;
 
+
+/**
+ * Activity displayed when the upgrade from XWalk to WebView is running.
+ */
 public class UpgradingActivity extends LockableActivity {
 
 	@Override public void onCreate(Bundle savedInstanceState) {

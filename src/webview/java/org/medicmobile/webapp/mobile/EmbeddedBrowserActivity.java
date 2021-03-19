@@ -2,9 +2,11 @@ package org.medicmobile.webapp.mobile;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.app.ActivityManager;
+import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.net.ConnectivityManager;
@@ -39,6 +41,7 @@ import static org.medicmobile.webapp.mobile.MedicLog.trace;
 import static org.medicmobile.webapp.mobile.MedicLog.warn;
 import static org.medicmobile.webapp.mobile.SimpleJsonClient2.redactUrl;
 import static org.medicmobile.webapp.mobile.Utils.createUseragentFrom;
+import static org.medicmobile.webapp.mobile.Utils.isConnectionError;
 import static org.medicmobile.webapp.mobile.Utils.isUrlRelated;
 import static org.medicmobile.webapp.mobile.Utils.restartApp;
 
@@ -133,6 +136,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 			toast(redactUrl(appUrl));
 		}
 
+		registerRetryConnectionBroadcastReceiver();
 	}
 
 	@Override
@@ -433,10 +437,19 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 			@Override
 			public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
 				String failingUrl = request.getUrl().toString();
-				trace(this, "onReceivedLoadError() :: url: %s, error code: %s, description: %s",
+				log(this, "onReceivedLoadError() :: url: %s, error code: %s, description: %s",
 						failingUrl, error.getErrorCode(), error.getDescription());
 				if (!getRootUrl().equals(failingUrl)) {
 					super.onReceivedError(view, request, error);
+				} else if (isConnectionError(error)) {
+					Intent intent = new Intent(view.getContext(), ConnectionErrorActivity.class);
+					if (isMigrationRunning) {
+						// Activity is not closable if the migration is running
+						intent
+							.putExtra("isClosable", false)
+							.putExtra("backPressedMessage", getResources().getString(R.string.waitMigration));
+					}
+					startActivity(intent);
 				} else {
 					evaluateJavascript(String.format(
 							"var body = document.evaluate('/html/body', document);" +
@@ -474,10 +487,31 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 					trace(this, "onPageStarted() :: Cookies loaded, skipping restart");
 				}
 			}
+
+			@Override public void onPageFinished(WebView view, String url) {
+				trace(this, "onPageFinished() :: url: %s", url);
+				// Broadcast the event so if the connection error
+				// activity is listening it will close
+				sendBroadcast(new Intent("onPageFinished"));
+			}
 		});
 	}
 
 	private void toast(String message) {
 		Toast.makeText(container.getContext(), message, Toast.LENGTH_LONG).show();
+	}
+
+	private void registerRetryConnectionBroadcastReceiver() {
+		BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+			@Override public void onReceive(Context context, Intent intent) {
+				String action = intent.getAction();
+				if (action.equals("retryConnection")) {
+					// user fixed the connection and asked the app
+					// to retry the load from the connection error activity
+					evaluateJavascript("window.location.reload()", false);
+				}
+			}
+		};
+		registerReceiver(broadcastReceiver, new IntentFilter("retryConnection"));
 	}
 }
