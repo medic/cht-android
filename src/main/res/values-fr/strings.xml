@@ -14,6 +14,5 @@
 	<string name="connErrorMessage">Vous n\'êtes pas bien connecté à internet. Veuillez vérifier votre connexion et réessayer.</string>
 	<string name="connErrorRetry">RÉESSAYER</string>
 
-	<string name="backToExit">Veuillez appuyer à nouveau pour quitter</string>
 	<string name="waitMigration">Veuillez attendre que la migration de données termine</string>
 </resources>

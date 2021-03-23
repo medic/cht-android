@@ -14,6 +14,5 @@
 	<string name="connErrorMessage">Parece que no estás conectado a Internet. Por favor chequeá tu conexión y volvé a intentar.</string>
 	<string name="connErrorRetry">REINTENTAR</string>
 
-	<string name="backToExit">Por favor presione hacia atrás de nuevo para salir</string>
 	<string name="waitMigration">Por favor espere a que el proceso de migración haya finalizado</string>
 </resources>
