@@ -40,6 +40,7 @@ import static org.medicmobile.webapp.mobile.MedicLog.log;
 import static org.medicmobile.webapp.mobile.MedicLog.trace;
 import static org.medicmobile.webapp.mobile.MedicLog.warn;
 import static org.medicmobile.webapp.mobile.SimpleJsonClient2.redactUrl;
+import static org.medicmobile.webapp.mobile.Utils.connectionErrorToString;
 import static org.medicmobile.webapp.mobile.Utils.createUseragentFrom;
 import static org.medicmobile.webapp.mobile.Utils.isConnectionError;
 import static org.medicmobile.webapp.mobile.Utils.isUrlRelated;
@@ -442,12 +443,14 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 				if (!getRootUrl().equals(failingUrl)) {
 					super.onReceivedError(view, request, error);
 				} else if (isConnectionError(error)) {
+					String connErrorInfo = connectionErrorToString(error);
 					Intent intent = new Intent(view.getContext(), ConnectionErrorActivity.class);
+					intent.putExtra("connErrorInfo", connErrorInfo);
 					if (isMigrationRunning) {
 						// Activity is not closable if the migration is running
 						intent
 							.putExtra("isClosable", false)
-							.putExtra("backPressedMessage", getResources().getString(R.string.waitMigration));
+							.putExtra("backPressedMessage", getString(R.string.waitMigration));
 					}
 					startActivity(intent);
 				} else {

@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+	<string name="btnMoreInfo">Plus d\'information</string>
+	<string name="btnRetry">Réessayer</string>
+
 	<string name="locRequestTitle">Accès à la position</string>
 	<string name="locRequestMessage">%s collecte votre position pour analyser et améliorer les services de santé dans votre région. Pour permettre l\'accès aux données de position, sélectionnez \"Activer\" et confirmez à l\'écran qui suivra.</string>
 	<string name="locRequestOkButton">Activer</string>
@@ -12,7 +15,6 @@
 
 	<string name="connErrorTitle">Aucune connexion Internet</string>
 	<string name="connErrorMessage">Vous n\'êtes pas bien connecté à internet. Veuillez vérifier votre connexion et réessayer.</string>
-	<string name="connErrorRetry">RÉESSAYER</string>
 
 	<string name="waitMigration">Veuillez attendre que la migration de données termine</string>
 </resources>

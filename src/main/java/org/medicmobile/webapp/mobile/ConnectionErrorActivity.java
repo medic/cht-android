@@ -24,6 +24,8 @@ import static org.medicmobile.webapp.mobile.MedicLog.trace;
  */
 public class ConnectionErrorActivity extends ClosableAppActivity {
 
+	String connErrorInfo;	// Error code and description
+
 	@Override public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		this.requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -39,16 +41,26 @@ public class ConnectionErrorActivity extends ClosableAppActivity {
 			}
 		};
 		registerReceiver(broadcastReceiver, new IntentFilter("onPageFinished"));
+
+		Intent i = getIntent();
+		connErrorInfo = i.getStringExtra("connErrorInfo");
 	}
 
 	@Override protected void onNewIntent(Intent intent) {
 		showMessageLayout();
 	}
 
+	// Retry connection
 	public void onClickRetry(View view) {
 		trace(this, "onClickRetry()");
 		sendBroadcast(new Intent("retryConnection"));
 		showSpinnerLayout();
+	}
+
+	// Show more info about the connection error
+	public void onClickMoreInfo(View view) {
+		trace(this, "onClickMoreInfo()");
+		AlertDialogUtils.show(this, getString(R.string.btnMoreInfo), connErrorInfo);
 	}
 
 	// Toggle layout components: hide the message layout

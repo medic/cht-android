@@ -90,4 +90,8 @@ final class Utils {
 		}
 		return false;
 	}
+
+	static String connectionErrorToString(WebResourceError error) {
+		return String.format("%s [%s]", error.getDescription(), error.getErrorCode());
+	}
 }
