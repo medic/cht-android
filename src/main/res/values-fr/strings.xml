@@ -10,10 +10,10 @@
 	<string name="upgradingTitle">Mise à jour de votre application</string>
 	<string name="upgradingMessage">Vous passez à la nouvelle version. Veuillez patienter pendant la preparation de vos données.</string>
 
-	<string name="connErrorTitle">Pas de connexion Internet</string>
-	<string name="connErrorMessage">Vous ne semblez pas connecté à Internet. Veuillez vérifier votre connexion et réessayer.</string>
-	<string name="connErrorRetry">RECOMMENCEZ</string>
+	<string name="connErrorTitle">Aucune connexion Internet</string>
+	<string name="connErrorMessage">Vous n\'êtes pas bien connecté à internet. Veuillez vérifier votre connexion et réessayer.</string>
+	<string name="connErrorRetry">RÉESSAYER</string>
 
 	<string name="backToExit">Veuillez appuyer à nouveau pour quitter</string>
-	<string name="waitMigration">Veuillez attendre la fin du processus de migration</string>
+	<string name="waitMigration">Veuillez attendre que la migration de données termine</string>
 </resources>
