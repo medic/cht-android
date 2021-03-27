@@ -214,10 +214,10 @@ public class MedicAndroidJavascript {
 	}
 
 	@android.webkit.JavascriptInterface
-	public void rdToolkit_provisionRDTest(String sessionId, String patientName, String patientId) {
+	public void rdToolkit_provisionRDTest(String sessionId, String patientName, String patientId, String rdtFilter, String monitorApiURL) {
 		try {
-			this.rdToolkitSupport.provisionRDTest(sessionId, patientName, patientId);
-		} catch(Exception ex) {
+			this.rdToolkitSupport.provisionRDTest(sessionId, patientName, patientId, rdtFilter, monitorApiURL);
+		} catch (Exception ex) {
 			logException(ex);
 		}
 	}
@@ -226,7 +226,7 @@ public class MedicAndroidJavascript {
 	public void rdToolkit_captureRDTest(String sessionId) {
 		try {
 			this.rdToolkitSupport.captureRDTest(sessionId);
-		} catch(Exception ex) {
+		} catch (Exception ex) {
 			logException(ex);
 		}
 	}

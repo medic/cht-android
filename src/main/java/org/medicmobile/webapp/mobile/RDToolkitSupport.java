@@ -68,19 +68,21 @@ public class RDToolkitSupport {
 		}
 	}
 
-	Intent provisionRDTest(String sessionId, String patientName, String patientId) {
+	Intent provisionRDTest(String sessionId, String patientName, String patientId, String rdtFilter, String monitorApiURL) {
+		ProvisionMode provisionMode = !rdtFilter.trim().matches("\\S+") ? ProvisionMode.CRITERIA_SET_AND : ProvisionMode.CRITERIA_SET_OR;
 		Intent intent = RdtIntentBuilder
 				.forProvisioning()
+				.setCallingPackage(ctx.getPackageName())
+				.setReturnApplication(ctx)
 				// Type of test to choose from
-				.requestProfileCriteria("mal_pf", ProvisionMode.CRITERIA_SET_AND)
+				.requestProfileCriteria(rdtFilter, provisionMode)
 				// Unique ID for RDT test
 				.setSessionId(sessionId)
 				// First line text to display in RDT App and differentiate running tests
 				.setFlavorOne(patientName)
 				// Second line text to display in RDT App and differentiate running tests
 				.setFlavorTwo(patientId)
-				.setReturnApplication(ctx)
-				// For debugging add: .setInTestQaMode()
+				.setCloudworksBackend(monitorApiURL, patientId)
 				.build();
 
 		if (intent.resolveActivity(ctx.getPackageManager()) != null) {
