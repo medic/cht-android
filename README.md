@@ -6,18 +6,18 @@ The medic-android application is a thin wrapper to load the [CHT Core Framework]
 
 # APKs
 
-For compatibility with a wide range of devices the build script produces multiple APKs. The two variables are the architecture of the device's CPU, and the supported Android version. When publishing to the Google Play Store upload all APKs and it will automatically choose the right one for the target device. When sideloading the application it is essential to pick the correct APK or the application may crash.
+For compatibility with a wide range of devices the build script produces multiple APKs. The two variables are the architecture of the device's CPU, and the supported Android version. When publishing to the Google Play Store upload all APKs and it will automatically choose the right one for the target device. However, when sideloading the application it is essential to pick the correct APK or the application may crash.
 
 To help you pick which APK to install you can find information about the version of Android and the CPU in the About section of the phone's settings menu.
 
-The APKs are named as follows: `medic-android-{version}-{brand}-{rendering-engine}-{architecture}-release.apk`
+The APKs are named as follows: `medic-android-{version}-{brand}-{rendering-engine}-{instruction-set}-release.apk`
 
-| Rendering engine | Architecture  | Android version | Notes |
-|------------------|---------------|-----------------|--|
-| `webview`        | `arm64-v8a`   | 10+             |  Preferred. Use this APK if possible. |
-| `webview`        | `armeabi-v7a` | 10+             | Built but not compatible with any devices. Ignore this APK. |
-| `xwalk`          | `arm64-v8a`   | 4.4 - 9         |  |
-| `xwalk`          | `armeabi-v7a` | 4.4 - 9         |  |
+| Rendering engine | Instruction set | Android version | Notes |
+|------------------|-----------------|-----------------|--|
+| `webview`        | `arm64-v8a`     | 10+             |  Preferred. Use this APK if possible. |
+| `webview`        | `armeabi-v7a`   | 10+             | Built but not compatible with any devices. Ignore this APK. |
+| `xwalk`          | `arm64-v8a`     | 4.4 - 9         |  |
+| `xwalk`          | `armeabi-v7a`   | 4.4 - 9         |  |
 
 # Release notes
 
