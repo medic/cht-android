@@ -15,7 +15,7 @@ The medic-android application is a thin wrapper to load the [CHT Core Framework]
 - [improvement] [#163](https://github.com/medic/medic-android/issues/163) New UX of Crosswalk to Webview migration:
   - Add splash screen while the data is migrated.
   - Fix bug that cause redirect to the login page after migrate.
-- [improvement] Remove `READ_EXTERNAL_STORAGE` from the following flavors: `cmmb_kenya` and `surveillance_covid19_kenya` (the permission was not used by the flavors).
+- [improvement] Remove unused `READ_EXTERNAL_STORAGE` from the `cmmb_kenya` and `surveillance_covid19_kenya` flavors
 
 ## 0.7.3
 
