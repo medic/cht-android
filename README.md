@@ -6,7 +6,7 @@ The medic-android application is a thin wrapper to load the [CHT Core Framework]
 
 # APKs
 
-For compatibility with a wide range of devices the build script produces multiple APKs. The two variables are the architecture of the device's CPU, and the supported Android version. When publishing to the Google Play Store upload all APKs and it will automatically choose the right one for the target device. However, when sideloading the application it is essential to pick the correct APK or the application may crash.
+For compatibility with a wide range of devices the build script produces multiple APKs. The two variables are the instruction set used by the device's CPU, and the supported Android version. When publishing to the Google Play Store upload all APKs and it will automatically choose the right one for the target device. However, when sideloading the application it is essential to pick the correct APK or the application may crash.
 
 To help you pick which APK to install you can find information about the version of Android and the CPU in the About section of the phone's settings menu.
 
