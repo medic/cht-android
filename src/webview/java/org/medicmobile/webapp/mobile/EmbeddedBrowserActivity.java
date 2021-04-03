@@ -5,6 +5,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.app.ActivityManager;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
@@ -27,6 +28,7 @@ import android.widget.Toast;
 
 import java.util.Arrays;
 
+import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
@@ -54,6 +56,11 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	static final int DISCLOSURE_LOCATION_ACTIVITY_REQUEST_CODE = (2 << 3) | NON_SIMPRINTS_FLAGS;
 	static final int RDTOOLKIT_PROVISION_ACTIVITY_REQUEST_CODE = (3 << 3) | NON_SIMPRINTS_FLAGS;
 	static final int RDTOOLKIT_CAPTURE_ACTIVITY_REQUEST_CODE = (4 << 3) | NON_SIMPRINTS_FLAGS;
+
+	private static String[] PERMISSIONS_STORAGE = {
+			Manifest.permission.READ_EXTERNAL_STORAGE,
+			Manifest.permission.WRITE_EXTERNAL_STORAGE
+	};
 
 	// Arbitrarily selected value
 	private static final int ACCESS_FINE_LOCATION_PERMISSION_REQUEST_CODE = 7038678;
@@ -212,12 +219,24 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 							}
 						}
 						return;
+
 					case RDTOOLKIT_PROVISION_ACTIVITY_REQUEST_CODE:
 					case RDTOOLKIT_CAPTURE_ACTIVITY_REQUEST_CODE:
-						String jsCode = rdToolkitSupport.process(requestCode, resultCode, i);
-						trace(this, "RDToolkit executing JavaScript: %s", jsCode);
-						evaluateJavascript(jsCode);
+						int readPermission = ContextCompat.checkSelfPermission(this, READ_EXTERNAL_STORAGE);
+						int writePermission = ContextCompat.checkSelfPermission(this, READ_EXTERNAL_STORAGE);
+
+						if (readPermission == PackageManager.PERMISSION_GRANTED && writePermission == PackageManager.PERMISSION_GRANTED) {
+							trace(this, "Storage permissions are granted for RDTOOLKIT");
+							String jsCode = rdToolkitSupport.process(requestCode, resultCode, i);
+							trace(this, "RDToolkit executing JavaScript: %s", jsCode);
+							evaluateJavascript(jsCode);
+							return;
+						}
+
+						trace(this, "Requesting storage permissions for RDTOOLKIT");
+						ActivityCompat.requestPermissions(this, PERMISSIONS_STORAGE, RDTOOLKIT_CAPTURE_ACTIVITY_REQUEST_CODE);
 						return;
+
 					default:
 						trace(this, "onActivityResult() :: no handling for requestCode=%s",
 								requestCodeToString(requestCode));
