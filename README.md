@@ -33,6 +33,8 @@ The APKs are named as follows: `medic-android-{version}-{brand}-{rendering-engin
   - Fix bug that caused redirect to the login page after migrate.
 - [improvement] Remove unused `READ_EXTERNAL_STORAGE` from the `cmmb_kenya` and `surveillance_covid19_kenya` flavors
 
+You can see more about these changes in the release notes for [CHT Core v3.11.0](https://github.com/medic/cht-core/blob/master/release-notes/docs/3.11.0.md)
+
 ## 0.7.3
 
 ### Changes
