@@ -73,10 +73,6 @@ public class LoginTests {
 
 	@Test
 	public void checkLoginPageObjects() throws Exception {
-//		preferencesEditor.putString("api-url", SERVER_URL);
-//		preferencesEditor.commit();
-
-		// Launch activity
 		mActivityRule.launchActivity(new Intent());
 		Thread.sleep(5000);//TODO: use better ways to handle delays
 		onWebView()
