@@ -41,7 +41,7 @@ import static org.hamcrest.Matchers.anything;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class SettingsDialogActivityTest {
 
-	private static final String WEBAPP_URL ="Webapp URL" ;
+	private static final String WEBAPP_URL = "Webapp URL";
 	private static final String SERVER_ONE = "https://medic.github.io/atp";
 	private static final String SERVER_TWO = "https://gamma-cht.dev.medicmobile.org";
 	private static final String SERVER_THREE = "https://gamma.dev.medicmobile.org";
@@ -54,12 +54,10 @@ public class SettingsDialogActivityTest {
 		onView(withText("Medic Mobile")).check(matches(isDisplayed()));
 		onView(withText("Custom")).check(matches(isDisplayed()));
 		onView(withId(R.id.lstServers)).check(matches(isDisplayed()));
-//		 onView(allOf(withId(R.id.txtUrl))).
-//				 check(matches(hasChildCount(3)));//three servers
-        // servers
-		onView( withText(SERVER_ONE)).check(matches(isDisplayed()));
-		onView( withText(SERVER_TWO)).check(matches(isDisplayed()));
-		onView( withText(SERVER_THREE)).check(matches(isDisplayed()));
+		// servers
+		onView(withText(SERVER_ONE)).check(matches(isDisplayed()));
+		onView(withText(SERVER_TWO)).check(matches(isDisplayed()));
+		onView(withText(SERVER_THREE)).check(matches(isDisplayed()));
 		//wrong server tests
 		onView(withText("Custom")).perform(click());
 		ViewInteraction textAppUrl = onView(withId(R.id.txtAppUrl));
@@ -75,13 +73,13 @@ public class SettingsDialogActivityTest {
 	@Test
 	public void testValidServerUrl() {
 		//select valid instance
-		onView( withText(SERVER_ONE)).check(matches(isDisplayed()));
+		onView(withText(SERVER_ONE)).check(matches(isDisplayed()));
 		DataInteraction linearLayout = onData(anything())
-		.inAdapterView(allOf(withId(R.id.lstServers),
-				childAtPosition(
-						withId(android.R.id.content),
-						0)))
-		.atPosition(2);
+				.inAdapterView(allOf(withId(R.id.lstServers),
+						childAtPosition(
+								withId(android.R.id.content),
+								0)))
+				.atPosition(2);
 		linearLayout.perform(click());
 
 		ViewInteraction webView = onView(

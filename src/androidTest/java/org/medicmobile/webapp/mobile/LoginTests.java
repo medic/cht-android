@@ -46,8 +46,6 @@ import static androidx.test.espresso.web.webdriver.DriverAtoms.getText;
 import static androidx.test.espresso.web.webdriver.DriverAtoms.webClick;
 import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentation;
 import static org.hamcrest.Matchers.containsString;
-import static org.medicmobile.webapp.mobile.BuildConfig.TEST_USERNAME;
-import static org.medicmobile.webapp.mobile.BuildConfig.TEST_PASSWORD;
 
 @LargeTest
 @RunWith(AndroidJUnit4.class)
@@ -61,7 +59,7 @@ public class LoginTests {
 	public static final String SERVER_URL = BuildConfig.SERVER_URL;
 
 	@Rule
-	public ActivityTestRule<StartupActivity> mActivityRule = new ActivityTestRule<StartupActivity>(
+	public ActivityTestRule<StartupActivity> mActivityRule = new ActivityTestRule<>(
 			StartupActivity.class);
 	SharedPreferences.Editor preferencesEditor;
 
