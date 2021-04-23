@@ -10,6 +10,13 @@ jobs:
     - uses: actions/checkout@v2
     - name: Test
       run: make test
+    - name: Run Instrumentation Tests
+      uses: malinskiy/action-android/emulator-run-cmd@release/0.0.3
+      with:
+        cmd: ./gradlew connectedUnbrandedWebviewDebugAndroidTest --stacktrace
+        api: 29
+        tag: default
+        abi: x86_64
     - name: Set up ruby
       uses: ruby/setup-ruby@v1
       with:
