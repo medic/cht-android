@@ -11,12 +11,12 @@ jobs:
     - name: Test
       run: make test
     - name: Run Instrumentation Tests
-      uses: malinskiy/action-android/emulator-run-cmd@release/0.0.3
+      uses: reactivecircus/android-emulator-runner@v2
       with:
         cmd: ./gradlew connectedUnbrandedWebviewDebugAndroidTest --stacktrace
-        api: 29
+        api: 30
         tag: default
-        abi: x86_64
+        abi: arm64-v8a
     - name: Set up ruby
       uses: ruby/setup-ruby@v1
       with:
