@@ -7,7 +7,6 @@ import android.view.ViewParent;
 
 import androidx.test.espresso.DataInteraction;
 import androidx.test.espresso.ViewInteraction;
-import androidx.test.espresso.web.sugar.Web;
 import androidx.test.espresso.web.webdriver.DriverAtoms;
 import androidx.test.espresso.web.webdriver.Locator;
 import androidx.test.filters.LargeTest;
@@ -49,8 +48,6 @@ import static androidx.test.espresso.web.webdriver.DriverAtoms.webClick;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anything;
 import static org.hamcrest.Matchers.containsString;
-import static org.medicmobile.webapp.mobile.BuildConfig.TEST_PASSWORD;
-import static org.medicmobile.webapp.mobile.BuildConfig.TEST_USERNAME;
 
 @LargeTest
 @RunWith(AndroidJUnit4.class)
@@ -71,11 +68,11 @@ public class SettingsDialogActivityTest {
 		onView(withText("Medic Mobile")).check(matches(isDisplayed()));
 		onView(withText("Custom")).check(matches(isDisplayed()));
 		onView(withId(R.id.lstServers)).check(matches(isDisplayed()));
-		// servers
+
 		onView(withText(SERVER_ONE)).check(matches(isDisplayed()));
 		onView(withText(SERVER_TWO)).check(matches(isDisplayed()));
 		onView(withText(SERVER_THREE)).check(matches(isDisplayed()));
-		//wrong server tests
+
 		onView(withText("Custom")).perform(click());
 		ViewInteraction textAppUrl = onView(withId(R.id.txtAppUrl));
 		textAppUrl.check(matches(withHint(WEBAPP_URL)));
@@ -123,7 +120,7 @@ public class SettingsDialogActivityTest {
 				.perform(DriverAtoms.webKeys("fake_password"))
 				.withElement(findElement(Locator.ID, "login"))
 				.perform(webClick());
-		Thread.sleep(2000);//TODO: use better ways to handle delays
+		Thread.sleep(4000);//TODO: use better ways to handle delays - takes longer with emulators
 		onWebView().withElement(findElement(Locator.CSS_SELECTOR, "p.error.incorrect"))
 				.check(webMatches(getText(), containsString(ERROR_INCORRECT)));
 	}
