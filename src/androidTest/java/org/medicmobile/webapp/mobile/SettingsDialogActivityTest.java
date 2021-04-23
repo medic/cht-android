@@ -7,6 +7,9 @@ import android.view.ViewParent;
 
 import androidx.test.espresso.DataInteraction;
 import androidx.test.espresso.ViewInteraction;
+import androidx.test.espresso.web.sugar.Web;
+import androidx.test.espresso.web.webdriver.DriverAtoms;
+import androidx.test.espresso.web.webdriver.Locator;
 import androidx.test.filters.LargeTest;
 import androidx.test.rule.ActivityTestRule;
 import androidx.test.runner.AndroidJUnit4;
@@ -19,6 +22,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
+
+import java.util.Locale;
 
 import static androidx.test.espresso.Espresso.onData;
 import static androidx.test.espresso.Espresso.onView;
@@ -33,8 +38,19 @@ import static androidx.test.espresso.matcher.ViewMatchers.withHint;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withParent;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
+import static androidx.test.espresso.web.assertion.WebViewAssertions.webContent;
+import static androidx.test.espresso.web.assertion.WebViewAssertions.webMatches;
+import static androidx.test.espresso.web.matcher.DomMatchers.hasElementWithId;
+import static androidx.test.espresso.web.sugar.Web.onWebView;
+import static androidx.test.espresso.web.webdriver.DriverAtoms.clearElement;
+import static androidx.test.espresso.web.webdriver.DriverAtoms.findElement;
+import static androidx.test.espresso.web.webdriver.DriverAtoms.getText;
+import static androidx.test.espresso.web.webdriver.DriverAtoms.webClick;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anything;
+import static org.hamcrest.Matchers.containsString;
+import static org.medicmobile.webapp.mobile.BuildConfig.TEST_PASSWORD;
+import static org.medicmobile.webapp.mobile.BuildConfig.TEST_USERNAME;
 
 @LargeTest
 @RunWith(AndroidJUnit4.class)
@@ -45,12 +61,13 @@ public class SettingsDialogActivityTest {
 	private static final String SERVER_ONE = "https://medic.github.io/atp";
 	private static final String SERVER_TWO = "https://gamma-cht.dev.medicmobile.org";
 	private static final String SERVER_THREE = "https://gamma.dev.medicmobile.org";
+	private static final String ERROR_INCORRECT = "Incorrect user name or password. Please try again.";
 
 	@Rule
 	public ActivityTestRule<SettingsDialogActivity> mActivityTestRule = new ActivityTestRule<>(SettingsDialogActivity.class);
 
 	@Test
-	public void testServerSelectionScreen() {
+	public void serverSelectionScreenIsDisplayed() {
 		onView(withText("Medic Mobile")).check(matches(isDisplayed()));
 		onView(withText("Custom")).check(matches(isDisplayed()));
 		onView(withId(R.id.lstServers)).check(matches(isDisplayed()));
@@ -71,9 +88,7 @@ public class SettingsDialogActivityTest {
 	}
 
 	@Test
-	public void testValidServerUrl() {
-		//select valid instance
-		onView(withText(SERVER_ONE)).check(matches(isDisplayed()));
+	public void testLoginScreen() throws Exception {
 		DataInteraction linearLayout = onData(anything())
 				.inAdapterView(allOf(withId(R.id.lstServers),
 						childAtPosition(
@@ -81,6 +96,7 @@ public class SettingsDialogActivityTest {
 								0)))
 				.atPosition(2);
 		linearLayout.perform(click());
+		Thread.sleep(10000);//TODO: use better ways to handle delays
 
 		ViewInteraction webView = onView(
 				allOf(withId(R.id.wbvMain),
@@ -88,6 +104,33 @@ public class SettingsDialogActivityTest {
 								withParent(withId(android.R.id.content)))),
 						isDisplayed()));
 		webView.check(matches(isDisplayed()));
+		onWebView()
+				.check(webContent(hasElementWithId("form")))
+				.withElement(findElement(Locator.ID, "locale"))
+				.check(webMatches(getText(), containsString("English")));
+		String[] codes = {"es", "en", "fr", "sw"};
+		for (String code : codes) {
+			onWebView().withElement(findElement(Locator.NAME, code))
+					.check(webMatches(getText(), containsString(getLanguage(code))));
+		}
+
+		//login form and errors
+		onWebView().withElement(findElement(Locator.ID, "user"))
+				.perform(clearElement())
+				.perform(DriverAtoms.webKeys("fakename"))    //to be created first
+				.withElement(findElement(Locator.ID, "password"))
+				.perform(clearElement())
+				.perform(DriverAtoms.webKeys("fake_password"))
+				.withElement(findElement(Locator.ID, "login"))
+				.perform(webClick());
+		Thread.sleep(2000);//TODO: use better ways to handle delays
+		onWebView().withElement(findElement(Locator.CSS_SELECTOR, "p.error.incorrect"))
+				.check(webMatches(getText(), containsString(ERROR_INCORRECT)));
+	}
+
+	private String getLanguage(String code) {
+		Locale aLocale = new Locale(code);
+		return aLocale.getDisplayName();
 	}
 
 	private static Matcher<View> childAtPosition(
