@@ -45,36 +45,35 @@ jobs:
         with:
           java-version: 1.8
 
-      - name: check essembled apks#Assemble app debug APK
-        run: bash ls /home/runner/work/medic-android/medic-android/app/build/outputs/apk/debug/
+#       - name: Assemble app debug APK
 #         run: bash ./gradlew assembleUnbrandedWebviewDebug --stacktrace
 #         env:
 #           ANDROID_KEYSTORE_PATH: ${{ secrets.ANDROID_KEYSTORE_PATH }}
 #           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
 #           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
 #           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-#       - name: Upload app APK
-#         uses: actions/upload-artifact@v1
-#         with:
-#           name: app-debug
-#           path: app/build/outputs/apk/debug/app-debug.apk
-      - name: check apk saved
-        run: bash ls app/build/outputs/apk/debug
+      - name: Upload app APK
+        uses: actions/upload-artifact@v1
+        with:
+          name: app-debug
+          path: /app/build/outputs/apk/unbrandedWebview/debug/medic-android-SNAPSHOT-unbranded-webview-armeabi-v7a-debug.apk
+#       - name: check apk saved
+#         run: bash ls app/build/outputs/apk/debug
 
-      - name: Assemble Android Instrumentation Tests
-        run: bash ./gradlew assembleUnbrandedWebviewDebugAndroidTest
-        env:
-          ANDROID_KEYSTORE_PATH: ${{ secrets.ANDROID_KEYSTORE_PATH }}
-          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+#       - name: Assemble Android Instrumentation Tests
+#         run: bash ./gradlew assembleUnbrandedWebviewDebugAndroidTest
+#         env:
+#           ANDROID_KEYSTORE_PATH: ${{ secrets.ANDROID_KEYSTORE_PATH }}
+#           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+#           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+#           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
       - name: Upload Android Test APK
         uses: actions/upload-artifact@v1
         with:
           name: app-debug-androidTest
-          path: app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
-      - name: check test-apk saved
-        run: bash ls app/build/outputs/apk/androidTest/debug
+          path: app/build/outputs/apk/androidTest/unbrandedWebview/debug/medic-android-SNAPSHOT-unbranded-webview-debug-androidTest.apk.apk
+#       - name: check test-apk saved
+#         run: bash ls app/build/outputs/apk/androidTest/debug
         
 #   firebase:
 #     name: Run UI tests with Firebase Test Lab
