@@ -40,7 +40,5 @@ jobs:
     - name: Run Instrumentation Tests
       uses: reactivecircus/android-emulator-runner@v2
       with:
-        cmd: ./gradlew connectedUnbrandedWebviewDebugAndroidTest --stacktrace
-        api: 30
-        tag: default
-        abi: arm64-v8a
+        api-level: 29
+        script: ./gradlew connectedUnbrandedWebviewDebugAndroidTest --stacktrace    
