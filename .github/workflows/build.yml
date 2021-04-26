@@ -40,3 +40,33 @@ jobs:
       with:
         lane: build
         options: '{ "flavor": "unbranded" }'
+apk:
+    name: Generate APK
+    runs-on: ubuntu-18.04
+
+    steps:
+      - uses: actions/checkout@v1
+      - name: Set up JDK 1.8
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+
+      - name: Assemble app debug APK
+        run: bash ./gradlew assembleUndrandedWebviewDebug --stacktrace
+      - name: Upload app APK
+        uses: actions/upload-artifact@v1
+        with:
+          name: app-debug
+          path: app/build/outputs/apk/debug/app-debug.apk
+      - name: Final check apk
+        run: bash ls app/build/outputs/apk/debug
+
+      - name: Assemble Android Instrumentation Tests
+        run: bash ./gradlew assembleUndrandedWebviewDebugAndroidTest
+      - name: Upload Android Test APK
+        uses: actions/upload-artifact@v1
+        with:
+          name: app-debug-androidTest
+          path: app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
+      - name: Final check
+        run: bash ls app/build/outputs/apk/androidTest/debug
