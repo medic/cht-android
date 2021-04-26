@@ -40,7 +40,7 @@ jobs:
       with:
         lane: build
         options: '{ "flavor": "unbranded" }'
-apk:
+  apk:
     name: Generate APK
     runs-on: ubuntu-18.04
 
