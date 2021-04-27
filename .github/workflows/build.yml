@@ -3,88 +3,88 @@ name: Build and test
 on: [push, pull_request]
 
 jobs:
-  build:
-    name: Build
-    runs-on: ubuntu-18.04
-    steps:
-    - uses: actions/checkout@v2
-    - name: Test
-      run: make test
-    - name: Set up ruby
-      uses: ruby/setup-ruby@v1
-      with:
-        ruby-version: 2.6
-    - name: Set up fastlane
-      run: gem install fastlane --no-document --quiet
-    - name: Unpack secrets
-      env:
-        ANDROID_SECRETS_KEY: ${{ secrets.ANDROID_SECRETS_KEY }}
-        ANDROID_SECRETS_IV: ${{ secrets.ANDROID_SECRETS_IV }}
-      run: |
-        openssl aes-256-cbc -K $ANDROID_SECRETS_KEY -iv $ANDROID_SECRETS_IV -in secrets.tar.gz.enc -out ./secrets.tar.gz -d
-        tar -xf ./secrets.tar.gz
-    - name: Assemble unbranded
-      uses: maierj/fastlane-action@v1.4.0
-      env:
-        ANDROID_KEYSTORE_PATH: ${{ secrets.ANDROID_KEYSTORE_PATH }}
-        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-        ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-      with:
-        lane: build
-        options: '{ "flavor": "unbranded" }'
-    - name: Upload app APK
-      uses: actions/upload-artifact@v1
-      with:
-        name: app-debug
-        path: /home/runner/work/medic-android/medic-android/build/outputs/apk/unbrandedWebview/debug/medic-android-SNAPSHOT-unbranded-webview-armeabi-v7a-debug.apk
-    
-    - name: Assemble Android Instrumentation Tests
-      run: bash ./gradlew assembleUnbrandedWebviewDebugAndroidTest     
-    - name: Upload Android Test APK
-      uses: actions/upload-artifact@v1
-      with:
-        name: app-debug-androidTest
-        path: /home/runner/work/medic-android/medic-android/build/outputs/apk/androidTest/unbrandedWebview/debug/medic-android-SNAPSHOT-unbranded-webview-debug-androidTest.apk.apk
-        
-#   apk:
-#     name: Generate test APK
+#   build:
+#     name: Build
 #     runs-on: ubuntu-18.04
-
 #     steps:
-#       - uses: actions/checkout@v1
-#       - name: Set up JDK 1.8
-#         uses: actions/setup-java@v1
-#         with:
-#           java-version: 1.8
+#     - uses: actions/checkout@v2
+#     - name: Test
+#       run: make test
+#     - name: Set up ruby
+#       uses: ruby/setup-ruby@v1
+#       with:
+#         ruby-version: 2.6
+#     - name: Set up fastlane
+#       run: gem install fastlane --no-document --quiet
+#     - name: Unpack secrets
+#       env:
+#         ANDROID_SECRETS_KEY: ${{ secrets.ANDROID_SECRETS_KEY }}
+#         ANDROID_SECRETS_IV: ${{ secrets.ANDROID_SECRETS_IV }}
+#       run: |
+#         openssl aes-256-cbc -K $ANDROID_SECRETS_KEY -iv $ANDROID_SECRETS_IV -in secrets.tar.gz.enc -out ./secrets.tar.gz -d
+#         tar -xf ./secrets.tar.gz
+#     - name: Assemble unbranded
+#       uses: maierj/fastlane-action@v1.4.0
+#       env:
+#         ANDROID_KEYSTORE_PATH: ${{ secrets.ANDROID_KEYSTORE_PATH }}
+#         ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+#         ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+#         ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+#       with:
+#         lane: build
+#         options: '{ "flavor": "unbranded" }'
+#     - name: Upload app APK
+#       uses: actions/upload-artifact@v1
+#       with:
+#         name: app-debug
+#         path: /home/runner/work/medic-android/medic-android/build/outputs/apk/unbrandedWebview/debug/medic-android-SNAPSHOT-unbranded-webview-armeabi-v7a-debug.apk
+    
+#     - name: Assemble Android Instrumentation Tests
+#       run: bash ./gradlew assembleUnbrandedWebviewDebugAndroidTest     
+#     - name: Upload Android Test APK
+#       uses: actions/upload-artifact@v1
+#       with:
+#         name: app-debug-androidTest
+#         path: /home/runner/work/medic-android/medic-android/build/outputs/apk/androidTest/unbrandedWebview/debug/medic-android-SNAPSHOT-unbranded-webview-debug-androidTest.apk.apk
+        
+  apk:
+    name: Generate test APK
+    runs-on: ubuntu-18.04
 
-#       - name: Assemble app debug APK
-#         run: bash ./gradlew assembleUnbrandedWebviewDebug --stacktrace
-#         env:
-#           ANDROID_KEYSTORE_PATH: ${{ secrets.ANDROID_KEYSTORE_PATH }}
-#           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-#           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-#           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-#       - name: Upload app APK
-#         uses: actions/upload-artifact@v1
-#         with:
-#           name: app-debug
-#           path: /app/build/outputs/apk/unbrandedWebview/debug/medic-android-SNAPSHOT-unbranded-webview-armeabi-v7a-debug.apk
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 1.8
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+
+      - name: Assemble app debug APK
+        run: bash ./gradlew assembleUnbrandedWebviewDebug --stacktrace
+        env:
+          ANDROID_KEYSTORE_PATH: ${{ secrets.ANDROID_KEYSTORE_PATH }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+      - name: Upload app APK
+        uses: actions/upload-artifact@v1
+        with:
+          name: app-debug
+          path: /app/build/outputs/apk/unbrandedWebview/debug/medic-android-SNAPSHOT-unbranded-webview-armeabi-v7a-debug.apk
 #       - name: check apk saved
 #         run: bash ls app/build/outputs/apk/debug
 
-#       - name: Assemble Android Instrumentation Tests
-#         run: bash ./gradlew assembleUnbrandedWebviewDebugAndroidTest
-#         env:
-#           ANDROID_KEYSTORE_PATH: ${{ secrets.ANDROID_KEYSTORE_PATH }}
-#           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-#           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-#           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-#       - name: Upload Android Test APK
-#         uses: actions/upload-artifact@v1
-#         with:
-#           name: app-debug-androidTest
-#           path: app/build/outputs/apk/androidTest/unbrandedWebview/debug/medic-android-SNAPSHOT-unbranded-webview-debug-androidTest.apk.apk
+      - name: Assemble Android Instrumentation Tests
+        run: bash ./gradlew assembleUnbrandedWebviewDebugAndroidTest
+        env:
+          ANDROID_KEYSTORE_PATH: ${{ secrets.ANDROID_KEYSTORE_PATH }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+      - name: Upload Android Test APK
+        uses: actions/upload-artifact@v1
+        with:
+          name: app-debug-androidTest
+          path: app/build/outputs/apk/androidTest/unbrandedWebview/debug/medic-android-SNAPSHOT-unbranded-webview-debug-androidTest.apk.apk
 #       - name: check test-apk saved
 #         run: bash ls app/build/outputs/apk/androidTest/debug
         
