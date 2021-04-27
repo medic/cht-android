@@ -37,7 +37,7 @@ jobs:
       uses: actions/upload-artifact@v1
       with:
         name: app-debug
-        path: /app/build/outputs/apk/unbrandedWebview/debug/medic-android-SNAPSHOT-unbranded-webview-armeabi-v7a-debug.apk
+        path: /home/runner/work/medic-android/medic-android/build/outputs/apk/unbrandedWebview/debug/medic-android-SNAPSHOT-unbranded-webview-armeabi-v7a-debug.apk
     
     - name: Assemble Android Instrumentation Tests
       run: bash ./gradlew assembleUnbrandedWebviewDebugAndroidTest     
@@ -45,7 +45,7 @@ jobs:
       uses: actions/upload-artifact@v1
       with:
         name: app-debug-androidTest
-        path: app/build/outputs/apk/androidTest/unbrandedWebview/debug/medic-android-SNAPSHOT-unbranded-webview-debug-androidTest.apk.apk
+        path: /home/runner/work/medic-android/medic-android/build/outputs/apk/androidTest/unbrandedWebview/debug/medic-android-SNAPSHOT-unbranded-webview-debug-androidTest.apk.apk
         
 #   apk:
 #     name: Generate test APK
