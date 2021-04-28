@@ -331,7 +331,7 @@ android {
       include(
           'armeabi-v7a',
           'arm64-v8a',
-          //'x86',     //--> uncomment to be able to deploy the app in Android 10+ virtual devices
+          'x86',     //--> uncomment to be able to deploy the app in Android 10+ virtual devices
       )
       universalApk false
     }
