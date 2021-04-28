@@ -96,6 +96,13 @@ This release changes the way in which location data is collected to better align
 3. Plug in your phone. Check it's detected with `adb devices`
 4. Execute: `make` (will also push app unto phone)
 
+# Testing - Instrumentation Tests (UI Tests)
+
+1. Install Android SDK
+2. Clone the repo
+3. Plug in your phone. Check it's detected with `adb devices`
+4. Execute: `./gradlew connected[Flavor]WebviewDebugAndroidTest` . Eg `./gradlew connectedUnbrandedWebviewDebugAndroidTest` or `./gradlew connectedMedicmobilegammaWebviewDebugAndroidTest`. At the moment we have tests only in these 2 flavors: unbranded and medicmobilegamma.
+
 ## Connecting to the server locally
 Refer to the [cht-core Developer Guide](https://github.com/medic/cht-core/blob/master/DEVELOPMENT.md#testing-locally-with-devices).
 
