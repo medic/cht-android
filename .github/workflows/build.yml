@@ -43,7 +43,7 @@ jobs:
       uses: reactivecircus/android-emulator-runner@v2
       with:
         api-level: 29
-        script: ./gradlew connectedUnbrandedWebviewAndroidTest --stacktrace
+        script: ./gradlew connectedUnbrandedWebviewDebugAndroidTest --stacktrace
     - name: run tests on gamma
       uses: reactivecircus/android-emulator-runner@v2
       with:
