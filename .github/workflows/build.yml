@@ -10,13 +10,6 @@ jobs:
     - uses: actions/checkout@v2
     - name: Test
       run: make test
-    - name: Run Instrumentation Tests
-      uses: malinskiy/action-android/emulator-run-cmd@release/0.0.3
-      with:
-        cmd: ./gradlew connectedUnbrandedWebviewDebugAndroidTest --stacktrace
-        api: 29
-        tag: default
-        abi: x86
     - name: Set up ruby
       uses: ruby/setup-ruby@v1
       with:
@@ -41,13 +34,13 @@ jobs:
         lane: build
         options: '{ "flavor": "unbranded" }'
 
-#   instrumentation-tests:
-#     runs-on: macos-latest
-#     steps:
-#     - name: checkout
-#       uses: actions/checkout@v2
-#     - name: run tests
-#       uses: reactivecircus/android-emulator-runner@v2
-#       with:
-#         api-level: 29
-#         script: ./gradlew connectedUnbrandedWebviewAndroidTest
+  instrumentation-tests:
+    runs-on: macos-latest
+    steps:
+    - name: checkout
+      uses: actions/checkout@v2
+    - name: run tests
+      uses: reactivecircus/android-emulator-runner@v2
+      with:
+        api-level: 29
+        script: ./gradlew connectedUnbrandedWebviewAndroidTest --stacktrace
