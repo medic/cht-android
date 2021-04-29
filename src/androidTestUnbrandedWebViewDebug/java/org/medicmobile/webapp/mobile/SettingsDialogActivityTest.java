@@ -4,15 +4,12 @@ package org.medicmobile.webapp.mobile;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
-
 import androidx.test.espresso.DataInteraction;
 import androidx.test.espresso.ViewInteraction;
 import androidx.test.espresso.web.webdriver.DriverAtoms;
 import androidx.test.espresso.web.webdriver.Locator;
 import androidx.test.filters.LargeTest;
 import androidx.test.rule.ActivityTestRule;
-import androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner;
-
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
@@ -48,6 +45,8 @@ import static androidx.test.espresso.web.webdriver.DriverAtoms.webClick;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anything;
 import static org.hamcrest.Matchers.containsString;
+import androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner;
+
 
 @LargeTest
 @RunWith(AndroidJUnit4ClassRunner.class)
