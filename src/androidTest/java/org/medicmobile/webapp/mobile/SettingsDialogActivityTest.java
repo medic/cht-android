@@ -11,7 +11,7 @@ import androidx.test.espresso.web.webdriver.DriverAtoms;
 import androidx.test.espresso.web.webdriver.Locator;
 import androidx.test.filters.LargeTest;
 import androidx.test.rule.ActivityTestRule;
-import androidx.test.runner.AndroidJUnit4;
+import androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner;
 
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -50,7 +50,7 @@ import static org.hamcrest.Matchers.anything;
 import static org.hamcrest.Matchers.containsString;
 
 @LargeTest
-@RunWith(AndroidJUnit4.class)
+@RunWith(AndroidJUnit4ClassRunner.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class SettingsDialogActivityTest {
 
