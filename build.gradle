@@ -172,7 +172,7 @@ android {
 
     webview {
       dimension 'version'
-      minSdkVersion 26 // Android 10
+      minSdkVersion 29 // Android 10
       // the APK with a higher minSdkVersion value must have a higher versionCode value
       // https://developer.android.com/google/play/publishing/multiple-apks
       versionCode getVersionCode() + 1;
