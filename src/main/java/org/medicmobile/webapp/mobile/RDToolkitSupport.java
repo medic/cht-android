@@ -1,12 +1,11 @@
 package org.medicmobile.webapp.mobile;
 
 import android.app.Activity;
-import android.content.ContentResolver;
 import android.content.Intent;
-import android.database.Cursor;
 import android.net.Uri;
 import android.os.ParcelFileDescriptor;
-import android.provider.OpenableColumns;
+import android.util.Base64;
+
 import org.apache.commons.io.IOUtils;
 
 import org.json.JSONArray;
@@ -18,13 +17,7 @@ import org.rdtoolkit.support.model.session.ProvisionMode;
 import org.rdtoolkit.support.model.session.TestSession;
 import org.rdtoolkit.support.model.session.TestSession.TestResult;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 
@@ -32,6 +25,7 @@ import static android.app.Activity.RESULT_OK;
 import static org.medicmobile.webapp.mobile.EmbeddedBrowserActivity.RDTOOLKIT_PROVISION_ACTIVITY_REQUEST_CODE;
 import static org.medicmobile.webapp.mobile.EmbeddedBrowserActivity.RDTOOLKIT_CAPTURE_ACTIVITY_REQUEST_CODE;
 import static org.medicmobile.webapp.mobile.JavascriptUtils.safeFormat;
+import static org.medicmobile.webapp.mobile.MedicLog.error;
 import static org.medicmobile.webapp.mobile.MedicLog.log;
 import static org.medicmobile.webapp.mobile.MedicLog.trace;
 import static org.medicmobile.webapp.mobile.MedicLog.warn;
@@ -200,86 +194,29 @@ public class RDToolkitSupport {
 	}
 
 	// ToDo: this is an experiment to get images
-	private byte[] getBytes(InputStream inputStream) throws IOException {
-		ByteArrayOutputStream byteBuffer = new ByteArrayOutputStream();
-		int bufferSize = 1024;
-		byte[] buffer = new byte[bufferSize];
-		int len = 0;
-
-		while ((len = inputStream.read(buffer)) != -1) {
-			byteBuffer.write(buffer, 0, len);
-		}
-
-		return byteBuffer.toByteArray();
-	}
-
-	// ToDo: this is an experiment to get images
-	private InputStream getInputStreamFromFile(String filename) {
+	private String getImage(String path){
 		try {
-			return new BufferedInputStream(new FileInputStream(filename));
-		} catch (FileNotFoundException e) {
-			throw new RuntimeException(e.getMessage());
+
+			log("RDToolkit Resolving file name");
+
+			Uri filePath = Uri.parse(path);
+
+			ParcelFileDescriptor parcelFileDescriptor = ctx
+					.getContentResolver()
+					.openFileDescriptor(filePath, "r");
+
+			InputStream file = new FileInputStream(parcelFileDescriptor.getFileDescriptor());
+			byte[] imageBytes = IOUtils.toByteArray(file);
+			file.close();
+			String imageStr = Base64.encodeToString(imageBytes, Base64.NO_WRAP);
+			log("IMG: %s -> %s", imageStr.length(), imageStr);
+
+			return imageStr;
+
+		} catch (Exception exception) {
+			error(exception, "Failed to get image from path: %s", path);
 		}
 
-	}
-
-	// ToDo: this is an experiment to get images
-	private String getImage(String path) {
-		String imgBase64 = "";
-
-		// InputStream mainImage = ctx.getContentResolver().openInputStream(Uri.parse(result.getMainImage()));
-		// InputStream mainImage = ctx.getContentResolver().openInputStream(Uri.fromFile(new File(result.getMainImage())));
-		/*log("RDToolkit Resolving file descriptor");
-		ContentResolver contentResolver = ctx.getContentResolver();
-		Uri fileUri = Uri.fromFile(new File(result.getImages().get("cropped")));
-		ParcelFileDescriptor parcelFileDescriptor = contentResolver.openFileDescriptor(
-				fileUri,
-				"r",
-				null
-		);
-		InputStream inputStream = new FileInputStream(parcelFileDescriptor.getFileDescriptor());
-
-		log("RDToolkit Resolving file name");
-
-		String fileName = getFileName(fileUri);
-		File file = new File(ctx.getCacheDir(), fileName);
-		FileOutputStream outputStream = new FileOutputStream(file);
-
-
-		log("RDToolkit Resolving copy");
-
-		IOUtils.copy(inputStream, outputStream);
-
-
-		log("RDToolkit Resolving copy done");
-
-
-		// String mainImageBase64 = Base64.encodeToString(getBytes(mainImage), Base64.NO_WRAP);
-
-
-		String croppedImageBase64 = "";
-		if (result.getImages().size() > 0 && result.getImages().containsKey("cropped")) {
-			InputStream croppedImage = ctx.getContentResolver().openInputStream(Uri.parse(result.getImages().get("cropped")));
-			croppedImageBase64 = Base64.encodeToString(getBytes(croppedImage), Base64.NO_WRAP);
-		}
-		*/
-
-		return imgBase64;
-	}
-
-	// ToDo: this is an experiment to get images
-	private String getFileName(Uri fileUri) {
-
-		String name = "";
-		Cursor returnCursor = ctx.getContentResolver().query(fileUri, null, null, null, null);
-
-		if (returnCursor != null) {
-			int nameIndex = returnCursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
-			returnCursor.moveToFirst();
-			name = returnCursor.getString(nameIndex);
-			returnCursor.close();
-		}
-
-		return name;
+		return null;
 	}
 }
