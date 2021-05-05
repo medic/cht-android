@@ -2,8 +2,13 @@ package org.medicmobile.webapp.mobile;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.icu.util.Output;
 import android.net.Uri;
 import android.os.ParcelFileDescriptor;
+import android.provider.OpenableColumns;
 import android.util.Base64;
 
 import org.apache.commons.io.IOUtils;
@@ -17,8 +22,12 @@ import org.rdtoolkit.support.model.session.ProvisionMode;
 import org.rdtoolkit.support.model.session.TestSession;
 import org.rdtoolkit.support.model.session.TestSession.TestResult;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Map;
 
 import static android.app.Activity.RESULT_OK;
@@ -197,7 +206,7 @@ public class RDToolkitSupport {
 	private String getImage(String path){
 		try {
 
-			log("RDToolkit Resolving file name");
+			log("RDToolkit getting image file");
 
 			Uri filePath = Uri.parse(path);
 
@@ -206,7 +215,13 @@ public class RDToolkitSupport {
 					.openFileDescriptor(filePath, "r");
 
 			InputStream file = new FileInputStream(parcelFileDescriptor.getFileDescriptor());
-			byte[] imageBytes = IOUtils.toByteArray(file);
+			Bitmap bitmap = BitmapFactory.decodeStream(file);
+
+			log("RDToolkit compressing image file");
+			ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+			boolean compressed = bitmap.compress(Bitmap.CompressFormat.JPEG, 75, byteArrayOutputStream);
+
+			byte[] imageBytes = byteArrayOutputStream.toByteArray(); // IOUtils.toByteArray(file);
 			file.close();
 			String imageStr = Base64.encodeToString(imageBytes, Base64.NO_WRAP);
 			log("IMG: %s -> %s", imageStr.length(), imageStr);
