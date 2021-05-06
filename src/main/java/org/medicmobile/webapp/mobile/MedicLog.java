@@ -13,26 +13,20 @@ public final class MedicLog {
 
 	public static void trace(Object caller, String message, Object... extras) {
 		if(!DEBUG) return;
-
 		d(LOG_TAG, messageWithCaller(caller, message, extras));
 	}
 
-	public static void log(String message, Object... extras) {
-		message = format(message, extras);
-
-		i(LOG_TAG, message);
+	public static void trace(Exception ex, String message, Object... extras) {
+		if(!DEBUG) return;
+		d(LOG_TAG, format(message, extras), ex);
 	}
 
-	public static void trace(Exception ex, String message, Object... extras) {
-		message = format(message, extras);
-
-		d(LOG_TAG, message, ex);
+	public static void log(Object caller, String message, Object... extras) {
+		i(LOG_TAG, messageWithCaller(caller, message, extras));
 	}
 
 	public static void log(Exception ex, String message, Object... extras) {
-		message = format(message, extras);
-
-		i(LOG_TAG, message, ex);
+		i(LOG_TAG, format(message, extras), ex);
 	}
 
 	public static void warn(Object caller, String message, Object... extras) {
@@ -40,15 +34,11 @@ public final class MedicLog {
 	}
 
 	public static void warn(Exception ex, String message, Object... extras) {
-		message = format(message, extras);
-
-		w(LOG_TAG, message, ex);
+		w(LOG_TAG, format(message, extras), ex);
 	}
 
 	public static void error(Exception ex, String message, Object... extras) {
-		message = format(message, extras);
-
-		e(LOG_TAG, message, ex);
+		e(LOG_TAG, format(message, extras), ex);
 	}
 
 	private static String messageWithCaller(Object caller, String message, Object... extras) {

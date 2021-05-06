@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
 
-import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static org.medicmobile.webapp.mobile.MedicLog.trace;
 import static org.medicmobile.webapp.mobile.Utils.startAppActivityChain;
 
@@ -14,7 +13,7 @@ public class FreeSpaceWarningActivity extends LockableActivity {
 
 	@Override public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		if(DEBUG) trace(this, "Starting...");
+		trace(this, "onCreate()");
 
 		setContentView(R.layout.free_space_warning);
 

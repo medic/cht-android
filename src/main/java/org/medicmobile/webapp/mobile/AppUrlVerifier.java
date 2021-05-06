@@ -5,7 +5,6 @@ import java.net.MalformedURLException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static org.medicmobile.webapp.mobile.BuildConfig.DISABLE_APP_URL_VALIDATION;
 import static org.medicmobile.webapp.mobile.MedicLog.trace;
 import static org.medicmobile.webapp.mobile.R.string.errAppUrl_apiNotReady;
@@ -37,7 +36,7 @@ public class AppUrlVerifier {
 			return AppUrlVerification.failure(appUrl,
 					errAppUrl_appNotFound);
 		} catch(IOException ex) {
-			if(DEBUG) trace(ex, "Exception caught trying to verify url: %s", redactUrl(appUrl));
+			trace(ex, "Exception caught trying to verify url: %s", redactUrl(appUrl));
 			return AppUrlVerification.failure(appUrl,
 					errAppUrl_serverNotFound);
 		}

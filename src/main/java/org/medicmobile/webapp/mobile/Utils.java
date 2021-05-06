@@ -5,6 +5,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.webkit.WebResourceError;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -12,6 +13,7 @@ import org.json.JSONObject;
 import java.time.ZoneOffset;
 import java.util.Date;
 
+import static android.webkit.WebViewClient.*;
 import static org.medicmobile.webapp.mobile.BuildConfig.APPLICATION_ID;
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static org.medicmobile.webapp.mobile.BuildConfig.VERSION_NAME;
@@ -72,6 +74,28 @@ final class Utils {
 
 		return String.format("%s %s/%s",
 				current, APPLICATION_ID, VERSION_NAME);
+	}
+
+	static void restartApp(Context context) {
+		Intent intent = new Intent(context, StartupActivity.class);
+		intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+		context.startActivity(intent);
+		Runtime.getRuntime().exit(0);
+	}
+
+	static boolean isConnectionError(WebResourceError error) {
+		switch (error.getErrorCode()) {
+			case ERROR_HOST_LOOKUP:
+			case ERROR_PROXY_AUTHENTICATION:
+			case ERROR_CONNECT:
+			case ERROR_TIMEOUT:
+				return true;
+		}
+		return false;
+	}
+
+	static String connectionErrorToString(WebResourceError error) {
+		return String.format("%s [%s]", error.getDescription(), error.getErrorCode());
 	}
 
 	/**

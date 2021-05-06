@@ -1,10 +1,8 @@
 package org.medicmobile.webapp.mobile;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Context;
 import android.os.Build;
-
 import java.io.File;
 
 import static org.medicmobile.webapp.mobile.MedicLog.trace;
@@ -15,24 +13,22 @@ import static org.medicmobile.webapp.mobile.MedicLog.trace;
 public class XWalkMigration {
 	public static final String TAG = "Migration";
 
-	private static boolean hasRun = false;
-
-	private static String xWalkPath = "app_xwalkcore/Default";
+	private static final String xWalkPath = "app_xwalkcore/Default";
 
 	// Root dir for system webview data used by Android 4.4+
-	private static String modernWebviewDir = "app_webview";
+	private static final String modernWebviewDir = "app_webview";
 
 	// Root dir for system webview data used by Android 4.3 and below
-	private static String oldWebviewDir = "app_database";
+	private static final String oldWebviewDir = "app_database";
 
 	// Directory name for local storage files used by Android 4.4+ and XWalk
-	private static String modernLocalStorageDir = "Local Storage";
+	private static final String modernLocalStorageDir = "Local Storage";
 
 	// Directory name for local storage files used by Android 4.3 and below
-	private static String oldLocalStorageDir = "localstorage";
+	private static final String oldLocalStorageDir = "localstorage";
 
 	// Storage directory names used by Android 4.4+ and XWalk
-	private static String[] modernAndroidStorage = {
+	private static final String[] modernAndroidStorage = {
 			"Cache",
 			"Cookies",
 			"Cookies-journal",
@@ -40,35 +36,26 @@ public class XWalkMigration {
 			"databases"
 	};
 
-	private Activity activity;
-	private Context context;
+	@SuppressLint("ObsoleteSdkInt")
+	private static final boolean isModernAndroid = Build.VERSION.SDK_INT >= 19;
 
-	private boolean isModernAndroid;
+	private boolean xWalkFound;
 	private File appRoot;
 	private File xWalkRoot;
 	private File webviewRoot;
 
-	@SuppressLint("ObsoleteSdkInt")
-	public XWalkMigration(Activity a) {
-		activity = a;
-		context = a.getApplicationContext();
-		isModernAndroid = Build.VERSION.SDK_INT >= 19;
-		trace(this, "Set up Crosswalk migration, %s, %s, %s", hasRun, activity, context);
+	public XWalkMigration(Context context) {
+		xWalkFound = lookForXwalk(context.getFilesDir());
+		if (!xWalkFound) {
+			xWalkFound = lookForXwalk(context.getExternalFilesDir(null));
+		}
 	}
 
-	public void run() {
-		trace(this, "Running Crosswalk migration");
-
-		boolean found = lookForXwalk(context.getFilesDir());
-		if (!found) {
-			lookForXwalk(context.getExternalFilesDir(null));
-		}
-
-		if (found) {
-			migrateData();
-		} else {
-			trace(this, "Crosswalk directory not found - skipping migration");
-		}
+	/**
+	 * Check whether the migration needs to be done.
+	 */
+	public boolean hasToMigrate() {
+		return xWalkFound;	// if Crosswalk directory found => need to migrate
 	}
 
 	private boolean lookForXwalk(File filesPath) {
@@ -83,9 +70,13 @@ public class XWalkMigration {
 		return found;
 	}
 
-	private void migrateData() {
-		xWalkRoot = constructFilePaths(appRoot, xWalkPath);
+	/**
+	 * Migrate the data from XWalk to Webview
+	 */
+	public void run() {
+		if (!xWalkFound) return;
 
+		xWalkRoot = constructFilePaths(appRoot, xWalkPath);
 		webviewRoot = constructFilePaths(appRoot, getWebviewPath());
 
 		boolean hasMigratedData = false;
@@ -101,7 +92,7 @@ public class XWalkMigration {
 			for (String dirName : modernAndroidStorage) {
 				if (testFileExists(xWalkRoot, dirName)) {
 					moveDirFromXWalkToWebView(dirName);
-					trace(this, "Moved " + dirName + " from XWalk to System Webview");
+					trace(this, "Moved %s from XWalk to System Webview", dirName);
 					hasMigratedData = true;
 				}
 			}
@@ -109,7 +100,6 @@ public class XWalkMigration {
 
 		if (hasMigratedData) {
 			deleteRecursive(xWalkRoot);
-			restartCordova();
 		}
 	}
 
@@ -142,18 +132,12 @@ public class XWalkMigration {
 		}
 	}
 
-	private void restartCordova() {
-		trace(this, "restarting EmbeddedBrowserActivity");
-		activity.recreate();
-	}
-
-
 	private boolean testFileExists(File root, String name) {
 		boolean status = false;
-		if (!name.equals("")) {
+		if (!name.isEmpty()) {
 			File newPath = constructFilePaths(root.toString(), name);
 			status = newPath.exists();
-			trace(this, "exists '" + newPath.getAbsolutePath() + ": " + status);
+			trace(this, "testFileExists() :: '%s': %s", newPath.getAbsolutePath(), status);
 		}
 		return status;
 	}

@@ -2,10 +2,13 @@ package org.medicmobile.webapp.mobile;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.app.ActivityManager;
 import android.content.pm.PackageManager;
+import android.content.IntentFilter;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
@@ -16,6 +19,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.webkit.ConsoleMessage;
+import android.webkit.CookieManager;
 import android.webkit.GeolocationPermissions;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
@@ -34,11 +38,15 @@ import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static org.medicmobile.webapp.mobile.BuildConfig.DISABLE_APP_URL_VALIDATION;
 import static org.medicmobile.webapp.mobile.MedicLog.error;
+import static org.medicmobile.webapp.mobile.MedicLog.log;
 import static org.medicmobile.webapp.mobile.MedicLog.trace;
 import static org.medicmobile.webapp.mobile.MedicLog.warn;
 import static org.medicmobile.webapp.mobile.SimpleJsonClient2.redactUrl;
+import static org.medicmobile.webapp.mobile.Utils.connectionErrorToString;
 import static org.medicmobile.webapp.mobile.Utils.createUseragentFrom;
+import static org.medicmobile.webapp.mobile.Utils.isConnectionError;
 import static org.medicmobile.webapp.mobile.Utils.isUrlRelated;
+import static org.medicmobile.webapp.mobile.Utils.restartApp;
 
 @SuppressWarnings({ "PMD.GodClass", "PMD.TooManyMethods" })
 public class EmbeddedBrowserActivity extends LockableActivity {
@@ -88,6 +96,8 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	private SmsSender smsSender;
 	private RDToolkitSupport rdToolkitSupport;
 
+
+	private boolean isMigrationRunning = false;
 
 //> ACTIVITY LIFECYCLE METHODS
 	@Override public void onCreate(Bundle savedInstanceState) {
@@ -139,11 +149,25 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 			toast(redactUrl(appUrl));
 		}
 
+		registerRetryConnectionBroadcastReceiver();
 	}
 
 	@Override
 	protected void onStart() {
-		new XWalkMigration(this).run();
+		trace(this, "onStart() :: Checking Crosswalk migration ...");
+		XWalkMigration xWalkMigration = new XWalkMigration(this.getApplicationContext());
+		if (xWalkMigration.hasToMigrate()) {
+			log(this, "onStart() :: Running Crosswalk migration ...");
+			isMigrationRunning = true;
+			Intent intent = new Intent(this, UpgradingActivity.class)
+				.putExtra("isClosable", false)
+				.putExtra("backPressedMessage", getString(R.string.waitMigration));
+			startActivity(intent);
+			xWalkMigration.run();
+		} else {
+			trace(this, "onStart() :: Crosswalk installation not found - skipping migration");
+		}
+		trace(this, "onStart() :: Checking Crosswalk migration done.");
 		super.onStart();
 	}
 
@@ -333,7 +357,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 
 	private void browseTo(Uri url) {
 		String urlToLoad = getUrlToLoad(url);
-		if(DEBUG) trace(this, "Pointing browser to %s", redactUrl(urlToLoad));
+		trace(this, "Pointing browser to: %s", redactUrl(urlToLoad));
 		container.loadUrl(urlToLoad, null);
 	}
 
@@ -355,7 +379,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 				return true;
 			}
 			@Override public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, WebChromeClient.FileChooserParams fileChooserParams){
-				if(DEBUG) trace(this, "onShowFileChooser() :: %s,%s,%s", webView, filePathCallback, fileChooserParams);
+				trace(this, "onShowFileChooser() :: webView: %s,filePathCallback: %s,fileChooserParams: %s", webView, filePathCallback, fileChooserParams);
 
 				boolean capture = fileChooserParams.isCaptureEnabled();
 				trace(this, "onShowFileChooser() capture :: %s", capture);
@@ -449,9 +473,21 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 			@Override
 			public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
 				String failingUrl = request.getUrl().toString();
-				if(DEBUG) trace(this, "onReceivedLoadError() :: %s,%s,%s", failingUrl, error.getErrorCode(), error.getDescription());
-				if(!getRootUrl().equals(failingUrl)) {
+				log(this, "onReceivedLoadError() :: url: %s, error code: %s, description: %s",
+						failingUrl, error.getErrorCode(), error.getDescription());
+				if (!getRootUrl().equals(failingUrl)) {
 					super.onReceivedError(view, request, error);
+				} else if (isConnectionError(error)) {
+					String connErrorInfo = connectionErrorToString(error);
+					Intent intent = new Intent(view.getContext(), ConnectionErrorActivity.class);
+					intent.putExtra("connErrorInfo", connErrorInfo);
+					if (isMigrationRunning) {
+						// Activity is not closable if the migration is running
+						intent
+							.putExtra("isClosable", false)
+							.putExtra("backPressedMessage", getString(R.string.waitMigration));
+					}
+					startActivity(intent);
 				} else {
 					evaluateJavascript(String.format(
 							"var body = document.evaluate('/html/body', document);" +
@@ -467,10 +503,53 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 							"}", error.getErrorCode(), error.getDescription()), false);
 				}
 			}
+
+			// Check how the migration process is going if it was started.
+			// Because most of the cases after the XWalk -> Webview migration process ends
+			// the cookies are not available for unknowns reasons, making the webapp to
+			// redirect the user to the login page instead of the main page.
+			// If these conditions are met: migration running + /login page + no cookies,
+			// the app is restarted to refresh the Webview and prevent the user to
+			// login again.
+			@Override public void onPageStarted(WebView view, String url, Bitmap favicon) {
+				trace(this, "onPageStarted() :: url: %s, isMigrationRunning: %s", url, isMigrationRunning);
+				if (isMigrationRunning && url.contains("/login")) {
+					isMigrationRunning = false;
+					CookieManager cookieManager = CookieManager.getInstance();
+					String cookie = cookieManager.getCookie(appUrl);
+					if (cookie == null) {
+						log(this, "onPageStarted() :: Migration process in progress, and " +
+								"cookies were not loaded, restarting ...");
+						restartApp(view.getContext());
+					}
+					trace(this, "onPageStarted() :: Cookies loaded, skipping restart");
+				}
+			}
+
+			@Override public void onPageFinished(WebView view, String url) {
+				trace(this, "onPageFinished() :: url: %s", url);
+				// Broadcast the event so if the connection error
+				// activity is listening it will close
+				sendBroadcast(new Intent("onPageFinished"));
+			}
 		});
 	}
 
 	private void toast(String message) {
 		Toast.makeText(container.getContext(), message, Toast.LENGTH_LONG).show();
+	}
+
+	private void registerRetryConnectionBroadcastReceiver() {
+		BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+			@Override public void onReceive(Context context, Intent intent) {
+				String action = intent.getAction();
+				if (action.equals("retryConnection")) {
+					// user fixed the connection and asked the app
+					// to retry the load from the connection error activity
+					evaluateJavascript("window.location.reload()", false);
+				}
+			}
+		};
+		registerReceiver(broadcastReceiver, new IntentFilter("retryConnection"));
 	}
 }

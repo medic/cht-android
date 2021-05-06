@@ -3,9 +3,39 @@ Medic Android App
 
 The medic-android application is a thin wrapper to load the [CHT Core Framework](https://github.com/medic/cht-core/) web application in a webview. This allows the application to be hardcoded to a specific CHT deployment and have a partner specific logo and display name. This app also provides some deeper integration with other android apps and native phone functions that are otherwise unavailable to webapps.
 
+
+# APKs
+
+For compatibility with a wide range of devices the build script produces multiple APKs. The two variables are the instruction set used by the device's CPU, and the supported Android version. When publishing to the Google Play Store upload all APKs and it will automatically choose the right one for the target device. However, when sideloading the application it is essential to pick the correct APK or the application may crash.
+
+To help you pick which APK to install you can find information about the version of Android and the CPU in the About section of the phone's settings menu.
+
+The APKs are named as follows: `medic-android-{version}-{brand}-{rendering-engine}-{instruction-set}-release.apk`
+
+| Rendering engine | Instruction set | Android version | Notes |
+|------------------|-----------------|-----------------|--|
+| `webview`        | `arm64-v8a`     | 10+             |  Preferred. Use this APK if possible. |
+| `webview`        | `armeabi-v7a`   | 10+             | Built but not compatible with any devices. Ignore this APK. |
+| `xwalk`          | `arm64-v8a`     | 4.4 - 9         |  |
+| `xwalk`          | `armeabi-v7a`   | 4.4 - 9         |  |
+
 # Release notes
 
-### 0.7.3
+## 0.8.0
+
+### Changes
+
+- [improvement] [#163](https://github.com/medic/medic-android/issues/163) New connection errors UX:
+  - The improvements only apply to _Webview_ flavors.
+  - It also applies when the app migrates to Webview from a XWalk installation.
+- [improvement] [#134](https://github.com/medic/medic-android/issues/134) New UX of Crosswalk to Webview migration:
+  - Add splash screen while the data is migrated.
+  - Fix bug that caused redirect to the login page after migrate.
+- [improvement] Remove unused `READ_EXTERNAL_STORAGE` from the `cmmb_kenya` and `surveillance_covid19_kenya` flavors
+
+You can see more about these changes in the release notes for [CHT Core v3.11.0](https://github.com/medic/cht-core/blob/master/release-notes/docs/3.11.0.md)
+
+## 0.7.3
 
 ### Changes
 
@@ -100,7 +130,7 @@ To add a new brand:
 
 1. Create a git tag starting with `v`, e.g. `v1.2.3` and push the tag to GitHub. 
 2. The exact same process as Step 3 above.
-3. Publish the unbranded, demo, and gamma flavors to the Play Store.
+3. Publish the unbranded, demo, simprints, and gamma flavors to the Play Store.
 4. Announce the release on the [CHT forum](https://forum.communityhealthtoolkit.org), under the "Product - Releases" category.
 5. Each flavor is then individually released to users via "Release Management" in the Google Play Console. Once a flavor has been tested and is ready to go live, click Release to Production
 
