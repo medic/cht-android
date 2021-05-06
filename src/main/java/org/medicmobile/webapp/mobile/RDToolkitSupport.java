@@ -2,16 +2,11 @@ package org.medicmobile.webapp.mobile;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.icu.util.Output;
 import android.net.Uri;
 import android.os.ParcelFileDescriptor;
-import android.provider.OpenableColumns;
 import android.util.Base64;
-
-import org.apache.commons.io.IOUtils;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -23,23 +18,20 @@ import org.rdtoolkit.support.model.session.TestSession;
 import org.rdtoolkit.support.model.session.TestSession.TestResult;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.Map;
 
 import static android.app.Activity.RESULT_OK;
-import static org.medicmobile.webapp.mobile.EmbeddedBrowserActivity.RDTOOLKIT_PROVISION_ACTIVITY_REQUEST_CODE;
 import static org.medicmobile.webapp.mobile.EmbeddedBrowserActivity.RDTOOLKIT_CAPTURE_ACTIVITY_REQUEST_CODE;
+import static org.medicmobile.webapp.mobile.EmbeddedBrowserActivity.RDTOOLKIT_PROVISION_ACTIVITY_REQUEST_CODE;
 import static org.medicmobile.webapp.mobile.JavascriptUtils.safeFormat;
 import static org.medicmobile.webapp.mobile.MedicLog.error;
 import static org.medicmobile.webapp.mobile.MedicLog.log;
 import static org.medicmobile.webapp.mobile.MedicLog.trace;
 import static org.medicmobile.webapp.mobile.MedicLog.warn;
-import static org.medicmobile.webapp.mobile.Utils.json;
 import static org.medicmobile.webapp.mobile.Utils.getISODate;
+import static org.medicmobile.webapp.mobile.Utils.json;
 
 public class RDToolkitSupport {
 	private final Activity ctx;
@@ -169,6 +161,7 @@ public class RDToolkitSupport {
 		TestSession session = RdtUtils.getRdtSession(intentData);
 		TestResult result = session.getResult();
 		log(
+				this,
 				"RDToolkit test completed for session: %s, see result: %s",
 				session,
 				result
@@ -206,7 +199,7 @@ public class RDToolkitSupport {
 	private String getImage(String path){
 		try {
 
-			log("RDToolkit getting image file");
+			log(this, "RDToolkit getting image file");
 
 			Uri filePath = Uri.parse(path);
 
@@ -217,14 +210,14 @@ public class RDToolkitSupport {
 			InputStream file = new FileInputStream(parcelFileDescriptor.getFileDescriptor());
 			Bitmap bitmap = BitmapFactory.decodeStream(file);
 
-			log("RDToolkit compressing image file");
+			log(this, "RDToolkit compressing image file");
 			ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 			boolean compressed = bitmap.compress(Bitmap.CompressFormat.JPEG, 75, byteArrayOutputStream);
 
-			byte[] imageBytes = byteArrayOutputStream.toByteArray(); // IOUtils.toByteArray(file);
+			byte[] imageBytes = byteArrayOutputStream.toByteArray();
 			file.close();
 			String imageStr = Base64.encodeToString(imageBytes, Base64.NO_WRAP);
-			log("IMG: %s -> %s", imageStr.length(), imageStr);
+			log(this, "IMG: %s -> %s", imageStr.length(), imageStr);
 
 			return imageStr;
 

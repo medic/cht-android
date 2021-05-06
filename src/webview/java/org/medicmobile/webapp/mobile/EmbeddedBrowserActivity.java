@@ -2,18 +2,15 @@ package org.medicmobile.webapp.mobile;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.ActivityManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.app.ActivityManager;
-import android.content.pm.PackageManager;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
-import android.net.Uri;
 import android.net.ConnectivityManager;
+import android.net.Uri;
 import android.os.Bundle;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -30,11 +27,13 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
 
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
 import java.util.Arrays;
 
 import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
-
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static org.medicmobile.webapp.mobile.BuildConfig.DISABLE_APP_URL_VALIDATION;
 import static org.medicmobile.webapp.mobile.MedicLog.error;
@@ -65,10 +64,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	static final int RDTOOLKIT_PROVISION_ACTIVITY_REQUEST_CODE = (3 << 3) | NON_SIMPRINTS_FLAGS;
 	static final int RDTOOLKIT_CAPTURE_ACTIVITY_REQUEST_CODE = (4 << 3) | NON_SIMPRINTS_FLAGS;
 
-	private static String[] PERMISSIONS_STORAGE = {
-			Manifest.permission.READ_EXTERNAL_STORAGE,
-			Manifest.permission.WRITE_EXTERNAL_STORAGE
-	};
+	private static String[] PERMISSIONS_STORAGE = { READ_EXTERNAL_STORAGE };
 
 	// Arbitrarily selected value
 	private static final int ACCESS_FINE_LOCATION_PERMISSION_REQUEST_CODE = 7038678;
@@ -245,20 +241,23 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 						return;
 
 					case RDTOOLKIT_PROVISION_ACTIVITY_REQUEST_CODE:
+						String provisionScript = rdToolkitSupport.process(requestCode, resultCode, i);
+						log(this, "RDToolkitSupport :: Executing JavaScript: %s", provisionScript);
+						evaluateJavascript(provisionScript);
+						return;
+
 					case RDTOOLKIT_CAPTURE_ACTIVITY_REQUEST_CODE:
 						int readPermission = ContextCompat.checkSelfPermission(this, READ_EXTERNAL_STORAGE);
-						int writePermission = ContextCompat.checkSelfPermission(this, READ_EXTERNAL_STORAGE);
 
-						if (readPermission == PackageManager.PERMISSION_GRANTED && writePermission == PackageManager.PERMISSION_GRANTED) {
-							trace(this, "Storage permissions are granted for RDTOOLKIT");
-							String jsCode = rdToolkitSupport.process(requestCode, resultCode, i);
-							trace(this, "RDToolkit executing JavaScript: %s", jsCode);
-							evaluateJavascript(jsCode);
+						if (readPermission != PERMISSION_GRANTED) {
+							log(this, "RDToolkitSupport :: Requesting storage permissions");
+							ActivityCompat.requestPermissions(this, PERMISSIONS_STORAGE, RDTOOLKIT_CAPTURE_ACTIVITY_REQUEST_CODE);
 							return;
 						}
 
-						trace(this, "Requesting storage permissions for RDTOOLKIT");
-						ActivityCompat.requestPermissions(this, PERMISSIONS_STORAGE, RDTOOLKIT_CAPTURE_ACTIVITY_REQUEST_CODE);
+						String captureScript = rdToolkitSupport.process(requestCode, resultCode, i);
+						log(this, "RDToolkitSupport :: Executing JavaScript: %s", captureScript);
+						evaluateJavascript(captureScript);
 						return;
 
 					default:
@@ -300,7 +299,9 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		return this.smsSender;
 	}
 
-	RDToolkitSupport getRdToolkitSupport() { return this.rdToolkitSupport; }
+	RDToolkitSupport getRdToolkitSupport() {
+		return this.rdToolkitSupport;
+	}
 
 //> PUBLIC API
 	public void evaluateJavascript(final String js) {

@@ -99,9 +99,9 @@ final class Utils {
 	}
 
 	/**
-	 * Returns ISO format by using OffsetDateTime Thread-safe class
+	 * Get Date in ISO format by using OffsetDateTime Thread-safe class
 	 * @param date UTC date
-	 * @return
+	 * @return { String }
 	 */
 	static String getISODate(Date date) {
 		return date
