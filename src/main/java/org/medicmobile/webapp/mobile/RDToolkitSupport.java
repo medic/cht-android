@@ -28,12 +28,11 @@ import static org.medicmobile.webapp.mobile.EmbeddedBrowserActivity.RDTOOLKIT_PR
 import static org.medicmobile.webapp.mobile.JavascriptUtils.safeFormat;
 import static org.medicmobile.webapp.mobile.MedicLog.error;
 import static org.medicmobile.webapp.mobile.MedicLog.log;
-import static org.medicmobile.webapp.mobile.MedicLog.trace;
-import static org.medicmobile.webapp.mobile.MedicLog.warn;
 import static org.medicmobile.webapp.mobile.Utils.getISODate;
 import static org.medicmobile.webapp.mobile.Utils.json;
 
 public class RDToolkitSupport {
+
 	private final Activity ctx;
 
 	RDToolkitSupport(Activity ctx) {
@@ -42,39 +41,39 @@ public class RDToolkitSupport {
 
 	String process(int requestCode, int resultCode, Intent intentData) {
 
-		trace(this, "process() :: requestCode=%s", requestCode);
+		log(this, "RDToolkitSupport :: process requestCode=%s", requestCode);
 
 		switch (requestCode) {
-			case RDTOOLKIT_PROVISION_ACTIVITY_REQUEST_CODE: {
+			case RDTOOLKIT_PROVISION_ACTIVITY_REQUEST_CODE:
 				if (resultCode != RESULT_OK) {
-					throw new RuntimeException("RDToolkit Support - Bad result code for provisioned test: " + resultCode);
+					throw new RuntimeException("RDToolkitSupport :: Bad result code for the provisioned RD Test: " + resultCode);
 				}
 
 				try {
 					JSONObject response = parseProvisionTestResponseToJson(intentData);
 					return makeProvisionTestJavaScript(response);
-				} catch (Exception /*| JSONException*/ ex) {
-					warn(ex, "Problem serialising RDToolkit provisioned test");
-					return safeFormat("console.log('Problem serialising RDToolkit provisioned test: %s')", ex);
-				}
-			}
 
-			case RDTOOLKIT_CAPTURE_ACTIVITY_REQUEST_CODE: {
+				} catch (Exception exception) {
+					error(exception, "RDToolkitSupport :: Problem serialising the provisioned RD Test");
+					return safeFormat("console.log('Problem serialising the provisioned RD Test: %s')", exception);
+				}
+
+			case RDTOOLKIT_CAPTURE_ACTIVITY_REQUEST_CODE:
 				if (resultCode != RESULT_OK) {
-					throw new RuntimeException("RDToolkit Support - Bad result code for capture: " + resultCode);
+					throw new RuntimeException("RDToolkitSupport :: Bad result code for capturing result: " + resultCode);
 				}
 
 				try {
 					JSONObject response = parseCaptureResponseToJson(intentData);
 					return makeCaptureResponseJavaScript(response);
-				} catch (Exception /*| JSONException*/ ex) {
-					warn(ex, "Problem serialising RDToolkit capture");
-					return safeFormat("console.log('Problem serialising RDToolkit capture: %s')", ex);
+
+				} catch (Exception exception) {
+					error(exception, "RDToolkitSupport :: Problem serialising the captured result");
+					return safeFormat("console.log('Problem serialising the captured result: %s')", exception);
 				}
-			}
 
 			default:
-				throw new RuntimeException("RD Toolkit Support - Bad request type: " + requestCode);
+				throw new RuntimeException("RDToolkitSupport :: Bad request type: " + requestCode);
 		}
 	}
 
@@ -84,13 +83,13 @@ public class RDToolkitSupport {
 				.forProvisioning()
 				.setCallingPackage(ctx.getPackageName())
 				.setReturnApplication(ctx)
-				// Type of test to choose from
+				// Type of RD Test to choose from
 				.requestProfileCriteria(rdtFilter, provisionMode)
-				// Unique ID for RDT test
+				// Unique ID for RD Test
 				.setSessionId(sessionId)
-				// First line text to display in RDT App and differentiate running tests
+				// First line text to display in RDToolkit App and to differentiate running tests
 				.setFlavorOne(patientName)
-				// Second line text to display in RDT App and differentiate running tests
+				// Second line text to display in RDToolkit App and to differentiate running tests
 				.setFlavorTwo(patientId)
 				.setCloudworksBackend(monitorApiURL, patientId)
 				.build();
@@ -105,7 +104,7 @@ public class RDToolkitSupport {
 	Intent captureRDTest(String sessionId) {
 		Intent intent = RdtIntentBuilder
 				.forCapture()
-				// Unique ID for RDT test
+				// Unique ID for RD Test
 				.setSessionId(sessionId)
 				.build();
 
@@ -124,7 +123,9 @@ public class RDToolkitSupport {
 				"if (api.v1.rdToolkitProvisionedTestResponse) {" +
 				"	api.v1.rdToolkitProvisionedTestResponse(%s);" +
 				"}" +
-				"} catch (e) { alert(e); }";
+				"} catch (error) { " +
+				"console.error('RDToolkitSupport :: Error on sending provisioned RD Test data to CHT-Core - Webapp', error);" +
+				"}";
 
 		return safeFormat(javaScript, response);
 	}
@@ -135,19 +136,16 @@ public class RDToolkitSupport {
 				"if (api.v1.rdToolkitCapturedTestResponse) {" +
 				"	api.v1.rdToolkitCapturedTestResponse(%s);" +
 				"}" +
-				"} catch (e) { alert(e); }";
+				"} catch (error) { " +
+				"console.error('RDToolkitSupport :: Error on sending captured results of RD Test to CHT-Core - Webapp', error);" +
+				"}";
 
 		return safeFormat(javaScript, response, response);
 	}
 
 	private JSONObject parseProvisionTestResponseToJson(Intent intentData) throws JSONException {
 		TestSession session = RdtUtils.getRdtSession(intentData);
-		log(
-				"RDToolkit provisioned test for sessionId: %s, will be available to read at %s, see session: %s",
-				session.getSessionId(),
-				session.getTimeResolved().toString(),
-				session
-		);
+		log(this, "RDToolkitSupport :: RD Test started, see session: %s", session);
 
 		return json(
 				"sessionId", session.getSessionId(),
@@ -160,20 +158,15 @@ public class RDToolkitSupport {
 	private JSONObject parseCaptureResponseToJson(Intent intentData) throws JSONException {
 		TestSession session = RdtUtils.getRdtSession(intentData);
 		TestResult result = session.getResult();
-		log(
-				this,
-				"RDToolkit test completed for session: %s, see result: %s",
-				session,
-				result
-		);
+		log(this, "RDToolkitSupport :: RD Test completed, session: %s, results: %s", session, result);
 
 		return json(
 				"sessionId", session.getSessionId(),
 				"state", session.getState(),
 				"timeResolved", getISODate(session.getTimeResolved()),
 				"timeStarted", getISODate(session.getTimeStarted()),
-				"timeRead", result == null ? "" : getISODate(result.getTimeRead()),
-				"croppedImage", getImage(result.getImages().get("cropped")),
+				"timeRead", result == null ? null : getISODate(result.getTimeRead()),
+				"croppedImage", result == null ? null : getImage(result.getImages().get("cropped")),
 				"results", parseResultsToJson(result)
 		);
 	}
@@ -195,34 +188,30 @@ public class RDToolkitSupport {
 		return jsonResult;
 	}
 
-	// ToDo: this is an experiment to get images
 	private String getImage(String path){
 		try {
-
-			log(this, "RDToolkit getting image file");
-
+			log(this, "RDToolkitSupport :: Retrieving image file");
 			Uri filePath = Uri.parse(path);
-
 			ParcelFileDescriptor parcelFileDescriptor = ctx
 					.getContentResolver()
 					.openFileDescriptor(filePath, "r");
 
 			InputStream file = new FileInputStream(parcelFileDescriptor.getFileDescriptor());
-			Bitmap bitmap = BitmapFactory.decodeStream(file);
-
-			log(this, "RDToolkit compressing image file");
-			ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-			boolean compressed = bitmap.compress(Bitmap.CompressFormat.JPEG, 75, byteArrayOutputStream);
-
-			byte[] imageBytes = byteArrayOutputStream.toByteArray();
+			Bitmap imgBitmap = BitmapFactory.decodeStream(file);
 			file.close();
-			String imageStr = Base64.encodeToString(imageBytes, Base64.NO_WRAP);
-			log(this, "IMG: %s -> %s", imageStr.length(), imageStr);
 
-			return imageStr;
+			log(this, "RDToolkitSupport :: Compressing image file");
+			ByteArrayOutputStream outputFile = new ByteArrayOutputStream();
+			imgBitmap.compress(Bitmap.CompressFormat.JPEG, 75, outputFile);
+
+			log(this, "RDToolkitSupport :: Encoding image file to Base64");
+			byte[] imageBytes = outputFile.toByteArray();
+			String imageEncode = Base64.encodeToString(imageBytes, Base64.NO_WRAP);
+
+			return imageEncode;
 
 		} catch (Exception exception) {
-			error(exception, "Failed to get image from path: %s", path);
+			error(exception, "RDToolkitSupport :: Failed to process image file from path: %s", path);
 		}
 
 		return null;
