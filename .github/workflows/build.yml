@@ -43,9 +43,9 @@ jobs:
       uses: reactivecircus/android-emulator-runner@v2
       with:
         api-level: 29
-        script: ./gradlew connectedUnbrandedWebviewDebugAndroidTest --stacktrace
+        script: ./gradlew connectedUnbrandedWebviewDebugAndroidTest -Pabi=x86 --stacktrace
     - name: run tests on gamma
       uses: reactivecircus/android-emulator-runner@v2
       with:
         api-level: 29
-        script: ./gradlew connectedMedicmobilegammaWebviewDebugAndroidTest --stacktrace
+        script: ./gradlew connectedMedicmobilegammaWebviewDebugAndroidTest -P=x86 --stacktrace
