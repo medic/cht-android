@@ -36,16 +36,24 @@ jobs:
 
   instrumentation-tests:
     runs-on: macos-latest
+    strategy:
+      matrix:
+        api-level: [29,30]
+        target: [default, google_apis]
     steps:
     - name: checkout
       uses: actions/checkout@v2
-    - name: run tests
+    - name: test unbranded
       uses: reactivecircus/android-emulator-runner@v2
       with:
-        api-level: 29
+        api-level: ${{ matrix.api-level }}
+        target: ${{ matrix.target }}
+        arch: x86
         script: ./gradlew connectedUnbrandedWebviewDebugAndroidTest -Pabi=x86 --stacktrace
     - name: run tests on gamma
       uses: reactivecircus/android-emulator-runner@v2
       with:
-        api-level: 29
-        script: ./gradlew connectedMedicmobilegammaWebviewDebugAndroidTest -P=x86 --stacktrace
+        api-level: ${{ matrix.api-level }}
+        target: ${{ matrix.target }}
+        arch: x86
+        script: ./gradlew connectedMedicmobilegammaWebviewDebugAndroidTest -Pabi=x86 --stacktrace
