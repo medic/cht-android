@@ -69,7 +69,6 @@ android {
 
   defaultConfig {
     versionName getVersionName()
-    versionName getVersionName()
     archivesBaseName = "${project.name}-${versionName}"
     targetSdkVersion 29
     // When upgrading targetSdkVersion, check that the app menu still works on newer devices.
