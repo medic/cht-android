@@ -180,7 +180,12 @@ jobs:
       uses: maierj/fastlane-action@v1.4.0
       with:
         lane: build
-        options: '{ "flavor": "icm_ph_chc" }'        
+        options: '{ "flavor": "icm_ph_chc" }'
+    - name: Assemble vhtapp_uganda
+        uses: maierj/fastlane-action@v1.4.0
+        with:
+          lane: build
+          options: '{ "flavor": "vhtapp_uganda" }'
     - name: GitHub release
       uses: softprops/action-gh-release@v1
       if: startsWith(github.ref, 'refs/tags/')
