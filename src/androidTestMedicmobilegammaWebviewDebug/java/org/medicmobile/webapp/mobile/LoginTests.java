@@ -1,18 +1,15 @@
 package org.medicmobile.webapp.mobile;
 
-
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
-
 import androidx.test.espresso.DataInteraction;
 import androidx.test.espresso.ViewInteraction;
 import androidx.test.espresso.web.webdriver.DriverAtoms;
 import androidx.test.espresso.web.webdriver.Locator;
 import androidx.test.filters.LargeTest;
-import androidx.test.rule.ActivityTestRule;
 import androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner;
-
+import androidx.test.rule.ActivityTestRule;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
@@ -21,22 +18,14 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
-
 import java.util.Locale;
-
 import static androidx.test.espresso.Espresso.onData;
 import static androidx.test.espresso.Espresso.onView;
-import static androidx.test.espresso.Espresso.pressBack;
 import static androidx.test.espresso.action.ViewActions.click;
-import static androidx.test.espresso.action.ViewActions.closeSoftKeyboard;
-import static androidx.test.espresso.action.ViewActions.replaceText;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
-import static androidx.test.espresso.matcher.ViewMatchers.hasErrorText;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
-import static androidx.test.espresso.matcher.ViewMatchers.withHint;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withParent;
-import static androidx.test.espresso.matcher.ViewMatchers.withText;
 import static androidx.test.espresso.web.assertion.WebViewAssertions.webContent;
 import static androidx.test.espresso.web.assertion.WebViewAssertions.webMatches;
 import static androidx.test.espresso.web.matcher.DomMatchers.hasElementWithId;
@@ -89,7 +78,7 @@ public class LoginTests {
 		//login form and errors
 		onWebView().withElement(findElement(Locator.ID, "user"))
 				.perform(clearElement())
-				.perform(DriverAtoms.webKeys("fakename"))    //to be created first
+				.perform(DriverAtoms.webKeys("fakeName"))    //to be created first
 				.withElement(findElement(Locator.ID, "password"))
 				.perform(clearElement())
 				.perform(DriverAtoms.webKeys("fake_password"))
