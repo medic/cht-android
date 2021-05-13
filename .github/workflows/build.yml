@@ -33,3 +33,21 @@ jobs:
       with:
         lane: build
         options: '{ "flavor": "unbranded" }'
+
+  instrumentation-tests:
+    runs-on: macos-latest
+    steps:
+    - name: checkout
+      uses: actions/checkout@v2
+    - name: test unbranded
+      uses: reactivecircus/android-emulator-runner@v2
+      with:
+        api-level: 29
+        arch: x86
+        script: ./gradlew connectedUnbrandedWebviewDebugAndroidTest -Pabi=x86 --stacktrace
+    - name: run tests on gamma
+      uses: reactivecircus/android-emulator-runner@v2
+      with:
+        api-level: 29
+        arch: x86
+        script: ./gradlew connectedMedicmobilegammaWebviewDebugAndroidTest -Pabi=x86 --stacktrace
