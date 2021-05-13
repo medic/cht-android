@@ -28,6 +28,7 @@ import static org.medicmobile.webapp.mobile.EmbeddedBrowserActivity.RDTOOLKIT_PR
 import static org.medicmobile.webapp.mobile.JavascriptUtils.safeFormat;
 import static org.medicmobile.webapp.mobile.MedicLog.error;
 import static org.medicmobile.webapp.mobile.MedicLog.log;
+import static org.medicmobile.webapp.mobile.MedicLog.trace;
 import static org.medicmobile.webapp.mobile.Utils.getISODate;
 import static org.medicmobile.webapp.mobile.Utils.json;
 
@@ -41,7 +42,7 @@ public class RDToolkitSupport {
 
 	String process(int requestCode, int resultCode, Intent intentData) {
 
-		log(this, "RDToolkitSupport :: process requestCode=%s", requestCode);
+		trace(this, "RDToolkitSupport :: process requestCode=%s", requestCode);
 
 		switch (requestCode) {
 			case RDTOOLKIT_PROVISION_ACTIVITY_REQUEST_CODE:
@@ -119,12 +120,12 @@ public class RDToolkitSupport {
 
 	private String makeProvisionTestJavaScript(Object response) {
 		String javaScript = "try {" +
-				"const api = angular.element(document.body).injector().get('AndroidApi');" +
-				"if (api.v1.rdToolkitProvisionedTestResponse) {" +
-				"	api.v1.rdToolkitProvisionedTestResponse(%s);" +
+				"const api = window.CHTCore.AndroidApi;" +
+				"if (api && api.rdToolkitProvisionedTestResponse) {" +
+				"  api.rdToolkitProvisionedTestResponse(%s);" +
 				"}" +
 				"} catch (error) { " +
-				"console.error('RDToolkitSupport :: Error on sending provisioned RD Test data to CHT-Core - Webapp', error);" +
+				"  console.error('RDToolkitSupport :: Error on sending provisioned RD Test data to CHT-Core - Webapp', error);" +
 				"}";
 
 		return safeFormat(javaScript, response);
@@ -132,12 +133,12 @@ public class RDToolkitSupport {
 
 	private String makeCaptureResponseJavaScript(Object response) {
 		String javaScript = "try {" +
-				"const api = angular.element(document.body).injector().get('AndroidApi');" +
-				"if (api.v1.rdToolkitCapturedTestResponse) {" +
-				"	api.v1.rdToolkitCapturedTestResponse(%s);" +
+				"const api = window.CHTCore.AndroidApi;" +
+				"if (api && api.rdToolkitCapturedTestResponse) {" +
+				"  api.rdToolkitCapturedTestResponse(%s);" +
 				"}" +
 				"} catch (error) { " +
-				"console.error('RDToolkitSupport :: Error on sending captured results of RD Test to CHT-Core - Webapp', error);" +
+				"  console.error('RDToolkitSupport :: Error on sending captured results of RD Test to CHT-Core - Webapp', error);" +
 				"}";
 
 		return safeFormat(javaScript, response, response);
@@ -145,7 +146,7 @@ public class RDToolkitSupport {
 
 	private JSONObject parseProvisionTestResponseToJson(Intent intentData) throws JSONException {
 		TestSession session = RdtUtils.getRdtSession(intentData);
-		log(this, "RDToolkitSupport :: RD Test started, see session: %s", session);
+		trace(this, "RDToolkitSupport :: RD Test started, see session: %s", session);
 
 		return json(
 				"sessionId", session.getSessionId(),
@@ -158,7 +159,7 @@ public class RDToolkitSupport {
 	private JSONObject parseCaptureResponseToJson(Intent intentData) throws JSONException {
 		TestSession session = RdtUtils.getRdtSession(intentData);
 		TestResult result = session.getResult();
-		log(this, "RDToolkitSupport :: RD Test completed, session: %s, results: %s", session, result);
+		trace(this, "RDToolkitSupport :: RD Test completed, session: %s, results: %s", session, result);
 
 		return json(
 				"sessionId", session.getSessionId(),
@@ -190,7 +191,7 @@ public class RDToolkitSupport {
 
 	private String getImage(String path){
 		try {
-			log(this, "RDToolkitSupport :: Retrieving image file");
+			trace(this, "RDToolkitSupport :: Retrieving image file");
 			Uri filePath = Uri.parse(path);
 			ParcelFileDescriptor parcelFileDescriptor = ctx
 					.getContentResolver()
@@ -200,11 +201,11 @@ public class RDToolkitSupport {
 			Bitmap imgBitmap = BitmapFactory.decodeStream(file);
 			file.close();
 
-			log(this, "RDToolkitSupport :: Compressing image file");
+			trace(this, "RDToolkitSupport :: Compressing image file");
 			ByteArrayOutputStream outputFile = new ByteArrayOutputStream();
 			imgBitmap.compress(Bitmap.CompressFormat.JPEG, 75, outputFile);
 
-			log(this, "RDToolkitSupport :: Encoding image file to Base64");
+			trace(this, "RDToolkitSupport :: Encoding image file to Base64");
 			byte[] imageBytes = outputFile.toByteArray();
 			String imageEncode = Base64.encodeToString(imageBytes, Base64.NO_WRAP);
 

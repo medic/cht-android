@@ -63,6 +63,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	static final int DISCLOSURE_LOCATION_ACTIVITY_REQUEST_CODE = (2 << 3) | NON_SIMPRINTS_FLAGS;
 	static final int RDTOOLKIT_PROVISION_ACTIVITY_REQUEST_CODE = (3 << 3) | NON_SIMPRINTS_FLAGS;
 	static final int RDTOOLKIT_CAPTURE_ACTIVITY_REQUEST_CODE = (4 << 3) | NON_SIMPRINTS_FLAGS;
+	static final int ACCESS_STORAGE_PERMISSION_REQUEST_CODE = (5 << 3) | NON_SIMPRINTS_FLAGS;
 
 	private static String[] PERMISSIONS_STORAGE = { READ_EXTERNAL_STORAGE };
 
@@ -242,7 +243,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 
 					case RDTOOLKIT_PROVISION_ACTIVITY_REQUEST_CODE:
 						String provisionScript = rdToolkitSupport.process(requestCode, resultCode, i);
-						log(this, "RDToolkitSupport :: Executing JavaScript: %s", provisionScript);
+						trace(this, "RDToolkitSupport :: Executing JavaScript: %s", provisionScript);
 						evaluateJavascript(provisionScript);
 						return;
 
@@ -250,13 +251,13 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 						int readPermission = ContextCompat.checkSelfPermission(this, READ_EXTERNAL_STORAGE);
 
 						if (readPermission != PERMISSION_GRANTED) {
-							log(this, "RDToolkitSupport :: Requesting storage permissions");
-							ActivityCompat.requestPermissions(this, PERMISSIONS_STORAGE, RDTOOLKIT_CAPTURE_ACTIVITY_REQUEST_CODE);
+							trace(this, "RDToolkitSupport :: Requesting storage permissions");
+							ActivityCompat.requestPermissions(this, PERMISSIONS_STORAGE, ACCESS_STORAGE_PERMISSION_REQUEST_CODE);
 							return;
 						}
 
 						String captureScript = rdToolkitSupport.process(requestCode, resultCode, i);
-						log(this, "RDToolkitSupport :: Executing JavaScript: %s", captureScript);
+						trace(this, "RDToolkitSupport :: Executing JavaScript: %s", captureScript);
 						evaluateJavascript(captureScript);
 						return;
 
@@ -422,10 +423,16 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	@Override
 	public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
 		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-		if (requestCode != ACCESS_FINE_LOCATION_PERMISSION_REQUEST_CODE) {
+
+		if (requestCode == ACCESS_FINE_LOCATION_PERMISSION_REQUEST_CODE) {
+			locationRequestResolved();
 			return;
 		}
-		locationRequestResolved();
+
+		if (requestCode == ACCESS_STORAGE_PERMISSION_REQUEST_CODE) {
+			trace(this, "Storage permission granted.");
+			return;
+		}
 	}
 
 	public void locationRequestResolved() {
