@@ -18,7 +18,7 @@ logs:
 	${ADB} logcat MedicMobile:V AndroidRuntime:E '*:S' | tee android.log
 
 deploy-flavour:
-	${GRADLEW} --daemon --parallel install${flavour}Debug
+	${GRADLEW} --daemon -Pandroid.enableJetifier=true --parallel install${flavour}Debug
 deploy-xwalk:
 	${GRADLEW} --daemon --parallel installUnbrandedXwalkDebug
 
