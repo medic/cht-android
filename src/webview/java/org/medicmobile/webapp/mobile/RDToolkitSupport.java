@@ -27,9 +27,9 @@ import static org.medicmobile.webapp.mobile.EmbeddedBrowserActivity.RDTOOLKIT_CA
 import static org.medicmobile.webapp.mobile.EmbeddedBrowserActivity.RDTOOLKIT_PROVISION_ACTIVITY_REQUEST_CODE;
 import static org.medicmobile.webapp.mobile.JavascriptUtils.safeFormat;
 import static org.medicmobile.webapp.mobile.MedicLog.error;
-import static org.medicmobile.webapp.mobile.MedicLog.log;
 import static org.medicmobile.webapp.mobile.MedicLog.trace;
-import static org.medicmobile.webapp.mobile.Utils.getISODate;
+import static org.medicmobile.webapp.mobile.Utils.getISODateLegacySupport;
+import static org.medicmobile.webapp.mobile.Utils.getUriFromFilePath;
 import static org.medicmobile.webapp.mobile.Utils.json;
 
 public class RDToolkitSupport {
@@ -150,8 +150,8 @@ public class RDToolkitSupport {
 
 		return json(
 				"sessionId", session.getSessionId(),
-				"timeResolved", getISODate(session.getTimeResolved()),
-				"timeStarted", getISODate(session.getTimeStarted()),
+				"timeResolved", getISODateLegacySupport(session.getTimeResolved()),
+				"timeStarted", getISODateLegacySupport(session.getTimeStarted()),
 				"state", session.getState()
 		);
 	}
@@ -164,9 +164,9 @@ public class RDToolkitSupport {
 		return json(
 				"sessionId", session.getSessionId(),
 				"state", session.getState(),
-				"timeResolved", getISODate(session.getTimeResolved()),
-				"timeStarted", getISODate(session.getTimeStarted()),
-				"timeRead", result == null ? null : getISODate(result.getTimeRead()),
+				"timeResolved", getISODateLegacySupport(session.getTimeResolved()),
+				"timeStarted", getISODateLegacySupport(session.getTimeStarted()),
+				"timeRead", result == null ? null : getISODateLegacySupport(result.getTimeRead()),
 				"croppedImage", result == null ? null : getImage(result.getImages().get("cropped")),
 				"results", parseResultsToJson(result)
 		);
@@ -192,7 +192,7 @@ public class RDToolkitSupport {
 	private String getImage(String path){
 		try {
 			trace(this, "RDToolkitSupport :: Retrieving image file");
-			Uri filePath = Uri.parse(path);
+			Uri filePath = getUriFromFilePath(path);
 			ParcelFileDescriptor parcelFileDescriptor = ctx
 					.getContentResolver()
 					.openFileDescriptor(filePath, "r");

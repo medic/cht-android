@@ -1,19 +1,28 @@
 package org.medicmobile.webapp.mobile;
 
+import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.webkit.WebResourceError;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.text.SimpleDateFormat;
 import java.time.ZoneOffset;
 import java.util.Date;
+import java.util.Locale;
 
-import static android.webkit.WebViewClient.*;
+import static android.webkit.WebViewClient.ERROR_CONNECT;
+import static android.webkit.WebViewClient.ERROR_HOST_LOOKUP;
+import static android.webkit.WebViewClient.ERROR_PROXY_AUTHENTICATION;
+import static android.webkit.WebViewClient.ERROR_TIMEOUT;
 import static org.medicmobile.webapp.mobile.BuildConfig.APPLICATION_ID;
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static org.medicmobile.webapp.mobile.BuildConfig.VERSION_NAME;
@@ -99,14 +108,50 @@ final class Utils {
 	}
 
 	/**
-	 * Get Date in ISO format by using OffsetDateTime Thread-safe class
+	 * Get Date in ISO format
 	 * @param date UTC date
 	 * @return { String }
 	 */
+	@TargetApi(Build.VERSION_CODES.O)
+
+	@SuppressLint({"NewApi", "ObsoleteSdkInt"})
 	static String getISODate(Date date) {
-		return date
-				.toInstant()
-				.atOffset(ZoneOffset.UTC) // Thread-safe
-				.toString();
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+			return date
+					.toInstant()
+					.atOffset(ZoneOffset.UTC) // Thread-safe
+					.toString();
+		}
+
+		return null;
+	}
+
+	@SuppressLint({"ObsoleteSdkInt"})
+	static String getISODateLegacySupport(Date date) {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+			return getISODate(date);
+
+		} else {
+			// Legacy way
+			SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ", Locale.getDefault());
+			return dateFormat.format(date);
+		}
+	}
+
+	/**
+	 * The file path can be a regular file or a content (content://) scheme
+	 * @param path
+	 * @return
+	 */
+	static Uri getUriFromFilePath(String path) {
+		if (path == null) {
+			return null;
+		}
+
+		if ("content".equals(Uri.parse(path).getScheme())) {
+			return Uri.parse(path);
+		}
+
+		return Uri.fromFile(new File(path));
 	}
 }
