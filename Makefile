@@ -34,8 +34,8 @@ deploy-all:
 uninstall-all:
 	${GRADLEW} uninstallAll
 url-tester:
-	DISABLE_APP_URL_VALIDATION=true ${GRADLEW} --daemon --parallel installUnbrandedWebviewDebug
+	DISABLE_APP_URL_VALIDATION=true ${GRADLEW} --daemon -Pandroid.enableJetifier=true --parallel installUnbrandedWebviewDebug
 uninstall:
 	adb uninstall org.medicmobile.webapp.mobile
 test:
-	${GRADLEW} androidCheck lintUnbrandedWebviewDebug test
+	${GRADLEW} -Pandroid.enableJetifier=true androidCheck lintUnbrandedWebviewDebug test
