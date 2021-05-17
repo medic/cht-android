@@ -348,6 +348,16 @@ android {
   }
 }
 
+gradle.taskGraph.whenReady { graph ->
+  if (project.hasProperty("xwalk")) {
+    if (xwalk == "true") {
+      graph.allTasks.findAll { it.name.contains("Webview") }*.enabled = false
+    } else {
+      graph.allTasks.findAll { it.name.contains("Xwalk") }*.enabled = false
+    }
+  }
+}
+
 dependencies {
   implementation fileTree(dir: 'libs', include: ['*.jar'])
   implementation 'com.simprints:LibSimprints:1.0.11'
