@@ -9,7 +9,7 @@ platform :android do
     gradle(task: "assemble#{options[:flavor]}WebviewRelease")
     gradle(
       task: "assemble#{options[:flavor]}XwalkRelease",
-      properties: { "android.enableJetifie" => true }
+      properties: { "android.enableJetifier" => false }
     )
   end
 
