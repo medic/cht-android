@@ -46,32 +46,10 @@ public class RDToolkitSupport {
 
 		switch (requestCode) {
 			case RDTOOLKIT_PROVISION_ACTIVITY_REQUEST_CODE:
-				if (resultCode != RESULT_OK) {
-					throw new RuntimeException("RDToolkitSupport :: Bad result code for the provisioned RD Test: " + resultCode);
-				}
-
-				try {
-					JSONObject response = parseProvisionTestResponseToJson(intentData);
-					return makeProvisionTestJavaScript(response);
-
-				} catch (Exception exception) {
-					error(exception, "RDToolkitSupport :: Problem serialising the provisioned RD Test");
-					return safeFormat("console.log('Problem serialising the provisioned RD Test: %s')", exception);
-				}
+				return processProvisionTestActivity(resultCode, intentData);
 
 			case RDTOOLKIT_CAPTURE_ACTIVITY_REQUEST_CODE:
-				if (resultCode != RESULT_OK) {
-					throw new RuntimeException("RDToolkitSupport :: Bad result code for capturing result: " + resultCode);
-				}
-
-				try {
-					JSONObject response = parseCaptureResponseToJson(intentData);
-					return makeCaptureResponseJavaScript(response);
-
-				} catch (Exception exception) {
-					error(exception, "RDToolkitSupport :: Problem serialising the captured result");
-					return safeFormat("console.log('Problem serialising the captured result: %s')", exception);
-				}
+				return processCaptureResponseActivity(resultCode, intentData);
 
 			default:
 				throw new RuntimeException("RDToolkitSupport :: Bad request type: " + requestCode);
@@ -117,6 +95,36 @@ public class RDToolkitSupport {
 	}
 
 //> PRIVATE HELPERS
+
+	private String processCaptureResponseActivity(int resultCode, Intent intentData) {
+		if (resultCode != RESULT_OK) {
+			throw new RuntimeException("RDToolkitSupport :: Bad result code for capturing result: " + resultCode);
+		}
+
+		try {
+			JSONObject response = parseCaptureResponseToJson(intentData);
+			return makeCaptureResponseJavaScript(response);
+
+		} catch (Exception exception) {
+			error(exception, "RDToolkitSupport :: Problem serialising the captured result");
+			return safeFormat("console.log('Problem serialising the captured result: %s')", exception);
+		}
+	}
+
+	private String processProvisionTestActivity(int resultCode, Intent intentData) {
+		if (resultCode != RESULT_OK) {
+			throw new RuntimeException("RDToolkitSupport :: Bad result code for the provisioned RD Test: " + resultCode);
+		}
+
+		try {
+			JSONObject response = parseProvisionTestResponseToJson(intentData);
+			return makeProvisionTestJavaScript(response);
+
+		} catch (Exception exception) {
+			error(exception, "RDToolkitSupport :: Problem serialising the provisioned RD Test");
+			return safeFormat("console.log('Problem serialising the provisioned RD Test: %s')", exception);
+		}
+	}
 
 	private String makeProvisionTestJavaScript(Object response) {
 		String javaScript = "try {" +

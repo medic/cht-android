@@ -113,7 +113,6 @@ final class Utils {
 	 * @return { String }
 	 */
 	@TargetApi(Build.VERSION_CODES.O)
-
 	@SuppressLint({"NewApi", "ObsoleteSdkInt"})
 	static String getISODate(Date date) {
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -130,7 +129,6 @@ final class Utils {
 	static String getISODateLegacySupport(Date date) {
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 			return getISODate(date);
-
 		} else {
 			// Legacy way
 			SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ", Locale.getDefault());

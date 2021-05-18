@@ -242,23 +242,11 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 						return;
 
 					case RDTOOLKIT_PROVISION_ACTIVITY_REQUEST_CODE:
-						String provisionScript = rdToolkitSupport.process(requestCode, resultCode, i);
-						trace(this, "RDToolkitSupport :: Executing JavaScript: %s", provisionScript);
-						evaluateJavascript(provisionScript);
+						processRdToolkitProvisionTestActivity(requestCode, resultCode, i);
 						return;
 
 					case RDTOOLKIT_CAPTURE_ACTIVITY_REQUEST_CODE:
-						int readPermission = ContextCompat.checkSelfPermission(this, READ_EXTERNAL_STORAGE);
-
-						if (readPermission != PERMISSION_GRANTED) {
-							trace(this, "RDToolkitSupport :: Requesting storage permissions");
-							ActivityCompat.requestPermissions(this, PERMISSIONS_STORAGE, ACCESS_STORAGE_PERMISSION_REQUEST_CODE);
-							return;
-						}
-
-						String captureScript = rdToolkitSupport.process(requestCode, resultCode, i);
-						trace(this, "RDToolkitSupport :: Executing JavaScript: %s", captureScript);
-						evaluateJavascript(captureScript);
+						processRdToolkitCaptureResultActivity(requestCode, resultCode, i);
 						return;
 
 					default:
@@ -275,16 +263,6 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 			warn(ex, "Problem handling intent %s (%s) with requestCode=%s & resultCode=%s",
 					i, action, requestCodeToString(requestCode), resultCode);
 		}
-	}
-
-	private String requestCodeToString(int requestCode) {
-		if (requestCode == ACCESS_FINE_LOCATION_PERMISSION_REQUEST_CODE) {
-			return "ACCESS_FINE_LOCATION_PERMISSION_REQUEST_CODE";
-		}
-		if (requestCode == DISCLOSURE_LOCATION_ACTIVITY_REQUEST_CODE) {
-			return "DISCLOSURE_LOCATION_ACTIVITY_REQUEST_CODE";
-		}
-		return String.valueOf(requestCode);
 	}
 
 //> ACCESSORS
@@ -334,6 +312,36 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	}
 
 //> PRIVATE HELPERS
+	private String requestCodeToString(int requestCode) {
+		if (requestCode == ACCESS_FINE_LOCATION_PERMISSION_REQUEST_CODE) {
+			return "ACCESS_FINE_LOCATION_PERMISSION_REQUEST_CODE";
+		}
+		if (requestCode == DISCLOSURE_LOCATION_ACTIVITY_REQUEST_CODE) {
+			return "DISCLOSURE_LOCATION_ACTIVITY_REQUEST_CODE";
+		}
+		return String.valueOf(requestCode);
+	}
+
+	private void processRdToolkitProvisionTestActivity(int requestCode, int resultCode, Intent intentData) {
+		String provisionScript = rdToolkitSupport.process(requestCode, resultCode, intentData);
+		trace(this, "RDToolkitSupport :: Executing JavaScript: %s", provisionScript);
+		evaluateJavascript(provisionScript);
+	}
+
+	private void processRdToolkitCaptureResultActivity(int requestCode, int resultCode, Intent intentData) {
+		int readPermission = ContextCompat.checkSelfPermission(this, READ_EXTERNAL_STORAGE);
+
+		if (readPermission != PERMISSION_GRANTED) {
+			trace(this, "RDToolkitSupport :: Requesting storage permissions");
+			ActivityCompat.requestPermissions(this, PERMISSIONS_STORAGE, ACCESS_STORAGE_PERMISSION_REQUEST_CODE);
+			return;
+		}
+
+		String captureScript = rdToolkitSupport.process(requestCode, resultCode, intentData);
+		trace(this, "RDToolkitSupport :: Executing JavaScript: %s", captureScript);
+		evaluateJavascript(captureScript);
+	}
+
 	private void configureUseragent() {
 		String current = WebSettings.getDefaultUserAgent(this);
 		container.getSettings().setUserAgentString(createUseragentFrom(current));
