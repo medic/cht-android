@@ -317,6 +317,10 @@ android {
       dimension = 'brand'
       applicationId = "org.medicmobile.webapp.mobile.icm_ph_chc"
     }
+    vhtapp_uganda {
+      dimension = 'brand'
+      applicationId = "org.medicmobile.webapp.mobile.vhtapp_uganda"
+    }
     unbranded_test {
       dimension = 'brand'
       applicationId = "org.medicmobile.webapp.mobile.unbranded_test"
