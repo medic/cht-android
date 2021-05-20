@@ -28,8 +28,8 @@ import static org.medicmobile.webapp.mobile.EmbeddedBrowserActivity.RDTOOLKIT_PR
 import static org.medicmobile.webapp.mobile.JavascriptUtils.safeFormat;
 import static org.medicmobile.webapp.mobile.MedicLog.error;
 import static org.medicmobile.webapp.mobile.MedicLog.trace;
-import static org.medicmobile.webapp.mobile.Utils.getISODateLegacySupport;
 import static org.medicmobile.webapp.mobile.Utils.getUriFromFilePath;
+import static org.medicmobile.webapp.mobile.Utils.getUtcIsoDate;
 import static org.medicmobile.webapp.mobile.Utils.json;
 
 public class RDToolkitSupport {
@@ -92,6 +92,39 @@ public class RDToolkitSupport {
 		}
 
 		return intent;
+	}
+
+	String getImage(String path) {
+		if (path == null || path.length() == 0) {
+			return null;
+		}
+
+		try {
+			trace(this, "RDToolkitSupport :: Retrieving image file");
+			Uri filePath = getUriFromFilePath(path);
+			ParcelFileDescriptor parcelFileDescriptor = ctx
+					.getContentResolver()
+					.openFileDescriptor(filePath, "r");
+
+			InputStream file = new FileInputStream(parcelFileDescriptor.getFileDescriptor());
+			Bitmap imgBitmap = BitmapFactory.decodeStream(file);
+			file.close();
+
+			trace(this, "RDToolkitSupport :: Compressing image file");
+			ByteArrayOutputStream outputFile = new ByteArrayOutputStream();
+			imgBitmap.compress(Bitmap.CompressFormat.JPEG, 75, outputFile);
+
+			trace(this, "RDToolkitSupport :: Encoding image file to Base64");
+			byte[] imageBytes = outputFile.toByteArray();
+			String imageEncode = Base64.encodeToString(imageBytes, Base64.NO_WRAP);
+
+			return imageEncode;
+
+		} catch (Exception exception) {
+			error(exception, "RDToolkitSupport :: Failed to process image file from path: %s", path);
+		}
+
+		return null;
 	}
 
 //> PRIVATE HELPERS
@@ -158,8 +191,8 @@ public class RDToolkitSupport {
 
 		return json(
 				"sessionId", session.getSessionId(),
-				"timeResolved", getISODateLegacySupport(session.getTimeResolved()),
-				"timeStarted", getISODateLegacySupport(session.getTimeStarted()),
+				"timeResolved", getUtcIsoDate(session.getTimeResolved()),
+				"timeStarted", getUtcIsoDate(session.getTimeStarted()),
 				"state", session.getState()
 		);
 	}
@@ -172,9 +205,9 @@ public class RDToolkitSupport {
 		return json(
 				"sessionId", session.getSessionId(),
 				"state", session.getState(),
-				"timeResolved", getISODateLegacySupport(session.getTimeResolved()),
-				"timeStarted", getISODateLegacySupport(session.getTimeStarted()),
-				"timeRead", result == null ? null : getISODateLegacySupport(result.getTimeRead()),
+				"timeResolved", getUtcIsoDate(session.getTimeResolved()),
+				"timeStarted", getUtcIsoDate(session.getTimeStarted()),
+				"timeRead", result == null ? null : getUtcIsoDate(result.getTimeRead()),
 				"croppedImage", result == null ? null : getImage(result.getImages().get("cropped")),
 				"results", parseResultsToJson(result)
 		);
@@ -195,34 +228,5 @@ public class RDToolkitSupport {
 		}
 
 		return jsonResult;
-	}
-
-	private String getImage(String path){
-		try {
-			trace(this, "RDToolkitSupport :: Retrieving image file");
-			Uri filePath = getUriFromFilePath(path);
-			ParcelFileDescriptor parcelFileDescriptor = ctx
-					.getContentResolver()
-					.openFileDescriptor(filePath, "r");
-
-			InputStream file = new FileInputStream(parcelFileDescriptor.getFileDescriptor());
-			Bitmap imgBitmap = BitmapFactory.decodeStream(file);
-			file.close();
-
-			trace(this, "RDToolkitSupport :: Compressing image file");
-			ByteArrayOutputStream outputFile = new ByteArrayOutputStream();
-			imgBitmap.compress(Bitmap.CompressFormat.JPEG, 75, outputFile);
-
-			trace(this, "RDToolkitSupport :: Encoding image file to Base64");
-			byte[] imageBytes = outputFile.toByteArray();
-			String imageEncode = Base64.encodeToString(imageBytes, Base64.NO_WRAP);
-
-			return imageEncode;
-
-		} catch (Exception exception) {
-			error(exception, "RDToolkitSupport :: Failed to process image file from path: %s", path);
-		}
-
-		return null;
 	}
 }

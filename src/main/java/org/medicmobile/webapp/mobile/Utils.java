@@ -1,13 +1,10 @@
 package org.medicmobile.webapp.mobile;
 
-import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Build;
 import android.webkit.WebResourceError;
 
 import org.json.JSONException;
@@ -15,9 +12,9 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
-import java.time.ZoneOffset;
 import java.util.Date;
 import java.util.Locale;
+import java.util.TimeZone;
 
 import static android.webkit.WebViewClient.ERROR_CONNECT;
 import static android.webkit.WebViewClient.ERROR_HOST_LOOKUP;
@@ -107,33 +104,10 @@ final class Utils {
 		return String.format("%s [%s]", error.getDescription(), error.getErrorCode());
 	}
 
-	/**
-	 * Get Date in ISO format
-	 * @param date UTC date
-	 * @return { String }
-	 */
-	@TargetApi(Build.VERSION_CODES.O)
-	@SuppressLint({"NewApi", "ObsoleteSdkInt"})
-	static String getISODate(Date date) {
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-			return date
-					.toInstant()
-					.atOffset(ZoneOffset.UTC) // Thread-safe
-					.toString();
-		}
-
-		return null;
-	}
-
-	@SuppressLint({"ObsoleteSdkInt"})
-	static String getISODateLegacySupport(Date date) {
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-			return getISODate(date);
-		} else {
-			// Legacy way
-			SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ", Locale.getDefault());
-			return dateFormat.format(date);
-		}
+	static String getUtcIsoDate(Date date) {
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ", Locale.getDefault());
+		dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+		return dateFormat.format(date);
 	}
 
 	/**
