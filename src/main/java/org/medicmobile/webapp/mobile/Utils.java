@@ -105,14 +105,19 @@ final class Utils {
 	}
 
 	static String getUtcIsoDate(Date date) {
+		if (date == null) {
+			return null;
+		}
+
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ", Locale.getDefault());
 		dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+
 		return dateFormat.format(date);
 	}
 
 	/**
-	 * The file path can be a regular file or a content (content://) scheme
-	 * @param path
+	 * The file path can be a regular file or a content ("content://" scheme)
+	 * @param path {String} File path
 	 * @return
 	 */
 	static Uri getUriFromFilePath(String path) {
