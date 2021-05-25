@@ -115,7 +115,7 @@ public class RDToolkitSupportTest {
 	}
 
 	@Test
-	public void process_provisionTestActivity_catchesException() throws Exception {
+	public void process_provisionTestActivity_catchesException() {
 		//> GIVEN
 		Intent intent = mock(Intent.class);
 		RDToolkitSupport rdToolkitSupport = new RDToolkitSupport(mockContext);
@@ -127,7 +127,7 @@ public class RDToolkitSupportTest {
 		String script = rdToolkitSupport.process(RDTOOLKIT_PROVISION_ACTIVITY_REQUEST_CODE, RESULT_OK, intent);
 
 		//> THEN
-		assertEquals("console.log('Problem serialising the provisioned RD Test: java.lang.NullPointerException')", script);
+		assertEquals("console.error('Problem serialising the provisioned RD Test: java.lang.NullPointerException')", script);
 	}
 
 	@Test
@@ -192,7 +192,7 @@ public class RDToolkitSupportTest {
 	}
 
 	@Test
-	public void process_captureResponseActivity_catchesException() throws Exception {
+	public void process_captureResponseActivity_catchesException() {
 		//> GIVEN
 		Intent intent = mock(Intent.class);
 		RDToolkitSupport rdToolkitSupport = new RDToolkitSupport(mockContext);
@@ -204,11 +204,11 @@ public class RDToolkitSupportTest {
 		String script = rdToolkitSupport.process(RDTOOLKIT_CAPTURE_ACTIVITY_REQUEST_CODE, RESULT_OK, intent);
 
 		//> THEN
-		assertEquals("console.log('Problem serialising the captured result: java.lang.NullPointerException')", script);
+		assertEquals("console.error('Problem serialising the captured result: java.lang.NullPointerException')", script);
 	}
 
 	@Test
-	public void process_unknownActivity_throwsException() throws Exception {
+	public void process_unknownActivity_throwsException() {
 		//> GIVEN
 		int unknownActivity = 99;
 		Intent intent = mock(Intent.class);

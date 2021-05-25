@@ -116,9 +116,8 @@ public class RDToolkitSupport {
 
 			trace(this, "RDToolkitSupport :: Encoding image file to Base64");
 			byte[] imageBytes = outputFile.toByteArray();
-			String imageEncode = Base64.encodeToString(imageBytes, Base64.NO_WRAP);
 
-			return imageEncode;
+			return Base64.encodeToString(imageBytes, Base64.NO_WRAP);
 
 		} catch (Exception exception) {
 			error(exception, "RDToolkitSupport :: Failed to process image file from path: %s", path);
@@ -140,7 +139,7 @@ public class RDToolkitSupport {
 
 		} catch (Exception exception) {
 			error(exception, "RDToolkitSupport :: Problem serialising the captured result");
-			return safeFormat("console.log('Problem serialising the captured result: %s')", exception);
+			return safeFormat("console.error('Problem serialising the captured result: %s')", exception);
 		}
 	}
 
@@ -155,7 +154,7 @@ public class RDToolkitSupport {
 
 		} catch (Exception exception) {
 			error(exception, "RDToolkitSupport :: Problem serialising the provisioned RD Test");
-			return safeFormat("console.log('Problem serialising the provisioned RD Test: %s')", exception);
+			return safeFormat("console.error('Problem serialising the provisioned RD Test: %s')", exception);
 		}
 	}
 
@@ -185,7 +184,7 @@ public class RDToolkitSupport {
 		return safeFormat(javaScript, response, response);
 	}
 
-	private JSONObject parseProvisionTestResponseToJson(Intent intentData) throws JSONException {
+	private JSONObject parseProvisionTestResponseToJson(Intent intentData) throws NullPointerException, JSONException {
 		TestSession session = RdtUtils.getRdtSession(intentData);
 		trace(this, "RDToolkitSupport :: RD Test started, see session: %s", session);
 
@@ -197,7 +196,7 @@ public class RDToolkitSupport {
 		);
 	}
 
-	private JSONObject parseCaptureResponseToJson(Intent intentData) throws JSONException {
+	private JSONObject parseCaptureResponseToJson(Intent intentData) throws NullPointerException, JSONException {
 		TestSession session = RdtUtils.getRdtSession(intentData);
 		TestResult result = session.getResult();
 		trace(this, "RDToolkitSupport :: RD Test completed, session: %s, results: %s", session, result);

@@ -8,8 +8,8 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
     - uses: actions/checkout@v2
-    - name: Run lint in Webview
-      run: make lint-webview
+    - name: Run static check and lint
+      run: make static-check lint-webview
     - name: Test Webview
       run: make test-webview
     - name: Test Xwalk

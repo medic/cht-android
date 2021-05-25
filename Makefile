@@ -50,7 +50,10 @@ uninstall:
 	adb uninstall org.medicmobile.webapp.mobile
 
 lint-webview:
-	${GRADLEW} androidCheck lintUnbrandedWebviewDebug
+	${GRADLEW} lintUnbrandedWebviewDebug
+
+static-check:
+	${GRADLEW} androidCheck
 
 test-webview:
 	${GRADLEW} -Pxwalk=false test
