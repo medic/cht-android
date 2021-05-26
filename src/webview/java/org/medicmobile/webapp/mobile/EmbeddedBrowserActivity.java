@@ -1,5 +1,19 @@
 package org.medicmobile.webapp.mobile;
 
+import static android.content.pm.PackageManager.PERMISSION_GRANTED;
+import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
+import static org.medicmobile.webapp.mobile.BuildConfig.DISABLE_APP_URL_VALIDATION;
+import static org.medicmobile.webapp.mobile.MedicLog.error;
+import static org.medicmobile.webapp.mobile.MedicLog.log;
+import static org.medicmobile.webapp.mobile.MedicLog.trace;
+import static org.medicmobile.webapp.mobile.MedicLog.warn;
+import static org.medicmobile.webapp.mobile.SimpleJsonClient2.redactUrl;
+import static org.medicmobile.webapp.mobile.Utils.connectionErrorToString;
+import static org.medicmobile.webapp.mobile.Utils.createUseragentFrom;
+import static org.medicmobile.webapp.mobile.Utils.isConnectionError;
+import static org.medicmobile.webapp.mobile.Utils.isUrlRelated;
+import static org.medicmobile.webapp.mobile.Utils.restartApp;
+
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
@@ -32,21 +46,6 @@ import androidx.core.content.ContextCompat;
 
 import java.util.Arrays;
 
-import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
-import static android.content.pm.PackageManager.PERMISSION_GRANTED;
-import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
-import static org.medicmobile.webapp.mobile.BuildConfig.DISABLE_APP_URL_VALIDATION;
-import static org.medicmobile.webapp.mobile.MedicLog.error;
-import static org.medicmobile.webapp.mobile.MedicLog.log;
-import static org.medicmobile.webapp.mobile.MedicLog.trace;
-import static org.medicmobile.webapp.mobile.MedicLog.warn;
-import static org.medicmobile.webapp.mobile.SimpleJsonClient2.redactUrl;
-import static org.medicmobile.webapp.mobile.Utils.connectionErrorToString;
-import static org.medicmobile.webapp.mobile.Utils.createUseragentFrom;
-import static org.medicmobile.webapp.mobile.Utils.isConnectionError;
-import static org.medicmobile.webapp.mobile.Utils.isUrlRelated;
-import static org.medicmobile.webapp.mobile.Utils.restartApp;
-
 @SuppressWarnings({ "PMD.GodClass", "PMD.TooManyMethods" })
 public class EmbeddedBrowserActivity extends LockableActivity {
 	/**
@@ -64,8 +63,6 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	static final int RDTOOLKIT_PROVISION_ACTIVITY_REQUEST_CODE = (3 << 3) | NON_SIMPRINTS_FLAGS;
 	static final int RDTOOLKIT_CAPTURE_ACTIVITY_REQUEST_CODE = (4 << 3) | NON_SIMPRINTS_FLAGS;
 	static final int ACCESS_STORAGE_PERMISSION_REQUEST_CODE = (5 << 3) | NON_SIMPRINTS_FLAGS;
-
-	private static String[] PERMISSIONS_STORAGE = { READ_EXTERNAL_STORAGE };
 
 	// Arbitrarily selected value
 	private static final int ACCESS_FINE_LOCATION_PERMISSION_REQUEST_CODE = 7038678;
@@ -91,7 +88,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	private MrdtSupport mrdt;
 	private PhotoGrabber photoGrabber;
 	private SmsSender smsSender;
-	private RDToolkitSupport rdToolkitSupport;
+	private RDToolkitSupportActivity rdToolkitSupportActivity;
 
 
 	private boolean isMigrationRunning = false;
@@ -105,7 +102,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		this.simprints = new SimprintsSupport(this);
 		this.photoGrabber = new PhotoGrabber(this);
 		this.mrdt = new MrdtSupport(this);
-		this.rdToolkitSupport = new RDToolkitSupport(this);
+		this.rdToolkitSupportActivity = new RDToolkitSupportActivity(this);
 		try {
 			this.smsSender = new SmsSender(this);
 		} catch(Exception ex) {
@@ -278,8 +275,8 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		return this.smsSender;
 	}
 
-	RDToolkitSupport getRdToolkitSupport() {
-		return this.rdToolkitSupport;
+	RDToolkitSupportActivity getRdToolkitSupportActivity() {
+		return this.rdToolkitSupportActivity;
 	}
 
 //> PUBLIC API
@@ -323,21 +320,13 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	}
 
 	private void processRdToolkitProvisionTestActivity(int requestCode, int resultCode, Intent intentData) {
-		String provisionScript = rdToolkitSupport.process(requestCode, resultCode, intentData);
+		String provisionScript = rdToolkitSupportActivity.processActivity(requestCode, resultCode, intentData);
 		trace(this, "RDToolkitSupport :: Executing JavaScript: %s", provisionScript);
 		evaluateJavascript(provisionScript);
 	}
 
 	private void processRdToolkitCaptureResultActivity(int requestCode, int resultCode, Intent intentData) {
-		int readPermission = ContextCompat.checkSelfPermission(this, READ_EXTERNAL_STORAGE);
-
-		if (readPermission != PERMISSION_GRANTED) {
-			trace(this, "RDToolkitSupport :: Requesting storage permissions");
-			ActivityCompat.requestPermissions(this, PERMISSIONS_STORAGE, ACCESS_STORAGE_PERMISSION_REQUEST_CODE);
-			return;
-		}
-
-		String captureScript = rdToolkitSupport.process(requestCode, resultCode, intentData);
+		String captureScript = rdToolkitSupportActivity.processActivity(requestCode, resultCode, intentData);
 		trace(this, "RDToolkitSupport :: Executing JavaScript: %s", captureScript);
 		evaluateJavascript(captureScript);
 	}
@@ -431,6 +420,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	@Override
 	public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
 		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+		boolean granted = grantResults.length > 0 && grantResults[0] == PERMISSION_GRANTED;
 
 		if (requestCode == ACCESS_FINE_LOCATION_PERMISSION_REQUEST_CODE) {
 			locationRequestResolved();
@@ -438,7 +428,12 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		}
 
 		if (requestCode == ACCESS_STORAGE_PERMISSION_REQUEST_CODE) {
-			trace(this, "Storage permission granted.");
+			if (granted) {
+				this.rdToolkitSupportActivity.resumeCaptureActivity();
+				return;
+			}
+
+			trace(this, "RDToolkitSupport :: User rejected permission.");
 			return;
 		}
 	}

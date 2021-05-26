@@ -1,5 +1,12 @@
 package org.medicmobile.webapp.mobile;
 
+import static org.medicmobile.webapp.mobile.JavascriptUtils.safeFormat;
+import static org.medicmobile.webapp.mobile.MedicLog.error;
+import static org.medicmobile.webapp.mobile.MedicLog.trace;
+import static org.medicmobile.webapp.mobile.Utils.getUriFromFilePath;
+import static org.medicmobile.webapp.mobile.Utils.getUtcIsoDate;
+import static org.medicmobile.webapp.mobile.Utils.json;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -22,16 +29,6 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Map;
 
-import static android.app.Activity.RESULT_OK;
-import static org.medicmobile.webapp.mobile.EmbeddedBrowserActivity.RDTOOLKIT_CAPTURE_ACTIVITY_REQUEST_CODE;
-import static org.medicmobile.webapp.mobile.EmbeddedBrowserActivity.RDTOOLKIT_PROVISION_ACTIVITY_REQUEST_CODE;
-import static org.medicmobile.webapp.mobile.JavascriptUtils.safeFormat;
-import static org.medicmobile.webapp.mobile.MedicLog.error;
-import static org.medicmobile.webapp.mobile.MedicLog.trace;
-import static org.medicmobile.webapp.mobile.Utils.getUriFromFilePath;
-import static org.medicmobile.webapp.mobile.Utils.getUtcIsoDate;
-import static org.medicmobile.webapp.mobile.Utils.json;
-
 public class RDToolkitSupport {
 
 	private final Activity ctx;
@@ -40,25 +37,10 @@ public class RDToolkitSupport {
 		this.ctx = ctx;
 	}
 
-	String process(int requestCode, int resultCode, Intent intentData) {
-
-		trace(this, "RDToolkitSupport :: process requestCode=%s", requestCode);
-
-		switch (requestCode) {
-			case RDTOOLKIT_PROVISION_ACTIVITY_REQUEST_CODE:
-				return processProvisionTestActivity(resultCode, intentData);
-
-			case RDTOOLKIT_CAPTURE_ACTIVITY_REQUEST_CODE:
-				return processCaptureResponseActivity(resultCode, intentData);
-
-			default:
-				throw new RuntimeException("RDToolkitSupport :: Bad request type: " + requestCode);
-		}
-	}
-
 	Intent provisionRDTest(String sessionId, String patientName, String patientId, String rdtFilter, String monitorApiURL) {
 		ProvisionMode provisionMode = !rdtFilter.trim().matches("\\S+") ? ProvisionMode.CRITERIA_SET_AND : ProvisionMode.CRITERIA_SET_OR;
-		Intent intent = RdtIntentBuilder
+
+		return RdtIntentBuilder
 				.forProvisioning()
 				.setCallingPackage(ctx.getPackageName())
 				.setReturnApplication(ctx)
@@ -72,26 +54,14 @@ public class RDToolkitSupport {
 				.setFlavorTwo(patientId)
 				.setCloudworksBackend(monitorApiURL, patientId)
 				.build();
-
-		if (intent.resolveActivity(ctx.getPackageManager()) != null) {
-			ctx.startActivityForResult(intent, RDTOOLKIT_PROVISION_ACTIVITY_REQUEST_CODE);
-		}
-
-		return intent;
 	}
 
 	Intent captureRDTest(String sessionId) {
-		Intent intent = RdtIntentBuilder
+		return RdtIntentBuilder
 				.forCapture()
 				// Unique ID for RD Test
 				.setSessionId(sessionId)
 				.build();
-
-		if (intent.resolveActivity(ctx.getPackageManager()) != null) {
-			ctx.startActivityForResult(intent, RDTOOLKIT_CAPTURE_ACTIVITY_REQUEST_CODE);
-		}
-
-		return intent;
 	}
 
 	String getImage(String path) {
@@ -126,16 +96,10 @@ public class RDToolkitSupport {
 		return null;
 	}
 
-//> PRIVATE HELPERS
-
-	private String processCaptureResponseActivity(int resultCode, Intent intentData) {
-		if (resultCode != RESULT_OK) {
-			throw new RuntimeException("RDToolkitSupport :: Bad result code for capturing result: " + resultCode);
-		}
-
+	String processCapturedResponse(Intent intentData) {
 		try {
-			JSONObject response = parseCaptureResponseToJson(intentData);
-			return makeCaptureResponseJavaScript(response);
+			JSONObject response = parseCapturedResponseToJson(intentData);
+			return makeCapturedResponseJavaScript(response);
 
 		} catch (Exception exception) {
 			error(exception, "RDToolkitSupport :: Problem serialising the captured result");
@@ -143,14 +107,10 @@ public class RDToolkitSupport {
 		}
 	}
 
-	private String processProvisionTestActivity(int resultCode, Intent intentData) {
-		if (resultCode != RESULT_OK) {
-			throw new RuntimeException("RDToolkitSupport :: Bad result code for the provisioned RD Test: " + resultCode);
-		}
-
+	String processProvisionedTest(Intent intentData) {
 		try {
-			JSONObject response = parseProvisionTestResponseToJson(intentData);
-			return makeProvisionTestJavaScript(response);
+			JSONObject response = parseProvisionedTestToJson(intentData);
+			return makeProvisionedTestJavaScript(response);
 
 		} catch (Exception exception) {
 			error(exception, "RDToolkitSupport :: Problem serialising the provisioned RD Test");
@@ -158,7 +118,7 @@ public class RDToolkitSupport {
 		}
 	}
 
-	private String makeProvisionTestJavaScript(Object response) {
+	private String makeProvisionedTestJavaScript(Object response) {
 		String javaScript = "try {" +
 				"const api = window.CHTCore.AndroidApi;" +
 				"if (api && api.rdToolkitProvisionedTestResponse) {" +
@@ -171,7 +131,7 @@ public class RDToolkitSupport {
 		return safeFormat(javaScript, response);
 	}
 
-	private String makeCaptureResponseJavaScript(Object response) {
+	private String makeCapturedResponseJavaScript(Object response) {
 		String javaScript = "try {" +
 				"const api = window.CHTCore.AndroidApi;" +
 				"if (api && api.rdToolkitCapturedTestResponse) {" +
@@ -184,7 +144,7 @@ public class RDToolkitSupport {
 		return safeFormat(javaScript, response, response);
 	}
 
-	private JSONObject parseProvisionTestResponseToJson(Intent intentData) throws NullPointerException, JSONException {
+	private JSONObject parseProvisionedTestToJson(Intent intentData) throws NullPointerException, JSONException {
 		TestSession session = RdtUtils.getRdtSession(intentData);
 		trace(this, "RDToolkitSupport :: RD Test started, see session: %s", session);
 
@@ -196,7 +156,7 @@ public class RDToolkitSupport {
 		);
 	}
 
-	private JSONObject parseCaptureResponseToJson(Intent intentData) throws NullPointerException, JSONException {
+	private JSONObject parseCapturedResponseToJson(Intent intentData) throws NullPointerException, JSONException {
 		TestSession session = RdtUtils.getRdtSession(intentData);
 		TestResult result = session.getResult();
 		trace(this, "RDToolkitSupport :: RD Test completed, session: %s, results: %s", session, result);

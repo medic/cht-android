@@ -43,7 +43,7 @@ public class MedicAndroidJavascript {
 	private final SimprintsSupport simprints;
 	private final MrdtSupport mrdt;
 	private final SmsSender smsSender;
-	private final RDToolkitSupport rdToolkitSupport;
+	private final RDToolkitSupportActivity rdToolkitSupportActivity;
 
 	private ActivityManager activityManager;
 	private ConnectivityManager connectivityManager;
@@ -54,7 +54,7 @@ public class MedicAndroidJavascript {
 		this.simprints = parent.getSimprintsSupport();
 		this.mrdt = parent.getMrdtSupport();
 		this.smsSender = parent.getSmsSender();
-		this.rdToolkitSupport = parent.getRdToolkitSupport();
+		this.rdToolkitSupportActivity = parent.getRdToolkitSupportActivity();
 	}
 
 	public void setAlert(Alert soundAlert) {
@@ -216,7 +216,7 @@ public class MedicAndroidJavascript {
 	@android.webkit.JavascriptInterface
 	public void rdToolkit_provisionRDTest(String sessionId, String patientName, String patientId, String rdtFilter, String monitorApiURL) {
 		try {
-			this.rdToolkitSupport.provisionRDTest(sessionId, patientName, patientId, rdtFilter, monitorApiURL);
+			this.rdToolkitSupportActivity.startProvisionIntent(sessionId, patientName, patientId, rdtFilter, monitorApiURL);
 		} catch (Exception ex) {
 			logException(ex);
 		}
@@ -225,7 +225,7 @@ public class MedicAndroidJavascript {
 	@android.webkit.JavascriptInterface
 	public void rdToolkit_captureRDTest(String sessionId) {
 		try {
-			this.rdToolkitSupport.captureRDTest(sessionId);
+			this.rdToolkitSupportActivity.startCaptureIntent(sessionId);
 		} catch (Exception ex) {
 			logException(ex);
 		}
