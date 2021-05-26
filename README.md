@@ -55,7 +55,7 @@ A new flavor `unbranded_test` was added with the storage permission removed for 
 
 ### Notes
 
-The text used in the new location permission request is in the Android wrapper app itself (`cht-android`), and translated differently than [CHT Core labels](https://docs.communityhealthtoolkit.org/core/overview/translations/). Any additions or modifications to translations in `medic-android` are done in the `strings.xml` files according to the [Android localization framework](https://developer.android.com/guide/topics/resources/localization).
+The text used in the new location permission request is in the Android wrapper app itself (`cht-android`), and translated differently than [CHT Core labels](https://docs.communityhealthtoolkit.org/core/overview/translations/). Any additions or modifications to translations in `cht-android` are done in the `strings.xml` files according to the [Android localization framework](https://developer.android.com/guide/topics/resources/localization).
 
 
 ## 0.6.0
