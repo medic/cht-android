@@ -10,7 +10,7 @@ For compatibility with a wide range of devices the build script produces multipl
 
 To help you pick which APK to install you can find information about the version of Android and the CPU in the About section of the phone's settings menu.
 
-The APKs are named as follows: `medic-android-{version}-{brand}-{rendering-engine}-{instruction-set}-release.apk`
+The APKs are named as follows: `cht-android-{version}-{brand}-{rendering-engine}-{instruction-set}-release.apk`
 
 | Rendering engine | Instruction set | Android version | Notes |
 |------------------|-----------------|-----------------|--|
