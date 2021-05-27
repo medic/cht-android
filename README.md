@@ -103,10 +103,12 @@ See the [makefile](./Makefile) for more command line options.
 ## Debug Xwalk with Android Studio
 
 1. Select a Xwalk flavor in `Build` > `Select Build Variant`.
-2. Disable Android Jetifier: The Xwalk flavor uses the old Android Support Library (android.support.*)
+2. Disable Android Jetifier: The Xwalk flavor uses the old Android Support Library (android.support.*).
+
 a. Navigate to `Settings` or `Preferences` > `Build, Execution, Deployment` > `Compiler`.
 b. Add `-Pandroid.enableJetifier=false` in the `Command-line Options` field (remember to remove this when debugging with Webview).
 c. Click `OK` save changes.
+
 3. Click the debug button in the toolbar.
 
 # Testing - Instrumentation Tests (UI Tests)
