@@ -98,7 +98,7 @@ This release changes the way in which location data is collected to better align
 3. Plug in your phone. Check it's detected with `adb devices`
 4. Execute `make` to build and install the app in the phone. For Xwalk development, execute `make xwalk`.
 
-See the [makefile](https://github.com/medic/medic-android/blob/master/Makefile) for more command line options.
+See the [makefile](./Makefile) for more command line options.
 
 ## Debug Xwalk with Android Studio
 
