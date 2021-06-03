@@ -53,7 +53,7 @@ import androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class SettingsDialogActivityTest {
 
-	private static final String WEBAPP_URL = "Webapp URL";
+	private static final String WEBAPP_URL = "CHT-Core URL";
 	private static final String SERVER_ONE = "https://medic.github.io/atp";
 	private static final String SERVER_TWO = "https://gamma-cht.dev.medicmobile.org";
 	private static final String SERVER_THREE = "https://gamma.dev.medicmobile.org";
@@ -64,7 +64,7 @@ public class SettingsDialogActivityTest {
 
 	@Test
 	public void serverSelectionScreenIsDisplayed() {
-		onView(withText("Medic Mobile")).check(matches(isDisplayed()));
+		onView(withText("CHT Android")).check(matches(isDisplayed()));
 		onView(withText("Custom")).check(matches(isDisplayed()));
 		onView(withId(R.id.lstServers)).check(matches(isDisplayed()));
 

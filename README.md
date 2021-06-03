@@ -1,7 +1,7 @@
-Medic Android App
+CHT Android App
 ========================
 
-The medic-android application is a thin wrapper to load the [CHT Core Framework](https://github.com/medic/cht-core/) web application in a webview. This allows the application to be hardcoded to a specific CHT deployment and have a partner specific logo and display name. This app also provides some deeper integration with other android apps and native phone functions that are otherwise unavailable to webapps.
+The cht-android application is a thin wrapper to load the [CHT Core Framework](https://github.com/medic/cht-core/) web application in a webview. This allows the application to be hardcoded to a specific CHT deployment and have a partner specific logo and display name. This app also provides some deeper integration with other android apps and native phone functions that are otherwise unavailable to webapps.
 
 
 # APKs
@@ -10,7 +10,7 @@ For compatibility with a wide range of devices the build script produces multipl
 
 To help you pick which APK to install you can find information about the version of Android and the CPU in the About section of the phone's settings menu.
 
-The APKs are named as follows: `medic-android-{version}-{brand}-{rendering-engine}-{instruction-set}-release.apk`
+The APKs are named as follows: `cht-android-{version}-{brand}-{rendering-engine}-{instruction-set}-release.apk`
 
 | Rendering engine | Instruction set | Android version | Notes |
 |------------------|-----------------|-----------------|--|
@@ -25,10 +25,10 @@ The APKs are named as follows: `medic-android-{version}-{brand}-{rendering-engin
 
 ### Changes
 
-- [improvement] [#163](https://github.com/medic/medic-android/issues/163) New connection errors UX:
+- [improvement] [#163](https://github.com/medic/cht-android/issues/163) New connection errors UX:
   - The improvements only apply to _Webview_ flavors.
   - It also applies when the app migrates to Webview from a XWalk installation.
-- [improvement] [#134](https://github.com/medic/medic-android/issues/134) New UX of Crosswalk to Webview migration:
+- [improvement] [#134](https://github.com/medic/cht-android/issues/134) New UX of Crosswalk to Webview migration:
   - Add splash screen while the data is migrated.
   - Fix bug that caused redirect to the login page after migrate.
 - [improvement] Remove unused `READ_EXTERNAL_STORAGE` from the `cmmb_kenya` and `surveillance_covid19_kenya` flavors
@@ -39,7 +39,7 @@ You can see more about these changes in the release notes for [CHT Core v3.11.0]
 
 ### Changes
 
-- [improvement] [medic-android#148](https://github.com/medic/medic-android/issues/148): Remove storage access for most flavors that don't use the permission
+- [improvement] [cht-android#148](https://github.com/medic/cht-android/issues/148): Remove storage access for most flavors that don't use the permission
 - [improvement] New flavors added, and "livinggoods_innovation_ke" removed
 - [improvement] Add new translations for the prominent disclosure for location access: Tagalog (tel), Illonggo (hil), and Bisaya (ceb), and fixed translation string for the disclosure in Nepal (ne)
 
@@ -51,11 +51,11 @@ A new flavor `unbranded_test` was added with the storage permission removed for 
 
 ### Changes
 
-- [feature] [medic-android#136](https://github.com/medic/medic-android/issues/136): Add UI for prominent disclosure when requesting location permissions.
+- [feature] [cht-android#136](https://github.com/medic/cht-android/issues/136): Add UI for prominent disclosure when requesting location permissions.
 
 ### Notes
 
-The text used in the new location permission request is in the Android wrapper app itself (`medic-android`), and translated differently than [CHT Core labels](https://docs.communityhealthtoolkit.org/core/overview/translations/). Any additions or modifications to translations in `medic-android` are done in the `strings.xml` files according to the [Android localization framework](https://developer.android.com/guide/topics/resources/localization).
+The text used in the new location permission request is in the Android wrapper app itself (`cht-android`), and translated differently than [CHT Core labels](https://docs.communityhealthtoolkit.org/core/overview/translations/). Any additions or modifications to translations in `cht-android` are done in the `strings.xml` files according to the [Android localization framework](https://developer.android.com/guide/topics/resources/localization).
 
 
 ## 0.6.0
@@ -67,7 +67,7 @@ This release is largely intended to unblock the publishing of new apps onto the 
 1. When loading the application after upgrade you will need an internet connection in order to cache the application code.
 2. The migration can take a few minutes to complete so after upgrade the user may be shown a login screen. If this happens, restart the application periodically until the user is logged in and the app loads as per usual.
 
-We are planning improvements to [make the migration more user friendly](https://github.com/medic/medic-android/issues/134) in a future release.
+We are planning improvements to [make the migration more user friendly](https://github.com/medic/cht-android/issues/134) in a future release.
 
 Users on Android 9 and below do not need to be migrated and will be unaffected by this change. Because of this it is recommended that projects upgrade to v0.6.0 version of their app before issuing Android 10+ devices, if possible.
 
@@ -75,7 +75,7 @@ Earlier releases are no longer accepted by the Google Play Store.
 
 ### Changes
 
-- [improvement] [medic-android#106](https://github.com/medic/medic-android/issues/106): Update target SDK version to 29 for Play Store compliance
+- [improvement] [cht-android#106](https://github.com/medic/cht-android/issues/106): Update target SDK version to 29 for Play Store compliance
 
 ## 0.5.0
 
@@ -88,7 +88,7 @@ This release changes the way in which location data is collected to better align
 ### Changes
 
 - [feature] [cht-core#6380](https://github.com/medic/cht-core/issues/6380): Adds intent so opening deployment URLs will prompt to load in app
-- [improvement] [medic-android#111](https://github.com/medic/medic-android/issues/111): Compliance with Play Store developer policies for PII collection disclosure
+- [improvement] [cht-android#111](https://github.com/medic/cht-android/issues/111): Compliance with Play Store developer policies for PII collection disclosure
 - [bug] [cht-core#6648](https://github.com/medic/cht-core/issues/6648): Blank screen when launching external apps from CHT Android app
 
 # Development
@@ -130,7 +130,7 @@ To add a new brand:
 
 1. Make sure all issues for this release have passed AT and been merged into `master`
 2. Create a git tag starting with `v` and ending with the alpha version, e.g. `v1.2.3-alpha.1` and push the tag to GitHub.
-3. Creating this tag will trigger [GitHub Action](https://github.com/medic/medic-android/actions) to build, sign, and properly version the build. The release-ready APKs are available for side-loading from [GitHub Releases](https://github.com/medic/medic-android/releases).
+3. Creating this tag will trigger [GitHub Action](https://github.com/medic/cht-android/actions) to build, sign, and properly version the build. The release-ready APKs are available for side-loading from [GitHub Releases](https://github.com/medic/cht-android/releases).
 4. Announce the release in #quality-assurance
 
 ## Final for users
