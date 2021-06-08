@@ -325,6 +325,11 @@ android {
       dimension = 'brand'
       applicationId = "org.medicmobile.webapp.mobile.unbranded_test"
     }
+
+    itech_aurum {
+      dimension = 'brand'
+      applicationId = 'org.medicmobile.webapp.mobile.itech_aurum'
+    }
   }
 
   splits {
