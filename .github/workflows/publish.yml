@@ -186,6 +186,11 @@ jobs:
       with:
         lane: build
         options: '{ "flavor": "vhtapp_uganda" }'
+    - name: Assemble itech_aurum
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: build
+        options: '{ "flavor": "itech_aurum" }'
     - name: GitHub release
       uses: softprops/action-gh-release@v1
       if: startsWith(github.ref, 'refs/tags/')
