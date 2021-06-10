@@ -330,6 +330,10 @@ android {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.itech_aurum'
     }
+    itech_malawi {
+      dimension = 'brand'
+      applicationId = 'org.medicmobile.webapp.mobile.itech_malawi'
+    }
   }
 
   splits {
