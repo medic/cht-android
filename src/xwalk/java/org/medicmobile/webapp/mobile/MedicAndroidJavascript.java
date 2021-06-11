@@ -3,6 +3,7 @@ package org.medicmobile.webapp.mobile;
 import android.app.ActivityManager;
 import android.app.ActivityManager.MemoryInfo;
 import android.app.DatePickerDialog;
+import android.content.pm.PackageInfo;
 import android.net.ConnectivityManager;
 import android.net.NetworkCapabilities;
 import android.net.NetworkInfo;
@@ -235,11 +236,15 @@ public class MedicAndroidJavascript {
 				return jsonError("ConnectivityManager not set. Cannot retrieve network info.");
 			}
 
-			String versionName = parent.getPackageManager()
-					.getPackageInfo(parent.getPackageName(), 0)
-					.versionName;
+			PackageInfo packageInfo = parent
+					.getPackageManager()
+					.getPackageInfo(parent.getPackageName(), 0);
+			long versionCode = Build.VERSION.SDK_INT < Build.VERSION_CODES.P ? (long)packageInfo.versionCode : packageInfo.getLongVersionCode();
+
 			JSONObject appObject = new JSONObject();
-			appObject.put("version", versionName);
+			appObject.put("version", packageInfo.versionName);
+			appObject.put("packageName", packageInfo.packageName);
+			appObject.put("versionCode", versionCode);
 
 			String androidVersion = Build.VERSION.RELEASE;
 			int osApiLevel = Build.VERSION.SDK_INT;
