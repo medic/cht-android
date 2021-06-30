@@ -8,7 +8,7 @@ buildscript {
     jcenter()
   }
   dependencies {
-    classpath 'com.android.tools.build:gradle:4.1.3'
+    classpath 'com.android.tools.build:gradle:4.2.2'
     classpath 'com.noveogroup.android:check:1.2.5'
   }
 }
@@ -36,7 +36,7 @@ def simprintsApiKey, simprintsModuleId, simprintsUserId
 
 def getVersionCode = {
   int versionCode = 2
-  if(System.env.CI == 'true' && System.env.RELEASE_VERSION && System.env.RELEASE_VERSION.startsWith('v')) {
+  if (System.env.CI == 'true' && System.env.RELEASE_VERSION && System.env.RELEASE_VERSION.startsWith('v')) {
     def versionParts = System.env.RELEASE_VERSION.split(/[^0-9]+/)
 
     if (versionParts.length != 4 && versionParts.length != 5)
@@ -61,7 +61,7 @@ def getVersionName = {
 
 android {
   compileSdkVersion 29
-  buildToolsVersion '29.0.2'
+  buildToolsVersion '30.0.2'
   packagingOptions {
     exclude 'META-INF/LICENSE'
     exclude 'META-INF/NOTICE'
@@ -72,41 +72,46 @@ android {
     archivesBaseName = "${project.name}-${versionName}"
     targetSdkVersion 29
     // When upgrading targetSdkVersion, check that the app menu still works on newer devices.
-      //for espresso tests
-      testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-      //test user credentials
-      buildConfigField "String", "TEST_USERNAME", "\"${System.env.ANDROID_TEST_USERNAME}\""
-      buildConfigField "String", "TEST_PASSWORD", "\"${System.env.ANDROID_TEST_PASSWORD}\""
-      if(System.env.ANDROID_TEST_URL){
-        buildConfigField "String", "SERVER_URL", "\"${System.env.ANDROID_TEST_URL}\""
-      }else {
-        buildConfigField "String", "SERVER_URL", '"https://gamma-cht.dev.medicmobile.org"'
-      }
+    //for espresso tests
+    testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    //test user credentials
+    buildConfigField "String", "TEST_USERNAME", "\"${System.env.ANDROID_TEST_USERNAME}\""
+    buildConfigField "String", "TEST_PASSWORD", "\"${System.env.ANDROID_TEST_PASSWORD}\""
+    if (System.env.ANDROID_TEST_URL) {
+      buildConfigField "String", "SERVER_URL", "\"${System.env.ANDROID_TEST_URL}\""
+    } else {
+      buildConfigField "String", "SERVER_URL", '"https://gamma-cht.dev.medicmobile.org"'
+    }
+  }
+
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_1_8
+    targetCompatibility JavaVersion.VERSION_1_8
   }
 
   applicationVariants.all { variant ->
     buildConfigField "boolean", "DISABLE_APP_URL_VALIDATION", "Boolean.parseBoolean(\"${System.env.DISABLE_APP_URL_VALIDATION}\")";
     buildConfigField "String", "LOG_TAG", '"MedicMobile"'
 
-    if(System.env.SIMPRINTS_API_KEY) {
+    if (System.env.SIMPRINTS_API_KEY) {
       buildConfigField "String", "SIMPRINTS_API_KEY", /"${System.env.SIMPRINTS_API_KEY}"/
-    } else if(simprintsApiKey) {
+    } else if (simprintsApiKey) {
       buildConfigField "String", "SIMPRINTS_API_KEY", /"${simprintsApiKey}"/
     } else {
       buildConfigField "String", "SIMPRINTS_API_KEY", /"Medic's API Key"/
     }
 
-    if(System.env.SIMPRINTS_USER_ID) {
+    if (System.env.SIMPRINTS_USER_ID) {
       buildConfigField "String", "SIMPRINTS_USER_ID", /"${System.env.SIMPRINTS_USER_ID}"/
-    } else if(simprintsUserId) {
+    } else if (simprintsUserId) {
       buildConfigField "String", "SIMPRINTS_USER_ID", /"${simprintsUserId}"/
     } else {
       buildConfigField "String", "SIMPRINTS_USER_ID", '"some-user-id"'
     }
 
-    if(System.env.SIMPRINTS_MODULE_ID) {
+    if (System.env.SIMPRINTS_MODULE_ID) {
       buildConfigField "String", "SIMPRINTS_MODULE_ID", /"${System.env.SIMPRINTS_MODULE_ID}"/
-    } else if(simprintsModuleId) {
+    } else if (simprintsModuleId) {
       buildConfigField "String", "SIMPRINTS_MODULE_ID", /"${simprintsModuleId}"/
     } else {
       buildConfigField "String", "SIMPRINTS_MODULE_ID", '"Medic Module ID"'
@@ -153,12 +158,13 @@ android {
     disable 'OldTargetApi'
     disable 'MissingTranslation'
     disable 'StringFormatCount'
+    disable 'JcenterRepositoryObsolete'
 
     warningsAsErrors true
 
     xmlReport false
 
-    if(System.env.CI == 'true') {
+    if (System.env.CI == 'true') {
       abortOnError true
       htmlReport false
       textReport true
@@ -341,9 +347,9 @@ android {
       enable !project.hasProperty('abi')
       reset()
       include(
-              'armeabi-v7a',
-              'arm64-v8a',
-              //'x86',     //--> uncomment to be able to deploy the app in Android 10+ virtual devices
+          'armeabi-v7a',
+          'arm64-v8a',
+          //'x86',     //--> uncomment to be able to deploy the app in Android 10+ virtual devices
       )
       universalApk false
     }
