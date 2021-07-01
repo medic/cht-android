@@ -45,6 +45,7 @@ import static androidx.test.espresso.web.webdriver.DriverAtoms.webClick;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anything;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.matchesPattern;
 import androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner;
 
 
@@ -57,7 +58,8 @@ public class SettingsDialogActivityTest {
 	private static final String SERVER_ONE = "https://medic.github.io/atp";
 	private static final String SERVER_TWO = "https://gamma-cht.dev.medicmobile.org";
 	private static final String SERVER_THREE = "https://gamma.dev.medicmobile.org";
-	private static final String ERROR_INCORRECT = "Incorrect user name or password. Please try again.";
+	private static final String ERROR_INCORRECT = "Incorrect user name or password. Please try again." +
+			"|Nom d'utilisateur ou mot de passe incorrect. Veuillez réessayer";
 
 	@Rule
 	public ActivityTestRule<SettingsDialogActivity> mActivityTestRule = new ActivityTestRule<>(SettingsDialogActivity.class);
@@ -121,7 +123,7 @@ public class SettingsDialogActivityTest {
 				.perform(webClick());
 		Thread.sleep(4000);//TODO: use better ways to handle delays - takes longer with emulators
 		onWebView().withElement(findElement(Locator.CSS_SELECTOR, "p.error.incorrect"))
-				.check(webMatches(getText(), containsString(ERROR_INCORRECT)));
+				.check(webMatches(getText(), matchesPattern(ERROR_INCORRECT)));
 	}
 
 	private String getLanguage(String code) {
