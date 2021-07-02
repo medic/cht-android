@@ -12,12 +12,13 @@ To help you pick which APK to install you can find information about the version
 
 The APKs are named as follows: `cht-android-{version}-{brand}-{rendering-engine}-{instruction-set}-release.apk`
 
-| Rendering engine | Instruction set | Android version | Notes |
-|------------------|-----------------|-----------------|--|
-| `webview`        | `arm64-v8a`     | 10+             |  Preferred. Use this APK if possible. |
+| Rendering engine | Instruction set | Android version | Notes                                                       |
+|------------------|-----------------|-----------------|-------------------------------------------------------------|
+| `webview`        | `arm64-v8a`     | 10+             | Preferred. Use this APK if possible.                        |
 | `webview`        | `armeabi-v7a`   | 10+             | Built but not compatible with any devices. Ignore this APK. |
-| `xwalk`          | `arm64-v8a`     | 4.4 - 9         |  |
-| `xwalk`          | `armeabi-v7a`   | 4.4 - 9         |  |
+| `xwalk`          | `arm64-v8a`     | 4.4 - 9         |                                                             |
+| `xwalk`          | `armeabi-v7a`   | 4.4 - 9         |                                                             |
+
 
 # Release notes
 
@@ -91,22 +92,39 @@ This release changes the way in which location data is collected to better align
 - [improvement] [cht-android#111](https://github.com/medic/cht-android/issues/111): Compliance with Play Store developer policies for PII collection disclosure
 - [bug] [cht-core#6648](https://github.com/medic/cht-core/issues/6648): Blank screen when launching external apps from CHT Android app
 
+
 # Development
 
-1. Install Android SDK
-2. Clone the repo
-3. Plug in your phone. Check it's detected with `adb devices`
-4. Execute: `make` (will also push app unto phone)
+1. Install the [Android SDK](https://developer.android.com/studio#command-tools) and Java 8+ (it works with the OpenJDK versions).
+2. Clone the repo.
+3. Plug in your phone. Check it's detected with `adb devices`.
+4. Execute: `make` (will also push app into phone).
 
-# Testing - Instrumentation Tests (UI Tests)
+To only **build and assemble** the APKs for certain flavor and rendering engine, execute `./gradlew assemble[Flavor][Engine]Debug`, e.g. to assemble the unbranded flavor for the webview rendering engine: `./gradlew assembleUnbrandedWebviewDebug`. For the XWalk engine: `./gradlew assembleUnbrandedXWalkDebug`.
 
-1. Install Android SDK
-2. Clone the repo
-3. Plug in your phone. Check it's detected with `adb devices`
-4. Execute: `./gradlew connected[Flavor]WebviewDebugAndroidTest` . Eg `./gradlew connectedUnbrandedWebviewDebugAndroidTest` or `./gradlew connectedMedicmobilegammaWebviewDebugAndroidTest`. At the moment we have tests only in these 2 flavors: unbranded and medicmobilegamma. To avoid failures running the tests, previous versions of the app should be uninstalled first, otherwise an `InstallException: INSTALL_FAILED_VERSION_DOWNGRADE` can make the tests to fail, and Android needs to have English as default language.
+The APKs are stored in the folder `build/outputs/apk/[Flavor][Engine]/debug/`, in the example above: `build/outputs/apk/unbrandedWebview/debug/`.
 
-## Connecting to the server locally
-Refer to the [cht-core Developer Guide](https://github.com/medic/cht-core/blob/master/DEVELOPMENT.md#testing-locally-with-devices).
+To only execute the **linter checks**, execute: `./gradlew androidCheckstyle`.
+
+The [Android Studio](https://developer.android.com/studio) can be used to build and launch the app instead. Be sure to select the right flavor and rendering engine from the _Build Variants_ dialog (see [Build and run your app](https://developer.android.com/studio/run)). To launch the app in an emulator, you need to uncomment the code that has the strings for the `x86` or the `x86_64` architecture in the `build.gradle` file, in the `android` / `splits` / `include` section.
+
+## Testing
+
+To execute unit tests: `./gradlew testUnbrandedWebviewDebugUnitTest`.
+
+### Instrumentation Tests (UI Tests)
+
+These tests run on your device.
+
+1. Execute steps 1 to 3 from [Development](#development).
+2. Execute: `./gradlew connected[Flavor]WebviewDebugAndroidTest` . Eg `./gradlew connectedUnbrandedWebviewDebugAndroidTest` or `./gradlew connectedMedicmobilegammaWebviewDebugAndroidTest`. At the moment we have tests only in these 2 flavors: unbranded and medicmobilegamma.
+
+To avoid failures running the tests, previous versions of the app should be uninstalled first, otherwise an `InstallException: INSTALL_FAILED_VERSION_DOWNGRADE` can make the tests to fail, and Android needs to have English as default language.
+
+### Connecting to the server locally
+
+Refer to the [CHT Core Developer Guide](https://github.com/medic/cht-core/blob/master/DEVELOPMENT.md#testing-locally-with-devices).
+
 
 # Branding
 
@@ -123,6 +141,7 @@ To add a new brand:
 1. add `productFlavors { <new_brand> { ... } }` in `build.gradle`
 1. add icons, strings etc. in `src/<new_brand>`
 1. to enable automated deployments, add the `new_brand` to `.github/workflows/publish.yml`
+
 
 # Releasing
 
@@ -141,9 +160,11 @@ To add a new brand:
 4. Announce the release on the [CHT forum](https://forum.communityhealthtoolkit.org), under the "Product - Releases" category.
 5. Each flavor is then individually released to users via "Release Management" in the Google Play Console. Once a flavor has been tested and is ready to go live, click Release to Production
 
+
 # Copyright
 
 Copyright 2013-2021 Medic Mobile, Inc. <hello@medic.org>
+
 
 # License
 
