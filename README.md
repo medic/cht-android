@@ -98,7 +98,7 @@ This release changes the way in which location data is collected to better align
 1. Install the [Android SDK](https://developer.android.com/studio#command-tools) and Java 8+ (it works with the OpenJDK versions).
 2. Clone the repository.
 3. Plug in your phone. Check it's detected with `adb devices`.
-4. Execute: `make` (will also push app into phone).
+4. Execute: `make` (will also push app into the phone).
 
 To only **build and assemble** the APKs for certain flavor and rendering engine, execute `./gradlew assemble[Flavor][Engine]Debug`, e.g. to assemble the unbranded flavor for the webview rendering engine: `./gradlew assembleUnbrandedWebviewDebug`. For the XWalk engine: `./gradlew assembleUnbrandedXWalkDebug`.
 
