@@ -96,7 +96,7 @@ This release changes the way in which location data is collected to better align
 # Development
 
 1. Install the [Android SDK](https://developer.android.com/studio#command-tools) and Java 8+ (it works with the OpenJDK versions).
-2. Clone the repo.
+2. Clone the repository.
 3. Plug in your phone. Check it's detected with `adb devices`.
 4. Execute: `make` (will also push app into phone).
 
