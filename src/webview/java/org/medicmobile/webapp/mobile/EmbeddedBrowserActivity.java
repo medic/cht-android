@@ -40,9 +40,9 @@ import static org.medicmobile.webapp.mobile.MedicLog.log;
 import static org.medicmobile.webapp.mobile.MedicLog.trace;
 import static org.medicmobile.webapp.mobile.MedicLog.warn;
 import static org.medicmobile.webapp.mobile.SimpleJsonClient2.redactUrl;
-import static org.medicmobile.webapp.mobile.Utils.connectionErrorToString;
+import static org.medicmobile.webapp.mobile.ConnectionUtils.connectionErrorToString;
+import static org.medicmobile.webapp.mobile.ConnectionUtils.isConnectionError;
 import static org.medicmobile.webapp.mobile.Utils.createUseragentFrom;
-import static org.medicmobile.webapp.mobile.Utils.isConnectionError;
 import static org.medicmobile.webapp.mobile.Utils.isUrlRelated;
 import static org.medicmobile.webapp.mobile.Utils.restartApp;
 

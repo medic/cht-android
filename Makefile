@@ -1,41 +1,56 @@
 ADB = ${ANDROID_HOME}/platform-tools/adb
-GRADLEW = ./gradlew
+GRADLE = ./gradlew
+GRADLE_OPTS = --daemon --parallel
 flavour = UnbrandedWebview
 
 ifdef ComSpec	 # Windows
   # Use `/` for all paths, except `.\`
   ADB := $(subst \,/,${ADB})
-  GRADLEW := $(subst /,\,${GRADLEW})
+  GRADLE := $(subst /,\,${GRADLE})
 endif
 
-default: deploy-flavour logs
+default: deploy logs
 branded: clean-apks assemble-all deploy-all logs
 branded-debug: clean-apks assemble-all-debug deploy-all logs
-clean: clean-apks
 xwalk: deploy-xwalk logs
 
 logs:
 	${ADB} logcat MedicMobile:V AndroidRuntime:E '*:S' | tee android.log
 
-deploy-flavour:
-	${GRADLEW} --daemon --parallel install${flavour}Debug
+deploy:
+	${GRADLE} ${GRADLE_OPTS} install${flavour}Debug
 deploy-xwalk:
-	${GRADLEW} --daemon --parallel installUnbrandedXwalkDebug
-
-clean-apks:
-	rm -rf build/outputs/apk/
-assemble-all:
-	${GRADLEW} --daemon --parallel assemble
-assemble-all-debug:
-	${GRADLEW} --daemon --parallel assembleDebug
+	${GRADLE} ${GRADLE_OPTS} installUnbrandedXwalkDebug
 deploy-all:
 	find build/outputs/apk -name \*-debug.apk | \
 		xargs -n1 ${ADB} install -r
+
+clean:
+	${GRADLE} clean
+clean-apks:
+	rm -rf build/outputs/apk/
+
+assemble:
+	${GRADLE} ${GRADLE_OPTS} assemble${flavour}
+assemble-all:
+	${GRADLE} ${GRADLE_OPTS} assemble
+assemble-all-debug:
+	${GRADLE} ${GRADLE_OPTS} assembleDebug
+
 uninstall-all:
-	${GRADLEW} uninstallAll
+	${GRADLE} uninstallAll
+
 url-tester:
-	DISABLE_APP_URL_VALIDATION=true ${GRADLEW} --daemon --parallel installUnbrandedWebviewDebug
+	DISABLE_APP_URL_VALIDATION=true ${GRADLE} ${GRADLE_OPTS} install${flavour}Debug
+
 uninstall:
 	adb uninstall org.medicmobile.webapp.mobile
-test:
-	${GRADLEW} androidCheck lintUnbrandedWebviewDebug test
+
+lint:
+	${GRADLE} ${GRADLE_OPTS} androidCheck lint${flavour}Debug
+test: lint
+	${GRADLE} ${GRADLE_OPTS} test
+test-ui:
+	${GRADLE} connectedUnbrandedWebviewDebugAndroidTest -Pabi=x86 --stacktrace
+test-ui-gamma:
+	${GRADLE} connectedMedicmobilegammaWebviewDebugAndroidTest -Pabi=x86 --stacktrace

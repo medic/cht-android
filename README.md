@@ -98,32 +98,47 @@ This release changes the way in which location data is collected to better align
 1. Install the [Android SDK](https://developer.android.com/studio#command-tools) and Java 8+ (it works with the OpenJDK versions).
 2. Clone the repository.
 3. Plug in your phone. Check it's detected with `adb devices`.
-4. Execute: `make` (will also push app into the phone).
+4. Execute: `make` (will also push app into the phone). Use `make xwalk` for the Xwalk version instead.
 
-To only **build and assemble** the APKs for certain flavor and rendering engine, execute `./gradlew assemble[Flavor][Engine]Debug`, e.g. to assemble the unbranded flavor for the webview rendering engine: `./gradlew assembleUnbrandedWebviewDebug`. For the XWalk engine: `./gradlew assembleUnbrandedXWalkDebug`.
+Gradle is also used but it's downloaded and installed in the user space the first time `make` is executed.
 
-The APKs are stored in the folder `build/outputs/apk/[Flavor][Engine]/debug/`, in the example above: `build/outputs/apk/unbrandedWebview/debug/`.
+You can also build and launch the app with [Android Studio](#android-studio).
 
-To only execute the **linter checks**, execute: `./gradlew androidCheckstyle`.
+## Flavor selection
 
-The [Android Studio](https://developer.android.com/studio) can be used to build and launch the app instead. Be sure to select the right flavor and rendering engine from the _Build Variants_ dialog (see [Build and run your app](https://developer.android.com/studio/run)). To launch the app in an emulator, you need to uncomment the code that has the strings for the `x86` or the `x86_64` architecture in the `build.gradle` file, in the `android` / `splits` / `include` section.
+Some *Make* targets support the flavor and rendering engine as `make flavour=[Flavor][Engine] TASK`, where `[Flavor]` is the branded version with the first latter capitalized and the engine is either `Webview` or `Xwalk`. The default value for `flavor` is `UnbrandedWebview`, e.g. executing `make deploy` will assemble and install that flavor, while executing `make flavour=MedicmobilegammaXwalk deploy` will do the same for the _Medicmobilegamma_ brand and the `Xwalk` engine.
+
+## Build and assemble
+
+    $ make assemble
+
+Build and assemble the debug and release versions of the APK, that are stored in the folder: `build/outputs/apk/[flavor][Engine]/[debug|release]/`, in this case the release version is stored in `build/outputs/apk/unbrandedWebview/release/`. Following the [Flavor selection](#flavor-selection) instructions, to do the same for the Xwalk version: `make flavour=UnbrandedXwalk assemble`.
+
+To clean the APKs and compiled resources: `make clean`.
+
+## Static checks
+
+To only execute the **linter checks**, run: `make lint`.
 
 ## Testing
 
-To execute unit tests: `./gradlew testUnbrandedWebviewDebugUnitTest`.
+To execute unit tests: `make test` (static checks ara also executed).
 
 ### Instrumentation Tests (UI Tests)
 
 These tests run on your device.
 
+1. To avoid failures running the tests, previous versions of the app should be uninstalled first, otherwise an `InstallException: INSTALL_FAILED_VERSION_DOWNGRADE` can make the tests to fail, and Android needs to have English as default language.
 1. Execute steps 1 to 3 from [Development](#development).
-2. Execute: `./gradlew connected[Flavor]WebviewDebugAndroidTest` . Eg `./gradlew connectedUnbrandedWebviewDebugAndroidTest` or `./gradlew connectedMedicmobilegammaWebviewDebugAndroidTest`. At the moment we have tests only in these 2 flavors: unbranded and medicmobilegamma.
-
-To avoid failures running the tests, previous versions of the app should be uninstalled first, otherwise an `InstallException: INSTALL_FAILED_VERSION_DOWNGRADE` can make the tests to fail, and Android needs to have English as default language.
+2. Execute: `make test-ui` or `make test-ui-gamma`.
 
 ### Connecting to the server locally
 
 Refer to the [CHT Core Developer Guide](https://github.com/medic/cht-core/blob/master/DEVELOPMENT.md#testing-locally-with-devices).
+
+## Android Studio
+
+The [Android Studio](https://developer.android.com/studio) can be used to build and launch the app instead. Be sure to select the right flavor and rendering engine from the _Build Variants_ dialog (see [Build and run your app](https://developer.android.com/studio/run)). To launch the app in an emulator, you need to uncomment the code that has the strings for the `x86` or the `x86_64` architecture in the `build.gradle` file, in the `android` / `splits` / `include` section.
 
 
 # Branding
