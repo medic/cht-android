@@ -106,13 +106,13 @@ You can also build and launch the app with [Android Studio](#android-studio).
 
 ## Flavor selection
 
-Some *Make* targets support the flavor and rendering engine as `make flavour=[Flavor][Engine] TASK`, where `[Flavor]` is the branded version with the first latter capitalized and the engine is either `Webview` or `Xwalk`. The default value for `flavor` is `UnbrandedWebview`, e.g. executing `make deploy` will assemble and install that flavor, while executing `make flavour=MedicmobilegammaXwalk deploy` will do the same for the _Medicmobilegamma_ brand and the `Xwalk` engine.
+Some *Make* targets support the flavor and rendering engine as `make flavor=[Flavor][Engine] TASK`, where `[Flavor]` is the branded version with the first latter capitalized and the engine is either `Webview` or `Xwalk`. The default value for `flavor` is `UnbrandedWebview`, e.g. executing `make deploy` will assemble and install that flavor, while executing `make flavor=MedicmobilegammaXwalk deploy` will do the same for the _Medicmobilegamma_ brand and the `Xwalk` engine.
 
 ## Build and assemble
 
     $ make assemble
 
-Build and assemble the debug and release versions of the APK, that are stored in the folder: `build/outputs/apk/[flavor][Engine]/[debug|release]/`, in this case the release version is stored in `build/outputs/apk/unbrandedWebview/release/`. Following the [Flavor selection](#flavor-selection) instructions, to do the same for the Xwalk version: `make flavour=UnbrandedXwalk assemble`.
+Build and assemble the debug and release versions of the APK, that are stored in the folder: `build/outputs/apk/[flavor][Engine]/[debug|release]/`, in this case the release version is stored in `build/outputs/apk/unbrandedWebview/release/`. Following the [Flavor selection](#flavor-selection) instructions, to do the same for the Xwalk version: `make flavor=UnbrandedXwalk assemble`.
 
 To clean the APKs and compiled resources: `make clean`.
 

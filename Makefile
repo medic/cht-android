@@ -1,7 +1,7 @@
 ADB = ${ANDROID_HOME}/platform-tools/adb
 GRADLE = ./gradlew
 GRADLE_OPTS = --daemon --parallel
-flavour = UnbrandedWebview
+flavor = UnbrandedWebview
 
 ifdef ComSpec	 # Windows
   # Use `/` for all paths, except `.\`
@@ -18,7 +18,7 @@ logs:
 	${ADB} logcat MedicMobile:V AndroidRuntime:E '*:S' | tee android.log
 
 deploy:
-	${GRADLE} ${GRADLE_OPTS} install${flavour}Debug
+	${GRADLE} ${GRADLE_OPTS} install${flavor}Debug
 deploy-xwalk:
 	${GRADLE} ${GRADLE_OPTS} installUnbrandedXwalkDebug
 deploy-all:
@@ -31,7 +31,7 @@ clean-apks:
 	rm -rf build/outputs/apk/
 
 assemble:
-	${GRADLE} ${GRADLE_OPTS} assemble${flavour}
+	${GRADLE} ${GRADLE_OPTS} assemble${flavor}
 assemble-all:
 	${GRADLE} ${GRADLE_OPTS} assemble
 assemble-all-debug:
@@ -41,13 +41,13 @@ uninstall-all:
 	${GRADLE} uninstallAll
 
 url-tester:
-	DISABLE_APP_URL_VALIDATION=true ${GRADLE} ${GRADLE_OPTS} install${flavour}Debug
+	DISABLE_APP_URL_VALIDATION=true ${GRADLE} ${GRADLE_OPTS} install${flavor}Debug
 
 uninstall:
 	adb uninstall org.medicmobile.webapp.mobile
 
 lint:
-	${GRADLE} ${GRADLE_OPTS} androidCheck lint${flavour}Debug
+	${GRADLE} ${GRADLE_OPTS} androidCheck lint${flavor}Debug
 test: lint
 	${GRADLE} ${GRADLE_OPTS} test
 test-ui:
