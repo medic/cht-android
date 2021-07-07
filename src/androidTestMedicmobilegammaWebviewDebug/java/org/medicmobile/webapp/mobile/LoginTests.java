@@ -57,7 +57,7 @@ public class LoginTests {
 								0)))
 				.atPosition(2);
 		linearLayout.perform(click());
-		Thread.sleep(10000);//TODO: use better ways to handle delays
+		Thread.sleep(12000);//TODO: use better ways to handle delays
 
 		ViewInteraction webView = onView(
 				allOf(withId(R.id.wbvMain),

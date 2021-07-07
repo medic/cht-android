@@ -106,13 +106,21 @@ You can also build and launch the app with [Android Studio](#android-studio).
 
 ## Flavor selection
 
-Some *Make* targets support the flavor and rendering engine as `make flavor=[Flavor][Engine] TASK`, where `[Flavor]` is the branded version with the first latter capitalized and the engine is either `Webview` or `Xwalk`. The default value for `flavor` is `UnbrandedWebview`, e.g. executing `make deploy` will assemble and install that flavor, while executing `make flavor=MedicmobilegammaXwalk deploy` will do the same for the _Medicmobilegamma_ brand and the `Xwalk` engine.
+Some `make` targets support the flavor and the rendering engine as `make flavor=[Flavor][Engine] [task]`, where `[Flavor]` is the branded version with the first letter capitalized and the `[Engine]` is either `Webview` or `Xwalk`. The `[task]` is the action to execute: `deploy`, `assemble`, `lint`, etc.
+
+The default value for `flavor` is `UnbrandedWebview`, e.g. executing `make deploy` will assemble and install that flavor, while executing `make flavor=MedicmobilegammaXwalk deploy` will do the same for the _Medicmobilegamma_ brand and the `Xwalk` engine.
+
+See the [Makefile](./Makefile) for more details.
 
 ## Build and assemble
 
     $ make assemble
 
-Build and assemble the debug and release versions of the APK, that are stored in the folder: `build/outputs/apk/[flavor][Engine]/[debug|release]/`, in this case the release version is stored in `build/outputs/apk/unbrandedWebview/release/`. Following the [Flavor selection](#flavor-selection) instructions, to do the same for the Xwalk version: `make flavor=UnbrandedXwalk assemble`.
+The command above builds and assembles the _debug_ and _release_ APKs of the Unbranded Webview version of the app.
+
+Each APK will be generated and stored in `build/outputs/apk/[flavor][Engine]/[debug|release]/`, for example after assembling the _medicmobiledemo webview_, `make flavor=MedicmobiledemoWebview assemble`, the _release_ versions of the APKs generated are stored in `build/outputs/apk/medicmobiledemoWebview/release/`.
+
+To assemble other flavors, use the following command: `make flavour=[Flavor][Engine] assemble`. See the [Flavor selection](#flavor-selection) for more details about `make` commands.
 
 To clean the APKs and compiled resources: `make clean`.
 
@@ -130,8 +138,8 @@ These tests run on your device.
 
 1. Uninstall previous versions of the app, otherwise an `InstallException: INSTALL_FAILED_VERSION_DOWNGRADE` can make the tests fail.
 2. Select English as default language in the app.
-1. Execute steps 1 to 3 from [Development](#development).
-2. Execute: `make test-ui` or `make test-ui-gamma`.
+3. Execute steps 1 to 3 from [Development](#development).
+4. Execute: `make test-ui` or `make test-ui-gamma`.
 
 ### Connecting to the server locally
 
@@ -148,15 +156,15 @@ The [Android Studio](https://developer.android.com/studio) can be used to build 
 
 To build and deploy APKs for all configured brands:
 
-	make branded
+	$ make branded
 
 ## Adding new brands
 
 To add a new brand:
 
 1. add `productFlavors { <new_brand> { ... } }` in `build.gradle`
-1. add icons, strings etc. in `src/<new_brand>`
-1. to enable automated deployments, add the `new_brand` to `.github/workflows/publish.yml`
+2. add icons, strings etc. in `src/<new_brand>`
+3. to enable automated deployments, add the `new_brand` to `.github/workflows/publish.yml`
 
 
 # Releasing
