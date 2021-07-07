@@ -118,15 +118,15 @@ See the [Makefile](./Makefile) for more details.
 
 The command above builds and assembles the _debug_ and _release_ APKs of the Unbranded Webview version of the app.
 
-Each APK will be generated and stored in `build/outputs/apk/[flavor][Engine]/[debug|release]/`, for example after assembling the _medicmobiledemo webview_, `make flavor=MedicmobiledemoWebview assemble`, the _release_ versions of the APKs generated are stored in `build/outputs/apk/medicmobiledemoWebview/release/`.
+Each APK will be generated and stored in `build/outputs/apk/[flavor][Engine]/[debug|release]/`, for example after assembling the _Medicmobiledemo Webview_ flavor with `make flavor=MedicmobiledemoWebview assemble`, the _release_ versions of the APKs generated are stored in `build/outputs/apk/medicmobiledemoWebview/release/`.
 
-To assemble other flavors, use the following command: `make flavour=[Flavor][Engine] assemble`. See the [Flavor selection](#flavor-selection) for more details about `make` commands.
+To assemble other flavors, use the following command: `make flavour=[Flavor][Engine] assemble`. See the [Flavor selection](#flavor-selection) section for more details about `make` commands.
 
 To clean the APKs and compiled resources: `make clean`.
 
 ## Static checks
 
-To only execute the **linter checks**, run: `make lint`.
+To only execute the **linter checks**, run: `make lint`. To perform the same checks for the _XView_ source code, use: `make flavor=UnbrandedXwalk lint` instead.
 
 ## Testing
 
