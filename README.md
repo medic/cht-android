@@ -128,7 +128,8 @@ To execute unit tests: `make test` (static checks ara also executed).
 
 These tests run on your device.
 
-1. To avoid failures running the tests, previous versions of the app should be uninstalled first, otherwise an `InstallException: INSTALL_FAILED_VERSION_DOWNGRADE` can make the tests to fail, and Android needs to have English as default language.
+1. Uninstall previous versions of the app, otherwise an `InstallException: INSTALL_FAILED_VERSION_DOWNGRADE` can make the tests fail.
+2. Select English as default language in the app.
 1. Execute steps 1 to 3 from [Development](#development).
 2. Execute: `make test-ui` or `make test-ui-gamma`.
 
