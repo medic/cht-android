@@ -139,7 +139,7 @@ Refer to the [CHT Core Developer Guide](https://github.com/medic/cht-core/blob/m
 
 ## Android Studio
 
-The [Android Studio](https://developer.android.com/studio) can be used to build and launch the app instead. Be sure to select the right flavor and rendering engine from the _Build Variants_ dialog (see [Build and run your app](https://developer.android.com/studio/run)). To launch the app in an emulator, you need to uncomment the code that has the strings for the `x86` or the `x86_64` architecture in the `build.gradle` file, in the `android` / `splits` / `include` section.
+The [Android Studio](https://developer.android.com/studio) can be used to build and launch the app instead. Be sure to select the right flavor and rendering engine from the _Build Variants_ dialog (see [Build and run your app](https://developer.android.com/studio/run)). To launch the app in an emulator, you need to uncomment the code that has the strings for the `x86` or the `x86_64` architecture in the `android` / `splits` / `include` sections of the `build.gradle` file.
 
 
 # Branding
