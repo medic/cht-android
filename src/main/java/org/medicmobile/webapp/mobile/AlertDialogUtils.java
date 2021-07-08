@@ -2,7 +2,6 @@ package org.medicmobile.webapp.mobile;
 
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 
 public abstract class AlertDialogUtils {
 
@@ -31,11 +30,7 @@ public abstract class AlertDialogUtils {
 		new AlertDialog.Builder(context)
 			.setTitle(title)
 			.setMessage(message)
-			.setNeutralButton(okLabel, new DialogInterface.OnClickListener() {
-				@Override public void onClick(DialogInterface dialog, int which) {
-					dialog.dismiss();
-				}
-			})
+			.setNeutralButton(okLabel, (dialog, which) -> dialog.dismiss())
 			.create().show();
 	}
 }

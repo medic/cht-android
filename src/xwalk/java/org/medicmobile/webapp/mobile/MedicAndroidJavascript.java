@@ -1,5 +1,6 @@
 package org.medicmobile.webapp.mobile;
 
+import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.app.ActivityManager.MemoryInfo;
 import android.app.DatePickerDialog;
@@ -226,6 +227,7 @@ public class MedicAndroidJavascript {
 
 	@org.xwalk.core.JavascriptInterface
 	@android.webkit.JavascriptInterface
+	@SuppressLint({ "NewApi", "ObsoleteSdkInt" })
 	public String getDeviceInfo() {
 		try {
 			if (activityManager == null) {
@@ -239,7 +241,8 @@ public class MedicAndroidJavascript {
 			PackageInfo packageInfo = parent
 					.getPackageManager()
 					.getPackageInfo(parent.getPackageName(), 0);
-			long versionCode = Build.VERSION.SDK_INT < Build.VERSION_CODES.P ? (long)packageInfo.versionCode : packageInfo.getLongVersionCode();
+			long versionCode = Build.VERSION.SDK_INT < Build.VERSION_CODES.P ?
+					(long) packageInfo.versionCode : packageInfo.getLongVersionCode();
 
 			JSONObject appObject = new JSONObject();
 			appObject.put("version", packageInfo.versionName);

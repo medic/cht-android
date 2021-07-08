@@ -44,10 +44,10 @@ jobs:
       with:
         api-level: 29
         arch: x86
-        script: ./gradlew connectedUnbrandedWebviewDebugAndroidTest -Pabi=x86 --stacktrace
+        script: make test-ui
     - name: run tests on gamma
       uses: reactivecircus/android-emulator-runner@v2
       with:
         api-level: 29
         arch: x86
-        script: ./gradlew connectedMedicmobilegammaWebviewDebugAndroidTest -Pabi=x86 --stacktrace
+        script: make test-ui-gamma

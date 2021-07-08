@@ -92,7 +92,7 @@ public class SettingsDialogActivityTest {
 								0)))
 				.atPosition(2);
 		linearLayout.perform(click());
-		Thread.sleep(10000);//TODO: use better ways to handle delays
+		Thread.sleep(12000);	//TODO: use better ways to handle delays
 
 		ViewInteraction webView = onView(
 				allOf(withId(R.id.wbvMain),
@@ -109,6 +109,10 @@ public class SettingsDialogActivityTest {
 			onWebView().withElement(findElement(Locator.NAME, code))
 					.check(webMatches(getText(), containsString(getLanguage(code))));
 		}
+
+		// Ensure language set is English
+		onWebView().withElement(findElement(Locator.NAME, "en"))
+					.perform(webClick());
 
 		//login form and errors
 		onWebView().withElement(findElement(Locator.ID, "user"))
