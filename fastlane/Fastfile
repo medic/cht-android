@@ -8,7 +8,8 @@ platform :android do
   lane :build do |options|
     gradle(task: "assemble#{options[:flavor]}WebviewRelease")
     gradle(task: "assemble#{options[:flavor]}XwalkRelease")
-    gradle(task: "bundle#{options[:flavor]}Release")
+    gradle(task: "bundle#{options[:flavor]}WebviewRelease")
+    gradle(task: "bundle#{options[:flavor]}XwalkRelease")
   end
 
   lane :deploy do |options|
