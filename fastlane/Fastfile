@@ -6,10 +6,10 @@ default_platform(:android)
 
 platform :android do
   lane :build do |options|
-    gradle(task: "assemble#{options[:flavor]}WebviewRelease")
-    gradle(task: "assemble#{options[:flavor]}XwalkRelease")
-    gradle(task: "bundle#{options[:flavor]}WebviewRelease")
-    gradle(task: "bundle#{options[:flavor]}XwalkRelease")
+    gradle(task: "assemble#{options[:flavor]}WebviewRelease", flags: "--daemon --parallel")
+    gradle(task: "assemble#{options[:flavor]}XwalkRelease",   flags: "--daemon --parallel")
+    gradle(task: "bundle#{options[:flavor]}WebviewRelease",   flags: "--daemon --parallel")
+    gradle(task: "bundle#{options[:flavor]}XwalkRelease",     flags: "--daemon --parallel")
   end
 
   lane :deploy do |options|
