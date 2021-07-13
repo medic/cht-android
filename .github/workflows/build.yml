@@ -1,6 +1,16 @@
 name: Build and test
 
-on: [push, pull_request]
+on:
+  push:
+    paths-ignore:
+      - 'README.md'
+    tags-ignore:
+      - *
+  pull_request:
+    paths-ignore:
+      - 'README.md'
+    tags-ignore:
+      - *
 
 jobs:
   build:
