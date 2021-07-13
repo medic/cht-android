@@ -35,6 +35,7 @@ jobs:
         options: '{ "flavor": "unbranded" }'
 
   instrumentation-tests:
+    name: Instrumentation tests
     runs-on: macos-latest
     steps:
     - name: checkout

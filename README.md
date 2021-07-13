@@ -5,7 +5,7 @@ The cht-android application is a thin wrapper to load the [CHT Core Framework](h
 
 # Android App Bundles
 
-Since v0.8.1 the build script produces multiple AABs for publishing to the **Google Play Store**, so the generated `.aab` files need to be uploaded instead of the `.apk` files. For each flavor two bundles are generated, one for each rendering engine: _Webview_ and _Xwalk_.
+The build script produces multiple AABs for publishing to the **Google Play Store**, so the generated `.aab` files need to be uploaded instead of the `.apk` files. For each flavor two bundles are generated, one for each rendering engine: _Webview_ and _Xwalk_.
 
 The AABs are named as follows: `cht-android-{version}-{brand}-{rendering-engine}-release.aab`
 
@@ -131,6 +131,8 @@ The command above builds and assembles the _debug_ and _release_ APKs of the Unb
 Each APK will be generated and stored in `build/outputs/apk/[flavor][Engine]/[debug|release]/`, for example after assembling the _Medicmobiledemo Webview_ flavor with `make flavor=MedicmobiledemoWebview assemble`, the _release_ versions of the APKs generated are stored in `build/outputs/apk/medicmobiledemoWebview/release/`.
 
 To assemble other flavors, use the following command: `make flavour=[Flavor][Engine] assemble`. See the [Flavor selection](#flavor-selection) section for more details about `make` commands.
+
+To create the `.aab` bundle file, use `make bundle`, although signed version are generated when [releasing](#releasing), and the Google Play Store requires signed versions.
 
 To clean the APKs and compiled resources: `make clean`.
 

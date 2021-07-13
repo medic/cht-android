@@ -33,7 +33,7 @@ clean-apks:
 assemble:
 	${GRADLE} ${GRADLE_OPTS} assemble${flavor}
 assemble-all:
-	${GRADLE} ${GRADLE_OPTS} assemble
+	${GRADLE} ${GRADLE_OPTS} assembleRelease
 assemble-all-debug:
 	${GRADLE} ${GRADLE_OPTS} assembleDebug
 
