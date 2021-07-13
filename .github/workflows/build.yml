@@ -5,7 +5,7 @@ on:
     paths-ignore:
       - 'README.md'
     tags-ignore:
-      - *
+      - v*.*.*
   pull_request:
     paths-ignore:
       - 'README.md'
