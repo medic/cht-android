@@ -1,6 +1,12 @@
 name: Build and test
 
-on: [push, pull_request]
+on:
+  push:
+    paths-ignore:
+      - 'README.md'
+  pull_request:
+    paths-ignore:
+      - 'README.md'
 
 jobs:
   build:
@@ -35,6 +41,7 @@ jobs:
         options: '{ "flavor": "unbranded" }'
 
   instrumentation-tests:
+    name: Instrumentation tests
     runs-on: macos-latest
     steps:
     - name: checkout
