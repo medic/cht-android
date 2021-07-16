@@ -76,7 +76,7 @@ Earlier releases are no longer accepted by the Google Play Store.
 
 ### Changes
 
-- [improvement] [cht-android#106](https://github.com/medic/cht-android/issues/106): Update target SDK version to 29 for Play Store compliance
+- [improvement] [cht-android#106](https://github.com/medic/cht-android/issues/106): Update target SDK version to 29 for Play Store compliance.
 
 ## 0.5.0
 
@@ -162,9 +162,9 @@ To build and deploy APKs for all configured brands:
 
 To add a new brand:
 
-1. add `productFlavors { <new_brand> { ... } }` in `build.gradle`
-2. add icons, strings etc. in `src/<new_brand>`
-3. to enable automated deployments, add the `new_brand` to `.github/workflows/publish.yml`
+1. add `productFlavors { <new_brand> { ... } }` in `build.gradle`.
+2. add icons, strings etc. in `src/<new_brand>`.
+3. to enable automated deployments, add the `new_brand` to `.github/workflows/publish.yml`.
 
 
 # Releasing
@@ -187,7 +187,7 @@ To add a new brand:
 
 # Copyright
 
-Copyright 2013-2021 Medic Mobile, Inc. <hello@medic.org>
+Copyright 2013-2021 Medic Mobile, Inc. <hello@medic.org>.
 
 
 # License
