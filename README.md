@@ -118,7 +118,7 @@ See the [Makefile](./Makefile) for more details.
 
 The command above builds and assembles the _debug_ and _release_ APKs of the Unbranded Webview version of the app.
 
-Each APK will be generated and stored in `build/outputs/apk/[flavor][Engine]/[debug|release]/`, for example after assembling the _Medicmobiledemo Webview_ flavor with `make flavor=MedicmobiledemoWebview assemble`, the _release_ versions of the APKs generated are stored in `build/outputs/apk/medicmobiledemoWebview/release/`.
+Each APK will be generated and stored in `build/outputs/apk/[flavor][Engine]/[debug|release]/`, for example after assembling the _Simprints Webview_ flavor with `make flavor=SimprintsWebview assemble`, the _release_ versions of the APKs generated are stored in `build/outputs/apk/simprintsWebview/release/`.
 
 To assemble other flavors, use the following command: `make flavour=[Flavor][Engine] assemble`. See the [Flavor selection](#flavor-selection) section for more details about `make` commands.
 
@@ -180,7 +180,7 @@ To add a new brand:
 
 1. Create a git tag starting with `v`, e.g. `v1.2.3` and push the tag to GitHub. 
 2. The exact same process as Step 3 above.
-3. Publish the unbranded, demo, simprints, and gamma flavors to the Play Store.
+3. Publish the unbranded, simprints, and gamma flavors to the Play Store.
 4. Announce the release on the [CHT forum](https://forum.communityhealthtoolkit.org), under the "Product - Releases" category.
 5. Each flavor is then individually released to users via "Release Management" in the Google Play Console. Once a flavor has been tested and is ready to go live, click Release to Production
 

@@ -41,11 +41,12 @@ jobs:
       with:
         lane: build
         options: '{ "flavor": "medicmobilegamma" }'
-    - name: Assemble demo
-      uses: maierj/fastlane-action@v1.4.0
-      with:
-        lane: build
-        options: '{ "flavor": "medicmobiledemo" }'
+    # demo app is disabled for now
+    #- name: Assemble demo
+    #  uses: maierj/fastlane-action@v1.4.0
+    #  with:
+    #    lane: build
+    #    options: '{ "flavor": "medicmobiledemo" }'
     - name: Assemble bracuganda
       uses: maierj/fastlane-action@v1.4.0
       with:
@@ -196,6 +197,7 @@ jobs:
       with:
         lane: build
         options: '{ "flavor": "itech_malawi" }'
+
     - name: GitHub release
       uses: softprops/action-gh-release@v1
       if: startsWith(github.ref, 'refs/tags/')
