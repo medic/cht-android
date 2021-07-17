@@ -182,7 +182,7 @@ To add a new brand:
 2. The exact same process as Step 3 above.
 3. Publish the unbranded, simprints, and gamma flavors to the Play Store.
 4. Announce the release on the [CHT forum](https://forum.communityhealthtoolkit.org), under the "Product - Releases" category.
-5. Each flavor is then individually released to users via "Release Management" in the Google Play Console. Once a flavor has been tested and is ready to go live, click Release to Production
+5. Each flavor is then individually released to users via "Release Management" in the Google Play Console. Once a flavor has been tested and is ready to go live, click Release to Production.
 
 
 # Copyright
