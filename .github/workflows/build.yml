@@ -54,7 +54,7 @@ jobs:
   instrumentation-tests:
 
     name: Instrumentation tests
-    runs-on: macos-10.15
+    runs-on: macos-latest
     steps:
 
     - name: Checkout
