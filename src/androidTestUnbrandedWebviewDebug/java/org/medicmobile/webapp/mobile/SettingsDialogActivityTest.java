@@ -101,21 +101,28 @@ public class SettingsDialogActivityTest {
 						isDisplayed()));
 		webView.check(matches(isDisplayed()));
 		onWebView()
+				.withNoTimeout()
 				.check(webContent(hasElementWithId("form")))
 				.withElement(findElement(Locator.ID, "locale"))
 				.check(webMatches(getText(), containsString("English")));
 		String[] codes = {"es", "en", "fr", "sw"};
 		for (String code : codes) {
-			onWebView().withElement(findElement(Locator.NAME, code))
+			onWebView()
+					.withNoTimeout()
+					.withElement(findElement(Locator.NAME, code))
 					.check(webMatches(getText(), containsString(getLanguage(code))));
 		}
 
 		// Ensure language set is English
-		onWebView().withElement(findElement(Locator.NAME, "en"))
-					.perform(webClick());
+		onWebView()
+				.withNoTimeout()
+				.withElement(findElement(Locator.NAME, "en"))
+				.perform(webClick());
 
 		//login form and errors
-		onWebView().withElement(findElement(Locator.ID, "user"))
+		onWebView()
+				.withNoTimeout()
+				.withElement(findElement(Locator.ID, "user"))
 				.perform(clearElement())
 				.perform(DriverAtoms.webKeys("fakename"))    //to be created first
 				.withElement(findElement(Locator.ID, "password"))
@@ -124,7 +131,9 @@ public class SettingsDialogActivityTest {
 				.withElement(findElement(Locator.ID, "login"))
 				.perform(webClick());
 		Thread.sleep(4000);//TODO: use better ways to handle delays - takes longer with emulators
-		onWebView().withElement(findElement(Locator.CSS_SELECTOR, "p.error.incorrect"))
+		onWebView()
+				.withNoTimeout()
+				.withElement(findElement(Locator.CSS_SELECTOR, "p.error.incorrect"))
 				.check(webMatches(getText(), containsString(ERROR_INCORRECT)));
 	}
 
