@@ -92,7 +92,7 @@ public class SettingsDialogActivityTest {
 								0)))
 				.atPosition(2);
 		linearLayout.perform(click());
-		Thread.sleep(12000);	//TODO: use better ways to handle delays
+		Thread.sleep(7000);	//TODO: use better ways to handle delays
 
 		ViewInteraction webView = onView(
 				allOf(withId(R.id.wbvMain),
