@@ -76,7 +76,7 @@ Earlier releases are no longer accepted by the Google Play Store.
 
 ### Changes
 
-- [improvement] [cht-android#106](https://github.com/medic/cht-android/issues/106): Update target SDK version to 29 for Play Store compliance
+- [improvement] [cht-android#106](https://github.com/medic/cht-android/issues/106): Update target SDK version to 29 for Play Store compliance.
 
 ## 0.5.0
 
@@ -118,7 +118,7 @@ See the [Makefile](./Makefile) for more details.
 
 The command above builds and assembles the _debug_ and _release_ APKs of the Unbranded Webview version of the app.
 
-Each APK will be generated and stored in `build/outputs/apk/[flavor][Engine]/[debug|release]/`, for example after assembling the _Medicmobiledemo Webview_ flavor with `make flavor=MedicmobiledemoWebview assemble`, the _release_ versions of the APKs generated are stored in `build/outputs/apk/medicmobiledemoWebview/release/`.
+Each APK will be generated and stored in `build/outputs/apk/[flavor][Engine]/[debug|release]/`, for example after assembling the _Simprints Webview_ flavor with `make flavor=SimprintsWebview assemble`, the _release_ versions of the APKs generated are stored in `build/outputs/apk/simprintsWebview/release/`.
 
 To assemble other flavors, use the following command: `make flavour=[Flavor][Engine] assemble`. See the [Flavor selection](#flavor-selection) section for more details about `make` commands.
 
@@ -162,32 +162,32 @@ To build and deploy APKs for all configured brands:
 
 To add a new brand:
 
-1. add `productFlavors { <new_brand> { ... } }` in `build.gradle`
-2. add icons, strings etc. in `src/<new_brand>`
-3. to enable automated deployments, add the `new_brand` to `.github/workflows/publish.yml`
+1. add `productFlavors { <new_brand> { ... } }` in `build.gradle`.
+2. add icons, strings etc. in `src/<new_brand>`.
+3. to enable automated deployments, add the `new_brand` to `.github/workflows/publish.yml`.
 
 
 # Releasing
 
 ## Alpha for release testing
 
-1. Make sure all issues for this release have passed AT and been merged into `master`
+1. Make sure all issues for this release have passed AT and been merged into `master`.
 2. Create a git tag starting with `v` and ending with the alpha version, e.g. `v1.2.3-alpha.1` and push the tag to GitHub.
 3. Creating this tag will trigger [GitHub Action](https://github.com/medic/cht-android/actions) to build, sign, and properly version the build. The release-ready APKs are available for side-loading from [GitHub Releases](https://github.com/medic/cht-android/releases).
-4. Announce the release in #quality-assurance
+4. Announce the release in #quality-assurance.
 
 ## Final for users
 
 1. Create a git tag starting with `v`, e.g. `v1.2.3` and push the tag to GitHub. 
 2. The exact same process as Step 3 above.
-3. Publish the unbranded, demo, simprints, and gamma flavors to the Play Store.
+3. Publish the unbranded, simprints, and gamma flavors to the Play Store.
 4. Announce the release on the [CHT forum](https://forum.communityhealthtoolkit.org), under the "Product - Releases" category.
-5. Each flavor is then individually released to users via "Release Management" in the Google Play Console. Once a flavor has been tested and is ready to go live, click Release to Production
+5. Each flavor is then individually released to users via "Release Management" in the Google Play Console. Once a flavor has been tested and is ready to go live, click Release to Production.
 
 
 # Copyright
 
-Copyright 2013-2021 Medic Mobile, Inc. <hello@medic.org>
+Copyright 2013-2021 Medic Mobile, Inc. <hello@medic.org>.
 
 
 # License
