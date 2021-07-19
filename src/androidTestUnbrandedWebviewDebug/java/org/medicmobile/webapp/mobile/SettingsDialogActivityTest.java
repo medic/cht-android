@@ -1,6 +1,5 @@
 package org.medicmobile.webapp.mobile;
 
-
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
@@ -8,8 +7,9 @@ import androidx.test.espresso.DataInteraction;
 import androidx.test.espresso.ViewInteraction;
 import androidx.test.espresso.web.webdriver.DriverAtoms;
 import androidx.test.espresso.web.webdriver.Locator;
+import androidx.test.ext.junit.rules.ActivityScenarioRule;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.LargeTest;
-import androidx.test.rule.ActivityTestRule;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
@@ -45,11 +45,10 @@ import static androidx.test.espresso.web.webdriver.DriverAtoms.webClick;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anything;
 import static org.hamcrest.Matchers.containsString;
-import androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner;
 
 
 @LargeTest
-@RunWith(AndroidJUnit4ClassRunner.class)
+@RunWith(AndroidJUnit4.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class SettingsDialogActivityTest {
 
@@ -60,7 +59,8 @@ public class SettingsDialogActivityTest {
 	private static final String ERROR_INCORRECT = "Incorrect user name or password. Please try again.";
 
 	@Rule
-	public ActivityTestRule<SettingsDialogActivity> mActivityTestRule = new ActivityTestRule<>(SettingsDialogActivity.class);
+	public ActivityScenarioRule<SettingsDialogActivity> mActivityTestRule =
+			new ActivityScenarioRule<>(SettingsDialogActivity.class);
 
 	@Test
 	public void serverSelectionScreenIsDisplayed() {
