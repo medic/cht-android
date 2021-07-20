@@ -1,21 +1,37 @@
 name: Build and test
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - master
+    paths-ignore:
+      - '**.md'
+  pull_request:
+    paths-ignore:
+      - '**.md'
 
 jobs:
+
   build:
+
     name: Build
     runs-on: ubuntu-18.04
     steps:
-    - uses: actions/checkout@v2
+
+    - name: Checkout
+      uses: actions/checkout@v2
+
     - name: Test
       run: make test
+
     - name: Set up ruby
       uses: ruby/setup-ruby@v1
       with:
         ruby-version: 2.6
+
     - name: Set up fastlane
       run: gem install fastlane --no-document --quiet
+
     - name: Unpack secrets
       env:
         ANDROID_SECRETS_KEY: ${{ secrets.ANDROID_SECRETS_KEY }}
@@ -23,6 +39,7 @@ jobs:
       run: |
         openssl aes-256-cbc -K $ANDROID_SECRETS_KEY -iv $ANDROID_SECRETS_IV -in secrets.tar.gz.enc -out ./secrets.tar.gz -d
         tar -xf ./secrets.tar.gz
+
     - name: Assemble unbranded
       uses: maierj/fastlane-action@v1.4.0
       env:
@@ -34,20 +51,57 @@ jobs:
         lane: build
         options: '{ "flavor": "unbranded" }'
 
-  instrumentation-tests:
-    runs-on: macos-latest
-    steps:
-    - name: checkout
-      uses: actions/checkout@v2
-    - name: test unbranded
-      uses: reactivecircus/android-emulator-runner@v2
-      with:
-        api-level: 29
-        arch: x86
-        script: make test-ui
-    - name: run tests on gamma
-      uses: reactivecircus/android-emulator-runner@v2
-      with:
-        api-level: 29
-        arch: x86
-        script: make test-ui-gamma
+#  instrumentation-tests:
+#
+#    name: Instrumentation tests
+#    runs-on: macos-latest
+#    steps:
+#
+#    - name: Checkout
+#      uses: actions/checkout@v2
+#
+#    - name: Gradle cache
+#      uses: actions/cache@v2
+#      with:
+#        path: |
+#          ~/.gradle/caches
+#          ~/.gradle/wrapper
+#        key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*') }}-${{ hashFiles('**/gradle/wrapper/gradle-wrapper.properties') }}-${{ hashFiles('**/buildSrc/**/*.kt') }}
+#
+#    - name: AVD cache
+#      uses: actions/cache@v2
+#      id: avd-cache
+#      with:
+#        path: |
+#          ~/.android/avd/*
+#          ~/.android/adb*
+#        key: avd-${{ matrix.api-level }}
+#
+#    - name: Create AVD and generate snapshot for caching
+#      if: steps.avd-cache.outputs.cache-hit != 'true'
+#      uses: reactivecircus/android-emulator-runner@v2
+#      with:
+#        api-level: 29
+#        target: google_apis
+#        force-avd-creation: false
+#        emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+#        disable-animations: false
+#        script: echo "Generated AVD snapshot for caching."
+#
+#    - name: Run test-ui on unbranded
+#      uses: reactivecircus/android-emulator-runner@v2
+#      with:
+#        api-level: 29
+#        target: google_apis
+#        force-avd-creation: false
+#        emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+#        script: make test-ui
+#
+#    - name: Run test-ui on gamma
+#      uses: reactivecircus/android-emulator-runner@v2
+#      with:
+#        api-level: 29
+#        target: google_apis
+#        force-avd-creation: false
+#        emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+#        script: make test-ui-gamma
