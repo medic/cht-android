@@ -8,8 +8,8 @@
 /.idea/
 *.iml
 
-secrets.tar.gz
-medic-official.keystore
+secrets*.tar.gz
+*.keystore
 playstore-secret.json
 
 fastlane/*
