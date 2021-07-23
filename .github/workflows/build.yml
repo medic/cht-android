@@ -42,9 +42,7 @@ jobs:
       env:
         ANDROID_SECRETS_KEY: ${{ secrets.ANDROID_SECRETS_KEY }}
         ANDROID_SECRETS_IV: ${{ secrets.ANDROID_SECRETS_IV }}
-      run: |
-        openssl aes-256-cbc -K $ANDROID_SECRETS_KEY -iv $ANDROID_SECRETS_IV -in secrets.tar.gz.enc -out ./secrets.tar.gz -d
-        tar -xf ./secrets.tar.gz
+      run: make org=medic keydec
 
     - name: Assemble unbranded
       uses: maierj/fastlane-action@v1.4.0

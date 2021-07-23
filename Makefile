@@ -3,6 +3,9 @@ GRADLE = ./gradlew
 GRADLE_OPTS = --daemon --parallel
 flavor = UnbrandedWebview
 abi = x86
+KEYTOOL = keytool
+OPENSSL = openssl
+RM_KEY_OPTS = -i
 
 ifdef ComSpec	 # Windows
   # Use `/` for all paths, except `.\`
@@ -59,4 +62,71 @@ test: lint
 test-ui:
 	${GRADLE} connectedUnbrandedWebviewDebugAndroidTest -Pabi=${abi} --stacktrace
 test-ui-gamma:
-	${GRADLE} connectedMedicmobilegammaWebviewDebugAndroidTest -Pabi=${abi} --stacktrace
+	${GRADLE} connectedMedicmobilegammaWebviewDebugAndroidTest -Pabi=${abi} --
+
+
+#
+# "secrets" targets, to setup and unpack keystores
+#
+
+# Generate keystore
+keystore: check-org ${org}.keystore
+
+# Remove the keystore, the encrypted version and the compressed version
+keyrm: check-org
+	rm ${RM_KEY_OPTS} ${org}.keystore secrets/secrets-${org}.tar.gz secrets/secrets-${org}.tar.gz.enc
+
+# Remove the keystore and the compressed version, leaving only the encrypted version
+keyclean: check-org
+	rm ${RM_KEY_OPTS} ${org}.keystore secrets/secrets-${org}.tar.gz
+
+keyprint: check-org
+	${KEYTOOL} -list -v -keystore ${org}.keystore
+
+keygen: check-org secrets/secrets-${org}.tar.gz.enc
+
+keydec: check-org check-env
+	${OPENSSL} aes-256-cbc -iv ${ANDROID_SECRETS_IV} -K ${ANDROID_SECRETS_KEY} -in secrets/secrets-${org}.tar.gz.enc -out secrets/secrets-${org}.tar.gz -d
+	$(MAKE) keyunpack
+
+keyunpack: check-org
+	tar -xf secrets/secrets-${org}.tar.gz
+
+#
+# Intermediate targets for "secrets", don't use them
+#
+
+check-org:
+ifndef org
+	second_argument := $(word 2, $(MAKECMDGOALS) )
+	$(error "org" name not set. Try 'make org=name $(filter-out $@, $(MAKECMDGOALS))')
+endif
+ifeq ($(org),name)
+	$(error "org" cannot be equal to "name", it was just an example :S)
+endif
+
+check-env:
+ifndef ANDROID_SECRETS_IV
+	$(eval ORG_UPPER := $(shell echo $(org) | tr [:lower:] [:upper:]))
+	$(eval VARNAME=ANDROID_SECRETS_IV_${ORG_UPPER})
+	$(eval ANDROID_SECRETS_IV := $(shell echo ${${VARNAME}}))
+	$(eval VARNAME=ANDROID_SECRETS_KEY_${ORG_UPPER})
+	$(eval ANDROID_SECRETS_KEY := $(shell echo ${${VARNAME}}))
+endif
+
+${org}.keystore:
+	${KEYTOOL} -genkey -v -keystore ${org}.keystore -alias upload -keyalg RSA -keysize 2048 -validity 9125
+	chmod go-rw ${org}.keystore
+
+secrets/secrets-${org}.tar.gz: ${org}.keystore
+	tar -czf secrets/secrets-${org}.tar.gz ${org}.keystore
+	chmod go-rw secrets/secrets-${org}.tar.gz
+
+secrets/secrets-${org}.tar.gz.enc: secrets/secrets-${org}.tar.gz
+	$(eval ORG_UPPER := $(shell echo $(org) | tr [:lower:] [:upper:]))
+	$(eval ANDROID_SECRETS_IV := $(shell base16 /dev/urandom | head -n 1 -c 32))
+	$(eval ANDROID_SECRETS_KEY := $(shell base16 /dev/urandom | head -n 1 -c 64))
+	$(info ANDROID_SECRETS_IV_$(ORG_UPPER)=$(ANDROID_SECRETS_IV)                                   -->  Add this secret to CI and keep it secret!)
+	$(info ANDROID_SECRETS_KEY_$(ORG_UPPER)=$(ANDROID_SECRETS_KEY)  -->  Add this secret to CI and keep it secret!)
+	${OPENSSL} aes-256-cbc -iv $(ANDROID_SECRETS_IV) -K $(ANDROID_SECRETS_KEY) -in secrets/secrets-${org}.tar.gz -out secrets/secrets-${org}.tar.gz.enc
+	chmod go-rw secrets/secrets-${org}.tar.gz.enc
