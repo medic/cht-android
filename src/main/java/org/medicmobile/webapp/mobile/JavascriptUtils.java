@@ -6,9 +6,12 @@ final class JavascriptUtils {
 
 	static String safeFormat(String js, Object... args) {
 		Object[] escapedArgs = new Object[args.length];
-		for(int i=0; i<args.length; ++i) {
-			escapedArgs[i] = jsEscape(args[i]);
+
+		for (int i=0; i<args.length; ++i) {
+			Object argument = args[i];
+			escapedArgs[i] = argument == null ? null : jsEscape(argument);
 		}
+
 		return String.format(js, escapedArgs);
 	}
 

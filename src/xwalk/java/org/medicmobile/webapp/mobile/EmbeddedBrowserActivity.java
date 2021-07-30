@@ -55,6 +55,8 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	static final int GRAB_PHOTO_ACTIVITY_REQUEST_CODE = (0 << 3) | NON_SIMPRINTS_FLAGS;
 	static final int GRAB_MRDT_PHOTO_ACTIVITY_REQUEST_CODE = (1 << 3) | NON_SIMPRINTS_FLAGS;
 	static final int DISCLOSURE_LOCATION_ACTIVITY_REQUEST_CODE = (2 << 3) | NON_SIMPRINTS_FLAGS;
+	static final int ACCESS_STORAGE_PERMISSION_REQUEST_CODE = (3 << 3) | NON_SIMPRINTS_FLAGS;
+	static final int CHT_EXTERNAL_APP_ACTIVITY_REQUEST_CODE = (4 << 3) | NON_SIMPRINTS_FLAGS;
 
 	// Arbitrarily selected value
 	private static final int ACCESS_FINE_LOCATION_PERMISSION_REQUEST_CODE = 7038678; // Arbitrarily selected value
@@ -80,6 +82,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	private MrdtSupport mrdt;
 	private PhotoGrabber photoGrabber;
 	private SmsSender smsSender;
+	private ChtExternalAppLauncherActivity chtExternalAppLauncherActivity;
 
 //> ACTIVITY LIFECYCLE METHODS
 	@Override public void onCreate(Bundle savedInstanceState) {
@@ -90,6 +93,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		this.simprints = new SimprintsSupport(this);
 		this.photoGrabber = new PhotoGrabber(this);
 		this.mrdt = new MrdtSupport(this);
+		this.chtExternalAppLauncherActivity = new ChtExternalAppLauncherActivity(this);
 		try {
 			this.smsSender = new SmsSender(this);
 		} catch(Exception ex) {
@@ -213,6 +217,9 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 							}
 						}
 						return;
+					case CHT_EXTERNAL_APP_ACTIVITY_REQUEST_CODE:
+						processChtExternalAppActivity(requestCode, resultCode, i);
+						return;
 					default:
 						trace(this, "onActivityResult() :: no handling for requestCode=%s",
 								requestCodeToString(requestCode));
@@ -229,16 +236,6 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		}
 	}
 
-	private String requestCodeToString(int requestCode) {
-		if (requestCode == ACCESS_FINE_LOCATION_PERMISSION_REQUEST_CODE) {
-			return "ACCESS_FINE_LOCATION_PERMISSION_REQUEST_CODE";
-		}
-		if (requestCode == DISCLOSURE_LOCATION_ACTIVITY_REQUEST_CODE) {
-			return "DISCLOSURE_LOCATION_ACTIVITY_REQUEST_CODE";
-		}
-		return String.valueOf(requestCode);
-	}
-
 //> ACCESSORS
 	SimprintsSupport getSimprintsSupport() {
 		return this.simprints;
@@ -250,6 +247,10 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 
 	SmsSender getSmsSender() {
 		return this.smsSender;
+	}
+
+	ChtExternalAppLauncherActivity getChtExternalAppLauncherActivity() {
+		return this.chtExternalAppLauncherActivity;
 	}
 
 //> PUBLIC API
@@ -272,6 +273,24 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	}
 
 //> PRIVATE HELPERS
+	private String requestCodeToString(int requestCode) {
+		if (requestCode == ACCESS_FINE_LOCATION_PERMISSION_REQUEST_CODE) {
+			return "ACCESS_FINE_LOCATION_PERMISSION_REQUEST_CODE";
+		}
+
+		if (requestCode == DISCLOSURE_LOCATION_ACTIVITY_REQUEST_CODE) {
+			return "DISCLOSURE_LOCATION_ACTIVITY_REQUEST_CODE";
+		}
+
+		return String.valueOf(requestCode);
+	}
+
+	private void processChtExternalAppActivity(int requestCode, int resultCode, Intent intentData) {
+		String provisionScript = this.chtExternalAppLauncherActivity.processActivity(requestCode, resultCode, intentData);
+		trace(this, "ChtExternalAppActivity :: Executing JavaScript: %s", provisionScript);
+		evaluateJavascript(provisionScript);
+	}
+
 	private void jsConsole(String type, String message, Object... extras) {
 		String formatted = String.format(message, extras);
 		String escaped = formatted.replace("'", "\\'");
@@ -376,10 +395,22 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 
 	@Override
 	public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-		if (requestCode != ACCESS_FINE_LOCATION_PERMISSION_REQUEST_CODE) {
+		boolean granted = grantResults.length > 0 && grantResults[0] == PERMISSION_GRANTED;
+
+		if (requestCode == ACCESS_FINE_LOCATION_PERMISSION_REQUEST_CODE) {
+			locationRequestResolved();
 			return;
 		}
-		locationRequestResolved();
+
+		if (requestCode == ACCESS_STORAGE_PERMISSION_REQUEST_CODE) {
+			if (granted) {
+				this.chtExternalAppLauncherActivity.resumeActivity();
+				return;
+			}
+
+			trace(this, "ChtExternalAppActivity :: User rejected permission.");
+			return;
+		}
 	}
 
 	public void locationRequestResolved() {

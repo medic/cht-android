@@ -9,6 +9,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkCapabilities;
 import android.net.NetworkInfo;
 import android.net.TrafficStats;
+import android.net.Uri;
 import android.os.Process;
 import android.widget.DatePicker;
 import android.os.Build;
@@ -36,6 +37,7 @@ import static java.util.Calendar.MONTH;
 import static java.util.Calendar.YEAR;
 import static java.util.Locale.UK;
 import static org.medicmobile.webapp.mobile.MedicLog.log;
+import static org.medicmobile.webapp.mobile.MedicLog.trace;
 
 public class MedicAndroidJavascript {
 	private static final String DATE_FORMAT = "yyyy-MM-dd";
@@ -44,6 +46,7 @@ public class MedicAndroidJavascript {
 	private final SimprintsSupport simprints;
 	private final MrdtSupport mrdt;
 	private final SmsSender smsSender;
+	private final ChtExternalAppLauncherActivity chtExternalAppLauncherActivity;
 
 	private ActivityManager activityManager;
 	private ConnectivityManager connectivityManager;
@@ -54,6 +57,7 @@ public class MedicAndroidJavascript {
 		this.simprints = parent.getSimprintsSupport();
 		this.mrdt = parent.getMrdtSupport();
 		this.smsSender = parent.getSmsSender();
+		this.chtExternalAppLauncherActivity = parent.getChtExternalAppLauncherActivity();
 	}
 
 	public void setAlert(Alert soundAlert) {
@@ -212,6 +216,21 @@ public class MedicAndroidJavascript {
 		}
 	}
 
+	@android.webkit.JavascriptInterface
+	public void cht_launchExternalApp(String action, String category, String type, String extras, String uri, String packageName, String flags) {
+		try {
+			JSONObject parsedExtras = extras == null ? null : new JSONObject(extras);
+			Uri parsedUri = uri == null ? null : Uri.parse(uri);
+			Integer parsedFlags = flags == null ? null : Integer.parseInt(flags);
+
+			ChtExternalApp chtExternalApp = new ChtExternalApp(action, category, type, parsedExtras, parsedUri, packageName, parsedFlags);
+			this.chtExternalAppLauncherActivity.startIntent(chtExternalApp);
+
+		} catch (Exception ex) {
+			logException(ex);
+		}
+	}
+
 	@SuppressLint("ObsoleteSdkInt")
 	@android.webkit.JavascriptInterface
 	public String getDeviceInfo() {
@@ -361,7 +380,7 @@ public class MedicAndroidJavascript {
 	}
 
 	private void logException(Exception ex) {
-		log(ex, "Execption thrown in JavascriptInterface function.");
+		log(ex, "Exception thrown in JavascriptInterface function.");
 
 		StringWriter sw = new StringWriter();
 		PrintWriter pw = new PrintWriter(sw);
@@ -370,7 +389,7 @@ public class MedicAndroidJavascript {
 				.replace("\n", "; ")
 				.replace("\t", " ");
 
-		parent.errorToJsConsole("Execption thrown in JavascriptInterface function: %s", stacktrace);
+		parent.errorToJsConsole("Exception thrown in JavascriptInterface function: %s", stacktrace);
 	}
 
 //> STATIC HELPERS
