@@ -37,7 +37,6 @@ import static java.util.Calendar.MONTH;
 import static java.util.Calendar.YEAR;
 import static java.util.Locale.UK;
 import static org.medicmobile.webapp.mobile.MedicLog.log;
-import static org.medicmobile.webapp.mobile.MedicLog.trace;
 
 public class MedicAndroidJavascript {
 	private static final String DATE_FORMAT = "yyyy-MM-dd";

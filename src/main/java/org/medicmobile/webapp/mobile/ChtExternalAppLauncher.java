@@ -18,6 +18,8 @@ import java.util.stream.Collector;
 
 public class ChtExternalAppLauncher {
 
+	private ChtExternalAppLauncher() { }
+
 	static Intent createIntent(ChtExternalApp chtExternalApp) {
 		ChtExternalAppIntentBuilder builder = new ChtExternalAppIntentBuilder();
 

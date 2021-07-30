@@ -27,9 +27,9 @@ public class ChtExternalAppLauncherActivity {
 		trace(this, "ChtExternalAppLauncherActivity :: process request code: %s", requestCode);
 
 		if (resultCode != RESULT_OK) {
-			throw new RuntimeException("ChtExternalAppLauncherActivity :: Bad result code: "
-					+ resultCode
-					+ ". The external app either: explicitly returned this result, didn't return any result or crashed during the operation.");
+			throw new RuntimeException("ChtExternalAppLauncherActivity :: Bad result code: " +
+					resultCode +
+					". The external app either: explicitly returned this result, didn't return any result or crashed during the operation.");
 		}
 
 		switch (requestCode) {
