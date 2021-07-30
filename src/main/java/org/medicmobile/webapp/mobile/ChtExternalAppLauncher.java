@@ -2,15 +2,25 @@ package org.medicmobile.webapp.mobile;
 
 import static org.medicmobile.webapp.mobile.JavascriptUtils.safeFormat;
 import static org.medicmobile.webapp.mobile.MedicLog.error;
+import static org.medicmobile.webapp.mobile.MedicLog.trace;
+import static org.medicmobile.webapp.mobile.Utils.getUriFromFilePath;
 
+import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.ParcelFileDescriptor;
+import android.util.Base64;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,13 +44,13 @@ public class ChtExternalAppLauncher {
 				.build();
 	}
 
-	static String processResponse(Intent intent) {
+	static String processResponse(Intent intent, Activity context) {
 		try {
 			if (intent == null || intent.getExtras() == null) {
 				return makeJavaScript(null);
 			}
 
-			JSONObject json = parseBundleToJson(intent.getExtras());
+			JSONObject json = parseBundleToJson(intent.getExtras(), context);
 			return makeJavaScript(json);
 
 		} catch (Exception exception) {
@@ -64,12 +74,12 @@ public class ChtExternalAppLauncher {
 		return safeFormat(javaScript, response);
 	}
 
-	private static JSONObject parseBundleToJson(Bundle bundle) {
+	private static JSONObject parseBundleToJson(Bundle bundle, Activity context) {
 		try {
 			JSONObject json = new JSONObject();
 			bundle
 					.keySet()
-					.forEach(key -> setValueInJson(key, json, bundle));
+					.forEach(key -> setValueInJson(key, json, bundle, context));
 			return json;
 
 		} catch (Exception exception) {
@@ -79,22 +89,32 @@ public class ChtExternalAppLauncher {
 		return null;
 	}
 
-	private static void setValueInJson(String key, JSONObject json, Bundle bundle) {
+	private static void setValueInJson(String key, JSONObject json, Bundle bundle, Activity context) {
 		try {
 			Object value = bundle.get(key);
 
+			if (value instanceof Bitmap) {
+				json.put(key, parseBitmapImageToBase64((Bitmap) value, context));
+				return;
+			}
+
 			if (value instanceof Bundle) {
-				json.put(key, parseBundleToJson((Bundle) value));
+				json.put(key, parseBundleToJson((Bundle) value, context));
 				return;
 			}
 
 			if (isBundleList(value)) {
 				JSONArray jsonArray = ((List<Bundle>) value)
 						.stream()
-						.map(item -> parseBundleToJson(item))
+						.map(item -> parseBundleToJson(item, context))
 						.collect(Collector.of(JSONArray::new, JSONArray::put, JSONArray::put));
 
 				json.put(key, jsonArray);
+				return;
+			}
+
+			if (isStorageUri(value)) {
+				json.put(key, getImageFromStoragePath((String) value, context));
 				return;
 			}
 
@@ -109,6 +129,47 @@ public class ChtExternalAppLauncher {
 		return value instanceof List
 				&& ((List<?>) value).size() > 0
 				&& ((List<?>) value).get(0) instanceof Bundle;
+	}
+
+	private static boolean isStorageUri(Object value) {
+		return value instanceof String
+				&& (((String) value).contains("file://") || ((String) value).contains("content://"));
+	}
+
+	private static String getImageFromStoragePath(String path, Activity context) {
+		if (path == null || path.length() == 0) {
+			return null;
+		}
+
+		try {
+			trace(context, "ChtExternalAppLauncher :: Retrieving image from storage path.");
+			Uri filePath = getUriFromFilePath(path);
+			ParcelFileDescriptor parcelFileDescriptor = context
+					.getContentResolver()
+					.openFileDescriptor(filePath, "r");
+
+			InputStream file = new FileInputStream(parcelFileDescriptor.getFileDescriptor());
+			Bitmap imgBitmap = BitmapFactory.decodeStream(file);
+			file.close();
+
+			return parseBitmapImageToBase64(imgBitmap, context);
+
+		} catch (Exception exception) {
+			error(exception, "ChtExternalAppLauncher :: Failed to process image file from path: %s", path);
+		}
+
+		return null;
+	}
+
+	private static String parseBitmapImageToBase64(Bitmap imgBitmap, Activity context) {
+		trace(context, "ChtExternalAppLauncher :: Compressing image file.");
+		ByteArrayOutputStream outputFile = new ByteArrayOutputStream();
+		imgBitmap.compress(Bitmap.CompressFormat.JPEG, 75, outputFile);
+
+		trace(context, "ChtExternalAppLauncher :: Encoding image file to Base64.");
+		byte[] imageBytes = outputFile.toByteArray();
+
+		return Base64.encodeToString(imageBytes, Base64.NO_WRAP);
 	}
 }
 

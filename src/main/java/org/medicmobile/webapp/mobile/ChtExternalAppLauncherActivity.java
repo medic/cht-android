@@ -34,7 +34,7 @@ public class ChtExternalAppLauncherActivity {
 
 		switch (requestCode) {
 			case CHT_EXTERNAL_APP_ACTIVITY_REQUEST_CODE:
-				return ChtExternalAppLauncher.processResponse(intentData);
+				return ChtExternalAppLauncher.processResponse(intentData, this.ctx);
 
 			default:
 				throw new RuntimeException("ChtExternalAppLauncherActivity :: Unsupported request code: " + requestCode);

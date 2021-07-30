@@ -1,8 +1,18 @@
 package org.medicmobile.webapp.mobile;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
+
+import android.app.Activity;
+import android.content.ContentResolver;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.ParcelFileDescriptor;
 
 import junit.framework.TestCase;
 
@@ -10,9 +20,12 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.MockedStatic;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
+import java.io.FileDescriptor;
+import java.io.FileNotFoundException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -214,6 +227,7 @@ public class ChtExternalAppLauncherTest extends TestCase {
 	@Test
 	public void processResponse_withSimpleData_buildScriptCorrectly() {
 		//> GIVEN
+		Activity context = mock(Activity.class);
 		Intent intent = new Intent();
 		intent.putExtra("an.int", 5);
 		intent.putExtra("a.long", 2147483649L);
@@ -250,7 +264,7 @@ public class ChtExternalAppLauncherTest extends TestCase {
 				"}";
 
 		//> WHEN
-		String script = ChtExternalAppLauncher.processResponse(intent);
+		String script = ChtExternalAppLauncher.processResponse(intent, context);
 
 		//> THEN
 		assertEquals(expectedScript, script);
@@ -259,6 +273,7 @@ public class ChtExternalAppLauncherTest extends TestCase {
 	@Test
 	public void processResponse_withNestedObjects_buildScriptCorrectly() {
 		//> GIVEN
+		Activity context = mock(Activity.class);
 		Intent intent = new Intent();
 
 		Bundle stats = new Bundle();
@@ -328,7 +343,7 @@ public class ChtExternalAppLauncherTest extends TestCase {
 				"}";
 
 		//> WHEN
-		String script = ChtExternalAppLauncher.processResponse(intent);
+		String script = ChtExternalAppLauncher.processResponse(intent, context);
 
 		//> THEN
 		assertEquals(expectedScript, script);
@@ -337,6 +352,7 @@ public class ChtExternalAppLauncherTest extends TestCase {
 	@Test
 	public void processResponse_withNoData_buildScriptCorrectly() {
 		//> GIVEN
+		Activity context = mock(Activity.class);
 		Intent intent = new Intent();
 
 		String expectedScript = "try {" +
@@ -349,7 +365,7 @@ public class ChtExternalAppLauncherTest extends TestCase {
 				"}";
 
 		//> WHEN
-		String script = ChtExternalAppLauncher.processResponse(intent);
+		String script = ChtExternalAppLauncher.processResponse(intent, context);
 
 		//> THEN
 		assertEquals(expectedScript, script);
@@ -358,6 +374,7 @@ public class ChtExternalAppLauncherTest extends TestCase {
 	@Test
 	public void processResponse_withEmptyData_buildScriptCorrectly() {
 		//> GIVEN
+		Activity context = mock(Activity.class);
 		Intent intentEmptyObj = new Intent();
 		intentEmptyObj.putExtra("stats", new Bundle());
 
@@ -386,11 +403,101 @@ public class ChtExternalAppLauncherTest extends TestCase {
 				"}";
 
 		//> WHEN
-		String scriptEmptyObj = ChtExternalAppLauncher.processResponse(intentEmptyObj);
-		String scriptEmptyArray = ChtExternalAppLauncher.processResponse(intentEmptyArray);
+		String scriptEmptyObj = ChtExternalAppLauncher.processResponse(intentEmptyObj, context);
+		String scriptEmptyArray = ChtExternalAppLauncher.processResponse(intentEmptyArray, context);
 
 		//> THEN
 		assertEquals(expectedScriptEmptyObj, scriptEmptyObj);
 		assertEquals(expectedScriptEmptyArray, scriptEmptyArray);
+	}
+
+	@Test
+	public void processResponse_withBitmapImages_buildScriptCorrectly() {
+		//> GIVEN
+		Activity context = mock(Activity.class);
+		Bitmap bitmap = Bitmap.createBitmap(40, 40, Bitmap.Config.ARGB_8888);
+
+		Intent intent = new Intent();
+		intent.putExtra("image", bitmap);
+
+		String expectedJson = "{\"image\":\"\\/9j\\/4AAQSkZJRgABAgAAAQABAAD\\/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBk" +
+				"SEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL\\/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyM" +
+				"jIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL\\/wAARCAAoACgDASIAAhEBAxEB\\/8QAHwAAAQUBA" +
+				"QEBAQEAAAAAAAAAAAECAwQFBgcICQoL\\/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0K" +
+				"xwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipK" +
+				"TlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6\\/8QAHwEAA" +
+				"wEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL\\/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEK" +
+				"RobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYa" +
+				"HiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6\\/9oAD" +
+				"AMBAAIRAxEAPwD5\\/ooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigD\\/\\/Z\"}";
+
+		String expectedScript = "try {" +
+				"const api = window.CHTCore.AndroidApi;" +
+				"if (api && api.resolveCHTExternalAppResponse) {" +
+				"  api.resolveCHTExternalAppResponse(" + expectedJson + ");" +
+				"}" +
+				"} catch (error) { " +
+				"  console.error('ChtExternalAppLauncher :: Error on sending intent response to CHT-Core webapp', error);" +
+				"}";
+
+		//> WHEN
+		String script = ChtExternalAppLauncher.processResponse(intent, context);
+
+		//> THEN
+		assertEquals(expectedScript, script);
+	}
+
+	@Test
+	public void processResponse_withUriImagePath_buildScriptCorrectly() throws FileNotFoundException {
+		//> GIVEN
+		try(MockedStatic<BitmapFactory> bitmapFactoryMock = mockStatic(BitmapFactory.class)) {
+			Bitmap bitmap = Bitmap.createBitmap(40, 40, Bitmap.Config.ARGB_8888);
+			bitmapFactoryMock.when(() -> BitmapFactory.decodeStream(any())).thenReturn(bitmap);
+
+			ParcelFileDescriptor parcelFileDescriptor = mock(ParcelFileDescriptor.class);
+			when(parcelFileDescriptor.getFileDescriptor()).thenReturn(mock(FileDescriptor.class));
+
+			ContentResolver contentResolver = mock(ContentResolver.class);
+			when(contentResolver.openFileDescriptor(any(), any())).thenReturn(parcelFileDescriptor);
+
+			Activity context = mock(Activity.class);
+			when(context.getContentResolver()).thenReturn(contentResolver);
+
+			Intent intent = new Intent();
+			intent.putExtra("file", "file://some/file/location");
+			intent.putExtra("content", "content://some/content/location");
+			intent.putExtra("no.image", "Some normal text.");
+
+			String base64 = "\"\\/9j\\/4AAQSkZJRgABAgAAAQABAAD\\/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBk" +
+					"SEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL\\/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyM" +
+					"jIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL\\/wAARCAAoACgDASIAAhEBAxEB\\/8QAHwAAAQUBA" +
+					"QEBAQEAAAAAAAAAAAECAwQFBgcICQoL\\/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0K" +
+					"xwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipK" +
+					"TlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6\\/8QAHwEAA" +
+					"wEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL\\/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEK" +
+					"RobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYa" +
+					"HiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6\\/9oAD" +
+					"AMBAAIRAxEAPwD5\\/ooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigD\\/\\/Z\"";
+			String expectedJson = "{" +
+						"\"no.image\":\"Some normal text.\"," +
+						"\"file\":" + base64 + "," +
+						"\"content\":" + base64 +
+					"}";
+
+			String expectedScript = "try {" +
+					"const api = window.CHTCore.AndroidApi;" +
+					"if (api && api.resolveCHTExternalAppResponse) {" +
+					"  api.resolveCHTExternalAppResponse(" + expectedJson + ");" +
+					"}" +
+					"} catch (error) { " +
+					"  console.error('ChtExternalAppLauncher :: Error on sending intent response to CHT-Core webapp', error);" +
+					"}";
+
+			//> WHEN
+			String script = ChtExternalAppLauncher.processResponse(intent, context);
+
+			//> THEN
+			assertEquals(expectedScript, script);
+		}
 	}
 }
