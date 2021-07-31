@@ -113,8 +113,9 @@ public class ChtExternalAppLauncher {
 				return;
 			}
 
-			if (isStorageUri(value)) {
-				json.put(key, getImageFromStoragePath((String) value, context));
+			Uri imagePath = getImageUri(value);
+			if (imagePath != null) {
+				json.put(key, getImageFromStoragePath(imagePath, context));
 				return;
 			}
 
@@ -126,24 +127,32 @@ public class ChtExternalAppLauncher {
 	}
 
 	private static boolean isBundleList(Object value) {
-		return value instanceof List
-				&& ((List<?>) value).size() > 0
-				&& ((List<?>) value).get(0) instanceof Bundle;
+		if (!(value instanceof List)) {
+			return false;
+		}
+
+		List<?> list = (List<?>) value; // Avoid casting many times to same type.
+
+		return !list.isEmpty() && list.get(0) instanceof Bundle;
 	}
 
-	private static boolean isStorageUri(Object value) {
-		return value instanceof String
-				&& (((String) value).contains("file://") || ((String) value).contains("content://"));
-	}
-
-	private static String getImageFromStoragePath(String path, Activity context) {
-		if (path == null || path.length() == 0) {
+	private static Uri getImageUri(Object value) {
+		if (!(value instanceof String)) {
 			return null;
 		}
 
+		String path = (String) value; // Avoid casting many times to same type.
+
+		if (!path.endsWith(".jpg") && !path.endsWith(".png")) {
+			return null;
+		}
+
+		return getUriFromFilePath(path);
+	}
+
+	private static String getImageFromStoragePath(Uri filePath, Activity context) {
 		try {
 			trace(context, "ChtExternalAppLauncher :: Retrieving image from storage path.");
-			Uri filePath = getUriFromFilePath(path);
 			ParcelFileDescriptor parcelFileDescriptor = context
 					.getContentResolver()
 					.openFileDescriptor(filePath, "r");
@@ -155,7 +164,7 @@ public class ChtExternalAppLauncher {
 			return parseBitmapImageToBase64(imgBitmap, context);
 
 		} catch (Exception exception) {
-			error(exception, "ChtExternalAppLauncher :: Failed to process image file from path: %s", path);
+			error(exception, "ChtExternalAppLauncher :: Failed to process image file from path: %s", filePath);
 		}
 
 		return null;

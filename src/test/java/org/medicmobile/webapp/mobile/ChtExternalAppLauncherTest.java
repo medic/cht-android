@@ -18,14 +18,17 @@ import junit.framework.TestCase;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.mockito.MockedStatic;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
+import java.io.File;
 import java.io.FileDescriptor;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -36,6 +39,9 @@ import java.util.Set;
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk=28)
 public class ChtExternalAppLauncherTest extends TestCase {
+
+	@Rule
+	public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
 	@Test
 	public void createIntent_withAllAttributesReceived_returnsIntentCorrectly() throws JSONException {
@@ -448,9 +454,12 @@ public class ChtExternalAppLauncherTest extends TestCase {
 	}
 
 	@Test
-	public void processResponse_withUriImagePath_buildScriptCorrectly() throws FileNotFoundException {
+	public void processResponse_withUriImagePath_buildScriptCorrectly() throws IOException {
 		//> GIVEN
-		try(MockedStatic<BitmapFactory> bitmapFactoryMock = mockStatic(BitmapFactory.class)) {
+		try (MockedStatic<BitmapFactory> bitmapFactoryMock = mockStatic(BitmapFactory.class)) {
+			File fileJpg = temporaryFolder.newFile("image.jpg");
+			File filePng = temporaryFolder.newFile("image.png");
+
 			Bitmap bitmap = Bitmap.createBitmap(40, 40, Bitmap.Config.ARGB_8888);
 			bitmapFactoryMock.when(() -> BitmapFactory.decodeStream(any())).thenReturn(bitmap);
 
@@ -464,9 +473,12 @@ public class ChtExternalAppLauncherTest extends TestCase {
 			when(context.getContentResolver()).thenReturn(contentResolver);
 
 			Intent intent = new Intent();
-			intent.putExtra("file", "file://some/file/location");
-			intent.putExtra("content", "content://some/content/location");
-			intent.putExtra("no.image", "Some normal text.");
+			intent.putExtra("file.jpg", fileJpg.getAbsolutePath());
+			intent.putExtra("file.png", filePng.getAbsolutePath());
+			intent.putExtra("content.jpg", "content://some/content/location.jpg");
+			intent.putExtra("content.png", "content://some/content/location.png");
+			intent.putExtra("just.text", "Some normal text.");
+			intent.putExtra("no.supported.file", "/storage/file/location.txt");
 
 			String base64 = "\"\\/9j\\/4AAQSkZJRgABAgAAAQABAAD\\/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBk" +
 					"SEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL\\/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyM" +
@@ -479,9 +491,12 @@ public class ChtExternalAppLauncherTest extends TestCase {
 					"HiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6\\/9oAD" +
 					"AMBAAIRAxEAPwD5\\/ooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigD\\/\\/Z\"";
 			String expectedJson = "{" +
-						"\"no.image\":\"Some normal text.\"," +
-						"\"file\":" + base64 + "," +
-						"\"content\":" + base64 +
+						"\"file.jpg\":" + base64 + "," +
+						"\"file.png\":" + base64 + "," +
+						"\"content.jpg\":" + base64 + "," +
+						"\"content.png\":" + base64 + "," +
+						"\"no.supported.file\":\"\\/storage\\/file\\/location.txt\"," +
+						"\"just.text\":\"Some normal text.\"" +
 					"}";
 
 			String expectedScript = "try {" +

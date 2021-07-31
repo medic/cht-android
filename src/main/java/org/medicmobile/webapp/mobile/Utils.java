@@ -81,12 +81,12 @@ final class Utils {
 	}
 
 	/**
-	 * The file path can be a regular file ("file://" scheme) or a content ("content://" scheme)
+	 * The file path can be a regular file or a content ("content://" scheme)
 	 * @param path {String} File path
 	 * @return {Uri}
 	 */
 	static Uri getUriFromFilePath(String path) {
-		if (path == null) {
+		if (path == null || path.isEmpty()) {
 			return null;
 		}
 
@@ -94,6 +94,12 @@ final class Utils {
 			return Uri.parse(path);
 		}
 
-		return Uri.fromFile(new File(path));
+		File file = new File(path);
+
+		if (!file.exists()) {
+			return null;
+		}
+
+		return Uri.fromFile(file);
 	}
 }
