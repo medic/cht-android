@@ -90,12 +90,12 @@ final class Utils {
 			return null;
 		}
 
-		if ("content".equals(Uri.parse(path).getScheme())) {
-			return Uri.parse(path);
+		Uri parsedPath = Uri.parse(path);
+		if ("content".equals(parsedPath.getScheme())) {
+			return parsedPath;
 		}
 
 		File file = new File(path);
-
 		if (!file.exists()) {
 			return null;
 		}
