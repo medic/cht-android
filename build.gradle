@@ -70,23 +70,29 @@ android {
   defaultConfig {
     versionName getVersionName()
     archivesBaseName = "${project.name}-${versionName}"
-    targetSdkVersion 30
     // When upgrading targetSdkVersion, check that the app menu still works on newer devices.
-    //for espresso tests
+    targetSdkVersion 30
+    // For espresso tests
     testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-    //test user credentials
+    // Test user credentials
     buildConfigField "String", "TEST_USERNAME", "\"${System.env.ANDROID_TEST_USERNAME}\""
     buildConfigField "String", "TEST_PASSWORD", "\"${System.env.ANDROID_TEST_PASSWORD}\""
+
     if (System.env.ANDROID_TEST_URL) {
       buildConfigField "String", "SERVER_URL", "\"${System.env.ANDROID_TEST_URL}\""
     } else {
       buildConfigField "String", "SERVER_URL", '"https://gamma-cht.dev.medicmobile.org"'
     }
+
+    // Required when setting minSdkVersion to 20 or lower (xwalk minSdkVersion is 19).
+    multiDexEnabled true
   }
 
   compileOptions {
     sourceCompatibility JavaVersion.VERSION_1_8
     targetCompatibility JavaVersion.VERSION_1_8
+    // Flag to enable support for the new language APIs
+    coreLibraryDesugaringEnabled true
   }
 
   applicationVariants.all { variant ->
@@ -153,7 +159,8 @@ android {
   lintOptions {
     lintConfig = new File('config/lint.xml')
 
-    disable 'UnusedResources' // linter can't handle static imports, so just skip this test
+    disable 'UnusedResources' // Linter can't handle static imports, so just skip this test
+    disable 'AndroidGradlePluginVersion' // Next version of android.tool.gradle requires JDK 11.
     disable 'MissingTranslation'
     disable 'StringFormatCount'
     disable 'JcenterRepositoryObsolete'
@@ -365,6 +372,7 @@ dependencies {
   implementation fileTree(dir: 'libs', include: ['*.jar'])
   implementation 'com.simprints:LibSimprints:1.0.11'
   implementation 'com.github.Mariovc:ImagePicker:1.2.2'
+  coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.1.5'
   xwalkImplementation files('src/xwalk/libs/xwalk_core_library-23.53.589.4-arm64-v8a.aar')
   testImplementation 'junit:junit:4.12'
   testImplementation 'org.mockito:mockito-inline:3.11.2'

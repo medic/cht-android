@@ -79,7 +79,8 @@ public class ChtExternalAppLauncher {
 			JSONObject json = new JSONObject();
 			bundle
 					.keySet()
-					.forEach(key -> setValueInJson(key, json, bundle, context));
+					.iterator()
+					.forEachRemaining(key -> setValueInJson(key, json, bundle, context));
 			return json;
 
 		} catch (Exception exception) {
