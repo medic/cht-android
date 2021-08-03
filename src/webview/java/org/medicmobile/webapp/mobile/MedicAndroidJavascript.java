@@ -45,7 +45,7 @@ public class MedicAndroidJavascript {
 	private final SimprintsSupport simprints;
 	private final MrdtSupport mrdt;
 	private final SmsSender smsSender;
-	private final ChtExternalAppLauncherActivity chtExternalAppLauncherActivity;
+	private final ChtExternalAppHandler chtExternalAppHandler;
 
 	private ActivityManager activityManager;
 	private ConnectivityManager connectivityManager;
@@ -56,7 +56,7 @@ public class MedicAndroidJavascript {
 		this.simprints = parent.getSimprintsSupport();
 		this.mrdt = parent.getMrdtSupport();
 		this.smsSender = parent.getSmsSender();
-		this.chtExternalAppLauncherActivity = parent.getChtExternalAppLauncherActivity();
+		this.chtExternalAppHandler = parent.getChtExternalAppLauncherActivity();
 	}
 
 	public void setAlert(Alert soundAlert) {
@@ -216,14 +216,14 @@ public class MedicAndroidJavascript {
 	}
 
 	@android.webkit.JavascriptInterface
-	public void cht_launchExternalApp(String action, String category, String type, String extras, String uri, String packageName, String flags) {
+	public void launchExternalApp(String action, String category, String type, String extras, String uri, String packageName, String flags) {
 		try {
 			JSONObject parsedExtras = extras == null ? null : new JSONObject(extras);
 			Uri parsedUri = uri == null ? null : Uri.parse(uri);
 			Integer parsedFlags = flags == null ? null : Integer.parseInt(flags);
 
 			ChtExternalApp chtExternalApp = new ChtExternalApp(action, category, type, parsedExtras, parsedUri, packageName, parsedFlags);
-			this.chtExternalAppLauncherActivity.startIntent(chtExternalApp);
+			this.chtExternalAppHandler.startIntent(chtExternalApp);
 
 		} catch (Exception ex) {
 			logException(ex);

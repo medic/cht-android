@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collector;
 
 public class ChtExternalAppLauncher {
@@ -51,7 +52,7 @@ public class ChtExternalAppLauncher {
 			}
 
 			JSONObject json = parseBundleToJson(intent.getExtras(), context);
-			return makeJavaScript(json);
+			return makeJavaScript(json.toString());
 
 		} catch (Exception exception) {
 			error(exception, "ChtExternalAppLauncher :: Problem serialising the intent response");
@@ -61,11 +62,11 @@ public class ChtExternalAppLauncher {
 
 	//> PRIVATE
 
-	private static String makeJavaScript(Object response) {
+	private static String makeJavaScript(String response) {
 		String javaScript = "try {" +
 				"const api = window.CHTCore.AndroidApi;" +
-				"if (api && api.resolveCHTExternalAppResponse) {" +
-				"  api.resolveCHTExternalAppResponse(%s);" +
+				"if (api && api.v1 && api.v1.resolveCHTExternalAppResponse) {" +
+				"  api.v1.resolveCHTExternalAppResponse(%s);" +
 				"}" +
 				"} catch (error) { " +
 				"  console.error('ChtExternalAppLauncher :: Error on sending intent response to CHT-Core webapp', error);" +
@@ -114,9 +115,9 @@ public class ChtExternalAppLauncher {
 				return;
 			}
 
-			Uri imagePath = getImageUri(value);
-			if (imagePath != null) {
-				json.put(key, getImageFromStoragePath(imagePath, context));
+			Optional<Uri> imagePath = getImageUri(value);
+			if (imagePath.isPresent()) {
+				json.put(key, getImageFromStoragePath(imagePath.get(), context));
 				return;
 			}
 
@@ -137,31 +138,30 @@ public class ChtExternalAppLauncher {
 		return !list.isEmpty() && list.get(0) instanceof Bundle;
 	}
 
-	private static Uri getImageUri(Object value) {
+	private static Optional<Uri> getImageUri(Object value) {
 		if (!(value instanceof String)) {
-			return null;
+			return Optional.empty();
 		}
 
 		String path = (String) value; // Avoid casting many times to same type.
 
 		if (!path.endsWith(".jpg") && !path.endsWith(".png")) {
-			return null;
+			return Optional.empty();
 		}
 
 		return getUriFromFilePath(path);
 	}
 
 	private static String getImageFromStoragePath(Uri filePath, Activity context) {
-		try {
-			trace(context, "ChtExternalAppLauncher :: Retrieving image from storage path.");
+		trace(context, "ChtExternalAppLauncher :: Retrieving image from storage path.");
+
+		try (
 			ParcelFileDescriptor parcelFileDescriptor = context
-					.getContentResolver()
-					.openFileDescriptor(filePath, "r");
-
+				.getContentResolver()
+				.openFileDescriptor(filePath, "r");
 			InputStream file = new FileInputStream(parcelFileDescriptor.getFileDescriptor());
+		){
 			Bitmap imgBitmap = BitmapFactory.decodeStream(file);
-			file.close();
-
 			return parseBitmapImageToBase64(imgBitmap, context);
 
 		} catch (Exception exception) {
@@ -181,208 +181,154 @@ public class ChtExternalAppLauncher {
 
 		return Base64.encodeToString(imageBytes, Base64.NO_WRAP);
 	}
-}
 
-class ChtExternalAppIntentBuilder {
-	private Intent intent;
+	private static class ChtExternalAppIntentBuilder {
+		private final Intent intent = new Intent();
 
-	//> PUBLIC
+		//> PUBLIC
 
-	public ChtExternalAppIntentBuilder() {
-		this.intent = new Intent();
-	}
-
-	public Intent build() {
-		return this.intent;
-	}
-
-	public ChtExternalAppIntentBuilder setAction(String action) {
-		if (action != null) {
-			this.intent.setAction(action);
+		public Intent build() {
+			return this.intent;
 		}
 
-		return this;
-	}
+		public ChtExternalAppIntentBuilder setAction(String action) {
+			if (action != null) {
+				this.intent.setAction(action);
+			}
 
-	public ChtExternalAppIntentBuilder setCategory(String category) {
-		if (category != null) {
-			this.intent.addCategory(category);
+			return this;
 		}
 
-		return this;
-	}
+		public ChtExternalAppIntentBuilder setCategory(String category) {
+			if (category != null) {
+				this.intent.addCategory(category);
+			}
 
-	public ChtExternalAppIntentBuilder setExtras(JSONObject extras) {
-		if (extras != null) {
-			extras
+			return this;
+		}
+
+		public ChtExternalAppIntentBuilder setExtras(JSONObject extras) {
+			if (extras != null) {
+				extras
+						.keys()
+						.forEachRemaining(key -> setIntentExtras(key, extras));
+			}
+
+			return this;
+		}
+
+		public ChtExternalAppIntentBuilder setUri(Uri uri) {
+			if (uri != null) {
+				this.intent.setDataAndNormalize(uri);
+			}
+
+			return this;
+		}
+
+		public ChtExternalAppIntentBuilder setPackageName(String packageName) {
+			if (packageName != null) {
+				this.intent.setPackage(packageName);
+			}
+
+			return this;
+		}
+
+		public ChtExternalAppIntentBuilder setType(String type) {
+			if (type != null) {
+				this.intent.setType(type);
+			}
+
+			return this;
+		}
+
+		public ChtExternalAppIntentBuilder setFlags(Integer flags) {
+			if (flags != null) {
+				this.intent.setFlags(flags);
+			}
+
+			return this;
+		}
+
+		//> PRIVATE
+
+		private void setIntentExtras(String key, JSONObject data) {
+			try {
+				Object value = data.get(key);
+
+				if (value instanceof JSONObject) {
+					this.intent.putExtra(key, parseJsonToBundle((JSONObject) value));
+					return;
+				}
+
+				if (value instanceof JSONArray) {
+					this.intent.putExtra(key, parseJsonArrayToList((JSONArray) value));
+					return;
+				}
+
+				this.intent.putExtra(key, (Serializable) value);
+
+			} catch (Exception exception) {
+				error(exception, "ChtExternalAppLauncher :: Problem setting intent extras. Key=%s, Data=%s", key, data);
+			}
+		}
+
+		private Bundle parseJsonToBundle(JSONObject json) {
+			Bundle bundle = new Bundle();
+			json
 					.keys()
-					.forEachRemaining(key -> setIntentExtras(key, extras));
+					.forEachRemaining(key -> setBundleAttribute(key, json, bundle));
+
+			return bundle;
 		}
 
-		return this;
-	}
-
-	public ChtExternalAppIntentBuilder setUri(Uri uri) {
-		if (uri != null) {
-			this.intent.setDataAndNormalize(uri);
-		}
-
-		return this;
-	}
-
-	public ChtExternalAppIntentBuilder setPackageName(String packageName) {
-		if (packageName != null) {
-			this.intent.setPackage(packageName);
-		}
-
-		return this;
-	}
-
-	public ChtExternalAppIntentBuilder setType(String type) {
-		if (type != null) {
-			this.intent.setType(type);
-		}
-
-		return this;
-	}
-
-	public ChtExternalAppIntentBuilder setFlags(Integer flags) {
-		if (flags != null) {
-			this.intent.setFlags(flags);
-		}
-
-		return this;
-	}
-
-	//> PRIVATE
-
-	private void setIntentExtras(String key, JSONObject data) {
-		try {
-			Object value = data.get(key);
-
-			if (value instanceof JSONObject) {
-				this.intent.putExtra(key, parseJsonToBundle((JSONObject) value));
-				return;
+		private Serializable parseJsonArrayToList(JSONArray jsonArray) throws JSONException {
+			if (jsonArray.length() > 0) {
+				return jsonArray.get(0) instanceof JSONObject
+						? parseJsonArrayToBundleList(jsonArray) : parseJsonArrayToSerializableList(jsonArray);
 			}
 
-			if (value instanceof JSONArray) {
-				this.intent.putExtra(key, (Serializable) parseJsonArrayToList((JSONArray) value));
-				return;
+			return new ArrayList<>();
+		}
+
+		private ArrayList<Bundle> parseJsonArrayToBundleList(JSONArray jsonArray) throws JSONException {
+			ArrayList<Bundle> list = new ArrayList<>(jsonArray.length());
+
+			for (int i = 0; i < jsonArray.length(); i++) {
+				list.add(parseJsonToBundle(jsonArray.getJSONObject(i)));
 			}
 
-			this.intent.putExtra(key, (Serializable) value);
-
-		} catch (Exception exception) {
-			error(exception, "ChtExternalAppLauncher :: Problem setting intent extras. Key=%s, Data=%s", key, data);
-		}
-	}
-
-	private Bundle parseJsonToBundle(JSONObject json) {
-		Bundle bundle = new Bundle();
-		json
-				.keys()
-				.forEachRemaining(key -> setBundleAttribute(key, json, bundle));
-
-		return bundle;
-	}
-
-	private List<?> parseJsonArrayToList(JSONArray jsonArray) throws JSONException {
-		List<?> list = new ArrayList<>();
-
-		if (jsonArray.length() > 0) {
-			list = jsonArray.get(0) instanceof JSONObject
-					? parseJsonArrayToBundleList(jsonArray) : parseJsonArrayToSerializableList(jsonArray);
+			return list;
 		}
 
-		return list;
-	}
+		private ArrayList<Serializable> parseJsonArrayToSerializableList(JSONArray jsonArray) throws JSONException {
+			ArrayList<Serializable> list = new ArrayList<>(jsonArray.length());
 
-	private List<Bundle> parseJsonArrayToBundleList(JSONArray jsonArray) throws JSONException {
-		List<Bundle> list = new ArrayList<>();
-
-		for (int i = 0; i < jsonArray.length(); i++) {
-			list.add(parseJsonToBundle(jsonArray.getJSONObject(i)));
-		}
-
-		return list;
-	}
-
-	private List<Serializable> parseJsonArrayToSerializableList(JSONArray jsonArray) throws JSONException {
-		List<Serializable> list = new ArrayList<>();
-
-		for (int i = 0; i < jsonArray.length(); i++) {
-			list.add((Serializable) jsonArray.get(i));
-		}
-
-		return list;
-	}
-
-	private void setBundleAttribute(String key, JSONObject json, Bundle bundle) {
-		try {
-			Object value = json.get(key);
-
-			if (value instanceof JSONObject) {
-				bundle.putBundle(key, parseJsonToBundle((JSONObject) value));
-				return;
+			for (int i = 0; i < jsonArray.length(); i++) {
+				list.add((Serializable) jsonArray.get(i));
 			}
 
-			if (value instanceof JSONArray) {
-				bundle.putParcelableArrayList(key, (ArrayList) parseJsonArrayToList((JSONArray) value));
-				return;
-			}
-
-			bundle.putSerializable(key, (Serializable) value);
-
-		} catch (Exception exception) {
-			error(exception, "ChtExternalAppIntentBuilder :: Problem converting from JSON to Bundle. Key=%s, JSON=%s", key, json);
+			return list;
 		}
-	}
-}
 
-class ChtExternalApp {
-	private String action;
-	private String category;
-	private String type;
-	private JSONObject extras;
-	private Uri uri;
-	private String packageName;
-	private Integer flags;
+		private void setBundleAttribute(String key, JSONObject json, Bundle bundle) {
+			try {
+				Object value = json.get(key);
 
-	public ChtExternalApp(String action, String category, String type, JSONObject extras, Uri uri, String packageName, Integer flags) {
-		this.action = action;
-		this.category = category;
-		this.type = type;
-		this.extras = extras;
-		this.uri = uri;
-		this.packageName = packageName;
-		this.flags = flags;
-	}
+				if (value instanceof JSONObject) {
+					bundle.putBundle(key, parseJsonToBundle((JSONObject) value));
+					return;
+				}
 
-	public String getAction() {
-		return this.action;
-	}
+				if (value instanceof JSONArray) {
+					bundle.putSerializable(key, parseJsonArrayToList((JSONArray) value));
+					return;
+				}
 
-	public String getCategory() {
-		return this.category;
-	}
+				bundle.putSerializable(key, (Serializable) value);
 
-	public String getType() {
-		return this.type;
-	}
-
-	public JSONObject getExtras() {
-		return this.extras;
-	}
-
-	public Uri getUri() {
-		return this.uri;
-	}
-
-	public String getPackageName() {
-		return this.packageName;
-	}
-
-	public Integer getFlags() {
-		return this.flags;
+			} catch (Exception exception) {
+				error(exception, "ChtExternalAppIntentBuilder :: Problem converting from JSON to Bundle. Key=%s, JSON=%s", key, json);
+			}
+		}
 	}
 }

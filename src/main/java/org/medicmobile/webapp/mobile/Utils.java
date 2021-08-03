@@ -14,6 +14,7 @@ import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static org.medicmobile.webapp.mobile.BuildConfig.VERSION_NAME;
 
 import java.io.File;
+import java.util.Optional;
 
 final class Utils {
 	private Utils() {}
@@ -85,21 +86,21 @@ final class Utils {
 	 * @param path {String} File path
 	 * @return {Uri}
 	 */
-	static Uri getUriFromFilePath(String path) {
+	static Optional<Uri> getUriFromFilePath(String path) {
 		if (path == null || path.isEmpty()) {
-			return null;
+			return Optional.empty();
 		}
 
 		Uri parsedPath = Uri.parse(path);
 		if ("content".equals(parsedPath.getScheme())) {
-			return parsedPath;
+			return Optional.of(parsedPath);
 		}
 
 		File file = new File(path);
 		if (!file.exists()) {
-			return null;
+			return Optional.empty();
 		}
 
-		return Uri.fromFile(file);
+		return Optional.of(Uri.fromFile(file));
 	}
 }

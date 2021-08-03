@@ -82,7 +82,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	private MrdtSupport mrdt;
 	private PhotoGrabber photoGrabber;
 	private SmsSender smsSender;
-	private ChtExternalAppLauncherActivity chtExternalAppLauncherActivity;
+	private ChtExternalAppHandler chtExternalAppHandler;
 
 //> ACTIVITY LIFECYCLE METHODS
 	@Override public void onCreate(Bundle savedInstanceState) {
@@ -93,7 +93,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		this.simprints = new SimprintsSupport(this);
 		this.photoGrabber = new PhotoGrabber(this);
 		this.mrdt = new MrdtSupport(this);
-		this.chtExternalAppLauncherActivity = new ChtExternalAppLauncherActivity(this);
+		this.chtExternalAppHandler = new ChtExternalAppHandler(this);
 		try {
 			this.smsSender = new SmsSender(this);
 		} catch(Exception ex) {
@@ -218,7 +218,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 						}
 						return;
 					case CHT_EXTERNAL_APP_ACTIVITY_REQUEST_CODE:
-						processChtExternalAppActivity(requestCode, resultCode, i);
+						processChtExternalAppResult(resultCode, i);
 						return;
 					default:
 						trace(this, "onActivityResult() :: no handling for requestCode=%s",
@@ -249,8 +249,8 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		return this.smsSender;
 	}
 
-	ChtExternalAppLauncherActivity getChtExternalAppLauncherActivity() {
-		return this.chtExternalAppLauncherActivity;
+	ChtExternalAppHandler getChtExternalAppHandler() {
+		return this.chtExternalAppHandler;
 	}
 
 //> PUBLIC API
@@ -285,9 +285,9 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		return String.valueOf(requestCode);
 	}
 
-	private void processChtExternalAppActivity(int requestCode, int resultCode, Intent intentData) {
-		String provisionScript = this.chtExternalAppLauncherActivity.processActivity(requestCode, resultCode, intentData);
-		trace(this, "ChtExternalAppActivity :: Executing JavaScript: %s", provisionScript);
+	private void processChtExternalAppResult(int resultCode, Intent intentData) {
+		String provisionScript = this.chtExternalAppHandler.processResult(resultCode, intentData);
+		trace(this, "ChtExternalAppHandler :: Executing JavaScript: %s", provisionScript);
 		evaluateJavascript(provisionScript);
 	}
 
@@ -404,11 +404,11 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 
 		if (requestCode == ACCESS_STORAGE_PERMISSION_REQUEST_CODE) {
 			if (granted) {
-				this.chtExternalAppLauncherActivity.resumeActivity();
+				this.chtExternalAppHandler.resumeActivity();
 				return;
 			}
 
-			trace(this, "ChtExternalAppActivity :: User rejected permission.");
+			trace(this, "ChtExternalAppHandler :: User rejected permission.");
 			return;
 		}
 	}

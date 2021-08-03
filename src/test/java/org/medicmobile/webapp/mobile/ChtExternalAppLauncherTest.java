@@ -262,8 +262,8 @@ public class ChtExternalAppLauncherTest extends TestCase {
 
 		String expectedScript = "try {" +
 				"const api = window.CHTCore.AndroidApi;" +
-				"if (api && api.resolveCHTExternalAppResponse) {" +
-				"  api.resolveCHTExternalAppResponse(" + expectedJsonData + ");" +
+				"if (api && api.v1 && api.v1.resolveCHTExternalAppResponse) {" +
+				"  api.v1.resolveCHTExternalAppResponse(" + expectedJsonData + ");" +
 				"}" +
 				"} catch (error) { " +
 				"  console.error('ChtExternalAppLauncher :: Error on sending intent response to CHT-Core webapp', error);" +
@@ -341,8 +341,8 @@ public class ChtExternalAppLauncherTest extends TestCase {
 
 		String expectedScript = "try {" +
 				"const api = window.CHTCore.AndroidApi;" +
-				"if (api && api.resolveCHTExternalAppResponse) {" +
-				"  api.resolveCHTExternalAppResponse(" + expectedJsonData + ");" +
+				"if (api && api.v1 && api.v1.resolveCHTExternalAppResponse) {" +
+				"  api.v1.resolveCHTExternalAppResponse(" + expectedJsonData + ");" +
 				"}" +
 				"} catch (error) { " +
 				"  console.error('ChtExternalAppLauncher :: Error on sending intent response to CHT-Core webapp', error);" +
@@ -363,8 +363,8 @@ public class ChtExternalAppLauncherTest extends TestCase {
 
 		String expectedScript = "try {" +
 				"const api = window.CHTCore.AndroidApi;" +
-				"if (api && api.resolveCHTExternalAppResponse) {" +
-				"  api.resolveCHTExternalAppResponse(null);" +
+				"if (api && api.v1 && api.v1.resolveCHTExternalAppResponse) {" +
+				"  api.v1.resolveCHTExternalAppResponse(null);" +
 				"}" +
 				"} catch (error) { " +
 				"  console.error('ChtExternalAppLauncher :: Error on sending intent response to CHT-Core webapp', error);" +
@@ -392,8 +392,8 @@ public class ChtExternalAppLauncherTest extends TestCase {
 
 		String expectedScriptEmptyObj = "try {" +
 				"const api = window.CHTCore.AndroidApi;" +
-				"if (api && api.resolveCHTExternalAppResponse) {" +
-				"  api.resolveCHTExternalAppResponse(" + expectedEmptyObj + ");" +
+				"if (api && api.v1 && api.v1.resolveCHTExternalAppResponse) {" +
+				"  api.v1.resolveCHTExternalAppResponse(" + expectedEmptyObj + ");" +
 				"}" +
 				"} catch (error) { " +
 				"  console.error('ChtExternalAppLauncher :: Error on sending intent response to CHT-Core webapp', error);" +
@@ -401,8 +401,8 @@ public class ChtExternalAppLauncherTest extends TestCase {
 
 		String expectedScriptEmptyArray = "try {" +
 				"const api = window.CHTCore.AndroidApi;" +
-				"if (api && api.resolveCHTExternalAppResponse) {" +
-				"  api.resolveCHTExternalAppResponse(" + expectedEmptyArray + ");" +
+				"if (api && api.v1 && api.v1.resolveCHTExternalAppResponse) {" +
+				"  api.v1.resolveCHTExternalAppResponse(" + expectedEmptyArray + ");" +
 				"}" +
 				"} catch (error) { " +
 				"  console.error('ChtExternalAppLauncher :: Error on sending intent response to CHT-Core webapp', error);" +
@@ -439,8 +439,8 @@ public class ChtExternalAppLauncherTest extends TestCase {
 
 		String expectedScript = "try {" +
 				"const api = window.CHTCore.AndroidApi;" +
-				"if (api && api.resolveCHTExternalAppResponse) {" +
-				"  api.resolveCHTExternalAppResponse(" + expectedJson + ");" +
+				"if (api && api.v1 && api.v1.resolveCHTExternalAppResponse) {" +
+				"  api.v1.resolveCHTExternalAppResponse(" + expectedJson + ");" +
 				"}" +
 				"} catch (error) { " +
 				"  console.error('ChtExternalAppLauncher :: Error on sending intent response to CHT-Core webapp', error);" +
@@ -501,8 +501,8 @@ public class ChtExternalAppLauncherTest extends TestCase {
 
 			String expectedScript = "try {" +
 					"const api = window.CHTCore.AndroidApi;" +
-					"if (api && api.resolveCHTExternalAppResponse) {" +
-					"  api.resolveCHTExternalAppResponse(" + expectedJson + ");" +
+					"if (api && api.v1 && api.v1.resolveCHTExternalAppResponse) {" +
+					"  api.v1.resolveCHTExternalAppResponse(" + expectedJson + ");" +
 					"}" +
 					"} catch (error) { " +
 					"  console.error('ChtExternalAppLauncher :: Error on sending intent response to CHT-Core webapp', error);" +

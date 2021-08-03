@@ -12,6 +12,7 @@ import junit.framework.TestCase;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Optional;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk=28)
@@ -63,23 +64,24 @@ public class UtilsTest extends TestCase {
 	@Test
 	public void getUriFromFilePath_withInvalidPath_returnsNull() {
 		//> WHEN
-		Uri uriWithNullPath = Utils.getUriFromFilePath(null);
-		Uri uriWithEmptyPath = Utils.getUriFromFilePath("");
-		Uri uriMissingFile = Utils.getUriFromFilePath("/storage/file.txt");
+		Optional<Uri> uriWithNullPath = Utils.getUriFromFilePath(null);
+		Optional<Uri> uriWithEmptyPath = Utils.getUriFromFilePath("");
+		Optional<Uri> uriMissingFile = Utils.getUriFromFilePath("/storage/file.txt");
 
 		//> THEN
-		assertNull(uriWithNullPath);
-		assertNull(uriWithEmptyPath);
-		assertNull(uriMissingFile);
+		assertFalse(uriWithNullPath.isPresent());
+		assertFalse(uriWithEmptyPath.isPresent());
+		assertFalse(uriMissingFile.isPresent());
 	}
 
 	@Test
 	public void getUriFromFilePath_withContentSchema_returnsUri() {
 		//> WHEN
-		Uri uri = Utils.getUriFromFilePath("content://folder/file.png");
+		Optional<Uri> uriOptional = Utils.getUriFromFilePath("content://folder/file.png");
 
 		//> THEN
-		assertNotNull(uri);
+		assertTrue(uriOptional.isPresent());
+		Uri uri = uriOptional.get();
 		assertEquals("content", uri.getScheme());
 		assertEquals("/file.png", uri.getPath());
 	}
@@ -91,10 +93,11 @@ public class UtilsTest extends TestCase {
 		String filePath = file.getPath();
 
 		//> WHEN
-		Uri uri = Utils.getUriFromFilePath(filePath);
+		Optional<Uri> uriOptional = Utils.getUriFromFilePath(filePath);
 
 		//> THEN
-		assertNotNull(uri);
+		assertTrue(uriOptional.isPresent());
+		Uri uri = uriOptional.get();
 		assertEquals("file", uri.getScheme());
 		assertEquals(filePath, uri.getPath());
 	}
