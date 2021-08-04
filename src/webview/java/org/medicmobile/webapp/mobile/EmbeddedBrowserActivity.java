@@ -277,19 +277,14 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	}
 
 	public void evaluateJavascript(final String js, final boolean useLoadUrl) {
-		container.post(() -> {
-			// `WebView.loadUrl()` seems to be significantly faster than
-			// `WebView.evaluateJavascript()` on Tecno Y4.  We may find
-			// confusing behaviour on Android 4.4+ when using `loadUrl()`
-			// to run JS, in which case we should switch to the second
-			// block.
-			// On switching to XWalkView, we assume the same applies.
-			if(useLoadUrl) { // NOPMD
-				container.loadUrl("javascript:" + js, null);
-			} else {
-				container.evaluateJavascript(js, IGNORE_RESULT);
-			}
-		});
+		int maxUrlSize = 2097100; // Maximum character limit supported for loading as url.
+
+		if (useLoadUrl && js.length() <= maxUrlSize) {
+			// `WebView.loadUrl()` seems to be significantly faster than `WebView.evaluateJavascript()` on Tecno Y4.
+			container.post(() -> container.loadUrl("javascript:" + js, null));
+		} else {
+			container.post(() -> container.evaluateJavascript(js, IGNORE_RESULT));
+		}
 	}
 
 	public void errorToJsConsole(String message, Object... extras) {
