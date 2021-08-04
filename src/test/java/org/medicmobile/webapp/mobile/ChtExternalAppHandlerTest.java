@@ -30,8 +30,6 @@ import static org.mockito.Mockito.when;
 
 import junit.framework.TestCase;
 
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -54,7 +52,7 @@ public class ChtExternalAppHandlerTest extends TestCase {
 	}
 
 	@Test
-	public void processResult_chtExternalAppActivity_returnsScriptCorrectly() {
+	public void processResult_withIntentExtras_returnsScriptCorrectly() {
 		//> GIVEN
 		ChtExternalAppHandler chtExternalAppHandler = new ChtExternalAppHandler(mockContext);
 
@@ -87,7 +85,7 @@ public class ChtExternalAppHandlerTest extends TestCase {
 				"  api.v1.resolveCHTExternalAppResponse(" + expectedJson + ");" +
 				"}" +
 				"} catch (error) { " +
-				"  console.error('ChtExternalAppLauncher :: Error on sending intent response to CHT-Core webapp', error);" +
+				"  console.error('ChtExternalAppHandler :: Error on sending intent response to CHT-Core webapp', error);" +
 				"}";
 
 		//> WHEN
@@ -98,7 +96,7 @@ public class ChtExternalAppHandlerTest extends TestCase {
 	}
 
 	@Test
-	public void processResult_chtExternalAppActivity_returnsScriptCorrectlyWhenNoResponseData() {
+	public void processResult_withoutIntentExtras_returnsScriptCorrectly() {
 		//> GIVEN
 		ChtExternalAppHandler chtExternalAppHandler = new ChtExternalAppHandler(mockContext);
 
@@ -111,7 +109,7 @@ public class ChtExternalAppHandlerTest extends TestCase {
 				"  api.v1.resolveCHTExternalAppResponse(null);" +
 				"}" +
 				"} catch (error) { " +
-				"  console.error('ChtExternalAppLauncher :: Error on sending intent response to CHT-Core webapp', error);" +
+				"  console.error('ChtExternalAppHandler :: Error on sending intent response to CHT-Core webapp', error);" +
 				"}";
 
 		//> WHEN
@@ -122,7 +120,7 @@ public class ChtExternalAppHandlerTest extends TestCase {
 	}
 
 	@Test
-	public void processResult_chtExternalAppActivity_catchesException() {
+	public void processResult_withException_catchesException() {
 		//> GIVEN
 		ChtExternalAppHandler chtExternalAppHandler = new ChtExternalAppHandler(mockContext);
 
@@ -133,73 +131,60 @@ public class ChtExternalAppHandlerTest extends TestCase {
 		String script = chtExternalAppHandler.processResult(RESULT_OK, intent);
 
 		//> THEN
-		assertEquals("console.error('Problem serialising the intent response: java.lang.NullPointerException')", script);
+		assertEquals("console.error('ChtExternalAppHandler :: Problem serialising the intent response.', java.lang.NullPointerException)", script);
 	}
 
 	@Test
-	public void processResult_badResultCode_throwsException() {
-		//> GIVEN
-		Intent intent = mock(Intent.class);
-		ChtExternalAppHandler chtExternalAppHandler = new ChtExternalAppHandler(mockContext);
-
-		//> WHEN
-		try {
-			String script = chtExternalAppHandler.processResult(RESULT_CANCELED, intent);
-			fail("Expected exception did not occurred.");
-
-		} catch (Exception exception) {
-			assertEquals(
-					"ChtExternalAppLauncherActivity :: Bad result code: 0. The external app " +
-							"either: explicitly returned this result, didn't return any result or crashed during the operation.",
-					exception.getMessage()
-			);
-		}
-	}
-
-	@Test
-	public void startIntent_startsIntentCorrectly() throws JSONException {
-		//> GIVEN
-		try (MockedStatic<ChtExternalAppLauncher> launcherMock = mockStatic(ChtExternalAppLauncher.class)) {
+	public void processResult_withBadResultCode_logError() {
+		try (MockedStatic<MedicLog> medicLogMock = mockStatic(MedicLog.class)) {
+			//> GIVEN
+			Intent intent = mock(Intent.class);
 			ChtExternalAppHandler chtExternalAppHandler = new ChtExternalAppHandler(mockContext);
-			doNothing().when(mockContext).startActivityForResult(any(), anyInt());
-
-			Intent intent = new Intent();
-			intent.setAction("an.action");
-			intent.addCategory("a.category");
-			intent.setType("a.type");
-			intent.putExtra("name", "Eric");
-			intent.putExtra("id", 1234);
-			intent.setPackage("org.example");
-			intent.setData(Uri.parse("example://some:action"));
-			intent.setFlags(5);
-			launcherMock.when(() -> ChtExternalAppLauncher.createIntent(any())).thenReturn(intent);
-
-			ChtExternalApp chtExternalApp = new ChtExternalApp(
-					"an.action",
-					"a.category",
-					"a.type",
-					new JSONObject("{ \"name\": \"Eric\", \"id\": 1234 }"),
-					Uri.parse("example://some:action"),
-					"org.example",
-					5
-			);
+			String expectedMessageWarn = "ChtExternalAppHandler :: Bad result code: %s. The external app either: " +
+					"explicitly returned this result, didn't return any result or crashed during the operation.";
+			String expectedMessageConsole = "ChtExternalAppHandler :: Bad result code: " + RESULT_CANCELED + ". The external app either: " +
+					"explicitly returned this result, didn't return any result or crashed during the operation.";
 
 			//> WHEN
-			chtExternalAppHandler.startIntent(chtExternalApp);
+			String script = chtExternalAppHandler.processResult(RESULT_CANCELED, intent);
 
 			//> THEN
-			launcherMock.verify(() -> ChtExternalAppLauncher.createIntent(chtExternalApp));
-			verify(mockContext).startActivityForResult(eq(intent), eq(CHT_EXTERNAL_APP_ACTIVITY_REQUEST_CODE));
+			assertEquals("console.error('" + expectedMessageConsole + "')", script);
+			medicLogMock.verify(() -> MedicLog.warn(eq(chtExternalAppHandler), eq(expectedMessageWarn), eq(RESULT_CANCELED)));
 		}
 	}
 
 	@Test
-	public void startIntent_catchesException() throws JSONException {
+	public void startIntent_withValidIntent_startsIntentCorrectly() {
 		//> GIVEN
-		try (
-			MockedStatic<ChtExternalAppLauncher> launcherMock = mockStatic(ChtExternalAppLauncher.class);
-			MockedStatic<MedicLog> medicLogMock = mockStatic(MedicLog.class);
-		) {
+		ChtExternalApp chtExternalApp = mock(ChtExternalApp.class);
+		ChtExternalAppHandler chtExternalAppHandler = new ChtExternalAppHandler(mockContext);
+		doNothing().when(mockContext).startActivityForResult(any(), anyInt());
+
+		Intent intent = new Intent();
+		intent.setAction("an.action");
+		intent.addCategory("a.category");
+		intent.setType("a.type");
+		intent.putExtra("name", "Eric");
+		intent.putExtra("id", 1234);
+		intent.setPackage("org.example");
+		intent.setData(Uri.parse("example://some:action"));
+		intent.setFlags(5);
+		when(chtExternalApp.createIntent()).thenReturn(intent);
+
+		//> WHEN
+		chtExternalAppHandler.startIntent(chtExternalApp);
+
+		//> THEN
+		verify(chtExternalApp).createIntent();
+		verify(mockContext).startActivityForResult(eq(intent), eq(CHT_EXTERNAL_APP_ACTIVITY_REQUEST_CODE));
+	}
+
+	@Test
+	public void startIntent_withException_catchesException() {
+		try (MockedStatic<MedicLog> medicLogMock = mockStatic(MedicLog.class)) {
+			//> GIVEN
+			ChtExternalApp chtExternalApp = mock(ChtExternalApp.class);
 			ChtExternalAppHandler chtExternalAppHandler = new ChtExternalAppHandler(mockContext);
 			doThrow(ActivityNotFoundException.class).when(mockContext).startActivityForResult(any(), anyInt());
 
@@ -208,27 +193,17 @@ public class ChtExternalAppHandlerTest extends TestCase {
 			intent.addCategory("a.category");
 			intent.setType("a.type");
 			intent.putExtra("name", "Eric");
-			launcherMock.when(() -> ChtExternalAppLauncher.createIntent(any())).thenReturn(intent);
-
-			ChtExternalApp chtExternalApp = new ChtExternalApp(
-					"an.action",
-					"a.category",
-					"a.type",
-					new JSONObject("{ \"name\": \"Eric\" }"),
-					null,
-					null,
-					null
-			);
+			when(chtExternalApp.createIntent()).thenReturn(intent);
 
 			//> WHEN
 			chtExternalAppHandler.startIntent(chtExternalApp);
 
 			//> THEN
-			launcherMock.verify(() -> ChtExternalAppLauncher.createIntent(chtExternalApp));
+			verify(chtExternalApp).createIntent();
 			verify(mockContext).startActivityForResult(eq(intent), eq(CHT_EXTERNAL_APP_ACTIVITY_REQUEST_CODE));
 			medicLogMock.verify(() -> MedicLog.error(
 					any(),
-					eq("ChtExternalAppLauncherActivity :: Error when starting the activity %s %s"),
+					eq("ChtExternalAppHandler :: Error when starting the activity %s %s"),
 					eq(intent),
 					any())
 			);
@@ -237,33 +212,23 @@ public class ChtExternalAppHandlerTest extends TestCase {
 	}
 
 	@Test
-	public void startIntent_requestsPermissions() throws JSONException {
-		//> GIVEN
+	public void startIntent_withoutStoragePermissions_requestsPermissions() {
 		try (
-			MockedStatic<ChtExternalAppLauncher> launcherMock = mockStatic(ChtExternalAppLauncher.class);
-			MockedStatic<MedicLog> medicLogMock = mockStatic(MedicLog.class);
 			MockedStatic<ActivityCompat> activityCompatMock = mockStatic(ActivityCompat.class);
 			MockedStatic<ContextCompat> contextCompatMock = mockStatic(ContextCompat.class);
 		) {
+			//> GIVEN
+			ChtExternalApp chtExternalApp = mock(ChtExternalApp.class);
 			ChtExternalAppHandler chtExternalAppHandler = new ChtExternalAppHandler(mockContext);
 			doNothing().when(mockContext).startActivityForResult(any(), anyInt());
-			launcherMock.when(() -> ChtExternalAppLauncher.createIntent(any())).thenReturn(new Intent());
+			when(chtExternalApp.createIntent()).thenReturn(new Intent());
 			contextCompatMock.when(() -> ContextCompat.checkSelfPermission(any(), anyString())).thenReturn(PERMISSION_DENIED);
-			ChtExternalApp chtExternalApp = new ChtExternalApp(
-					"an.action",
-					"a.category",
-					"a.type",
-					new JSONObject("{ \"name\": \"Eric\" }"),
-					null,
-					null,
-					null
-			);
 
 			//> WHEN
 			chtExternalAppHandler.startIntent(chtExternalApp);
 
 			//> THEN
-			launcherMock.verify(() -> ChtExternalAppLauncher.createIntent(chtExternalApp));
+			verify(chtExternalApp).createIntent();
 			contextCompatMock.verify(() -> ContextCompat.checkSelfPermission(mockContext, READ_EXTERNAL_STORAGE));
 			activityCompatMock.verify(() -> ActivityCompat.requestPermissions(mockContext, new String[]{READ_EXTERNAL_STORAGE}, ACCESS_STORAGE_PERMISSION_REQUEST_CODE));
 			verify(mockContext, never()).startActivityForResult(any(), anyInt());
@@ -272,14 +237,13 @@ public class ChtExternalAppHandlerTest extends TestCase {
 	}
 
 	@Test
-	public void resumeActivity_startsIntentCorrectly() throws JSONException {
-		//> GIVEN
+	public void resumeActivity_withLastIntent_startsIntentCorrectly() {
 		try (
-			MockedStatic<ChtExternalAppLauncher> launcherMock = mockStatic(ChtExternalAppLauncher.class);
-			MockedStatic<MedicLog> medicLogMock = mockStatic(MedicLog.class);
 			MockedStatic<ActivityCompat> activityCompatMock = mockStatic(ActivityCompat.class);
 			MockedStatic<ContextCompat> contextCompatMock = mockStatic(ContextCompat.class);
 		) {
+			//> GIVEN
+			ChtExternalApp chtExternalApp = mock(ChtExternalApp.class);
 			ChtExternalAppHandler chtExternalAppHandler = new ChtExternalAppHandler(mockContext);
 			doNothing().when(mockContext).startActivityForResult(any(), anyInt());
 			contextCompatMock.when(() -> ContextCompat.checkSelfPermission(any(), anyString())).thenReturn(PERMISSION_DENIED);
@@ -289,17 +253,7 @@ public class ChtExternalAppHandlerTest extends TestCase {
 			intent.addCategory("a.category");
 			intent.setType("a.type");
 			intent.putExtra("name", "Eric");
-			launcherMock.when(() -> ChtExternalAppLauncher.createIntent(any())).thenReturn(intent);
-
-			ChtExternalApp chtExternalApp = new ChtExternalApp(
-					"an.action",
-					"a.category",
-					"a.type",
-					new JSONObject("{ \"name\": \"Eric\" }"),
-					null,
-					null,
-					null
-			);
+			when(chtExternalApp.createIntent()).thenReturn(intent);
 
 			chtExternalAppHandler.startIntent(chtExternalApp);
 
@@ -307,7 +261,7 @@ public class ChtExternalAppHandlerTest extends TestCase {
 			chtExternalAppHandler.resumeActivity();
 
 			//> THEN
-			launcherMock.verify(() -> ChtExternalAppLauncher.createIntent(chtExternalApp));
+			verify(chtExternalApp).createIntent();
 			contextCompatMock.verify(() -> ContextCompat.checkSelfPermission(mockContext, READ_EXTERNAL_STORAGE));
 			activityCompatMock.verify(() -> ActivityCompat.requestPermissions(mockContext, new String[]{READ_EXTERNAL_STORAGE}, ACCESS_STORAGE_PERMISSION_REQUEST_CODE));
 			verify(mockContext).startActivityForResult(eq(intent), eq(CHT_EXTERNAL_APP_ACTIVITY_REQUEST_CODE));
@@ -316,7 +270,7 @@ public class ChtExternalAppHandlerTest extends TestCase {
 	}
 
 	@Test
-	public void resumeActivity_doesNothingIfNoLastIntent() {
+	public void resumeActivity_withoutIntent_doesNothing() {
 		//> GIVEN
 		ChtExternalAppHandler chtExternalAppHandler = new ChtExternalAppHandler(mockContext);
 		doNothing().when(mockContext).startActivityForResult(any(), anyInt());

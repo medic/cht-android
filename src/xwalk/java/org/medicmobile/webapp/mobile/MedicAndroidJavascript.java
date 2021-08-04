@@ -236,7 +236,16 @@ public class MedicAndroidJavascript {
 			Uri parsedUri = uri == null ? null : Uri.parse(uri);
 			Integer parsedFlags = flags == null ? null : Integer.parseInt(flags);
 
-			ChtExternalApp chtExternalApp = new ChtExternalApp(action, category, type, parsedExtras, parsedUri, packageName, parsedFlags);
+			ChtExternalApp chtExternalApp = new ChtExternalApp
+					.Builder()
+					.setAction(action)
+					.setCategory(category)
+					.setType(type)
+					.setExtras(parsedExtras)
+					.setUri(parsedUri)
+					.setPackageName(packageName)
+					.setFlags(parsedFlags)
+					.build();
 			this.chtExternalAppHandler.startIntent(chtExternalApp);
 
 		} catch (Exception ex) {

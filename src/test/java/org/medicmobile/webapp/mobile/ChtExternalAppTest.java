@@ -34,11 +34,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk=28)
-public class ChtExternalAppLauncherTest extends TestCase {
+public class ChtExternalAppTest extends TestCase {
 
 	@Rule
 	public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -53,28 +54,30 @@ public class ChtExternalAppLauncherTest extends TestCase {
 		expectedCategoryType.add("a.different.category");
 
 		Uri uri = Uri.parse("example://some:action");
-		ChtExternalApp chtExternalAppUri = new ChtExternalApp(
-				"an.action",
-				"a.category",
-				null, // When sending Uri, automatically type is cleared.
-				new JSONObject("{ \"name\": \"Eric\", \"id\": 1234 }"),
-				uri,
-				"org.example",
-				5
-		);
-		ChtExternalApp chtExternalAppType = new ChtExternalApp(
-				"an.different.action",
-				"a.different.category",
-				"a.type",
-				new JSONObject("{ \"name\": \"Anna\", \"details\": { \"phone\": \"999 999 9999\" } }"),
-				null, // When sending type, automatically data (Uri) is cleared.
-				"org.another.example",
-				0
-		);
+		ChtExternalApp chtExternalAppUri = new ChtExternalApp
+				.Builder()
+				.setAction("an.action")
+				.setCategory("a.category")
+				.setType(null) // When sending Uri, automatically type is cleared.
+				.setExtras(new JSONObject("{ \"name\": \"Eric\", \"id\": 1234 }"))
+				.setUri(uri)
+				.setPackageName("org.example")
+				.setFlags(5)
+				.build();
+		ChtExternalApp chtExternalAppType = new ChtExternalApp
+				.Builder()
+				.setAction("an.different.action")
+				.setCategory("a.different.category")
+				.setType("a.type")
+				.setExtras(new JSONObject("{ \"name\": \"Anna\", \"details\": { \"phone\": \"999 999 9999\" } }"))
+				.setUri(null) // When sending type, automatically data (Uri) is cleared.
+				.setPackageName("org.another.example")
+				.setFlags(0)
+				.build();
 
 		//> WHEN
-		Intent intentUri = ChtExternalAppLauncher.createIntent(chtExternalAppUri);
-		Intent intentType = ChtExternalAppLauncher.createIntent(chtExternalAppType);
+		Intent intentUri = chtExternalAppUri.createIntent();
+		Intent intentType = chtExternalAppType.createIntent();
 
 		//> THEN
 		assertEquals("an.action", intentUri.getAction());
@@ -99,10 +102,12 @@ public class ChtExternalAppLauncherTest extends TestCase {
 	@Test
 	public void createIntent_withNullAttributes_returnsDefaultIntentCorrectly() {
 		//> GIVEN
-		ChtExternalApp chtExternalApp = new ChtExternalApp(null, null, null, null, null, null, null);
+		ChtExternalApp chtExternalApp = new ChtExternalApp
+				.Builder()
+				.build();
 
 		//> WHEN
-		Intent intentUri = ChtExternalAppLauncher.createIntent(chtExternalApp);
+		Intent intentUri = chtExternalApp.createIntent();
 
 		//> THEN
 		assertNull(intentUri.getAction());
@@ -134,12 +139,18 @@ public class ChtExternalAppLauncherTest extends TestCase {
 		JSONObject singlesExtras = new JSONObject(singlesJson);
 		JSONObject arraysExtras = new JSONObject(arraysJson);
 
-		ChtExternalApp chtExternalAppSingles = new ChtExternalApp(null, null, null, singlesExtras, null, null, null);
-		ChtExternalApp chtExternalAppArrays = new ChtExternalApp(null, null, null, arraysExtras, null, null, null);
+		ChtExternalApp chtExternalAppSingles = new ChtExternalApp
+				.Builder()
+				.setExtras(singlesExtras)
+				.build();
+		ChtExternalApp chtExternalAppArrays = new ChtExternalApp
+				.Builder()
+				.setExtras(arraysExtras)
+				.build();
 
 		//> WHEN
-		Intent singlesIntent = ChtExternalAppLauncher.createIntent(chtExternalAppSingles);
-		Intent arraysIntent = ChtExternalAppLauncher.createIntent(chtExternalAppArrays);
+		Intent singlesIntent = chtExternalAppSingles.createIntent();
+		Intent arraysIntent = chtExternalAppArrays.createIntent();
 
 		//> THEN
 		Bundle singleResult = singlesIntent.getExtras();
@@ -188,10 +199,13 @@ public class ChtExternalAppLauncherTest extends TestCase {
 				"}";
 		JSONObject extras = new JSONObject(json);
 
-		ChtExternalApp chtExternalApp = new ChtExternalApp(null, null, null, extras, null, null, null);
+		ChtExternalApp chtExternalApp = new ChtExternalApp
+				.Builder()
+				.setExtras(extras)
+				.build();
 
 		//> WHEN
-		Intent intent = ChtExternalAppLauncher.createIntent(chtExternalApp);
+		Intent intent = chtExternalApp.createIntent();
 
 		//> THEN
 		Bundle result = intent.getExtras();
@@ -220,10 +234,13 @@ public class ChtExternalAppLauncherTest extends TestCase {
 	public void createIntent_withEmptyData_setExtrasCorrectly() {
 		//> GIVEN
 		JSONObject extras = new JSONObject();
-		ChtExternalApp chtExternalApp = new ChtExternalApp(null, null, null, extras, null, null, null);
+		ChtExternalApp chtExternalApp = new ChtExternalApp
+				.Builder()
+				.setExtras(extras)
+				.build();
 
 		//> WHEN
-		Intent intent = ChtExternalAppLauncher.createIntent(chtExternalApp);
+		Intent intent = chtExternalApp.createIntent();
 
 		//> THEN
 		Bundle result = intent.getExtras();
@@ -231,7 +248,7 @@ public class ChtExternalAppLauncherTest extends TestCase {
 	}
 
 	@Test
-	public void processResponse_withSimpleData_buildScriptCorrectly() {
+	public void processResponse_withSimpleData_buildJsonCorrectly() {
 		//> GIVEN
 		Activity context = mock(Activity.class);
 		Intent intent = new Intent();
@@ -260,24 +277,18 @@ public class ChtExternalAppLauncherTest extends TestCase {
 				"\"a.double.array\":[2.8,5.5]" +
 				"}";
 
-		String expectedScript = "try {" +
-				"const api = window.CHTCore.AndroidApi;" +
-				"if (api && api.v1 && api.v1.resolveCHTExternalAppResponse) {" +
-				"  api.v1.resolveCHTExternalAppResponse(" + expectedJsonData + ");" +
-				"}" +
-				"} catch (error) { " +
-				"  console.error('ChtExternalAppLauncher :: Error on sending intent response to CHT-Core webapp', error);" +
-				"}";
-
 		//> WHEN
-		String script = ChtExternalAppLauncher.processResponse(intent, context);
+		Optional<JSONObject> json = new ChtExternalApp
+				.Response(intent, context)
+				.getData();
 
 		//> THEN
-		assertEquals(expectedScript, script);
+		assertTrue(json.isPresent());
+		assertEquals(expectedJsonData, json.get().toString());
 	}
 
 	@Test
-	public void processResponse_withNestedObjects_buildScriptCorrectly() {
+	public void processResponse_withNestedObjects_buildJsonCorrectly() {
 		//> GIVEN
 		Activity context = mock(Activity.class);
 		Intent intent = new Intent();
@@ -339,46 +350,33 @@ public class ChtExternalAppLauncherTest extends TestCase {
 				"}" +
 				"}";
 
-		String expectedScript = "try {" +
-				"const api = window.CHTCore.AndroidApi;" +
-				"if (api && api.v1 && api.v1.resolveCHTExternalAppResponse) {" +
-				"  api.v1.resolveCHTExternalAppResponse(" + expectedJsonData + ");" +
-				"}" +
-				"} catch (error) { " +
-				"  console.error('ChtExternalAppLauncher :: Error on sending intent response to CHT-Core webapp', error);" +
-				"}";
-
 		//> WHEN
-		String script = ChtExternalAppLauncher.processResponse(intent, context);
+		Optional<JSONObject> json = new ChtExternalApp
+				.Response(intent, context)
+				.getData();
 
 		//> THEN
-		assertEquals(expectedScript, script);
+		assertTrue(json.isPresent());
+		assertEquals(expectedJsonData, json.get().toString());
 	}
 
 	@Test
-	public void processResponse_withNoData_buildScriptCorrectly() {
+	public void processResponse_withNoData_returnsEmpty() {
 		//> GIVEN
 		Activity context = mock(Activity.class);
 		Intent intent = new Intent();
 
-		String expectedScript = "try {" +
-				"const api = window.CHTCore.AndroidApi;" +
-				"if (api && api.v1 && api.v1.resolveCHTExternalAppResponse) {" +
-				"  api.v1.resolveCHTExternalAppResponse(null);" +
-				"}" +
-				"} catch (error) { " +
-				"  console.error('ChtExternalAppLauncher :: Error on sending intent response to CHT-Core webapp', error);" +
-				"}";
-
 		//> WHEN
-		String script = ChtExternalAppLauncher.processResponse(intent, context);
+		Optional<JSONObject> json = new ChtExternalApp
+				.Response(intent, context)
+				.getData();
 
 		//> THEN
-		assertEquals(expectedScript, script);
+		assertFalse(json.isPresent());
 	}
 
 	@Test
-	public void processResponse_withEmptyData_buildScriptCorrectly() {
+	public void processResponse_withEmptyData_buildJsonCorrectly() {
 		//> GIVEN
 		Activity context = mock(Activity.class);
 		Intent intentEmptyObj = new Intent();
@@ -390,35 +388,23 @@ public class ChtExternalAppLauncherTest extends TestCase {
 		String expectedEmptyObj = "{\"stats\":{}}";
 		String expectedEmptyArray = "{\"stats\":[]}";
 
-		String expectedScriptEmptyObj = "try {" +
-				"const api = window.CHTCore.AndroidApi;" +
-				"if (api && api.v1 && api.v1.resolveCHTExternalAppResponse) {" +
-				"  api.v1.resolveCHTExternalAppResponse(" + expectedEmptyObj + ");" +
-				"}" +
-				"} catch (error) { " +
-				"  console.error('ChtExternalAppLauncher :: Error on sending intent response to CHT-Core webapp', error);" +
-				"}";
-
-		String expectedScriptEmptyArray = "try {" +
-				"const api = window.CHTCore.AndroidApi;" +
-				"if (api && api.v1 && api.v1.resolveCHTExternalAppResponse) {" +
-				"  api.v1.resolveCHTExternalAppResponse(" + expectedEmptyArray + ");" +
-				"}" +
-				"} catch (error) { " +
-				"  console.error('ChtExternalAppLauncher :: Error on sending intent response to CHT-Core webapp', error);" +
-				"}";
-
 		//> WHEN
-		String scriptEmptyObj = ChtExternalAppLauncher.processResponse(intentEmptyObj, context);
-		String scriptEmptyArray = ChtExternalAppLauncher.processResponse(intentEmptyArray, context);
+		Optional<JSONObject> jsonEmptyObj = new ChtExternalApp
+				.Response(intentEmptyObj, context)
+				.getData();
+		Optional<JSONObject> jsonEmptyArray = new ChtExternalApp
+				.Response(intentEmptyArray, context)
+				.getData();
 
 		//> THEN
-		assertEquals(expectedScriptEmptyObj, scriptEmptyObj);
-		assertEquals(expectedScriptEmptyArray, scriptEmptyArray);
+		assertTrue(jsonEmptyObj.isPresent());
+		assertEquals(expectedEmptyObj, jsonEmptyObj.get().toString());
+		assertTrue(jsonEmptyArray.isPresent());
+		assertEquals(expectedEmptyArray, jsonEmptyArray.get().toString());
 	}
 
 	@Test
-	public void processResponse_withBitmapImages_buildScriptCorrectly() {
+	public void processResponse_withBitmapImages_buildJsonCorrectly() {
 		//> GIVEN
 		Activity context = mock(Activity.class);
 		Bitmap bitmap = Bitmap.createBitmap(40, 40, Bitmap.Config.ARGB_8888);
@@ -437,24 +423,18 @@ public class ChtExternalAppLauncherTest extends TestCase {
 				"HiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6\\/9oAD" +
 				"AMBAAIRAxEAPwD5\\/ooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigD\\/\\/Z\"}";
 
-		String expectedScript = "try {" +
-				"const api = window.CHTCore.AndroidApi;" +
-				"if (api && api.v1 && api.v1.resolveCHTExternalAppResponse) {" +
-				"  api.v1.resolveCHTExternalAppResponse(" + expectedJson + ");" +
-				"}" +
-				"} catch (error) { " +
-				"  console.error('ChtExternalAppLauncher :: Error on sending intent response to CHT-Core webapp', error);" +
-				"}";
-
 		//> WHEN
-		String script = ChtExternalAppLauncher.processResponse(intent, context);
+		Optional<JSONObject> json = new ChtExternalApp
+				.Response(intent, context)
+				.getData();
 
 		//> THEN
-		assertEquals(expectedScript, script);
+		assertTrue(json.isPresent());
+		assertEquals(expectedJson, json.get().toString());
 	}
 
 	@Test
-	public void processResponse_withUriImagePath_buildScriptCorrectly() throws IOException {
+	public void processResponse_withUriImagePath_buildJsonCorrectly() throws IOException {
 		//> GIVEN
 		try (MockedStatic<BitmapFactory> bitmapFactoryMock = mockStatic(BitmapFactory.class)) {
 			File fileJpg = temporaryFolder.newFile("image.jpg");
@@ -499,20 +479,15 @@ public class ChtExternalAppLauncherTest extends TestCase {
 						"\"just.text\":\"Some normal text.\"" +
 					"}";
 
-			String expectedScript = "try {" +
-					"const api = window.CHTCore.AndroidApi;" +
-					"if (api && api.v1 && api.v1.resolveCHTExternalAppResponse) {" +
-					"  api.v1.resolveCHTExternalAppResponse(" + expectedJson + ");" +
-					"}" +
-					"} catch (error) { " +
-					"  console.error('ChtExternalAppLauncher :: Error on sending intent response to CHT-Core webapp', error);" +
-					"}";
-
 			//> WHEN
-			String script = ChtExternalAppLauncher.processResponse(intent, context);
+			Optional<JSONObject> json = new ChtExternalApp
+					.Response(intent, context)
+					.getData();
 
 			//> THEN
-			assertEquals(expectedScript, script);
+			assertTrue(json.isPresent());
+			assertEquals(expectedJson, json.get().toString());
 		}
 	}
+
 }

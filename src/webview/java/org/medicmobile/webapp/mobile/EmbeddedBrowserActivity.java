@@ -307,9 +307,9 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	}
 
 	private void processChtExternalAppResult(int resultCode, Intent intentData) {
-		String provisionScript = this.chtExternalAppHandler.processResult(resultCode, intentData);
-		trace(this, "ChtExternalAppHandler :: Executing JavaScript: %s", provisionScript);
-		evaluateJavascript(provisionScript);
+		String script = this.chtExternalAppHandler.processResult(resultCode, intentData);
+		trace(this, "ChtExternalAppHandler :: Executing JavaScript: %s", script);
+		evaluateJavascript(script);
 	}
 
 	private void configureUseragent() {
