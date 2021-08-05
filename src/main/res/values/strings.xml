@@ -40,8 +40,8 @@
 	<string name="tstUnlock_confirmFailed">Code does not match - try again</string>
 
 	<string name="txtFreeSpaceWarning">Space is running low on this device. CHT-Android may not be able to start, or may perform strangely.</string>
-	<string name="txtFreeSpaceCurrent">Current space:\n%s MB</string>
-	<string name="txtFreeSpaceRecommended">Recommended space:\n%s MB</string>
+	<string name="txtFreeSpaceCurrent">Current space:\n%d MB</string>
+	<string name="txtFreeSpaceRecommended">Recommended space:\n%d MB</string>
 
 	<string name="promptChooseFile">Choose file</string>
 	<string name="promptChooseImage">Choose image</string>
