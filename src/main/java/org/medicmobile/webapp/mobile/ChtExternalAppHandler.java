@@ -42,7 +42,7 @@ public class ChtExternalAppHandler {
 			Optional<JSONObject> json = new ChtExternalApp
 					.Response(intent, this.context)
 					.getData();
-			String data = json.isPresent() ? json.get().toString() : null;
+			String data = json.map(JSONObject::toString).orElse(null);;
 			return makeJavaScript(data);
 
 		} catch (Exception exception) {

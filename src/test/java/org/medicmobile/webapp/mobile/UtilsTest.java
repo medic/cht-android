@@ -1,5 +1,9 @@
 package org.medicmobile.webapp.mobile;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import android.net.Uri;
 
 import org.junit.*;
@@ -8,15 +12,13 @@ import org.junit.runner.*;
 import org.robolectric.*;
 import org.robolectric.annotation.*;
 
-import junit.framework.TestCase;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.Optional;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk=28)
-public class UtilsTest extends TestCase {
+public class UtilsTest {
 
 	@Rule
 	public TemporaryFolder temporaryFolder = new TemporaryFolder();

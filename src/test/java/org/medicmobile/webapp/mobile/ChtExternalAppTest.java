@@ -1,5 +1,9 @@
 package org.medicmobile.webapp.mobile;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
@@ -13,8 +17,6 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.ParcelFileDescriptor;
-
-import junit.framework.TestCase;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -39,7 +41,7 @@ import java.util.Set;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk=28)
-public class ChtExternalAppTest extends TestCase {
+public class ChtExternalAppTest {
 
 	@Rule
 	public TemporaryFolder temporaryFolder = new TemporaryFolder();

@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 
+import static org.junit.Assert.assertEquals;
 import static org.medicmobile.webapp.mobile.EmbeddedBrowserActivity.ACCESS_STORAGE_PERMISSION_REQUEST_CODE;
 import static org.medicmobile.webapp.mobile.EmbeddedBrowserActivity.CHT_EXTERNAL_APP_ACTIVITY_REQUEST_CODE;
 import static org.mockito.ArgumentMatchers.any;
@@ -28,8 +29,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import junit.framework.TestCase;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -39,10 +38,9 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
-
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk=28)
-public class ChtExternalAppHandlerTest extends TestCase {
+public class ChtExternalAppHandlerTest {
 	@Mock
 	Activity mockContext;
 

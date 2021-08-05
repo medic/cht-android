@@ -19,6 +19,7 @@ import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -339,15 +340,16 @@ public class ChtExternalApp {
 			return null;
 		}
 
-		private String parseBitmapImageToBase64(Bitmap imgBitmap) {
-			trace(this, "ChtExternalApp :: Compressing image file.");
-			ByteArrayOutputStream outputFile = new ByteArrayOutputStream();
-			imgBitmap.compress(Bitmap.CompressFormat.JPEG, 75, outputFile);
+		private String parseBitmapImageToBase64(Bitmap imgBitmap) throws IOException {
+			try (ByteArrayOutputStream outputFile = new ByteArrayOutputStream()) {
+				trace(this, "ChtExternalApp :: Compressing image file.");
+				imgBitmap.compress(Bitmap.CompressFormat.JPEG, 75, outputFile);
 
-			trace(this, "ChtExternalApp :: Encoding image file to Base64.");
-			byte[] imageBytes = outputFile.toByteArray();
+				trace(this, "ChtExternalApp :: Encoding image file to Base64.");
+				byte[] imageBytes = outputFile.toByteArray();
 
-			return Base64.encodeToString(imageBytes, Base64.NO_WRAP);
+				return Base64.encodeToString(imageBytes, Base64.NO_WRAP);
+			}
 		}
 	}
 }
