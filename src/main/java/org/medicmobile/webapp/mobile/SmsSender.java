@@ -107,6 +107,7 @@ class SmsSender {
 		return intents;
 	}
 
+	@SuppressLint("UnspecifiedImmutableFlag")
 	private PendingIntent intentFor(String intentType, String id, String destination, String content, int partIndex, int totalParts) {
 		Intent intent = new Intent(intentType);
 		intent.putExtra("id", id);
