@@ -28,7 +28,7 @@
       android:allowBackup="false"
       android:largeHeap="true"
       tools:ignore="GoogleAppIndexingWarning,LockedOrientationActivity,Instantiatable">
-    <activity android:name="StartupActivity">
+    <activity android:name="StartupActivity" android:exported="true">
       <intent-filter>
         <action android:name="android.intent.action.MAIN"/>
         <category android:name="android.intent.category.LAUNCHER" />
@@ -50,7 +50,8 @@
     <activity android:name="RequestPermissionActivity"
         android:screenOrientation="portrait"/>
     <activity android:name="AppUrlIntentActivity"
-        android:launchMode="singleInstance">
+        android:launchMode="singleInstance"
+        android:exported="true">
       <intent-filter>
         <action android:name="android.intent.action.VIEW" />
         <category android:name="android.intent.category.DEFAULT" />
