@@ -210,6 +210,11 @@ jobs:
       with:
         lane: build
         options: '{ "flavor": "itech_malawi" }'
+    - name: Assemble alerte_niger
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: build
+        options: '{ "flavor": "alerte_niger" }'
 
     - name: GitHub release
       uses: softprops/action-gh-release@v1
