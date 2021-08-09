@@ -336,6 +336,10 @@ android {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.itech_malawi'
     }
+    alerte_niger {
+      dimension = 'brand'
+      applicationId = 'org.medicmobile.webapp.mobile.alerte_niger'
+    }
   }
 
   splits {
