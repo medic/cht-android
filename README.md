@@ -5,7 +5,7 @@ The cht-android application is a thin wrapper to load the [CHT Core Framework](h
 
 # Android App Bundles
 
-The build script produces multiple AABs for publishing to the **Google Play Store**, so the generated `.aab` files need to be uploaded instead of the `.apk` files if the Play Store require so. For each flavor two bundles are generated, one for each rendering engine: _Webview_ and _Xwalk_.
+The build script produces multiple AABs for publishing to the **Google Play Store**, so the generated `.aab` files need to be uploaded instead of the `.apk` files if the Play Store require so. Old apps published for the first time before Aug 1,  2021 can be updated with the APK format. For each flavor two bundles are generated, one for each rendering engine: _Webview_ and _Xwalk_.
 
 The AABs are named as follows: `cht-android-{version}-{brand}-{rendering-engine}-release.aab`
 
@@ -107,7 +107,7 @@ This release changes the way in which location data is collected to better align
 
 # Development
 
-1. Install the [Android SDK](https://developer.android.com/studio#command-tools) and Java 8+ (it works with the OpenJDK versions).
+1. Install the [Android SDK](https://developer.android.com/studio#command-tools) and Java 11+ (it works with the OpenJDK versions).
 2. Clone the repository.
 3. Plug in your phone. Check it's detected with `adb devices`.
 4. Execute: `make` (will also push app into the phone). Use `make xwalk` for the Xwalk version instead.
@@ -176,12 +176,29 @@ To build and deploy APKs for all configured brands:
 
 To add a new brand:
 
-1. add `productFlavors { <new_brand> { ... } }` in `build.gradle`.
-2. add icons, strings etc. in `src/<new_brand>`.
-3. to enable automated deployments, add the `new_brand` to `.github/workflows/publish.yml`.
-
+1. Add `productFlavors { <new_brand> { ... } }` in `build.gradle`.
+2. Add icons, strings etc. in `src/<new_brand>`.
+3. To enable automated builds (APKs), add the `new_brand` to `.github/workflows/publish.yml`.
+   3.1. Older apps that only needs APKs for publishing in the Play Store (or are installed in other ways like sideloading) only need to add an _Assemble_ section like this:
+      ```yml
+          - name: Assemble new_brand
+            uses: maierj/fastlane-action@v1.4.0
+            with:
+              lane: build
+              options: '{ "flavor": "new_brand" }'
+      ```
+   3.2. Newer apps need to be published in the Play Store with the bundle files (AABs), so you need to also add in the same file a _Bundle_ section like this:
+      ```yml
+          - name: Bundle new_brand
+            uses: maierj/fastlane-action@v1.4.0
+            with:
+              lane: bundle
+              options: '{ "flavor": "new_brand" }'
+      ```
 
 # Releasing
+
+These are the steps to follow when creating a new release of an existing app in the Play Store:
 
 ## Alpha for release testing
 
