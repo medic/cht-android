@@ -6,6 +6,7 @@ abi = x86
 KEYTOOL = keytool
 OPENSSL = openssl
 JAVA = java
+BASE16 = base16
 RM_KEY_OPTS = -i
 APKSIGNER = apksigner
 
@@ -104,6 +105,7 @@ keyprint: check-org check-env
 
 # Print info about the key signature used in the apk release file
 keyprint-apk:
+	$(if $(shell which $(APKSIGNER)),,$(error "No command '$(APKSIGNER)' in $$PATH"))
 	$(eval APK := $(shell find build/outputs/apk -name \*-release.apk | head -n1))
 	${APKSIGNER} verify -v --print-certs ${APK}
 
@@ -123,7 +125,7 @@ keyunpack: check-org
 	tar -xf secrets/secrets-${org}.tar.gz
 
 keysetup:
-	$(eval EXEC_CERT_REQUIRED = ${JAVA} ${KEYTOOL} ${APKSIGNER} ${OPENSSL})
+	$(eval EXEC_CERT_REQUIRED = ${JAVA} ${KEYTOOL} ${BASE16} ${OPENSSL})
 	$(info Verifing the following executables are in the $$PATH: ${EXEC_CERT_REQUIRED} ...)
 	$(foreach exec,$(EXEC_CERT_REQUIRED),\
 	        $(if $(shell which $(exec)),,$(error "No command '$(exec)' in $$PATH")))
@@ -164,7 +166,7 @@ ifndef ANDROID_SECRETS_IV
 endif
 
 ${org}.keystore: check-org
-	$(eval ANDROID_KEYSTORE_PASSWORD := $(shell base16 /dev/urandom | head -n 1 -c 16))
+	$(eval ANDROID_KEYSTORE_PASSWORD := $(shell ${BASE16} /dev/urandom | head -n 1 -c 16))
 	${KEYTOOL} -genkey -storepass ${ANDROID_KEYSTORE_PASSWORD} -v -keystore ${org}.keystore -alias medicmobile -keyalg RSA -keysize 2048 -validity 9125
 	chmod go-rw ${org}.keystore
 
@@ -181,18 +183,19 @@ pepk.jar:
 	curl https://www.gstatic.com/play-apps-publisher-rapid/signing-tool/prod/pepk.jar -o pepk.jar
 
 secrets/secrets-${org}.tar.gz.enc: secrets/secrets-${org}.tar.gz
-	$(eval ANDROID_SECRETS_IV := $(shell base16 /dev/urandom | head -n 1 -c 32))
-	$(eval ANDROID_SECRETS_KEY := $(shell base16 /dev/urandom | head -n 1 -c 64))
+	$(eval ANDROID_SECRETS_IV := $(shell ${BASE16} /dev/urandom | head -n 1 -c 32))
+	$(eval ANDROID_SECRETS_KEY := $(shell ${BASE16} /dev/urandom | head -n 1 -c 64))
 	$(eval ANDROID_KEYSTORE_PATH := $(org).keystore)
 	$(eval ANDROID_KEY_ALIAS := medicmobile)
 	${OPENSSL} aes-256-cbc -iv ${ANDROID_SECRETS_IV} -K ${ANDROID_SECRETS_KEY} -in secrets/secrets-${org}.tar.gz -out secrets/secrets-${org}.tar.gz.enc
 	chmod go-rw secrets/secrets-${org}.tar.gz.enc
 	$(info )
-	$(info #######################################      Secrets!    #######################################)
-	$(info #                                                                                              #)
-	$(info # The following environment variables needs to be added to the CI environment                  #)
-	$(info # (Github Actions), and to to your local environment if you also want                          #)
-	$(info # to sign APK or AAB files locally:                                                            #)
+	$(info ###########################################      Secrets!    ###########################################)
+	$(info #                                                                                                      #)
+	$(info # The following environment variables needs to be added to the CI environment                          #)
+	$(info # (Github Actions), and to to your local environment if you also want                                  #)
+	$(info # to sign APK or AAB files locally:                                                                    #)
+	$(info #                                                                                                      #)
 	$(info )
 	$(info export ANDROID_KEYSTORE_PASSWORD_$(ORG_UPPER)=$(ANDROID_KEYSTORE_PASSWORD))
 	$(info export ANDROID_KEY_PASSWORD_$(ORG_UPPER)=$(ANDROID_KEYSTORE_PASSWORD))
@@ -201,8 +204,10 @@ secrets/secrets-${org}.tar.gz.enc: secrets/secrets-${org}.tar.gz
 	$(info export ANDROID_KEYSTORE_PATH_$(ORG_UPPER)=$(ANDROID_KEYSTORE_PATH))
 	$(info export ANDROID_KEY_ALIAS_$(ORG_UPPER)=$(ANDROID_KEY_ALIAS))
 	$(info )
-	$(info #                                                                                              #)
-	$(info # NOTE: *keep them secret !!*                                                                  #)
-	$(info #                                                                                              #)
-	$(info #######################################  End of Secrets  #######################################)
+	$(info #)
+	$(info # The file secrets/secrets-${org}.tar.gz.enc was created an has to be added to the git)
+	$(info # repository (don't worry, it's encrypted with some of the keys above).                                #)
+	$(info # NOTE: *keep the environment variables secret !!*                                                     #)
+	$(info #                                                                                                      #)
+	$(info ###########################################  End of Secrets  ###########################################)
 	$(info )
