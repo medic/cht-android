@@ -38,17 +38,25 @@ clean:
 clean-apks:
 	rm -rf build/outputs/apk/
 
-assemble:
-	${GRADLE} ${GRADLE_OPTS} assemble${flavor}
-assemble-all:
-	${GRADLE} ${GRADLE_OPTS} assembleRelease
+assemble: check-env
+	ANDROID_KEYSTORE_PATH=${ANDROID_KEYSTORE_PATH} ANDROID_KEY_ALIAS=${ANDROID_KEY_ALIAS} \
+	ANDROID_KEYSTORE_PASSWORD=${ANDROID_KEYSTORE_PASSWORD} ANDROID_KEY_PASSWORD=${ANDROID_KEY_PASSWORD} \
+	        ${GRADLE} ${GRADLE_OPTS} assemble${flavor}
+assemble-all: check-env
+	ANDROID_KEYSTORE_PATH=${ANDROID_KEYSTORE_PATH} ANDROID_KEY_ALIAS=${ANDROID_KEY_ALIAS} \
+	ANDROID_KEYSTORE_PASSWORD=${ANDROID_KEYSTORE_PASSWORD} ANDROID_KEY_PASSWORD=${ANDROID_KEY_PASSWORD} \
+	        ${GRADLE} ${GRADLE_OPTS} assembleRelease
 assemble-all-debug:
 	${GRADLE} ${GRADLE_OPTS} assembleDebug
 
-bundle:
-	${GRADLE} ${GRADLE_OPTS} bundle${flavor}Release
-bundle-all:
-	${GRADLE} ${GRADLE_OPTS} bundleRelease
+bundle: check-env
+	ANDROID_KEYSTORE_PATH=${ANDROID_KEYSTORE_PATH} ANDROID_KEY_ALIAS=${ANDROID_KEY_ALIAS} \
+	ANDROID_KEYSTORE_PASSWORD=${ANDROID_KEYSTORE_PASSWORD} ANDROID_KEY_PASSWORD=${ANDROID_KEY_PASSWORD} \
+	        ${GRADLE} ${GRADLE_OPTS} bundle${flavor}Release
+bundle-all: check-env
+	ANDROID_KEYSTORE_PATH=${ANDROID_KEYSTORE_PATH} ANDROID_KEY_ALIAS=${ANDROID_KEY_ALIAS} \
+	ANDROID_KEYSTORE_PASSWORD=${ANDROID_KEYSTORE_PASSWORD} ANDROID_KEY_PASSWORD=${ANDROID_KEY_PASSWORD} \
+	        ${GRADLE} ${GRADLE_OPTS} bundleRelease
 
 uninstall-all:
 	${GRADLE} uninstallAll
@@ -119,6 +127,9 @@ ifdef org
 endif
 
 check-env:
+ifdef org
+	$(eval ORG_UPPER := $(shell echo $(org) | tr [:lower:] [:upper:]))
+endif
 ifndef ANDROID_SECRETS_IV
 	$(eval VARNAME=ANDROID_SECRETS_IV_${ORG_UPPER})
 	$(eval ANDROID_SECRETS_IV := $(shell echo ${${VARNAME}}))
@@ -126,6 +137,12 @@ ifndef ANDROID_SECRETS_IV
 	$(eval ANDROID_SECRETS_KEY := $(shell echo ${${VARNAME}}))
 	$(eval VARNAME=ANDROID_KEYSTORE_PASSWORD_${ORG_UPPER})
 	$(eval ANDROID_KEYSTORE_PASSWORD := $(shell echo ${${VARNAME}}))
+	$(eval VARNAME=ANDROID_KEY_PASSWORD_${ORG_UPPER})
+	$(eval ANDROID_KEY_PASSWORD := $(shell echo ${${VARNAME}}))
+	$(eval VARNAME=ANDROID_KEY_ALIAS_${ORG_UPPER})
+	$(eval ANDROID_KEY_ALIAS := $(shell echo ${${VARNAME}}))
+	$(eval VARNAME=ANDROID_KEYSTORE_PATH_${ORG_UPPER})
+	$(eval ANDROID_KEYSTORE_PATH := $(shell echo ${${VARNAME}}))
 endif
 
 ${org}.keystore: check-org
@@ -147,33 +164,26 @@ pepk.jar:
 secrets/secrets-${org}.tar.gz.enc: secrets/secrets-${org}.tar.gz
 	$(eval ANDROID_SECRETS_IV := $(shell base16 /dev/urandom | head -n 1 -c 32))
 	$(eval ANDROID_SECRETS_KEY := $(shell base16 /dev/urandom | head -n 1 -c 64))
+	$(eval ANDROID_KEYSTORE_PATH := $(org).keystore)
+	$(eval ANDROID_KEY_ALIAS := medicmobile)
 	${OPENSSL} aes-256-cbc -iv ${ANDROID_SECRETS_IV} -K ${ANDROID_SECRETS_KEY} -in secrets/secrets-${org}.tar.gz -out secrets/secrets-${org}.tar.gz.enc
 	chmod go-rw secrets/secrets-${org}.tar.gz.enc
 	$(info )
-	$(info ######################################      Secrets!    ######################################)
-	$(info #                                                                                            #)
-	$(info # The following environment variables needs to be added to the CI                            #)
-	$(info # environment (Github Actions):)
+	$(info #######################################      Secrets!    #######################################)
+	$(info #                                                                                              #)
+	$(info # The following environment variables needs to be added to the CI environment                  #)
+	$(info # (Github Actions), and to to your local environment if you also want                          #)
+	$(info # to sign APK or AAB files locally:                                                            #)
 	$(info )
-	$(info ANDROID_KEYSTORE_PASSWORD_$(ORG_UPPER)=$(ANDROID_KEYSTORE_PASSWORD))
-	$(info ANDROID_KEY_PASSWORD_$(ORG_UPPER)=$(ANDROID_KEYSTORE_PASSWORD))
-	$(info ANDROID_SECRETS_IV_$(ORG_UPPER)=$(ANDROID_SECRETS_IV))
-	$(info ANDROID_SECRETS_KEY_$(ORG_UPPER)=$(ANDROID_SECRETS_KEY))
-	$(info ANDROID_KEYSTORE_PATH_$(ORG_UPPER)=$(org).keystore)
+	$(info export ANDROID_KEYSTORE_PASSWORD_$(ORG_UPPER)=$(ANDROID_KEYSTORE_PASSWORD))
+	$(info export ANDROID_KEY_PASSWORD_$(ORG_UPPER)=$(ANDROID_KEYSTORE_PASSWORD))
+	$(info export ANDROID_SECRETS_IV_$(ORG_UPPER)=$(ANDROID_SECRETS_IV))
+	$(info export ANDROID_SECRETS_KEY_$(ORG_UPPER)=$(ANDROID_SECRETS_KEY))
+	$(info export ANDROID_KEYSTORE_PATH_$(ORG_UPPER)=$(ANDROID_KEYSTORE_PATH))
+	$(info export ANDROID_KEY_ALIAS_$(ORG_UPPER)=$(ANDROID_KEY_ALIAS))
 	$(info )
-	$(info #)
-	$(info # If you also want to sign APK or AAB files locally, store them as)
-	$(info # local variables without the _$(ORG_UPPER) prefix as follow (and *keep them secret !!*):)
-	$(info #)
-	$(info )
-	$(info export ANDROID_KEYSTORE_PASSWORD=$(ANDROID_KEYSTORE_PASSWORD))
-	$(info export ANDROID_KEY_PASSWORD=$(ANDROID_KEYSTORE_PASSWORD))
-	$(info export ANDROID_SECRETS_IV=$(ANDROID_SECRETS_IV))
-	$(info export ANDROID_SECRETS_KEY=$(ANDROID_SECRETS_KEY))
-	$(info export ANDROID_KEYSTORE_PATH=$(org).keystore)
-	$(info export ANDROID_KEY_ALIAS=medicmobile)
-	$(info )
-	$(info #                                                                                            #)
-	$(info #                                                                                            #)
-	$(info ######################################  End of Secrets  ######################################)
+	$(info #                                                                                              #)
+	$(info # NOTE: *keep them secret !!*                                                                  #)
+	$(info #                                                                                              #)
+	$(info #######################################  End of Secrets  #######################################)
 	$(info )

@@ -123,6 +123,7 @@ android {
     }
   }
 
+  System.out.println("\n\nSystem.env.ANDROID_KEYSTORE_PATH = " + System.env.ANDROID_KEYSTORE_PATH + "\n\n")
   signingConfigs {
     release {
       storeFile file(System.env.ANDROID_KEYSTORE_PATH ?: signingConfigs.debug.storeFile)
