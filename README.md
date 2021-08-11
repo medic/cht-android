@@ -174,11 +174,23 @@ To build and deploy APKs for all configured brands:
 
 ## Adding new brands
 
-To add a new brand:
+Starting Aug 2021 Google [changed](https://developer.android.com/guide/app-bundle) the way new apps are published in the Play Store, so older apps in this repo only need to upload the release APK files to update the app, while apps created after Aug 2021 do so uploading the AAB files. Moreover, the **creation** of the App require not just the basic configurations like the AAB files, name of the app, description and so on, but also require to register the key that we use to sign the AAB files, so Google can create optimized APK versions for the users signed with the same key the .aab files were created.
+
+In summary the steps for a new app are:
+
+1. Setup the new flavor in the source code and in the CI pipeline to build and sign the app when releasing (next section).
+2. Choose a keystore under the [secrets/](secrets/) folder to sign the new app, the old keystore used by medic (`secrets-medic.tar.gz.enc`) cannot be used to create new apps, is only used to keep signing the old apps. Each partner usually publish one app and should has its own keystore, although in case it has more than one app the same keystore can be used. If the partner doesn't have its own keystore, follow the instructions under the [xxx](xxx) section to create one.
+3. With the first version created after tagging and releasing in Github, go to the Play Store Console and create the app, uploading the first .aab files along with the keystore file.
+4. That's it ! after the first release, there is no need to manually upload the keys in the Play Store to update the app, only .aab files created in Github are needed from now.
+
+#### New brand in the source code
 
 1. Add `productFlavors { <new_brand> { ... } }` in `build.gradle`.
-2. Add icons, strings etc. in `src/<new_brand>`.
+
+2. Add icons, strings etc. in `src/<new_brand>`
+
 3. To enable automated builds (APKs), add the `new_brand` to `.github/workflows/publish.yml`.
+
    3.1. Older apps that only needs APKs for publishing in the Play Store (or are installed in other ways like sideloading) only need to add an _Assemble_ section like this:
       ```yml
           - name: Assemble new_brand
@@ -187,6 +199,7 @@ To add a new brand:
               lane: build
               options: '{ "flavor": "new_brand" }'
       ```
+
    3.2. Newer apps need to be published in the Play Store with the bundle files (AABs), so you need to also add in the same file a _Bundle_ section like this:
       ```yml
           - name: Bundle new_brand
@@ -195,6 +208,8 @@ To add a new brand:
               lane: bundle
               options: '{ "flavor": "new_brand" }'
       ```
+
+TODO...
 
 # Releasing
 
