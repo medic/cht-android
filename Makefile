@@ -7,6 +7,7 @@ KEYTOOL = keytool
 OPENSSL = openssl
 RM_KEY_OPTS = -i
 PEPK = java -jar pepk.jar
+APKSIGNER = apksigner
 
 # Public key from Google for signing .pepk files (is the same for all apps in the Play Store)
 GOOGLE_ENC_KEY = eb10fe8f7c7c9df715022017b00c6471f8ba8170b13049a11e6c09ffe3056a104a3bbe4ac5a955f4ba4fe93fc8cef27558a3eb9d2a529a2092761fb833b656cd48b9de6a
@@ -97,8 +98,19 @@ keyrm-all: check-org
 keyclean: check-org
 	rm ${RM_KEY_OPTS} ${org}.keystore secrets/secrets-${org}.tar.gz
 
+# Print info about the keystore
 keyprint: check-org check-env
 	${KEYTOOL} -list -v -storepass ${ANDROID_KEYSTORE_PASSWORD} -keystore ${org}.keystore
+
+# Print info about the key signature used in the apk release file
+keyprint-apk:
+	$(eval APK := $(shell find build/outputs/apk -name \*-release.apk | head -n1))
+	${APKSIGNER} verify -v --print-certs ${APK}
+
+# Print info about the key signature used in the apk release file
+keyprint-bundle:
+	$(eval AAB := $(shell find build/outputs/bundle -name \*-release.aab | head -n1))
+	${KEYTOOL} -printcert -jarfile ${AAB}
 
 keygen: check-org secrets/secrets-${org}.tar.gz.enc
 
