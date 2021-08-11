@@ -5,8 +5,8 @@ flavor = UnbrandedWebview
 abi = x86
 KEYTOOL = keytool
 OPENSSL = openssl
+JAVA = java
 RM_KEY_OPTS = -i
-PEPK = java -jar pepk.jar
 APKSIGNER = apksigner
 
 # Public key from Google for signing .pepk files (is the same for all apps in the Play Store)
@@ -112,15 +112,21 @@ keyprint-bundle:
 	$(eval AAB := $(shell find build/outputs/bundle -name \*-release.aab | head -n1))
 	${KEYTOOL} -printcert -jarfile ${AAB}
 
-keygen: check-org secrets/secrets-${org}.tar.gz.enc
+keygen: check-org keysetup secrets/secrets-${org}.tar.gz.enc
 
-keydec: check-org check-env
+keydec: check-org keysetup check-env
 	${OPENSSL} aes-256-cbc -iv ${ANDROID_SECRETS_IV} -K ${ANDROID_SECRETS_KEY} -in secrets/secrets-${org}.tar.gz.enc -out secrets/secrets-${org}.tar.gz -d
 	chmod go-rw secrets/secrets-${org}.tar.gz
 	${MAKE} keyunpack
 
 keyunpack: check-org
 	tar -xf secrets/secrets-${org}.tar.gz
+
+keysetup:
+	$(eval EXEC_CERT_REQUIRED = ${JAVA} ${KEYTOOL} ${APKSIGNER} ${OPENSSL})
+	$(info Verifing the following executables are in the $$PATH: ${EXEC_CERT_REQUIRED} ...)
+	$(foreach exec,$(EXEC_CERT_REQUIRED),\
+	        $(if $(shell which $(exec)),,$(error "No command '$(exec)' in $$PATH")))
 
 #
 # Intermediate targets for "secrets", don't use them
@@ -167,10 +173,11 @@ secrets/secrets-${org}.tar.gz: ${org}.keystore ${org}_private_key.pepk
 	chmod go-rw secrets/secrets-${org}.tar.gz
 
 ${org}_private_key.pepk: check-org pepk.jar
-	${PEPK} --keystore=${org}.keystore --alias=medicmobile --keystore-pass=${ANDROID_KEYSTORE_PASSWORD} --output=${org}_private_key.pepk --encryptionkey=${GOOGLE_ENC_KEY}
+	${JAVA} -jar pepk.jar --keystore=${org}.keystore --alias=medicmobile --keystore-pass=${ANDROID_KEYSTORE_PASSWORD} --output=${org}_private_key.pepk --encryptionkey=${GOOGLE_ENC_KEY}
 	chmod go-rw ${org}_private_key.pepk
 
 pepk.jar:
+	$(info Downloading pepk.jar ...)
 	curl https://www.gstatic.com/play-apps-publisher-rapid/signing-tool/prod/pepk.jar -o pepk.jar
 
 secrets/secrets-${org}.tar.gz.enc: secrets/secrets-${org}.tar.gz
