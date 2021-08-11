@@ -41,6 +41,7 @@ jobs:
         ANDROID_SECRETS_KEY: ${{ secrets.ANDROID_SECRETS_KEY }}
         ANDROID_SECRETS_IV: ${{ secrets.ANDROID_SECRETS_IV }}
       run: make org=medic keydec
+
     - name: Unpack secrets alerte_niger
       env:
         ANDROID_SECRETS_KEY: ${{ secrets.ANDROID_SECRETS_KEY_ALERTE_NIGER }}

@@ -34,75 +34,7 @@ The APKs are named as follows: `cht-android-{version}-{brand}-{rendering-engine}
 
 # Release notes
 
-## 0.8.0
-
-### Changes
-
-- [improvement] [#163](https://github.com/medic/cht-android/issues/163) New connection errors UX:
-  - The improvements only apply to _Webview_ flavors.
-  - It also applies when the app migrates to Webview from a XWalk installation.
-- [improvement] [#134](https://github.com/medic/cht-android/issues/134) New UX of Crosswalk to Webview migration:
-  - Add splash screen while the data is migrated.
-  - Fix bug that caused redirect to the login page after migrate.
-- [improvement] Remove unused `READ_EXTERNAL_STORAGE` from the `cmmb_kenya` and `surveillance_covid19_kenya` flavors
-
-You can see more about these changes in the release notes for [CHT Core v3.11.0](https://github.com/medic/cht-core/blob/master/release-notes/docs/3.11.0.md)
-
-## 0.7.3
-
-### Changes
-
-- [improvement] [cht-android#148](https://github.com/medic/cht-android/issues/148): Remove storage access for most flavors that don't use the permission
-- [improvement] New flavors added, and "livinggoods_innovation_ke" removed
-- [improvement] Add new translations for the prominent disclosure for location access: Tagalog (tel), Illonggo (hil), and Bisaya (ceb), and fixed translation string for the disclosure in Nepal (ne)
-
-### Notes
-
-A new flavor `unbranded_test` was added with the storage permission removed for testing, while `unbranded` flavor keeps the permission from the global manifest.
-
-## 0.7.0
-
-### Changes
-
-- [feature] [cht-android#136](https://github.com/medic/cht-android/issues/136): Add UI for prominent disclosure when requesting location permissions.
-
-### Notes
-
-The text used in the new location permission request is in the Android wrapper app itself (`cht-android`), and translated differently than [CHT Core labels](https://docs.communityhealthtoolkit.org/core/overview/translations/). Any additions or modifications to translations in `cht-android` are done in the `strings.xml` files according to the [Android localization framework](https://developer.android.com/guide/topics/resources/localization).
-
-
-## 0.6.0
-
-### Upgrade notes
-
-This release is largely intended to unblock the publishing of new apps onto the Google Play Store in a manner compatible with Android 10+. This release includes a difficult upgrade experience which may cause operational challenges in the field for apps with users on Android 10+. In particular:
-
-1. When loading the application after upgrade you will need an internet connection in order to cache the application code.
-2. The migration can take a few minutes to complete so after upgrade the user may be shown a login screen. If this happens, restart the application periodically until the user is logged in and the app loads as per usual.
-
-We are planning improvements to [make the migration more user friendly](https://github.com/medic/cht-android/issues/134) in a future release.
-
-Users on Android 9 and below do not need to be migrated and will be unaffected by this change. Because of this it is recommended that projects upgrade to v0.6.0 version of their app before issuing Android 10+ devices, if possible.
-
-Earlier releases are no longer accepted by the Google Play Store.
-
-### Changes
-
-- [improvement] [cht-android#106](https://github.com/medic/cht-android/issues/106): Update target SDK version to 29 for Play Store compliance.
-
-## 0.5.0
-
-### Upgrade notes
-
-This release changes the way in which location data is collected to better align with Play Store policies. Now the information is gathered only when filling in a form as opposed to as soon as the app is loaded.
-
-*Note*: This breaks backwards compatibility with older versions of the CHT Core Framework which may mean that location data is no longer collected at all. It is recommended you upgrade to CHT v3.9.2 or later before upgrading the android app.
-
-### Changes
-
-- [feature] [cht-core#6380](https://github.com/medic/cht-core/issues/6380): Adds intent so opening deployment URLs will prompt to load in app
-- [improvement] [cht-android#111](https://github.com/medic/cht-android/issues/111): Compliance with Play Store developer policies for PII collection disclosure
-- [bug] [cht-core#6648](https://github.com/medic/cht-core/issues/6648): Blank screen when launching external apps from CHT Android app
+Checkout the release notes in the [Changelog](CHANGELOG.md) page, our you can see the full release history with the installable files for sideloading [here](https://github.com/medic/cht-android/releases).
 
 
 # Development
@@ -185,31 +117,132 @@ In summary the steps for a new app are:
 
 #### New brand in the source code
 
-1. Add `productFlavors { <new_brand> { ... } }` in `build.gradle`.
+This are the steps to create a new branded App. Each branded app has a identifier that is used to identify and configure it in different parts of the source code and when invoking some commands. In the instructions bellow we will use as example the id `new_brand`.
 
-2. Add icons, strings etc. in `src/<new_brand>`
+1. Add `productFlavors { <new_brand> { ... } }` in `build.gradle`, e.g.:
 
-3. To enable automated builds (APKs), add the `new_brand` to `.github/workflows/publish.yml`.
+   ```yml
+       new_brand {
+         dimension = 'brand'
+         applicationId = 'org.medicmobile.webapp.mobile.new_brand'
+       }
+   ```
 
-   3.1. Older apps that only needs APKs for publishing in the Play Store (or are installed in other ways like sideloading) only need to add an _Assemble_ section like this:
-      ```yml
-          - name: Assemble new_brand
-            uses: maierj/fastlane-action@v1.4.0
-            with:
-              lane: build
-              options: '{ "flavor": "new_brand" }'
-      ```
+2. Add icons, strings etc. in `src/<new_brand>` folder. Is required to place there at least the `src/new_brand/res/values/strings.xml` file with the name of the app and the URL of the CHT instance:
 
-   3.2. Newer apps need to be published in the Play Store with the bundle files (AABs), so you need to also add in the same file a _Bundle_ section like this:
-      ```yml
-          - name: Bundle new_brand
-            uses: maierj/fastlane-action@v1.4.0
-            with:
-              lane: bundle
-              options: '{ "flavor": "new_brand" }'
-      ```
+   ```xml
+   <?xml version="1.0" encoding="utf-8"?>
+   <resources>
+       <string name="app_name">New Brand</string>
+       <string name="app_host">new_brand.app.medicmobile.org</string>
+   </resources>
+   ```
 
-TODO...
+3. Enable automated builds of the APKs and AABs: add the `new_brand` flavor in `.github/workflows/publish.yml`. The _Assemble ..._ task takes care of generating the `.apk` files for sideloading, and the _Bundle ..._ task is responsible of generating the `.aab` files for publishing in the Play Store:
+
+   ```yml
+       - name: Unpack secrets new_brand
+         env:
+           ANDROID_SECRETS_KEY: ${{ secrets.ANDROID_SECRETS_KEY_NEW_BRAND }}
+           ANDROID_SECRETS_IV: ${{ secrets.ANDROID_SECRETS_IV_NEW_BRAND }}
+         run: make org=new_brand keydec
+
+       - name: Assemble new_brand
+         uses: maierj/fastlane-action@v1.4.0
+         with:
+           lane: build
+           options: '{ "flavor": "new_brand" }'
+         env:
+           ANDROID_KEYSTORE_PATH: new_brand.keystore
+           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_NEW_BRAND }}
+           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_NEW_BRAND }}
+   
+       - name: Bundle new_brand
+         uses: maierj/fastlane-action@v1.4.0
+         with:
+           lane: bundle
+           options: '{ "flavor": "new_brand" }'
+         env:
+           ANDROID_KEYSTORE_PATH: new_brand.keystore
+           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_NEW_BRAND }}
+           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_NEW_BRAND }}
+   ```
+
+   The variables in the `env` sections point to a keystore and the passwords to unlock the keystore that will be generated in the following steps, but it's important to follow the name convention, in the example all the variables that are configured in Github CI end with the suffix `_NEW_BRAND`, this need to be added in the cht-android repo settings by a manager of Medic.
+
+4. Generate the keystore: the keys stores are placed compressed and encrypted in the [secrets/](secrets/) folder. In our case the file will be `secrets/secrets-new_brand.tar.gz.enc`, and the content when the file is decrypted is:
+
+   - `new_brand.keystore`: the Java keystore with a signature inside always called `medicmobile`. This is the signature used to sign the APKs and the bundles, and the one that Google will use to sign the optimized APKs that generates for the Play Store.
+   - `new_brand_private_key.pepk`: a PEPK file is a encrypted file that contains inside the `medicmobile` key from the keystore above, ready to be uploaded to the Play Store the first time the app is registered in the Play Store. The file is only used there, but kept in the compressed file as a backup.
+
+  Don't worry to follow all the name conventions and how to generate these files, you can create a new keystore, the passwords and the PEPK file with only one command: `make org=new_brand keygen`. When executing the command will check that you have the necessary tooling installed, and ask the information about the certificate like the organization name, sub organization, etc. The command also takes care of picking random passwords that meet the security requirements, and then compress the key files and finally encrypt them. At the end of the execution, the script will also show the list of environment variables that you have to setup in CI and locally in order to sign apps with the new keystore.
+
+   ```
+   $ make org=new_brand keygen
+   Verifing the following executables are in the $PATH: java keytool apksigner base16 openssl ...
+   keytool -genkey -storepass dd8668... -v -keystore new_brand.keystore -alias medicmobile -keyalg RSA -keysize 2048 -validity 9125
+   What is your first and last name?
+     [Unknown]:  
+   What is the name of your organizational unit?
+     [Unknown]:  New Brand
+   What is the name of your organization?
+     [Unknown]:  Medic Mobile
+   What is the name of your City or Locality?
+     [Unknown]:  San Fran... ...
+   Is CN=Unknown, OU=New Brand, O=Medic Mobile, L=San Francisco, ST=CA, C=US correct?
+     [no]:  y
+   
+   Generating 2,048 bit RSA key pair and self-signed certificate (SHA256withRSA) with a validity of 9,125 days
+       for: CN=Unknown, OU=New Brand, O=Medic Mobile, L=San Francisco, ST=CA, C=US
+   [Storing new_brand.keystore]
+   ... ...
+   
+   ###########################################      Secrets!    ###########################################
+   #                                                                                                      #
+   # The following environment variables needs to be added to the CI environment                          #
+   # (Github Actions), and to to your local environment if you also want                                  #
+   # to sign APK or AAB files locally:                                                                    #
+   #                                                                                                      #
+   
+   export ANDROID_KEYSTORE_PASSWORD_NEW_BRAND=dd86685e3a0cc1da
+   export ANDROID_KEY_PASSWORD_NEW_BRAND=dd86685e3a0cc1da
+   export ANDROID_SECRETS_IV_NEW_BRAND=88d9c2dea7a9e336c5fb0b84f5f96052
+   export ANDROID_SECRETS_KEY_NEW_BRAND=2824d02d2bc221f5844b8fe1d928211dcbbc7e54f7fe30b4f2566a1a296802df
+   export ANDROID_KEYSTORE_PATH_NEW_BRAND=new_brand.keystore
+   export ANDROID_KEY_ALIAS_NEW_BRAND=medicmobile
+   
+   #
+   # The file secrets/secrets-new_brand.tar.gz.enc was created an has to be added to the git
+   # repository (don't worry, it's encrypted with some of the keys above).                                #
+   # NOTE: *keep the environment variables secret !!*                                                     #
+   #                                                                                                      #
+   ###########################################  End of Secrets  ###########################################
+   ```
+
+   The _Secrets!_ section at the end is as important as the secrets/secrets-new_brand.tar.gz.enc file generated, as it says above, needs to be configured in CI, use a safe channel to send to the manager in charge, like a password manager, and keep them locally at least for testing, storing in a script file that is safe in your computer. If you want to start over because some of the parameter was wrong, just execute `make org=new_brand keyrm-all` to clean all the files. Once committed the `.enc` file, you can delete the uncompressed and unencrypted version with `make org=new_brand keyrm`, it will delete the `new_brand.keystore`, `new_brand_private_key.pepk`, and the unencrypted `.tar.gz` files, that are safer kept in the `.tar.gz.enc` file.
+
+   To decrypt the content like CI does to sign the app, execute: `make org=new_brand keydec`, it will decrypt and decompress the files removed in the step above. Remember that the environment variables printed in the console needs to be loaded in the CLI. Note that all the variables above end with the suffix `_NEW_BRAND`, as the id of the app that we pass through the `org` argument in lowercase, but if Make found the same variables defined without the prefix, they take precedence over the suffix ones.
+
+   _One to check the keystore?_ here are a few things you must test before upload to the repo:
+
+   1. Execute `make org=new_brand keyprint` to see the certificate content, like the org name, the certificate fingerprints, etc.
+
+   2. Sign your app! try locally to build the app with the certificate. To create the Webview versions of the .apk files: `make org=new_brand flavor=New_brandWebview assemble`. the "release" files signed should be placed in `build/outputs/apk/new_brandWebview/release/`. To ensure the files where signed with the right signature execute `make keyprint-apk`, it will check the certificate of the first apk file under the `build/` folder:
+
+   ```
+   $ make keyprint-apk 
+   apksigner verify -v --print-certs build/outputs/apk/new_brandWebview/release/cht-android-SNAPSHOT-new_brand-webview-armeabi-v7a-release.apk
+   ... ...
+   Verified using v2 scheme (APK Signature Scheme v2): true
+   ... ...
+   Signer #1 certificate DN: CN=Unknown, OU=New Brand, O=Medic Mobile, L=San Francisco, ST=CA, C=US
+   Signer #1 certificate SHA-256 digest: 7f072b...
+   ```
+
+   Also do the same for the bundle format: build and verify, despite the AAB are not useful for local development. In our example, execute first `make org=new_brand flavor=New_brandWebview bundle`, and then `make keyprint-bundle` to see the signature of one of the `.aab` files generated.
+
+   Because the files generated here are signed with the same key that you are going to use in CI, and the files produced in CI will be uploaded to the Play Store, any file generated locally following the steps above will be compatible with any installation made from the Play Store, means that if a user install the app from the Play Store, and then we want to replace the the installation with a alpha version generated in CI or a local version generated in dev environment, it will works without requiring the user to uninstall the app and lost the data.
+
 
 # Releasing
 
@@ -219,8 +252,10 @@ These are the steps to follow when creating a new release of an existing app in 
 
 1. Make sure all issues for this release have passed AT and been merged into `master`.
 2. Create a git tag starting with `v` and ending with the alpha version, e.g. `v1.2.3-alpha.1` and push the tag to GitHub.
-3. Creating this tag will trigger [GitHub Action](https://github.com/medic/cht-android/actions) to build, sign, and properly version the build. The release-ready APKs are available for side-loading from [GitHub Releases](https://github.com/medic/cht-android/releases), along with the AABs that are required to publish in the Google Play Store.
+3. Creating this tag will trigger [GitHub Action](https://github.com/medic/cht-android/actions) to build, sign, and properly version the build. The release-ready APKs are available for side-loading from [GitHub Releases](https://github.com/medic/cht-android/releases), along with the AABs that are required to publish in the Google Play Store if the Play Store require so.
 4. Announce the release in #quality-assurance.
+
+Remember that when the app is created in the Play Store, it's required to choose the way the app will be signed by Google: we upload the signed AAB files, but then Google creates optimized versions of the app in .apk format. The app has to be configured to use the same signing and upload signature by Google. Choose to upload a "Java keystore", the Play Console will ask a file encrypted with a tool named PEPK, that file is the file `<brand>_private_key.pepk` generated when following the instructions of [New brand in the source code](#new-brand-in-the-source-code). Read the section to know how to extract that file from the encrypted file stored in the `secrets/` folder if you don't have it when publishing for the first time. Once upload the first time, you don't need it anymore in order to publish new versions of the app.
 
 ## Final for users
 
