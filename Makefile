@@ -6,6 +6,10 @@ abi = x86
 KEYTOOL = keytool
 OPENSSL = openssl
 RM_KEY_OPTS = -i
+PEPK = java -jar pepk.jar
+
+# Public key from Google for signing .pepk files (is the same for all apps in the Play Store)
+GOOGLE_ENC_KEY = eb10fe8f7c7c9df715022017b00c6471f8ba8170b13049a11e6c09ffe3056a104a3bbe4ac5a955f4ba4fe93fc8cef27558a3eb9d2a529a2092761fb833b656cd48b9de6a
 
 ifdef ComSpec	 # Windows
   # Use `/` for all paths, except `.\`
@@ -72,9 +76,14 @@ test-ui-gamma:
 # Generate keystore
 keystore: check-org ${org}.keystore
 
-# Remove the keystore, the encrypted version and the compressed version
+# Remove the keystore, the pepk file, and the compressed version
 keyrm: check-org
-	rm ${RM_KEY_OPTS} ${org}.keystore secrets/secrets-${org}.tar.gz secrets/secrets-${org}.tar.gz.enc
+	rm ${RM_KEY_OPTS} ${org}.keystore ${org}_private_key.pepk secrets/secrets-${org}.tar.gz
+
+# Remove all: the keystore, the encrypted version, the compressed version and the encrypted version
+keyrm-all: check-org
+	rm ${RM_KEY_OPTS} secrets/secrets-${org}.tar.gz.enc
+	${MAKE} keyrm
 
 # Remove the keystore and the compressed version, leaving only the encrypted version
 keyclean: check-org
@@ -87,6 +96,7 @@ keygen: check-org secrets/secrets-${org}.tar.gz.enc
 
 keydec: check-org check-env
 	${OPENSSL} aes-256-cbc -iv ${ANDROID_SECRETS_IV} -K ${ANDROID_SECRETS_KEY} -in secrets/secrets-${org}.tar.gz.enc -out secrets/secrets-${org}.tar.gz -d
+	chmod go-rw secrets/secrets-${org}.tar.gz
 	${MAKE} keyunpack
 
 keyunpack: check-org
@@ -123,9 +133,16 @@ ${org}.keystore: check-org
 	${KEYTOOL} -genkey -storepass ${ANDROID_KEYSTORE_PASSWORD} -v -keystore ${org}.keystore -alias medicmobile -keyalg RSA -keysize 2048 -validity 9125
 	chmod go-rw ${org}.keystore
 
-secrets/secrets-${org}.tar.gz: ${org}.keystore
-	tar -czf secrets/secrets-${org}.tar.gz ${org}.keystore
+secrets/secrets-${org}.tar.gz: ${org}.keystore ${org}_private_key.pepk
+	tar -czf secrets/secrets-${org}.tar.gz ${org}.keystore ${org}_private_key.pepk
 	chmod go-rw secrets/secrets-${org}.tar.gz
+
+${org}_private_key.pepk: check-org pepk.jar
+	${PEPK} --keystore=${org}.keystore --alias=medicmobile --keystore-pass=${ANDROID_KEYSTORE_PASSWORD} --output=${org}_private_key.pepk --encryptionkey=${GOOGLE_ENC_KEY}
+	chmod go-rw ${org}_private_key.pepk
+
+pepk.jar:
+	curl https://www.gstatic.com/play-apps-publisher-rapid/signing-tool/prod/pepk.jar -o pepk.jar
 
 secrets/secrets-${org}.tar.gz.enc: secrets/secrets-${org}.tar.gz
 	$(eval ANDROID_SECRETS_IV := $(shell base16 /dev/urandom | head -n 1 -c 32))
@@ -142,6 +159,7 @@ secrets/secrets-${org}.tar.gz.enc: secrets/secrets-${org}.tar.gz
 	$(info ANDROID_KEY_PASSWORD_$(ORG_UPPER)=$(ANDROID_KEYSTORE_PASSWORD))
 	$(info ANDROID_SECRETS_IV_$(ORG_UPPER)=$(ANDROID_SECRETS_IV))
 	$(info ANDROID_SECRETS_KEY_$(ORG_UPPER)=$(ANDROID_SECRETS_KEY))
+	$(info ANDROID_KEYSTORE_PATH_$(ORG_UPPER)=$(org).keystore)
 	$(info )
 	$(info #)
 	$(info # If you also want to sign APK or AAB files locally, store them as)
@@ -152,7 +170,6 @@ secrets/secrets-${org}.tar.gz.enc: secrets/secrets-${org}.tar.gz
 	$(info export ANDROID_KEY_PASSWORD=$(ANDROID_KEYSTORE_PASSWORD))
 	$(info export ANDROID_SECRETS_IV=$(ANDROID_SECRETS_IV))
 	$(info export ANDROID_SECRETS_KEY=$(ANDROID_SECRETS_KEY))
-	$(info )
 	$(info export ANDROID_KEYSTORE_PATH=$(org).keystore)
 	$(info export ANDROID_KEY_ALIAS=medicmobile)
 	$(info )

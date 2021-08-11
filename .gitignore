@@ -10,7 +10,9 @@
 
 secrets*.tar.gz
 *.keystore
+*_private_key.pepk
 playstore-secret.json
+pepk.jar
 
 fastlane/*
 !fastlane/Fastfile
