@@ -20,8 +20,6 @@ ifdef ComSpec	 # Windows
 endif
 
 default: deploy logs
-branded: clean-apks assemble-all deploy-all logs
-branded-debug: clean-apks assemble-all-debug deploy-all logs
 xwalk: deploy-xwalk logs
 
 logs:
