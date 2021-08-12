@@ -1,5 +1,27 @@
 # Release notes
 
+## 0.9.0
+
+### Changes
+
+- [feature] [cht-core#6741](https://github.com/medic/cht-core/issues/6741) Add more info about the version of the Android app :bookmark: cht-core v3.12.
+- [improvement] [#195](https://github.com/medic/cht-android/pull/195) New branding icon, and switch from "Medic Mobile" to "Medic".
+- [improvement] [#164](https://github.com/medic/cht-android/issues/164) Support Android 11.
+- [feature] [#206](https://github.com/medic/cht-android/issues/206) New branded app _Alerte Niger_.
+- [deprecation] Disable the _Demo_ app in the releases and in the Play Store (demo.dev.medicmobile.org is unmaintained).
+
+### Development changes
+
+- Upgrade Java and build dependencies. Now the base version is Java 11.
+- Support new Android App Bundle (`.aab`) required by the Play Store for new apps (for now only the new app _Alerte Niger_ uses it).
+- Add tooling to simplify the creation of new private keys for the Play Store.
+- Improvements in the linters configuration for better code quality.
+- Skip upload of APKs for `webview-armeabi-v7a` arch not used in releases.
+- Improvements in the Make config and more options available for developers using the CLI instead of the Android Studio.
+  Improve the development section in the README, and how to create new branded apps and private keys for signing.
+- Fix instrumentations tests (UI tests) to avoid random failures, and speed up executions in Github Actions using caches.
+- Fix Github Actions configuration to enable CI when the PR is created for an external contributor.
+
 ## 0.8.0
 
 ### Changes
