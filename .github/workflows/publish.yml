@@ -69,7 +69,6 @@ jobs:
         lane: build
         options: '{ "flavor": "medicmobiledemo" }'
       env:
-        # TODO Replace alerte_niger.keystore with secrets.ANDROID_KEYSTORE_PATH_ALERTE_NIGER once the env is set
         ANDROID_KEYSTORE_PATH: alerte_niger.keystore
         ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_ALERTE_NIGER }}
         ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_ALERTE_NIGER }}
@@ -79,7 +78,6 @@ jobs:
         lane: bundle
         options: '{ "flavor": "medicmobiledemo" }'
       env:
-        # TODO Replace alerte_niger.keystore with secrets.ANDROID_KEYSTORE_PATH_ALERTE_NIGER once the env is set
         ANDROID_KEYSTORE_PATH: alerte_niger.keystore
         ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_ALERTE_NIGER }}
         ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_ALERTE_NIGER }}
