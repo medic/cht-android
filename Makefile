@@ -123,7 +123,7 @@ keyunpack: check-org
 	tar -xf secrets/secrets-${org}.tar.gz
 
 keysetup:
-	$(eval EXEC_CERT_REQUIRED = ${JAVA} ${KEYTOOL} ${BASE16} ${OPENSSL})
+	$(eval EXEC_CERT_REQUIRED = ${JAVA} ${KEYTOOL} ${OPENSSL})
 	$(info Verifing the following executables are in the $$PATH: ${EXEC_CERT_REQUIRED} ...)
 	$(foreach exec,$(EXEC_CERT_REQUIRED),\
 	        $(if $(shell which $(exec)),,$(error "No command '$(exec)' in $$PATH")))
@@ -164,6 +164,7 @@ ifndef ANDROID_SECRETS_IV
 endif
 
 ${org}.keystore: check-org
+	$(if $(shell which $(BASE16)),,$(error "No command '$(BASE16)' in $$PATH"))
 	$(eval ANDROID_KEYSTORE_PASSWORD := $(shell ${BASE16} /dev/urandom | head -n 1 -c 16))
 	${KEYTOOL} -genkey -storepass ${ANDROID_KEYSTORE_PASSWORD} -v -keystore ${org}.keystore -alias medicmobile -keyalg RSA -keysize 2048 -validity 9125
 	chmod go-rw ${org}.keystore
