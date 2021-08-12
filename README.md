@@ -18,7 +18,7 @@ The AABs are named as follows: `cht-android-{version}-{brand}-{rendering-engine}
 
 For compatibility with a wide range of devices the build script produces multiple APKs. The two variables are the instruction set used by the device's CPU, and the supported Android version. When sideloading the application it is essential to pick the correct APK or the application may crash.
 
-If the Play Store allows to publish new releases of the app in APK format instead of AAB, upload all APKs and it will automatically choose the right one for the target device.
+If distributing APKs via the Play Store, upload all APKs and it will automatically choose the right one for the target device.
 
 To help you pick which APK to install you can find information about the version of Android and the CPU in the About section of the phone's settings menu.
 
