@@ -238,7 +238,7 @@ Signer #1 certificate SHA-256 digest: 7f072b...
 
 Also do the same for the bundle format: build and verify, despite the AAB are not useful for local development. In our example, execute first `make org=new_brand flavor=New_brandWebview bundle`, and then `make keyprint-bundle` to see the signature of one of the `.aab` files generated.
 
-Because the files generated here are signed with the same key that you are going to use in CI, and the files produced in CI will be uploaded to the Play Store, any file generated locally following the steps above will be compatible with any installation made from the Play Store, means that if a user install the app from the Play Store, and then we want to replace the installation with a alpha version generated in CI or a local version generated in dev environment, it will work without requiring the user to uninstall the app and lost the data.
+Because the files generated here are signed with the same key that you are going to use in CI, and the files produced in CI will be uploaded to the Play Store later, any file generated locally following the steps above will be compatible with any installation made from the Play Store, means that if a user install the app from the Play Store, and then we want to replace the installation with an alpha version generated in CI or a local version generated in dev environment, it will work without requiring the user to uninstall the app and lost the data.
 
 
 # Releasing
@@ -255,7 +255,7 @@ These are the steps to follow when creating a new release in the Play Store:
 
 ### New App in the Play Store
 
-Remember that when the app is created in the Play Store, it's required to choose the way the app will be signed by Google: we upload the signed AAB files, but then Google creates optimized versions of the app in .apk format. The app has to be configured to use the same signing and upload signatures by Google. Choose to upload a "Java keystore", the Play Console will ask a file encrypted with a tool named PEPK, that file is the `<brand>_private_key.pepk` file generated when following the instructions of [New brand](#new-brand). Read the section to know how to extract that file from the encrypted file stored in the `secrets/` folder if you don't have it when publishing for the first time. Once upload the first time, you don't need it anymore in order to publish new versions of the app.
+Remember that when the app is created in the Play Store, it's required to choose the way the app will be signed by Google: we upload the signed AAB files, but then Google creates optimized versions of the app in .apk format. The app has to be configured to use the same signing and upload signatures by Google. Choose to upload a "Java keystore", the Play Console will require a file encrypted with a tool named PEPK, that file is the `<brand>_private_key.pepk` file generated when following the instructions of [New brand](#new-brand). Read the section to know how to extract that file from the encrypted file stored in the `secrets/` folder if you don't have it when publishing for the first time. Once upload the first time, you don't need it anymore in order to publish new versions of the app.
 
 ## Final for users
 
