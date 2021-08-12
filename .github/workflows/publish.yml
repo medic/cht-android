@@ -59,31 +59,12 @@ jobs:
       with:
         lane: build
         options: '{ "flavor": "medicmobilegamma" }'
-
-
-    # TODO: demo app is disabled for now, only re-enabled for testing
-    #       signing process with the wrong keystore
-    - name: Assemble medicmobiledemo
-      uses: maierj/fastlane-action@v1.4.0
-      with:
-        lane: build
-        options: '{ "flavor": "medicmobiledemo" }'
-      env:
-        ANDROID_KEYSTORE_PATH: alerte_niger.keystore
-        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_ALERTE_NIGER }}
-        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_ALERTE_NIGER }}
-    - name: Bundle medicmobiledemo
-      uses: maierj/fastlane-action@v1.4.0
-      with:
-        lane: bundle
-        options: '{ "flavor": "medicmobiledemo" }'
-      env:
-        ANDROID_KEYSTORE_PATH: alerte_niger.keystore
-        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_ALERTE_NIGER }}
-        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_ALERTE_NIGER }}
-    # TODO: end demo app test
-
-
+    # demo app is disabled for now
+    #- name: Assemble demo
+    #  uses: maierj/fastlane-action@v1.4.0
+    #  with:
+    #    lane: build
+    #    options: '{ "flavor": "medicmobiledemo" }'
     - name: Assemble bracuganda
       uses: maierj/fastlane-action@v1.4.0
       with:
@@ -239,6 +220,19 @@ jobs:
       with:
         lane: build
         options: '{ "flavor": "alerte_niger" }'
+      env:
+        ANDROID_KEYSTORE_PATH: alerte_niger.keystore
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_ALERTE_NIGER }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_ALERTE_NIGER }}
+    - name: Bundle alerte_niger
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: bundle
+        options: '{ "flavor": "alerte_niger" }'
+      env:
+        ANDROID_KEYSTORE_PATH: alerte_niger.keystore
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_ALERTE_NIGER }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_ALERTE_NIGER }}
 
     - name: GitHub release
       uses: softprops/action-gh-release@v1
