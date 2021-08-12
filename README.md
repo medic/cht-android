@@ -98,7 +98,7 @@ The [Android Studio](https://developer.android.com/studio) can be used to build 
 
 # Branding
 
-Starting Aug 2021 Google [changed](https://developer.android.com/guide/app-bundle) the way new apps are published in the Play Store, so older apps in this repo only need to upload the release APK files to update the app, while apps created after Aug 2021 do so uploading the AAB files. Moreover, the creation of the App requires not just the basic configurations like the AAB files, name of the app, description and so on, but also require to register the key that we use to sign the AAB files, so Google can create optimized APK versions for the users signed with the same key the .aab files were created.
+Starting Aug 2021 Google [changed](https://developer.android.com/guide/app-bundle) the way new apps are published in the Play Store, so older apps in this repo only need to upload the release APK files to update the app, while apps created after Aug 2021 do so uploading the AAB files. Moreover, the creation of the App requires not just the basic configurations like the AAB files, name of the app, description and so on, but also requires to register the key that we use to sign the AAB files, so Google can create optimized APK versions for the users signed with the same key the .aab files were created.
 
 In summary the steps for a new app are:
 
@@ -119,7 +119,7 @@ These are the steps to create a new branded App. Each branded app has an identif
        }
    ```
 
-2. Add icons, strings etc. in `src/<new_brand>` folder. Is required to place there at least the `src/new_brand/res/values/strings.xml` file with the name of the app and the URL of the CHT instance:
+2. Add icons, strings etc. in the `src/<new_brand>` folder. It's required to place there at least the `src/new_brand/res/values/strings.xml` file with the name of the app and the URL of the CHT instance:
 
    ```xml
    <?xml version="1.0" encoding="utf-8"?>
@@ -159,14 +159,14 @@ These are the steps to create a new branded App. Each branded app has an identif
            ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_NEW_BRAND }}
    ```
 
-   The variables in the `env` sections point to a keystore and the passwords to unlock the keystore that will be generated in the following steps, but it's important to follow the name convention, in the example all the variables that are configured in Github CI end with the suffix `_NEW_BRAND`, this needs to be added in the cht-android repo settings by a manager of Medic.
+   The variables in the `env` sections point to a keystore and the passwords to unlock the keystore that will be generated in the following steps, but it's important to follow the name convention, in the example all the variables that are configured in Github CI end with the suffix `_NEW_BRAND`, these variables need to be added in the cht-android repo settings by a manager of Medic.
 
-4. Generate the keystore: the keystore files are placed compressed and encrypted in the [secrets/](secrets/) folder. In our case the file will be `secrets/secrets-new_brand.tar.gz.enc`, and the content inside when the file is decrypted is:
+4. Generate the keystore: the keystore files are placed into a compressed and encrypted file in the [secrets/](secrets/) folder. In our case the file will be `secrets/secrets-new_brand.tar.gz.enc`, and the content inside when the file is decrypted is:
 
-   - `new_brand.keystore`: the Java keystore with a signature inside that is always called `medicmobile`. This is the signature used to sign the APKs and the bundles, and the one that Google will use to sign the optimized APKs that generates in the Play Store.
+   - `new_brand.keystore`: the Java keystore with a signature key inside that is always called `medicmobile`. It's used to sign the APKs and the bundles, and the one that Google will use to sign the optimized APKs that generates in the Play Store.
    - `new_brand_private_key.pepk`: a PEPK file is an encrypted file that contains inside the `medicmobile` key from the keystore above, ready to be uploaded to the Play Store the first time the app is registered in the Play Console. The file is only used there, but kept in the compressed file as a backup.
 
-  Don't worry to follow all the name conventions and how to generate these files, you can create a new keystore, the passwords and the PEPK file with only one command: `make org=new_brand keygen`. When executing the command will check that you have the necessary tooling installed, and ask the information about the certificate like the organization name, organization unit, etc. The command also takes care of picking random passwords that meet the security requirements, and then compresses the key files and finally encrypt the `.tar.gz` file. At the end of the execution, the script will also show the list of environment variables that you have to setup in CI and locally in order to sign apps with the new keystore.
+  Don't worry to follow all the name conventions and how to generate these files, you can create a new keystore, the passwords and the PEPK file with only one command: `make org=new_brand keygen`. Executing the command will check that you have the necessary tooling installed, and ask you the information about the certificate like the organization name, organization unit, etc. The command also takes care of picking random passwords that meet the security requirements, and then compresses the key files and finally encrypt the `.tar.gz` file into the `.enc` file. At the end of the execution, the script will also show the list of environment variables that you have to setup in CI and locally in order to sign apps with the new keystore.
 
    ```
    $ make org=new_brand keygen
@@ -191,7 +191,7 @@ These are the steps to create a new branded App. Each branded app has an identif
    #######################################      Secrets!    #######################################
    #                                                                                              #
    # The following environment variables needs to be added to the CI environment                  #
-   # (Github Actions), and to to your local environment if you also want                          #
+   # (Github Actions), and to your local environment if you also want                             #
    # to sign APK or AAB files locally:                                                            #
    #                                                                                              #
    
@@ -203,14 +203,14 @@ These are the steps to create a new branded App. Each branded app has an identif
    export ANDROID_KEY_ALIAS_NEW_BRAND=medicmobile
    
    #
-   # The file secrets/secrets-new_brand.tar.gz.enc was created an has to be added to the git
+   # The file secrets/secrets-new_brand.tar.gz.enc was created and has to be added to the git
    # repository (don't worry, it's encrypted with some of the keys above).                        #
    # NOTE: *keep the environment variables secret !!*                                             #
    #                                                                                              #
    ###########################################  End of Secrets  ###################################
    ```
 
-   The _Secrets!_ section at the end is as important as the `secrets/secrets-new_brand.tar.gz.enc` file generated, because as it says above, needs to be configured in CI.
+   The _Secrets!_ section at the end is as important as the `secrets/secrets-new_brand.tar.gz.enc` file generated, because as it says above, it needs to be configured in CI.
 
    Use a safe channel to send to the manager in charge, like a password manager, and keep them locally at least for testing, storing in a script file that is safe in your computer.
 
