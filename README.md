@@ -220,7 +220,7 @@ These are the steps to create a new branded App. Each branded app has an identif
 
 #### Use the keystore
 
-**One to check the keystore?** here are a few things you must test before upload to the repo:
+**Want to check the keystore?** here are a few things you must test before upload to the repo:
 
 1. Execute `make org=new_brand keyprint` to see the certificate content, like the org name, the certificate fingerprints, etc.
 
