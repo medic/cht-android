@@ -31,14 +31,17 @@ jobs:
       run: make test
 
     - name: Set up Ruby
+      if: ${{ env.ANDROID_SECRETS_KEY }}
       uses: ruby/setup-ruby@v1
       with:
         ruby-version: 2.6
 
     - name: Set up Fastlane
+      if: ${{ env.ANDROID_SECRETS_KEY }}
       run: gem install fastlane --no-document --quiet
 
     - name: Unpack secrets
+      if: ${{ env.ANDROID_SECRETS_KEY }}
       env:
         ANDROID_SECRETS_KEY: ${{ secrets.ANDROID_SECRETS_KEY }}
         ANDROID_SECRETS_IV: ${{ secrets.ANDROID_SECRETS_IV }}
@@ -47,6 +50,7 @@ jobs:
         tar -xf ./secrets.tar.gz
 
     - name: Assemble unbranded
+      if: ${{ env.ANDROID_SECRETS_KEY }}
       uses: maierj/fastlane-action@v1.4.0
       env:
         ANDROID_KEYSTORE_PATH: ${{ secrets.ANDROID_KEYSTORE_PATH }}
