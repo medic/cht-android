@@ -5,9 +5,11 @@ The cht-android application is a thin wrapper to load the [CHT Core Framework](h
 
 # Android App Bundles
 
-The build script produces multiple AABs for publishing to the **Google Play Store**, so the generated `.aab` files need to be uploaded instead of the `.apk` files if the Play Store require so. Old apps published for the first time before Aug 1,  2021 can be updated with the APK format. For each flavor two bundles are generated, one for each rendering engine: _Webview_ and _Xwalk_.
+The build script produces multiple AABs for publishing to the **Google Play Store**, so the generated `.aab` files need to be uploaded instead of the `.apk` files if the Play Store require so. Old apps published for the first time before Aug 1,  2021 can be updated with the APK format.
 
-The AABs are named as follows: `cht-android-{version}-{brand}-{rendering-engine}-release.aab`
+For each flavor two bundles are generated, one for each rendering engine: _Webview_ and _Xwalk_. When distributing via the Play Store using the bundle files, upload all AABs and it will automatically choose the right one for the target device.
+
+The AABs are named as follows: `cht-android-{version}-{brand}-{rendering-engine}-release.aab`.
 
 | Rendering engine | Android version |
 |------------------|-----------------|
@@ -22,7 +24,7 @@ If distributing APKs via the Play Store, upload all APKs and it will automatical
 
 To help you pick which APK to install you can find information about the version of Android and the CPU in the About section of the phone's settings menu.
 
-The APKs are named as follows: `cht-android-{version}-{brand}-{rendering-engine}-{instruction-set}-release.apk`
+The APKs are named as follows: `cht-android-{version}-{brand}-{rendering-engine}-{instruction-set}-release.apk`.
 
 | Rendering engine | Instruction set | Android version | Notes                                                       |
 |------------------|-----------------|-----------------|-------------------------------------------------------------|
