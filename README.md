@@ -249,7 +249,7 @@ These are the steps to follow when creating a new release in the Play Store:
 
 1. Make sure all issues for this release have passed AT and been merged into `master`.
 2. Create a git tag starting with `v` and ending with the alpha version, e.g. `v1.2.3-alpha.1` and push the tag to GitHub.
-3. Creating this tag will trigger [GitHub Action](https://github.com/medic/cht-android/actions) to build, sign, and properly version the build. The release-ready APKs are available for side-loading from [GitHub Releases](https://github.com/medic/cht-android/releases), along with the AABs that are required to publish in the Google Play Store if the Play Store require so.
+3. Creating this tag will trigger [GitHub Action](https://github.com/medic/cht-android/actions) to build, sign, and properly version the build. The release-ready APKs are available for side-loading from [GitHub Releases](https://github.com/medic/cht-android/releases), along with the AABs that may be required by the Google Play Store.
 4. Announce the release in #quality-assurance.
 
 
