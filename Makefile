@@ -174,7 +174,7 @@ secrets/secrets-${org}.tar.gz: ${org}.keystore ${org}_private_key.pepk
 	chmod go-rw secrets/secrets-${org}.tar.gz
 
 ${org}_private_key.pepk: check-org pepk.jar
-	${JAVA} -jar pepk.jar --keystore=${org}.keystore --alias=medicmobile --keystore-pass=${ANDROID_KEYSTORE_PASSWORD} --output=${org}_private_key.pepk --encryptionkey=${GOOGLE_ENC_KEY}
+	${JAVA} -jar pepk.jar --keystore=${org}.keystore --alias=medicmobile --keystore-pass=${ANDROID_KEYSTORE_PASSWORD} --output=${org}_private_key.pepk --include-cert --encryptionkey=${GOOGLE_ENC_KEY}
 	chmod go-rw ${org}_private_key.pepk
 
 pepk.jar:
