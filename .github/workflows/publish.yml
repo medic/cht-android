@@ -36,19 +36,24 @@ jobs:
     - name: Set up Fastlane
       run: gem install fastlane --no-document --quiet
 
-    - name: Unpack secrets
+    - name: Unpack secrets medic
       env:
         ANDROID_SECRETS_KEY: ${{ secrets.ANDROID_SECRETS_KEY }}
         ANDROID_SECRETS_IV: ${{ secrets.ANDROID_SECRETS_IV }}
-      run: |
-        openssl aes-256-cbc -K $ANDROID_SECRETS_KEY -iv $ANDROID_SECRETS_IV -in secrets.tar.gz.enc -out ./secrets.tar.gz -d
-        tar -xf ./secrets.tar.gz
+      run: make org=medic keydec
+
+    - name: Unpack secrets alerte_niger
+      env:
+        ANDROID_SECRETS_KEY: ${{ secrets.ANDROID_SECRETS_KEY_ALERTE_NIGER }}
+        ANDROID_SECRETS_IV: ${{ secrets.ANDROID_SECRETS_IV_ALERTE_NIGER }}
+      run: make org=alerte_niger keydec
 
     - name: Assemble unbranded
       uses: maierj/fastlane-action@v1.4.0
       with:
         lane: build
         options: '{ "flavor": "unbranded" }'
+
     - name: Assemble gamma
       uses: maierj/fastlane-action@v1.4.0
       with:
@@ -215,6 +220,19 @@ jobs:
       with:
         lane: build
         options: '{ "flavor": "alerte_niger" }'
+      env:
+        ANDROID_KEYSTORE_PATH: alerte_niger.keystore
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_ALERTE_NIGER }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_ALERTE_NIGER }}
+    - name: Bundle alerte_niger
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: bundle
+        options: '{ "flavor": "alerte_niger" }'
+      env:
+        ANDROID_KEYSTORE_PATH: alerte_niger.keystore
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_ALERTE_NIGER }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_ALERTE_NIGER }}
 
     - name: GitHub release
       uses: softprops/action-gh-release@v1
@@ -226,5 +244,6 @@ jobs:
           build/outputs/apk/**/*-xwalk-arm64-v8a-release.apk
           build/outputs/apk/**/*-xwalk-armeabi-v7a-release.apk
           build/outputs/apk/**/*-webview-arm64-v8a-release.apk
+          build/outputs/bundle/**/*-release.aab
       env:
         GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
