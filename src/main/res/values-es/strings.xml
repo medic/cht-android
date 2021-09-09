@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<string name="btnMoreInfo">Más info</string>
+	<string name="btnRetry">Reintentar</string>
+
+	<string name="locRequestTitle">Acceso a la ubicación</string>
+	<string name="locRequestMessage">%s recolecta información de la ubicación para analizar y mejorar resultados de salud en tu área. Para permitir el acceso a la ubicación selecciona \"Activar\", y luego confirma en el próximo diálogo.</string>
+	<string name="locRequestOkButton">Activar</string>
+	<string name="locRequestDenyButton">No gracias</string>
+	<string name="locRequestIconDescription">Ícono de mi ubicación</string>
+
+	<string name="loadingIconDescription">Cargando…</string>
+	<string name="upgradingTitle">Actualizando la app</string>
+	<string name="upgradingMessage">Estás actualizando a la última versión. Por favor aguarda mientras tus datos son migrados.</string>
+
+	<string name="connErrorTitle">No hay Conexión a Internet</string>
+	<string name="connErrorMessage">Parece que no estás conectado a Internet. Por favor chequeá tu conexión y volvé a intentar.</string>
+
+	<string name="waitMigration">Por favor espere a que el proceso de migración haya finalizado</string>
+</resources>

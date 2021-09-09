@@ -5,28 +5,57 @@
 default_platform(:android)
 
 platform :android do
-  desc "Build and deploy on Google Play"
-  lane :deploy do |options|
-    gradleTaskName = "assemble#{options[:flavor]}Release"
-    version = ENV['TRAVIS_TAG'].empty? ? 'SNAPSHOT' : ENV['TRAVIS_TAG']
-    package_name = options[:flavor] == 'unbranded' ? "org.medicmobile.webapp.mobile" : "org.medicmobile.webapp.mobile.#{options[:flavor]}"
+  lane :build do |options|
+    gradle(task: "assemble#{options[:flavor]}WebviewRelease")
+    gradle(task: "assemble#{options[:flavor]}XwalkRelease")
+  end
 
-    gradle(task: gradleTaskName)
+  lane :bundle do |options|
+    gradle(task: "bundle#{options[:flavor]}WebviewRelease")
+    gradle(task: "bundle#{options[:flavor]}XwalkRelease")
+  end
+
+  lane :deploy do |options|
+    version = ENV['RELEASE_VERSION'].empty? ? 'SNAPSHOT' : ENV['RELEASE_VERSION']
+    package_name = options[:flavor] == 'unbranded' ? "org.medicmobile.webapp.mobile" : "org.medicmobile.webapp.mobile.#{options[:flavor]}"
 
     supply(
       package_name: package_name,
       track: "alpha",
       json_key: "playstore-secret.json",
       apk_paths: [
-        "build/outputs/apk/#{options[:flavor]}/release/medic-android-#{version}-#{options[:flavor]}-arm64-v8a-release.apk",
-        "build/outputs/apk/#{options[:flavor]}/release/medic-android-#{version}-#{options[:flavor]}-armeabi-v7a-release.apk",
+        "build/outputs/apk/#{options[:flavor]}Webview/release/cht-android-#{version}-#{options[:flavor]}-webview-arm64-v8a-release.apk",
+        # NOT SUPPORTED WITH: targetSdkVersion 29. Need to add it back to support older Android versions
+        # "build/outputs/apk/#{options[:flavor]}Webview/release/cht-android-#{version}-#{options[:flavor]}-webview-armeabi-v7a-release.apk",
+        "build/outputs/apk/#{options[:flavor]}Xwalk/release/cht-android-#{version}-#{options[:flavor]}-xwalk-arm64-v8a-release.apk",
+        "build/outputs/apk/#{options[:flavor]}Xwalk/release/cht-android-#{version}-#{options[:flavor]}-xwalk-armeabi-v7a-release.apk",
       ],
       skip_upload_aab: true,
       skip_upload_metadata: true,
       skip_upload_images: true,
       skip_upload_screenshots: true,
       validate_only: false,
+      timeout: 3600,
+    )
+  end
 
+  lane :deploy_bundle do |options|
+    version = ENV['RELEASE_VERSION'].empty? ? 'SNAPSHOT' : ENV['RELEASE_VERSION']
+    package_name = options[:flavor] == 'unbranded' ? "org.medicmobile.webapp.mobile" : "org.medicmobile.webapp.mobile.#{options[:flavor]}"
+
+    supply(
+      package_name: package_name,
+      track: "alpha",
+      json_key: "playstore-secret.json",
+      aab_paths: [
+        "build/outputs/bundle/#{options[:flavor]}WebviewRelease/cht-android-#{version}-#{options[:flavor]}-webview-release.aab",
+        "build/outputs/bundle/#{options[:flavor]}XwalkRelease/cht-android-#{version}-#{options[:flavor]}-xwalk-release.aab",
+      ],
+      skip_upload_apk: true,
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
+      validate_only: false,
       timeout: 3600,
     )
   end

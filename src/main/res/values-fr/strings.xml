@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<string name="btnMoreInfo">Plus d\'information</string>
+	<string name="btnRetry">Réessayer</string>
+
+	<string name="locRequestTitle">Accès à la position</string>
+	<string name="locRequestMessage">%s collecte votre position pour analyser et améliorer les services de santé dans votre région. Pour permettre l\'accès aux données de position, sélectionnez \"Activer\" et confirmez à l\'écran qui suivra.</string>
+	<string name="locRequestOkButton">Activer</string>
+	<string name="locRequestDenyButton">Non merci</string>
+	<string name="locRequestIconDescription">Icône de mon emplacement</string>
+
+	<string name="loadingIconDescription">Chargement en cours…</string>
+	<string name="upgradingTitle">Mise à jour de votre application</string>
+	<string name="upgradingMessage">Vous passez à la nouvelle version. Veuillez patienter pendant la preparation de vos données.</string>
+
+	<string name="connErrorTitle">Aucune connexion Internet</string>
+	<string name="connErrorMessage">Vous n\'êtes pas bien connecté à internet. Veuillez vérifier votre connexion et réessayer.</string>
+
+	<string name="waitMigration">Veuillez attendre que la migration de données termine</string>
+</resources>

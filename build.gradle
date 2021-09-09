@@ -1,5 +1,3 @@
-import com.android.build.OutputFile
-
 buildscript {
   repositories {
     mavenCentral()
@@ -8,7 +6,7 @@ buildscript {
     jcenter()
   }
   dependencies {
-    classpath 'com.android.tools.build:gradle:3.2.0'
+    classpath 'com.android.tools.build:gradle:7.0.2'
     classpath 'com.noveogroup.android:check:1.2.5'
   }
 }
@@ -32,92 +30,95 @@ repositories {
   }
 }
 
-dependencies {
-  implementation fileTree(dir: 'libs', include: ['*.jar'])
-  implementation 'org.xwalk:xwalk_core_library:23.53.589.4:arm64-v8a@aar'
-  implementation 'com.simprints:LibSimprints:1.0.11'
-  implementation 'com.github.Mariovc:ImagePicker:1.2.2'
-  testImplementation 'junit:junit:4.12'
-  testImplementation 'com.google.android:android-test:4.1.1.4'
-  testImplementation 'org.robolectric:robolectric:4.3'
-}
-
 def simprintsApiKey, simprintsModuleId, simprintsUserId
 
 def getVersionCode = {
-  int versionCode = 1
-  if(System.env.TRAVIS == 'true' && System.env.TRAVIS_TAG && System.env.TRAVIS_TAG.startsWith('v')) {
-    def versionParts = System.env.TRAVIS_TAG.split(/[\.v]/)
+  int versionCode = 2
+  if (System.env.CI == 'true' && System.env.RELEASE_VERSION && System.env.RELEASE_VERSION.startsWith('v')) {
+    def versionParts = System.env.RELEASE_VERSION.split(/[^0-9]+/)
 
-    if (versionParts.length != 4)
-      throw new RuntimeException("Unexpected version number - should be of formatted as 'v0.0.0', but was: $System.env.TRAVIS_TAG")
+    if (versionParts.length != 4 && versionParts.length != 5)
+      throw new RuntimeException("Unexpected version number - should be of formatted as 'v1.2.3' or 'v1.2.3-alpha.4', but was: $System.env.RELEASE_VERSION")
 
     versionParts = versionParts.drop(1).collect { Integer.parseInt(it) }
+    int alphaPart = versionParts.size() == 4 ? versionParts[3] : 99;
 
-    if (versionParts[1] > 999 || versionParts[2] > 999)
-      throw new RuntimeException('Version part greater than 999 not allowed.')
+    if (versionParts[1] > 99 || versionParts[2] > 99 || alphaPart > 99)
+      throw new RuntimeException('Version part greater than 99 not allowed.')
 
-    versionCode = (1000 * 1000 * versionParts[0]) + 1000 * versionParts[1] + versionParts[2]
+    versionCode = (100 * 100 * 100 * versionParts[0]) + (100 * 100 * versionParts[1]) + (100 * versionParts[2]) + alphaPart
     if (versionCode > 2100000000 / 10)
       throw new RuntimeException('versionCode bigger than max allowed by Google Play.')
   }
-
-  return versionCode
+  return versionCode * 10
 }
 
 def getVersionName = {
-  System.env.TRAVIS_TAG ?: 'SNAPSHOT'
+  System.env.RELEASE_VERSION ?: 'SNAPSHOT'
 }
 
 android {
-  compileSdkVersion 28
-  buildToolsVersion '28.0.2'
+  compileSdkVersion 30
+  buildToolsVersion '30.0.3'
   packagingOptions {
     exclude 'META-INF/LICENSE'
     exclude 'META-INF/NOTICE'
   }
 
   defaultConfig {
-    versionCode getVersionCode()
     versionName getVersionName()
     archivesBaseName = "${project.name}-${versionName}"
-    minSdkVersion 19
-    targetSdkVersion 28
+    targetSdkVersion 30
     // When upgrading targetSdkVersion, check that the app menu still works on newer devices.
+    //for espresso tests
+    testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    //test user credentials
+    buildConfigField "String", "TEST_USERNAME", "\"${System.env.ANDROID_TEST_USERNAME}\""
+    buildConfigField "String", "TEST_PASSWORD", "\"${System.env.ANDROID_TEST_PASSWORD}\""
+    if (System.env.ANDROID_TEST_URL) {
+      buildConfigField "String", "SERVER_URL", "\"${System.env.ANDROID_TEST_URL}\""
+    } else {
+      buildConfigField "String", "SERVER_URL", '"https://gamma-cht.dev.medicmobile.org"'
+    }
+  }
+
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_11
+    targetCompatibility JavaVersion.VERSION_11
   }
 
   applicationVariants.all { variant ->
     buildConfigField "boolean", "DISABLE_APP_URL_VALIDATION", "Boolean.parseBoolean(\"${System.env.DISABLE_APP_URL_VALIDATION}\")";
     buildConfigField "String", "LOG_TAG", '"MedicMobile"'
 
-    if(System.env.SIMPRINTS_API_KEY) {
+    if (System.env.SIMPRINTS_API_KEY) {
       buildConfigField "String", "SIMPRINTS_API_KEY", /"${System.env.SIMPRINTS_API_KEY}"/
-    } else if(simprintsApiKey) {
+    } else if (simprintsApiKey) {
       buildConfigField "String", "SIMPRINTS_API_KEY", /"${simprintsApiKey}"/
     } else {
       buildConfigField "String", "SIMPRINTS_API_KEY", /"Medic's API Key"/
     }
 
-    if(System.env.SIMPRINTS_USER_ID) {
+    if (System.env.SIMPRINTS_USER_ID) {
       buildConfigField "String", "SIMPRINTS_USER_ID", /"${System.env.SIMPRINTS_USER_ID}"/
-    } else if(simprintsUserId) {
+    } else if (simprintsUserId) {
       buildConfigField "String", "SIMPRINTS_USER_ID", /"${simprintsUserId}"/
     } else {
       buildConfigField "String", "SIMPRINTS_USER_ID", '"some-user-id"'
     }
 
-    if(System.env.SIMPRINTS_MODULE_ID) {
+    if (System.env.SIMPRINTS_MODULE_ID) {
       buildConfigField "String", "SIMPRINTS_MODULE_ID", /"${System.env.SIMPRINTS_MODULE_ID}"/
-    } else if(simprintsModuleId) {
+    } else if (simprintsModuleId) {
       buildConfigField "String", "SIMPRINTS_MODULE_ID", /"${simprintsModuleId}"/
     } else {
       buildConfigField "String", "SIMPRINTS_MODULE_ID", '"Medic Module ID"'
     }
 
-    // Every APK requires a unique version code. 
+    // Every APK requires a unique version code.
     // So when compiling multiple APKS for the different ABIs, use the first digit
     variant.outputs.each { output ->
-      def versionAugmentation = (output.getFilter(OutputFile.ABI) == 'arm64-v8a') ? 1 : 0;
+      def versionAugmentation = (output.getFilter(com.android.build.OutputFile.ABI) == 'arm64-v8a') ? 1 : 0;
       output.versionCodeOverride = variant.versionCode * 10 + versionAugmentation
     }
   }
@@ -151,14 +152,15 @@ android {
     lintConfig = new File('config/lint.xml')
 
     disable 'UnusedResources' // linter can't handle static imports, so just skip this test
-    disable 'GradleDependency' // TODO update to latest support-v4 lib and re-enable this rule
-    disable 'OldTargetApi'
+    disable 'MissingTranslation'
+    disable 'StringFormatCount'
+    disable 'JcenterRepositoryObsolete'
 
     warningsAsErrors true
 
     xmlReport false
 
-    if(System.env.TRAVIS == 'true') {
+    if (System.env.CI == 'true') {
       abortOnError true
       htmlReport false
       textReport true
@@ -166,87 +168,131 @@ android {
     }
   }
 
-  flavorDimensions 'brand'
+  flavorDimensions 'brand', 'version'
   productFlavors {
+
+    webview {
+      dimension 'version'
+      minSdkVersion 29 // Android 10
+      // the APK with a higher minSdkVersion value must have a higher versionCode value
+      // https://developer.android.com/google/play/publishing/multiple-apks
+      versionCode getVersionCode() + 1;
+      versionNameSuffix '-webview'
+    }
+
+    xwalk {
+      dimension 'version'
+      minSdkVersion 19 // Android 4.4
+      versionCode getVersionCode();
+      versionNameSuffix '-xwalk'
+    }
+
     unbranded {
       // we will not create project-specific src directories
       // for `unbranded` - it will use the defaults in
       // src/main
-
+      dimension = 'brand'
       simprintsApiKey = 'f4c47c4e-d6ee-444f-b16e-22a4761b1f3c'
       simprintsModuleId = 'simprints.app'
       simprintsUserId = 'test@simprints.app'
     }
     medicmobiledemo {
+      dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.medicmobiledemo'
+    }
+    medicmobilegamma {
+      dimension = 'brand'
+      applicationId = 'org.medicmobile.webapp.mobile.medicmobilegamma'
     }
 
     bracuganda {
+      dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.bracuganda'
     }
     cic_guatemala {
+      dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.cic_guatemala'
     }
 
     cmmb_kenya {
+      dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.cmmb_kenya'
     }
 
     ebpp_indonesia {
+      dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.ebpp_indonesia'
     }
     hope_through_health {
+      dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.hope_through_health'
     }
     livinggoods {
+      dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.livinggoods'
     }
     livinggoodskenya {
+      dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.livinggoodskenya'
     }
     livinggoods_assisted_networks {
+      dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.livinggoods_assisted_networks'
     }
-    livinggoods_innovation_ke {
-      applicationId = 'org.medicmobile.webapp.mobile.livinggoods_innovation_ke'
-    }
     livinggoods_innovation_ke_supervisor {
+      dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.livinggoods_innovation_ke_supervisor'
     }
     livinggoods_innovation_ke_hivst {
+      dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.livinggoods_innovation_ke_hivst'
     }
     moh_kenya_siaya_white {
+      dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.moh_kenya_siaya'
     }
     moh_kenya_siaya_red {
+      dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.moh_kenya_siaya_red'
     }
     moh_kenya_siaya_green {
+      dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.moh_kenya_siaya_green'
     }
     moh_kenya_siaya_black {
+      dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.moh_kenya_siaya_black'
     }
     moh_mali {
+      dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.moh_mali'
     }
     moh_zanzibar_training {
+      dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.moh_zanzibar_training'
     }
     moh_zanzibar {
+      dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.moh_zanzibar'
     }
     musomali {
+      dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.musomali'
     }
     pih_malawi {
+      dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.pih_malawi'
     }
     pih_malawi_supervisor {
+      dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.pih_malawi_supervisor'
     }
+    safaridoctors_kenya {
+      dimension = 'brand'
+      applicationId = 'org.medicmobile.webapp.mobile.safaridoctors_kenya'
+    }
     simprints {
+      dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.simprints'
 
       simprintsApiKey = 'f4c47c4e-d6ee-444f-b16e-22a4761b1f3c'
@@ -254,19 +300,82 @@ android {
       simprintsUserId = 'test@simprints.app'
     }
     vhw_burundi {
+      dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.vhw_burundi'
     }
     surveillance_covid19_kenya {
+      dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.surveillance_covid19_kenya'
+    }
+    trippleeighty {
+      dimension = 'brand'
+      applicationId = 'org.medicmobile.webapp.mobile.trippleeighty'
+    }
+    covid_moh_mali {
+      dimension = 'brand'
+      applicationId = "org.medicmobile.webapp.mobile.covid_moh_mali"
+    }
+    icm_ph_chc {
+      dimension = 'brand'
+      applicationId = "org.medicmobile.webapp.mobile.icm_ph_chc"
+    }
+    vhtapp_uganda {
+      dimension = 'brand'
+      applicationId = "org.medicmobile.webapp.mobile.vhtapp_uganda"
+    }
+    unbranded_test {
+      dimension = 'brand'
+      applicationId = "org.medicmobile.webapp.mobile.unbranded_test"
+    }
+
+    itech_aurum {
+      dimension = 'brand'
+      applicationId = 'org.medicmobile.webapp.mobile.itech_aurum'
+    }
+    itech_malawi {
+      dimension = 'brand'
+      applicationId = 'org.medicmobile.webapp.mobile.itech_malawi'
+    }
+    alerte_niger {
+      dimension = 'brand'
+      applicationId = 'org.medicmobile.webapp.mobile.alerte_niger'
     }
   }
 
   splits {
     abi {
-      enable true
+      enable !project.hasProperty('abi')
       reset()
-      include 'armeabi-v7a', 'arm64-v8a'
+      include(
+          'armeabi-v7a',
+          'arm64-v8a',
+          //'x86_64',  //--> uncomment to be able to deploy the app in
+          //'x86',     //--> Android virtual devices
+      )
       universalApk false
     }
   }
+
+  sourceSets {
+    xwalk {
+      jniLibs.srcDirs = ['src/xwalk/libs']
+    }
+  }
+}
+
+dependencies {
+  implementation fileTree(dir: 'libs', include: ['*.jar'])
+  implementation 'com.simprints:LibSimprints:1.0.11'
+  implementation 'com.github.Mariovc:ImagePicker:1.2.2'
+  xwalkImplementation files('src/xwalk/libs/xwalk_core_library-23.53.589.4-arm64-v8a.aar')
+  testImplementation 'junit:junit:4.13.1'
+  testImplementation 'com.google.android:android-test:4.1.1.4'
+  testImplementation 'org.robolectric:robolectric:4.3'
+  androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
+  androidTestImplementation 'androidx.test.espresso:espresso-web:3.4.0'
+  androidTestImplementation 'androidx.test:runner:1.4.0'
+  androidTestImplementation 'androidx.test:rules:1.4.0'
+  androidTestImplementation 'androidx.test:core:1.4.0'
+  androidTestImplementation 'androidx.test.ext:junit:1.1.3'
+  androidTestImplementation 'org.hamcrest:hamcrest-library:2.2'
 }

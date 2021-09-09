@@ -1,5 +1,6 @@
 package org.medicmobile.webapp.mobile;
 
+import android.annotation.SuppressLint;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -37,7 +38,7 @@ class SmsSender {
 
 		parent.registerReceiver(new BroadcastReceiver() {
 			@Override public void onReceive(Context ctx, Intent intent) {
-				log("BroadcastReceiver.onReceive() :: %s", intent.getAction());
+				log(this, "onReceive() :: %s", intent.getAction());
 
 				try {
 					switch(intent.getAction()) {
@@ -106,6 +107,7 @@ class SmsSender {
 		return intents;
 	}
 
+	@SuppressLint("UnspecifiedImmutableFlag")
 	private PendingIntent intentFor(String intentType, String id, String destination, String content, int partIndex, int totalParts) {
 		Intent intent = new Intent(intentType);
 		intent.putExtra("id", id);
@@ -126,6 +128,7 @@ class SmsSender {
 	/**
 	 * @see https://developer.android.com/reference/android/telephony/SmsMessage.html#createFromPdu%28byte[],%20java.lang.String%29
 	 */
+	@SuppressLint("ObsoleteSdkInt")
 	private  static SmsMessage createFromPdu(Intent intent) {
 		byte[] pdu = intent.getByteArrayExtra("pdu");
 		if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -156,11 +159,11 @@ class SmsSender {
 
 	//> PUBLIC API
 		public void handle(Intent intent) {
-			log("Received delivery report for message %s.", describe(intent));
+			log(this, "Received delivery report for message: %s", describe(intent));
 
 			int status = createFromPdu(intent).getStatus();
 
-			log("Delivery status: 0x" + toHexString(status));
+			log(this, "Delivery status: 0x" + toHexString(status));
 
 			if((status & GSM_STATUS_MASK) == status) {
 				handleGsmDelivery(intent, status);
@@ -233,17 +236,17 @@ class SmsSender {
 			} else throw new IllegalStateException("Unexpected status (> 0x7F) : 0x" + toHexString(status));
 
 			reportStatus(intent, "FAILED", fDetail);
-			log("Delivering message to %s failed (cause: %s)", describe(intent), fDetail);
+			log(this, "Delivering message to %s failed (cause: %s)", describe(intent), fDetail);
 		}
 
 		private void handleCdmaDelivery() {
-			log("Delivery reports not yet supported on CDMA devices.");
+			log(this, "Delivery reports not yet supported on CDMA devices.");
 		}
 	}
 
 	class SendingReportHandler {
 		void handle(Intent intent, int resultCode) {
-			log("Received sending report for message %s.", describe(intent));
+			log(this, "Received sending report for message: %s", describe(intent));
 
 			if(resultCode == RESULT_OK) {
 				reportStatus(intent, "SENT");
@@ -266,7 +269,7 @@ class SmsSender {
 						failureReason = "unknown; resultCode=" + resultCode;
 				}
 				reportStatus(intent, "FAILED", failureReason);
-				log("Sending message %s failed.  Cause: %s", describe(intent), failureReason);
+				log(this, "Sending message %s failed. Cause: %s", describe(intent), failureReason);
 			}
 		}
 

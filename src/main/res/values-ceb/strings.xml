@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<string name="locRequestTitle">Access sa Lokasyon</string>
+	<string name="locRequestMessage">Ginakolekta sa %s ang data sa lokasyon aron ma-analisar ug ma-improve ang mga resulta sa maayong panglawas sa inyong lugar. Aron mahatagan og access sa lokasyon pilia ang \"Ablihan\", ug ikumpirma ang mosunod nga prompt.</string>
+	<string name="locRequestOkButton">Ablihan</string>
+	<string name="locRequestDenyButton">Dili lang, salamat</string>
+	<string name="locRequestIconDescription">Ang icon sa akong lokasyon</string>
+</resources>

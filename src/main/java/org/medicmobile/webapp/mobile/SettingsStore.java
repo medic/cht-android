@@ -7,7 +7,6 @@ import java.util.regex.*;
 
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static org.medicmobile.webapp.mobile.SimpleJsonClient2.redactUrl;
-import static org.medicmobile.webapp.mobile.MedicLog.log;
 import static org.medicmobile.webapp.mobile.MedicLog.trace;
 
 @SuppressWarnings("PMD.ShortMethodName")
@@ -45,24 +44,43 @@ public abstract class SettingsStore {
 		ed.putString("unlock-code", unlockCode);
 
 		if(!ed.commit()) throw new SettingsException(
-				"Failed to save to SharedPreferences.");
+				"Failed to save 'unlock-code' to SharedPreferences.");
 	}
 
 	String get(String key) {
 		return prefs.getString(key, null);
 	}
 
+	/**
+	 * Returns true if the user has denied to provide its geolocation data.
+	 * The rejection is taken from the first view with the "prominent" disclosure
+	 * about the location data, not from the native dialog displayed by Android.
+	 */
+	boolean hasUserDeniedGeolocation() {
+		return prefs.getBoolean("denied-geolocation", false);
+	}
+
+	/**
+	 * @see #hasUserDeniedGeolocation()
+	 */
+	void setUserDeniedGeolocation() throws SettingsException {
+		SharedPreferences.Editor ed = prefs.edit();
+		ed.putBoolean("denied-geolocation", true);
+		if(!ed.commit()) throw new SettingsException(
+				"Failed to save 'denied-geolocation' to SharedPreferences.");
+	}
+
 	static SettingsStore in(Context ctx) {
-		if(DEBUG) log("Loading settings for context %s...", ctx);
+		trace(SettingsStore.class, "Loading settings for context %s...", ctx);
 
 		SharedPreferences prefs = ctx.getSharedPreferences(
 				SettingsStore.class.getName(),
 				Context.MODE_PRIVATE);
 
-		String fixedAppUrl = ctx.getResources().
-				getString(R.string.fixed_app_url);
-		if(fixedAppUrl.length() > 0) {
-			return new BrandedSettingsStore(prefs, fixedAppUrl);
+		String appHost = ctx.getResources().getString(R.string.app_host);
+		String scheme = ctx.getResources().getString(R.string.scheme);
+		if(appHost.length() > 0) {
+			return new BrandedSettingsStore(prefs, scheme + "://" + appHost);
 		}
 
 		return new UnbrandedSettingsStore(prefs);
@@ -118,7 +136,7 @@ class WebappSettings {
 	public final String appUrl;
 
 	public WebappSettings(String appUrl) {
-		if(DEBUG) trace(this, "WebappSettings() appUrl=%s", redactUrl(appUrl));
+		if(DEBUG) trace(this, "WebappSettings() :: appUrl: %s", redactUrl(appUrl));
 		this.appUrl = appUrl;
 	}
 
