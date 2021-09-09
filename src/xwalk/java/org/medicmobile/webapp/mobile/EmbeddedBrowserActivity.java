@@ -144,14 +144,14 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		if (!(recentNavigation != null && recentNavigation.isEmpty())) {
 			container.loadUrl(recentNavigation);
 		}
-	  }
+	}
 
-	  @Override protected void onStop() {
-			super.onStop();
-			SharedPreferences.Editor editor = sharedPreferences.edit();
-			editor.putString(MY_LAST_ACTIVITY, container.getUrl());
-			editor.commit();
-	  }
+	@Override protected void onStop() {
+		super.onStop();
+		SharedPreferences.Editor editor = sharedPreferences.edit();
+		editor.putString(MY_LAST_ACTIVITY, container.getUrl());
+		editor.apply();
+	}
 
 	@Override public boolean onCreateOptionsMenu(Menu menu) {
 		if(settings.allowsConfiguration()) {
