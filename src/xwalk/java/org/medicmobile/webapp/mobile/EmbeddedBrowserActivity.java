@@ -138,10 +138,10 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		* Created SharedPreferences A Store Procedure in Android
 		* In onStop() We are Storing the Current Path of the User
 		* When we relaunch the application we are loading Stored URL in the container i.e XWalkView
-		* */
+		*/
 		sharedPreferences = getSharedPreferences(MY_LAST_ACTIVITY, 0); // 0 - for private mode
 		String recentNavigation = sharedPreferences.getString(MY_LAST_ACTIVITY, "");
-		if (!(recentNavigation != null && recentNavigation.isEmpty())) {
+		if (recentNavigation != null && !recentNavigation.isEmpty()) {
 			container.loadUrl(recentNavigation);
 		}
 	}

@@ -5,6 +5,7 @@ import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.app.ActivityManager;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
@@ -66,6 +67,8 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 
 	private static final String[] LOCATION_PERMISSIONS = { Manifest.permission.ACCESS_FINE_LOCATION };
 
+	static final String MY_LAST_ACTIVITY = "myLastActivity";
+
 	private static final ValueCallback<String> IGNORE_RESULT = new ValueCallback<String>() {
 		public void onReceiveValue(String result) { /* ignore */ }
 	};
@@ -85,6 +88,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	private MrdtSupport mrdt;
 	private PhotoGrabber photoGrabber;
 	private SmsSender smsSender;
+	private SharedPreferences sharedPreferences;
 
 	private boolean isMigrationRunning = false;
 
@@ -138,6 +142,17 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		}
 
 		registerRetryConnectionBroadcastReceiver();
+
+		/*
+		 * Created SharedPreferences A Store Procedure in Android
+		 * In onStop() We are Storing the Current Path of the User
+		 * When we relaunch the application we are loading Stored URL in the container i.e XWalkView
+		 */
+		sharedPreferences = getSharedPreferences(MY_LAST_ACTIVITY, 0); // 0 - for private mode
+		String recentNavigation = sharedPreferences.getString(MY_LAST_ACTIVITY, "");
+		if (recentNavigation != null && !recentNavigation.isEmpty()) {
+			container.loadUrl(recentNavigation);
+		}
 	}
 
 	@Override
@@ -157,6 +172,14 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		}
 		trace(this, "onStart() :: Checking Crosswalk migration done.");
 		super.onStart();
+	}
+
+	@Override
+	protected void onStop() {
+		super.onStop();
+		SharedPreferences.Editor editor = sharedPreferences.edit();
+		editor.putString(MY_LAST_ACTIVITY, container.getUrl());
+		editor.apply();
 	}
 
 	@Override public boolean onCreateOptionsMenu(Menu menu) {
