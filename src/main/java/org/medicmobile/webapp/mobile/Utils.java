@@ -13,6 +13,9 @@ import static org.medicmobile.webapp.mobile.BuildConfig.APPLICATION_ID;
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static org.medicmobile.webapp.mobile.BuildConfig.VERSION_NAME;
 
+import java.io.File;
+import java.util.Optional;
+
 final class Utils {
 	private Utils() {}
 
@@ -76,5 +79,28 @@ final class Utils {
 		intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
 		context.startActivity(intent);
 		Runtime.getRuntime().exit(0);
+	}
+
+	/**
+	 * The file path can be a regular file or a content ("content://" scheme)
+	 * @param path {String} File path
+	 * @return {Uri}
+	 */
+	static Optional<Uri> getUriFromFilePath(String path) {
+		if (path == null || path.isEmpty()) {
+			return Optional.empty();
+		}
+
+		Uri parsedPath = Uri.parse(path);
+		if ("content".equals(parsedPath.getScheme())) {
+			return Optional.of(parsedPath);
+		}
+
+		File file = new File(path);
+		if (!file.exists()) {
+			return Optional.empty();
+		}
+
+		return Optional.of(Uri.fromFile(file));
 	}
 }

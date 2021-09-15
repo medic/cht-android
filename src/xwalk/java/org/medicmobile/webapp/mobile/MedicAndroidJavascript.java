@@ -9,6 +9,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkCapabilities;
 import android.net.NetworkInfo;
 import android.net.TrafficStats;
+import android.net.Uri;
 import android.os.Process;
 import android.widget.DatePicker;
 import android.os.Build;
@@ -44,6 +45,7 @@ public class MedicAndroidJavascript {
 	private final SimprintsSupport simprints;
 	private final MrdtSupport mrdt;
 	private final SmsSender smsSender;
+	private final ChtExternalAppHandler chtExternalAppHandler;
 
 	private ActivityManager activityManager;
 	private ConnectivityManager connectivityManager;
@@ -54,6 +56,7 @@ public class MedicAndroidJavascript {
 		this.simprints = parent.getSimprintsSupport();
 		this.mrdt = parent.getMrdtSupport();
 		this.smsSender = parent.getSmsSender();
+		this.chtExternalAppHandler = parent.getChtExternalAppHandler();
 	}
 
 	public void setAlert(Alert soundAlert) {
@@ -227,6 +230,31 @@ public class MedicAndroidJavascript {
 
 	@org.xwalk.core.JavascriptInterface
 	@android.webkit.JavascriptInterface
+	public void launchExternalApp(String action, String category, String type, String extras, String uri, String packageName, String flags) {
+		try {
+			JSONObject parsedExtras = extras == null ? null : new JSONObject(extras);
+			Uri parsedUri = uri == null ? null : Uri.parse(uri);
+			Integer parsedFlags = flags == null ? null : Integer.parseInt(flags);
+
+			ChtExternalApp chtExternalApp = new ChtExternalApp
+					.Builder()
+					.setAction(action)
+					.setCategory(category)
+					.setType(type)
+					.setExtras(parsedExtras)
+					.setUri(parsedUri)
+					.setPackageName(packageName)
+					.setFlags(parsedFlags)
+					.build();
+			this.chtExternalAppHandler.startIntent(chtExternalApp);
+
+		} catch (Exception ex) {
+			logException(ex);
+		}
+	}
+
+	@org.xwalk.core.JavascriptInterface
+	@android.webkit.JavascriptInterface
 	@SuppressLint({ "NewApi", "ObsoleteSdkInt" })
 	public String getDeviceInfo() {
 		try {
@@ -376,7 +404,7 @@ public class MedicAndroidJavascript {
 	}
 
 	private void logException(Exception ex) {
-		log(ex, "Execption thrown in JavascriptInterface function.");
+		log(ex, "Exception thrown in JavascriptInterface function.");
 
 		StringWriter sw = new StringWriter();
 		PrintWriter pw = new PrintWriter(sw);
@@ -385,7 +413,7 @@ public class MedicAndroidJavascript {
 				.replace("\n", "; ")
 				.replace("\t", " ");
 
-		parent.errorToJsConsole("Execption thrown in JavascriptInterface function: %s", stacktrace);
+		parent.errorToJsConsole("Exception thrown in JavascriptInterface function: %s", stacktrace);
 	}
 
 //> STATIC HELPERS
