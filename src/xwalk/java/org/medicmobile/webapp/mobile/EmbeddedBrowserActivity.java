@@ -4,7 +4,6 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.app.ActivityManager;
 import android.net.Uri;
 import android.net.ConnectivityManager;
@@ -66,8 +65,6 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		public void onReceiveValue(String result) { /* ignore */ }
 	};
 
-	static final String MY_LAST_ACTIVITY = "myLastActivity";
-
 	private final ValueCallback<String> backButtonHandler = new ValueCallback<String>() {
 		public void onReceiveValue(String result) {
 			if(!"true".equals(result)) {
@@ -83,7 +80,6 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	private MrdtSupport mrdt;
 	private PhotoGrabber photoGrabber;
 	private SmsSender smsSender;
-	private SharedPreferences sharedPreferences;
 
 //> ACTIVITY LIFECYCLE METHODS
 	@Override public void onCreate(Bundle savedInstanceState) {
@@ -134,13 +130,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 			toast(redactUrl(appUrl));
 		}
 
-		/*
-		* Created SharedPreferences A Store Procedure in Android
-		* In onStop() We are Storing the Current Path of the User
-		* When we relaunch the application we are loading Stored URL in the container i.e XWalkView
-		*/
-		sharedPreferences = getSharedPreferences(MY_LAST_ACTIVITY, 0); // 0 - for private mode
-		String recentNavigation = sharedPreferences.getString(MY_LAST_ACTIVITY, "");
+		String recentNavigation = settings.getLastUrl();
 		if (recentNavigation != null && !recentNavigation.isEmpty()) {
 			container.loadUrl(recentNavigation);
 		}
@@ -148,9 +138,11 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 
 	@Override protected void onStop() {
 		super.onStop();
-		SharedPreferences.Editor editor = sharedPreferences.edit();
-		editor.putString(MY_LAST_ACTIVITY, container.getUrl());
-		editor.apply();
+		try {
+			settings.setLastUrl(container.getUrl());
+		} catch (SettingsException e) {
+			error(e, "Error recording last URL loaded");
+		}
 	}
 
 	@Override public boolean onCreateOptionsMenu(Menu menu) {

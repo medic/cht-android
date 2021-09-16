@@ -70,6 +70,17 @@ public abstract class SettingsStore {
 				"Failed to save 'denied-geolocation' to SharedPreferences.");
 	}
 
+	String getLastUrl() {
+		return prefs.getString("last-url", null);
+	}
+
+	void setLastUrl(String lastUrl) throws SettingsException {
+		SharedPreferences.Editor ed = prefs.edit();
+		ed.putString("last-url", lastUrl);
+		if(!ed.commit()) throw new SettingsException(
+				"Failed to save 'last-url' to SharedPreferences.");
+	}
+
 	static SettingsStore in(Context ctx) {
 		trace(SettingsStore.class, "Loading settings for context %s...", ctx);
 
