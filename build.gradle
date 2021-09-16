@@ -68,6 +68,7 @@ android {
   defaultConfig {
     versionName getVersionName()
     archivesBaseName = "${project.name}-${versionName}"
+    //noinspection OldTargetApi
     targetSdkVersion 30
     // When upgrading targetSdkVersion, check that the app menu still works on newer devices.
     //for espresso tests
@@ -370,7 +371,7 @@ dependencies {
   xwalkImplementation files('src/xwalk/libs/xwalk_core_library-23.53.589.4-arm64-v8a.aar')
   testImplementation 'junit:junit:4.13.1'
   testImplementation 'com.google.android:android-test:4.1.1.4'
-  testImplementation 'org.robolectric:robolectric:4.3'
+  testImplementation 'org.robolectric:robolectric:4.4'
   androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
   androidTestImplementation 'androidx.test.espresso:espresso-web:3.4.0'
   androidTestImplementation 'androidx.test:runner:1.4.0'
