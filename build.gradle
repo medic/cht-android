@@ -58,8 +58,7 @@ def getVersionName = {
 }
 
 android {
-  compileSdkVersion 30
-  buildToolsVersion '30.0.3'
+  compileSdkVersion 29
   packagingOptions {
     exclude 'META-INF/LICENSE'
     exclude 'META-INF/NOTICE'
@@ -68,7 +67,7 @@ android {
   defaultConfig {
     versionName getVersionName()
     archivesBaseName = "${project.name}-${versionName}"
-    targetSdkVersion 30
+    targetSdkVersion 29
     // When upgrading targetSdkVersion, check that the app menu still works on newer devices.
     //for espresso tests
     testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
