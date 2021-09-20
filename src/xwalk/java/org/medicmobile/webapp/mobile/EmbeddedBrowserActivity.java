@@ -408,7 +408,6 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 				this.chtExternalAppHandler.resumeActivity();
 				return;
 			}
-
 			trace(this, "ChtExternalAppHandler :: User rejected permission.");
 			return;
 		}
