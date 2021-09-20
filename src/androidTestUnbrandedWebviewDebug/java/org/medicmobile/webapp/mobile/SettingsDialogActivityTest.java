@@ -1,8 +1,5 @@
 package org.medicmobile.webapp.mobile;
 
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.ViewParent;
 import androidx.test.espresso.DataInteraction;
 import androidx.test.espresso.ViewInteraction;
 import androidx.test.espresso.web.webdriver.DriverAtoms;
@@ -11,9 +8,6 @@ import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.LargeTest;
 import java.util.Locale;
-import org.hamcrest.Description;
-import org.hamcrest.Matcher;
-import org.hamcrest.TypeSafeMatcher;
 import org.junit.FixMethodOrder;
 import org.junit.Rule;
 import org.junit.Test;
