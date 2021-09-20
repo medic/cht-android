@@ -85,7 +85,7 @@ public class SettingsDialogActivityTest {
 	public void testLoginScreen() throws Exception {
 		DataInteraction linearLayout = onData(anything())
 				.inAdapterView(allOf(withId(R.id.lstServers),
-						childAtPosition(
+						TestUtils.childAtPosition(
 								withId(android.R.id.content),
 								0)))
 				.atPosition(2);
@@ -138,24 +138,5 @@ public class SettingsDialogActivityTest {
 	private String getLanguage(String code) {
 		Locale aLocale = new Locale(code);
 		return aLocale.getDisplayName();
-	}
-
-	private static Matcher<View> childAtPosition(
-			final Matcher<View> parentMatcher, final int position) {
-
-		return new TypeSafeMatcher<View>() {
-			@Override
-			public void describeTo(Description description) {
-				description.appendText("Child at position " + position + " in parent ");
-				parentMatcher.describeTo(description);
-			}
-
-			@Override
-			public boolean matchesSafely(View view) {
-				ViewParent parent = view.getParent();
-				return parent instanceof ViewGroup && parentMatcher.matches(parent)
-						&& view.equals(((ViewGroup) parent).getChildAt(position));
-			}
-		};
 	}
 }

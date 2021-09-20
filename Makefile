@@ -71,10 +71,16 @@ lint:
 	${GRADLE} ${GRADLE_OPTS} androidCheck lint${flavor}Debug
 test: lint
 	${GRADLE} ${GRADLE_OPTS} test
-test-ui:
-	${GRADLE} connectedUnbrandedWebviewDebugAndroidTest -Pabi=${abi} --stacktrace
 test-ui-gamma:
-	${GRADLE} connectedMedicmobilegammaWebviewDebugAndroidTest -Pabi=${abi} --
+	${GRADLE} connectedMedicmobilegammaWebviewDebugAndroidTest -Pabi=${abi} --stacktrace
+test-ui:
+	${GRADLE} connectedUnbrandedWebviewDebugAndroidTest \
+		-Pabi=${abi} --stacktrace -Pandroid.testInstrumentationRunnerArguments.class=\
+	org.medicmobile.webapp.mobile.SettingsDialogActivityTest
+test-ui-url:
+	DISABLE_APP_URL_VALIDATION=true ${GRADLE} connectedUnbrandedWebviewDebugAndroidTest \
+		-Pabi=${abi} --stacktrace -Pandroid.testInstrumentationRunnerArguments.class=\
+	org.medicmobile.webapp.mobile.LastUrlTest
 
 
 #
