@@ -1,5 +1,15 @@
 # Release notes
 
+## 0.10.0
+
+### Changes
+
+- [feature] Add CHT External App Launcher [#199](https://github.com/medic/cht-android/pull/199)  :bookmark: cht-core v3.13.
+
+### Development changes
+
+- [improvement] Minor updates in the build system [#209](https://github.com/medic/cht-android/pull/209).
+
 ## 0.9.0
 
 ### Changes
