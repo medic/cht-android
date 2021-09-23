@@ -28,6 +28,11 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+
+/**
+ * Test that when the app is closed and then opened again, the last URL
+ * viewed is loaded instead of the startup URL.
+ */
 @LargeTest
 @RunWith(AndroidJUnit4.class)
 public class LastUrlTest {
