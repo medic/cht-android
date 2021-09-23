@@ -24,9 +24,11 @@ import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.LargeTest;
 
+import org.junit.FixMethodOrder;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.MethodSorters;
 
 
 /**
@@ -34,6 +36,7 @@ import org.junit.runner.RunWith;
  * viewed is loaded instead of the startup URL.
  */
 @LargeTest
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @RunWith(AndroidJUnit4.class)
 public class LastUrlTest {
 
@@ -42,7 +45,7 @@ public class LastUrlTest {
 			new ActivityScenarioRule<>(SettingsDialogActivity.class);
 
 	@Test
-	public void somethingToTest() throws InterruptedException {
+	public void testOpenUrlAndRecord() throws InterruptedException {
 		onView(withText("Custom")).perform(click());
 		ViewInteraction textAppUrl = onView(withId(R.id.txtAppUrl));
 		textAppUrl.perform(replaceText("https://angular.io/resources?category=development"),
@@ -62,7 +65,7 @@ public class LastUrlTest {
 	}
 
 	@Test
-	public void somethingToTest2() throws InterruptedException {
+	public void testReopenAppAndCheckLastUrl() throws InterruptedException {
 		DataInteraction linearLayout = onData(anything())
 				.inAdapterView(allOf(withId(R.id.lstServers),
 						TestUtils.childAtPosition(
