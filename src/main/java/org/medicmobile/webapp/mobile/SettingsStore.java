@@ -6,6 +6,7 @@ import java.util.*;
 import java.util.regex.*;
 
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
+import static org.medicmobile.webapp.mobile.BuildConfig.TTL_LAST_URL;
 import static org.medicmobile.webapp.mobile.SimpleJsonClient2.redactUrl;
 import static org.medicmobile.webapp.mobile.MedicLog.trace;
 
@@ -70,16 +71,28 @@ public abstract class SettingsStore {
 				"Failed to save 'denied-geolocation' to SharedPreferences.");
 	}
 
+	/**
+	 * Return last visited URL in the app, within TTL_LAST_URL milliseconds.
+	 */
 	String getLastUrl() {
+		long lastUrlTimeMillis = prefs.getLong("last-url-time-ms", 0);
+		long lastUrlTimeMillisFromNow = System.currentTimeMillis() - lastUrlTimeMillis;
+		if (lastUrlTimeMillisFromNow > TTL_LAST_URL) {
+			return null;
+		}
 		String lastUrl = prefs.getString("last-url", null);
 		trace(this, "SettingsStore() :: getting last-url: %s", lastUrl);
 		return lastUrl;
 	}
 
+	/**
+	 * Set last visited URL in the app.
+	 */
 	void setLastUrl(String lastUrl) throws SettingsException {
 		trace(this, "SettingsStore() :: setting last-url: %s", lastUrl);
 		SharedPreferences.Editor ed = prefs.edit();
 		ed.putString("last-url", lastUrl);
+		ed.putLong("last-url-time-ms", System.currentTimeMillis());
 		if(!ed.commit()) throw new SettingsException(
 				"Failed to save 'last-url' to SharedPreferences.");
 	}

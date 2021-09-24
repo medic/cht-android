@@ -95,7 +95,8 @@ android {
 
   applicationVariants.all { variant ->
     buildConfigField "boolean", "DISABLE_APP_URL_VALIDATION", "Boolean.parseBoolean(\"${System.env.DISABLE_APP_URL_VALIDATION}\")";
-    buildConfigField "String", "LOG_TAG", '"MedicMobile"'
+    buildConfigField "String",  "LOG_TAG", '"MedicMobile"'
+    buildConfigField "Long",    "TTL_LAST_URL", '24l * 60 * 60 * 1000'  // 24 hs max time last URL loaded is remembered
 
     if (System.env.SIMPRINTS_API_KEY) {
       buildConfigField "String", "SIMPRINTS_API_KEY", /"${System.env.SIMPRINTS_API_KEY}"/
