@@ -103,5 +103,61 @@ public class UtilsTest {
 		assertEquals("file", uri.getScheme());
 		assertEquals(filePath, uri.getPath());
 	}
+
+	@Test
+	public void validNavigationUrl() {
+		assertTrue(Utils.isValidNavigationUrl(
+				"https://gamma-cht.dev.medicmobile.org",
+				"https://gamma-cht.dev.medicmobile.org/some/tab"));
+	}
+
+	@Test
+	public void validNavigationUrlWithBashUri() {
+		assertTrue(Utils.isValidNavigationUrl(
+				"https://gamma-cht.dev.medicmobile.org/",
+				"https://gamma-cht.dev.medicmobile.org/#/reports"));
+	}
+
+	@Test
+	public void notValidNullNavigationUrl() {
+		assertFalse(Utils.isValidNavigationUrl(
+				"https://gamma-cht.dev.medicmobile.org",
+				null));
+	}
+
+	@Test
+	public void notValidNavigationUrl() {
+		assertFalse(Utils.isValidNavigationUrl(
+				"https://gamma-cht.dev.medicmobile.org",
+				"https://example.com"));
+	}
+
+	@Test
+	public void notValidMalformedAppUrl() {
+		assertFalse(Utils.isValidNavigationUrl(
+				"not-valid-url",
+				"https://not-valid-url.com/res"));
+	}
+
+	@Test
+	public void notValidNavigationUri() {
+		assertFalse(Utils.isValidNavigationUrl(
+				"https://gamma-cht.dev.medicmobile.org",
+				"/resource/without/base"));
+	}
+
+	@Test
+	public void notValidNavigationLoginUri() {
+		assertFalse(Utils.isValidNavigationUrl(
+				"https://gamma-cht.dev.medicmobile.org",
+				"https://gamma-cht.dev.medicmobile.org/medic/login?"));
+	}
+
+	@Test
+	public void notValidNavigationRewriteUri() {
+		assertFalse(Utils.isValidNavigationUrl(
+				"https://gamma-cht.dev.medicmobile.org",
+				"https://gamma-cht.dev.medicmobile.org/medic/_rewrite"));
+	}
 }
 

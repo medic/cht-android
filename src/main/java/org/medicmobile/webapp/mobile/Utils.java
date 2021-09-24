@@ -14,6 +14,8 @@ import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static org.medicmobile.webapp.mobile.BuildConfig.VERSION_NAME;
 
 import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Optional;
 
 final class Utils {
@@ -29,6 +31,27 @@ final class Utils {
 		// android.net.Uri doesn't give us a host for URLs like blob:https://some-project.dev.medicmobile.org/abc-123
 		// so we might as well just regex the URL string
 		return uriToTest.matches("^(blob:)?" + appUrl + "/.*$");
+	}
+
+	/**
+	 * Valid if navUrl is not null, starts with appUrl as prefix, and
+	 * isn't the login page nor a rewrite path.
+	 */
+	static boolean isValidNavigationUrl(String appUrl, String navUrl) {
+		URL parsedAppUrl;
+		try {
+			parsedAppUrl = new URL(appUrl);
+		} catch (MalformedURLException e) {
+			return false;
+		}
+		String parsedBaseUrl = parsedAppUrl.getProtocol() + "://" + parsedAppUrl.getHost();
+		if (navUrl != null
+				&& navUrl.startsWith(parsedBaseUrl)
+				&& !navUrl.contains("/login")
+				&& !navUrl.contains("/_rewrite")) {
+			return true;
+		}
+		return false;
 	}
 
 	static JSONObject json(Object... keyVals) throws JSONException {

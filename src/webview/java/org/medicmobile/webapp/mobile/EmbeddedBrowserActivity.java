@@ -44,6 +44,7 @@ import static org.medicmobile.webapp.mobile.ConnectionUtils.connectionErrorToStr
 import static org.medicmobile.webapp.mobile.ConnectionUtils.isConnectionError;
 import static org.medicmobile.webapp.mobile.Utils.createUseragentFrom;
 import static org.medicmobile.webapp.mobile.Utils.isUrlRelated;
+import static org.medicmobile.webapp.mobile.Utils.isValidNavigationUrl;
 import static org.medicmobile.webapp.mobile.Utils.restartApp;
 
 @SuppressWarnings({ "PMD.GodClass", "PMD.TooManyMethods" })
@@ -144,7 +145,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		registerRetryConnectionBroadcastReceiver();
 
 		String recentNavigation = settings.getLastUrl();
-		if (recentNavigation != null && !recentNavigation.isEmpty()) {
+		if (isValidNavigationUrl(appUrl, recentNavigation)) {
 			container.loadUrl(recentNavigation);
 		}
 	}
@@ -171,10 +172,13 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	@Override
 	protected void onStop() {
 		super.onStop();
-		try {
-			settings.setLastUrl(container.getUrl());
-		} catch (SettingsException e) {
-			error(e, "Error recording last URL loaded");
+		String recentNavigation = container.getUrl();
+		if (isValidNavigationUrl(appUrl, recentNavigation)) {
+			try {
+				settings.setLastUrl(recentNavigation);
+			} catch (SettingsException e) {
+				error(e, "Error recording last URL loaded");
+			}
 		}
 	}
 

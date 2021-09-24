@@ -71,10 +71,13 @@ public abstract class SettingsStore {
 	}
 
 	String getLastUrl() {
-		return prefs.getString("last-url", null);
+		String lastUrl = prefs.getString("last-url", null);
+		trace(this, "SettingsStore() :: getting last-url: %s", lastUrl);
+		return lastUrl;
 	}
 
 	void setLastUrl(String lastUrl) throws SettingsException {
+		trace(this, "SettingsStore() :: setting last-url: %s", lastUrl);
 		SharedPreferences.Editor ed = prefs.edit();
 		ed.putString("last-url", lastUrl);
 		if(!ed.commit()) throw new SettingsException(
@@ -147,7 +150,7 @@ class WebappSettings {
 	public final String appUrl;
 
 	public WebappSettings(String appUrl) {
-		if(DEBUG) trace(this, "WebappSettings() :: appUrl: %s", redactUrl(appUrl));
+		trace(this, "WebappSettings() :: appUrl: %s", redactUrl(appUrl));
 		this.appUrl = appUrl;
 	}
 
