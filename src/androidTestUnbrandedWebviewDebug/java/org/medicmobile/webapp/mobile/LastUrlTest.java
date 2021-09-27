@@ -33,7 +33,7 @@ import org.junit.runners.MethodSorters;
 
 /**
  * Test that when the app is closed and then opened again, the last URL
- * viewed is loaded instead of the startup URL.
+ * viewed is loaded instead of the app URL.
  */
 @LargeTest
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
@@ -48,15 +48,17 @@ public class LastUrlTest {
 	public void testOpenUrlAndRecord() throws InterruptedException {
 		onView(withText("Custom")).perform(click());
 		ViewInteraction textAppUrl = onView(withId(R.id.txtAppUrl));
+		// Load "Development" section of the Angular "Resources" section
 		textAppUrl.perform(replaceText("https://angular.io/resources?category=development"),
 				closeSoftKeyboard());
 		onView(withId(R.id.btnSaveSettings)).perform(click());
 		Thread.sleep(2000);
-		// Click into "Education" to go to "?category=education"
+		// Click "Education" to go to "?category=education"
 		onWebView()
 				.withNoTimeout()
 				.withElement(findElement(Locator.XPATH, "//a[contains(text(), 'Education')]"))
 				.perform(webClick());
+		// Check that the education tab is visible ("Books" section)
 		onWebView()
 				.withNoTimeout()
 				.withElement(findElement(Locator.ID, "books"))
@@ -66,6 +68,8 @@ public class LastUrlTest {
 
 	@Test
 	public void testReopenAppAndCheckLastUrl() throws InterruptedException {
+		// Click the 4th option in the Settings Dialog to
+		// reload the last URL visited
 		DataInteraction linearLayout = onData(anything())
 				.inAdapterView(allOf(withId(R.id.lstServers),
 						TestUtils.childAtPosition(
@@ -74,6 +78,8 @@ public class LastUrlTest {
 				.atPosition(3);
 		Thread.sleep(2000);
 		linearLayout.perform(click());
+		// Remembered "Books" section is loaded (last URL)
+		// instead of the "Development" section (app URL)
 		onWebView()
 				.withNoTimeout()
 				.withElement(findElement(Locator.ID, "books"))
