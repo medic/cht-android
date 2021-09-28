@@ -14,41 +14,43 @@ import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static org.medicmobile.webapp.mobile.BuildConfig.VERSION_NAME;
 
 import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.Optional;
 
 final class Utils {
 	private Utils() {}
 
+	/**
+	 * @see #isValidNavigationUrl(String, String)
+	 */
 	static boolean isUrlRelated(String appUrl, Uri uriToTest) {
 		// android.net.Uri doesn't give us a host for URLs like blob:https://some-project.dev.medicmobile.org/abc-123
 		// so we might as well just regex the URL string
-		return isUrlRelated(appUrl, uriToTest.toString());
-	}
-
-	static boolean isUrlRelated(String appUrl, String uriToTest) {
-		// android.net.Uri doesn't give us a host for URLs like blob:https://some-project.dev.medicmobile.org/abc-123
-		// so we might as well just regex the URL string
-		return uriToTest.matches("^(blob:)?" + appUrl + "/.*$");
+		if (uriToTest != null) {
+			return isUrlRelated(appUrl, uriToTest.toString());
+		}
+		return false;
 	}
 
 	/**
-	 * Valid if navUrl is not null, starts with appUrl as prefix, and
+	 * Valid if the URLs aren't null, and uriToTest has as prefix appUrl,
+	 * with or without the "blob:" prefix.
+	 */
+	static boolean isUrlRelated(String appUrl, String uriToTest) {
+		// android.net.Uri doesn't give us a host for URLs like blob:https://some-project.dev.medicmobile.org/abc-123
+		// so we might as well just regex the URL string
+		if (appUrl != null && uriToTest != null) {
+			return uriToTest.matches("^(blob:)?" + appUrl + "/.*$");
+		}
+		return false;
+	}
+
+	/**
+	 * Same as {@link #isUrlRelated(String, String)}, and navUrl
 	 * isn't the login page nor a rewrite path.
 	 */
 	static boolean isValidNavigationUrl(String appUrl, String navUrl) {
-		URL parsedAppUrl;
-		try {
-			parsedAppUrl = new URL(appUrl);
-		} catch (MalformedURLException e) {
-			return false;
-		}
-		String parsedBaseUrl = parsedAppUrl.getProtocol() + "://" + parsedAppUrl.getHost();
-		if (navUrl != null
-				&& navUrl.startsWith(parsedBaseUrl)
-				&& !navUrl.contains("/login")
-				&& !navUrl.contains("/_rewrite")) {
+		boolean isValid = isUrlRelated(appUrl, navUrl);
+		if (isValid && !navUrl.matches(".*/(login|_rewrite).*")) {
 			return true;
 		}
 		return false;

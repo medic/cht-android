@@ -16,6 +16,7 @@ import static androidx.test.espresso.web.webdriver.DriverAtoms.webClick;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anything;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
 
 import androidx.test.espresso.DataInteraction;
 import androidx.test.espresso.ViewInteraction;
@@ -48,21 +49,32 @@ public class LastUrlTest {
 	public void testOpenUrlAndRecord() throws InterruptedException {
 		onView(withText("Custom")).perform(click());
 		ViewInteraction textAppUrl = onView(withId(R.id.txtAppUrl));
-		// Load "Development" section of the Angular "Resources" section
-		textAppUrl.perform(replaceText("https://angular.io/resources?category=development"),
-				closeSoftKeyboard());
+		// Load the the Angular "Getting started" guide
+		textAppUrl.perform(replaceText("https://angular.io/start"), closeSoftKeyboard());
 		onView(withId(R.id.btnSaveSettings)).perform(click());
 		Thread.sleep(2000);
-		// Click "Education" to go to "?category=education"
+		// Check section content is loaded
 		onWebView()
 				.withNoTimeout()
-				.withElement(findElement(Locator.XPATH, "//a[contains(text(), 'Education')]"))
+				.withElement(findElement(Locator.TAG_NAME, "h1"))
+				.check(webMatches(getText(), containsString("Getting started with Angular")));
+		// Click on the hamburger menu and then in the "Adding navigation" entry
+		// to go to "/start/start-routing"
+		onWebView()
+				.withNoTimeout()
+				.withElement(findElement(Locator.XPATH, "//button[contains(@class,'hamburger')]"))
 				.perform(webClick());
-		// Check that the education tab is visible ("Books" section)
 		onWebView()
 				.withNoTimeout()
-				.withElement(findElement(Locator.ID, "books"))
-				.check(webMatches(getText(), containsString("Books")));
+				.withElement(findElement(Locator.XPATH,
+						"//a[contains(@href,'start/start-routing') and contains(@class,'vertical-menu-item')]"))
+				.perform(webClick());
+		Thread.sleep(2000);
+		// Check that the "Adding navigation" section is loaded
+		onWebView()
+				.withNoTimeout()
+				.withElement(findElement(Locator.TAG_NAME, "h1"))
+				.check(webMatches(getText(), containsString("Adding navigation")));
 		Thread.sleep(2000);
 	}
 
@@ -78,11 +90,17 @@ public class LastUrlTest {
 				.atPosition(3);
 		Thread.sleep(2000);
 		linearLayout.perform(click());
-		// Remembered "Books" section is loaded (last URL)
-		// instead of the "Development" section (app URL)
+		Thread.sleep(2000);
+		// Remembered "Adding navigation" section is loaded (last URL)
+		// instead of the "Getting started..." section (app URL)
 		onWebView()
 				.withNoTimeout()
-				.withElement(findElement(Locator.ID, "books"))
-				.check(webMatches(getText(), containsString("Books")));
+				.withElement(findElement(Locator.TAG_NAME, "h1"))
+				.check(webMatches(getText(), containsString("Adding navigation")));
+		onWebView()
+				.withNoTimeout()
+				.withElement(findElement(Locator.TAG_NAME, "h1"))
+				.check(webMatches(getText(), not(
+						containsString("Getting started with Angular"))));
 	}
 }
