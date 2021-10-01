@@ -6,7 +6,8 @@ abi = x86
 KEYTOOL = keytool
 OPENSSL = openssl
 JAVA = java
-BASE16 = base16
+BASENC = basenc
+BASE16 = ${BASENC} --base16
 RM_KEY_OPTS = -i
 APKSIGNER = apksigner
 
@@ -164,8 +165,8 @@ ifndef ANDROID_SECRETS_IV
 endif
 
 ${org}.keystore: check-org
-	$(if $(shell which $(BASE16)),,$(error "No command '$(BASE16)' in $$PATH"))
-	$(eval ANDROID_KEYSTORE_PASSWORD := $(shell ${BASE16} /dev/urandom | head -n 1 -c 16))
+	$(if $(shell which $(BASENC)),,$(error "No command '$(BASENC)' in $$PATH. Ensure that coreutils is installed."))
+	$(eval ANDROID_KEYSTORE_PASSWORD := $(shell ${BASE16} /dev/urandom | head -c 16))
 	${KEYTOOL} -genkey -storepass ${ANDROID_KEYSTORE_PASSWORD} -v -keystore ${org}.keystore -alias medicmobile -keyalg RSA -keysize 2048 -validity 9125
 	chmod go-rw ${org}.keystore
 
@@ -182,8 +183,8 @@ pepk.jar:
 	curl https://www.gstatic.com/play-apps-publisher-rapid/signing-tool/prod/pepk.jar -o pepk.jar
 
 secrets/secrets-${org}.tar.gz.enc: secrets/secrets-${org}.tar.gz
-	$(eval ANDROID_SECRETS_IV := $(shell ${BASE16} /dev/urandom | head -n 1 -c 32))
-	$(eval ANDROID_SECRETS_KEY := $(shell ${BASE16} /dev/urandom | head -n 1 -c 64))
+	$(eval ANDROID_SECRETS_IV := $(shell ${BASE16} /dev/urandom | head -c 32))
+	$(eval ANDROID_SECRETS_KEY := $(shell ${BASE16} /dev/urandom | head -c 64))
 	$(eval ANDROID_KEYSTORE_PATH := $(org).keystore)
 	$(eval ANDROID_KEY_ALIAS := medicmobile)
 	${OPENSSL} aes-256-cbc -iv ${ANDROID_SECRETS_IV} -K ${ANDROID_SECRETS_KEY} -in secrets/secrets-${org}.tar.gz -out secrets/secrets-${org}.tar.gz.enc
