@@ -1,4 +1,4 @@
-CHT Android Apps
+CHT Android App
 ===============
 
 The cht-android application is a thin wrapper to load the [CHT Core Framework](https://github.com/medic/cht-core/) web application in a webview. This allows the application to be hardcoded to a specific CHT deployment and have a partner specific logo and display name. This app also provides some deeper integration with other android apps and native phone functions that are otherwise unavailable to webapps.
@@ -18,11 +18,11 @@ The AABs are named as follows: `cht-android-{version}-{brand}-{rendering-engine}
 
 # APKs
 
-For compatibility with a wide range of devices the build script produces multiple APKs. The two variables are the instruction set used by the device's CPU, and the supported Android version. When sideloading the application it is essential to pick the correct APK or the application may crash.
+For compatibility with a wide range of devices, the build script produces multiple APKs. The two variables are the instruction set used by the device's CPU, and the supported Android version. When sideloading the application, it is essential to pick the correct APK or the application may crash.
 
 If distributing APKs via the Play Store, upload all APKs and it will automatically choose the right one for the target device.
 
-To help you pick which APK to install you can find information about the version of Android and the CPU in the About section of the phone's settings menu.
+To help you pick which APK to install, you can find information about the version of Android and the CPU in the About section of the phone's settings menu.
 
 The APKs are named as follows: `cht-android-{version}-{brand}-{rendering-engine}-{instruction-set}-release.apk`.
 
