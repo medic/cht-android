@@ -129,3 +129,11 @@ jobs:
         force-avd-creation: false
         emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
         script: make test-ui-url
+
+    - name: Archive Results
+      uses: actions/upload-artifact@v2
+      with:
+        name: Test Report
+        path: |
+          build/reports/
+      if: ${{ failure() }}
