@@ -70,7 +70,7 @@ public class LastUrlTest {
 				.withElement(findElement(Locator.XPATH,
 						"//a[contains(@href,'start/start-routing') and contains(@class,'vertical-menu-item')]"))
 				.perform(webClick());
-		Thread.sleep(2000);
+		Thread.sleep(4000);
 		// Check that the "Adding navigation" section is loaded
 		onWebView()
 				.withNoTimeout()
@@ -91,7 +91,7 @@ public class LastUrlTest {
 				.atPosition(3);
 		Thread.sleep(2000);
 		linearLayout.perform(click());
-		Thread.sleep(2000);
+		Thread.sleep(4000);
 		// Remembered "Adding navigation" section is loaded (last URL)
 		// instead of the "Getting started..." section (app URL)
 		onWebView()
