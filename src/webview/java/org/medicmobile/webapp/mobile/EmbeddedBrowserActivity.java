@@ -44,6 +44,7 @@ import static org.medicmobile.webapp.mobile.ConnectionUtils.connectionErrorToStr
 import static org.medicmobile.webapp.mobile.ConnectionUtils.isConnectionError;
 import static org.medicmobile.webapp.mobile.Utils.createUseragentFrom;
 import static org.medicmobile.webapp.mobile.Utils.isUrlRelated;
+import static org.medicmobile.webapp.mobile.Utils.isValidNavigationUrl;
 import static org.medicmobile.webapp.mobile.Utils.restartApp;
 
 @SuppressWarnings({ "PMD.GodClass", "PMD.TooManyMethods" })
@@ -142,6 +143,11 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		}
 
 		registerRetryConnectionBroadcastReceiver();
+
+		String recentNavigation = settings.getLastUrl();
+		if (isValidNavigationUrl(appUrl, recentNavigation)) {
+			container.loadUrl(recentNavigation);
+		}
 	}
 
 	@Override
@@ -161,6 +167,19 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		}
 		trace(this, "onStart() :: Checking Crosswalk migration done.");
 		super.onStart();
+	}
+
+	@Override
+	protected void onStop() {
+		super.onStop();
+		String recentNavigation = container.getUrl();
+		if (isValidNavigationUrl(appUrl, recentNavigation)) {
+			try {
+				settings.setLastUrl(recentNavigation);
+			} catch (SettingsException e) {
+				error(e, "Error recording last URL loaded");
+			}
+		}
 	}
 
 	@Override public boolean onCreateOptionsMenu(Menu menu) {

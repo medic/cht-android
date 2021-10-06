@@ -103,5 +103,69 @@ public class UtilsTest {
 		assertEquals("file", uri.getScheme());
 		assertEquals(filePath, uri.getPath());
 	}
+
+	@Test
+	public void validNavigationUrls() {
+		final String[] goodBlobUrls = {
+			"https://gamma-cht.dev.medicmobile.org/some/tab",
+			"https://gamma-cht.dev.medicmobile.org/#/reports",
+			"blob:https://gamma-cht.dev.medicmobile.org/#/reports"
+		};
+
+		for(String goodBlobUrl : goodBlobUrls) {
+			assertTrue("Expected URL to be accepted, but it wasn't: " + goodBlobUrl,
+					Utils.isValidNavigationUrl("https://gamma-cht.dev.medicmobile.org", goodBlobUrl));
+		}
+	}
+
+	@Test
+	public void nullUrlsNotValid() {
+		final String[][] nullUrls = {
+				{null, null},
+				{"https://gamma-cht.dev.medicmobile.org", null},
+				{null, "https://gamma-cht.dev.medicmobile.org"},
+				{"", ""},
+		};
+
+		for(String[] nullUrlPair : nullUrls) {
+			assertFalse("Not expected URLs to be accepted, but they were: " + nullUrlPair[0] + " , " + nullUrlPair[1],
+					Utils.isValidNavigationUrl(nullUrlPair[0], nullUrlPair[1]));
+		}
+	}
+
+	@Test
+	public void noMismatchNavigationUrl() {
+		assertFalse(Utils.isValidNavigationUrl(
+				"https://gamma-cht.dev.medicmobile.org",
+				"https://example.com/path"));
+	}
+
+	@Test
+	public void notValidMalformedAppUrl() {
+		assertFalse(Utils.isValidNavigationUrl(
+				"not-valid-url",
+				"https://not-valid-url.com/res"));
+	}
+
+	@Test
+	public void notValidNavigationUri() {
+		assertFalse(Utils.isValidNavigationUrl(
+				"https://gamma-cht.dev.medicmobile.org",
+				"/resource/without/base"));
+	}
+
+	@Test
+	public void notValidNavigationLoginUri() {
+		assertFalse(Utils.isValidNavigationUrl(
+				"https://gamma-cht.dev.medicmobile.org",
+				"https://gamma-cht.dev.medicmobile.org/medic/login?"));
+	}
+
+	@Test
+	public void notValidNavigationRewriteUri() {
+		assertFalse(Utils.isValidNavigationUrl(
+				"https://gamma-cht.dev.medicmobile.org",
+				"https://gamma-cht.dev.medicmobile.org/medic/_rewrite"));
+	}
 }
 

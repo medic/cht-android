@@ -87,7 +87,7 @@ These tests run on your device.
 1. Uninstall previous versions of the app, otherwise an `InstallException: INSTALL_FAILED_VERSION_DOWNGRADE` can make the tests fail.
 2. Select English as default language in the app.
 3. Execute steps 1 to 3 from [Development](#development).
-4. Execute: `make test-ui` or `make test-ui-gamma`.
+4. Execute: `make test-ui-all`.
 
 ### Connecting to the server locally
 
