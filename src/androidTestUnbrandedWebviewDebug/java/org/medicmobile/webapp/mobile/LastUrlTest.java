@@ -64,6 +64,7 @@ public class LastUrlTest {
 				.withNoTimeout()
 				.withElement(findElement(Locator.XPATH, "//button[contains(@class,'hamburger')]"))
 				.perform(webClick());
+		Thread.sleep(1000);
 		onWebView()
 				.withNoTimeout()
 				.withElement(findElement(Locator.XPATH,
