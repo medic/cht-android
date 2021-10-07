@@ -123,7 +123,7 @@ keydec: check-org keysetup check-env
 	tar -xf secrets/secrets-${org}.tar.gz
 
 keysetup:
-	$(eval EXEC_CERT_REQUIRED = ${JAVA} ${KEYTOOL} ${OPENSSL})
+	$(eval EXEC_CERT_REQUIRED = ${JAVA} ${KEYTOOL} ${OPENSSL} ${XXD})
 	$(info Verifing the following executables are in the $$PATH: ${EXEC_CERT_REQUIRED} ...)
 	$(foreach exec,$(EXEC_CERT_REQUIRED),\
 	        $(if $(shell which $(exec)),,$(error "No command '$(exec)' in $$PATH")))
