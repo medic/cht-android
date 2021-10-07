@@ -120,9 +120,6 @@ keyprint-bundle:
 keydec: check-org keysetup check-env
 	${OPENSSL} aes-256-cbc -iv ${ANDROID_SECRETS_IV} -K ${ANDROID_SECRETS_KEY} -in secrets/secrets-${org}.tar.gz.enc -out secrets/secrets-${org}.tar.gz -d
 	chmod go-rw secrets/secrets-${org}.tar.gz
-	${MAKE} keyunpack
-
-keyunpack: check-org
 	tar -xf secrets/secrets-${org}.tar.gz
 
 keysetup:
