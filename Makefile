@@ -90,9 +90,6 @@ test-ui-all: test-ui test-ui-gamma test-ui-url
 # "secrets" targets, to setup and unpack keystores
 #
 
-# Generate keystore
-keystore: check-org ${org}.keystore
-
 # Remove the keystore, the pepk file, and the compressed version
 keyrm: check-org
 	rm ${RM_KEY_OPTS} ${org}.keystore ${org}_private_key.pepk secrets/secrets-${org}.tar.gz
