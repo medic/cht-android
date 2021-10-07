@@ -90,6 +90,9 @@ test-ui-all: test-ui test-ui-gamma test-ui-url
 # "secrets" targets, to setup and unpack keystores
 #
 
+# Create the keystore, along with tokens and encrypted files needed
+keygen: check-org keysetup secrets/secrets-${org}.tar.gz.enc
+
 # Remove the keystore, the pepk file, and the compressed version
 keyrm: check-org
 	rm ${RM_KEY_OPTS} ${org}.keystore ${org}_private_key.pepk secrets/secrets-${org}.tar.gz
@@ -98,10 +101,6 @@ keyrm: check-org
 keyrm-all: check-org
 	rm ${RM_KEY_OPTS} secrets/secrets-${org}.tar.gz.enc
 	${MAKE} keyrm
-
-# Remove the keystore and the compressed version, leaving only the encrypted version
-keyclean: check-org
-	rm ${RM_KEY_OPTS} ${org}.keystore secrets/secrets-${org}.tar.gz
 
 # Print info about the keystore
 keyprint: check-org check-env
@@ -117,8 +116,6 @@ keyprint-apk:
 keyprint-bundle:
 	$(eval AAB := $(shell find build/outputs/bundle -name \*-release.aab | head -n1))
 	${KEYTOOL} -printcert -jarfile ${AAB}
-
-keygen: check-org keysetup secrets/secrets-${org}.tar.gz.enc
 
 keydec: check-org keysetup check-env
 	${OPENSSL} aes-256-cbc -iv ${ANDROID_SECRETS_IV} -K ${ANDROID_SECRETS_KEY} -in secrets/secrets-${org}.tar.gz.enc -out secrets/secrets-${org}.tar.gz -d
