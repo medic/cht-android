@@ -7,9 +7,9 @@ KEYTOOL = keytool
 OPENSSL = openssl
 JAVA = java
 XXD = xxd
-XXD_OPTS = -p -c 256
 RM_KEY_OPTS = -i
 APKSIGNER = apksigner
+RANDOM_HEX = ${XXD} -p -c 256 /dev/urandom
 
 # Public key from Google for signing .pepk files (is the same for all apps in the Play Store)
 GOOGLE_ENC_KEY = eb10fe8f7c7c9df715022017b00c6471f8ba8170b13049a11e6c09ffe3056a104a3bbe4ac5a955f4ba4fe93fc8cef27558a3eb9d2a529a2092761fb833b656cd48b9de6a
@@ -165,7 +165,7 @@ endif
 
 ${org}.keystore: check-org
 	$(if $(shell which $(XXD)),,$(error "No command '$(XXD)' in $$PATH"))
-	$(eval ANDROID_KEYSTORE_PASSWORD := $(shell ${XXD} ${XXD_OPTS} /dev/urandom | head -c 16))
+	$(eval ANDROID_KEYSTORE_PASSWORD := $(shell ${RANDOM_HEX} | head -c 16))
 	${KEYTOOL} -genkey -storepass ${ANDROID_KEYSTORE_PASSWORD} -v -keystore ${org}.keystore -alias medicmobile -keyalg RSA -keysize 2048 -validity 9125
 	chmod go-rw ${org}.keystore
 
@@ -182,8 +182,8 @@ pepk.jar:
 	curl https://www.gstatic.com/play-apps-publisher-rapid/signing-tool/prod/pepk.jar -o pepk.jar
 
 secrets/secrets-${org}.tar.gz.enc: secrets/secrets-${org}.tar.gz
-	$(eval ANDROID_SECRETS_IV := $(shell ${XXD} ${XXD_OPTS} /dev/urandom | head -c 32))
-	$(eval ANDROID_SECRETS_KEY := $(shell ${XXD} ${XXD_OPTS} /dev/urandom | head -c 64))
+	$(eval ANDROID_SECRETS_IV := $(shell ${RANDOM_HEX} | head -c 32))
+	$(eval ANDROID_SECRETS_KEY := $(shell ${RANDOM_HEX} | head -c 64))
 	$(eval ANDROID_KEYSTORE_PATH := $(org).keystore)
 	$(eval ANDROID_KEY_ALIAS := medicmobile)
 	${OPENSSL} aes-256-cbc -iv ${ANDROID_SECRETS_IV} -K ${ANDROID_SECRETS_KEY} -in secrets/secrets-${org}.tar.gz -out secrets/secrets-${org}.tar.gz.enc
