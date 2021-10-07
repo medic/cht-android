@@ -91,7 +91,7 @@ test-ui-all: test-ui test-ui-gamma test-ui-url
 #
 
 # Create the keystore, along with tokens and encrypted files needed
-keygen: check-org keysetup secrets/secrets-${org}.tar.gz.enc
+keygen: check-org keysetup check-keystore-exist secrets/secrets-${org}.tar.gz.enc
 
 # Remove the keystore, the pepk file, and the compressed version
 keyrm: check-org
@@ -161,6 +161,11 @@ ifndef ANDROID_SECRETS_IV
 	$(eval ANDROID_KEY_ALIAS := $(shell echo ${${VARNAME}}))
 	$(eval VARNAME=ANDROID_KEYSTORE_PATH_${ORG_UPPER})
 	$(eval ANDROID_KEYSTORE_PATH := $(shell echo ${${VARNAME}}))
+endif
+
+check-keystore-exist:
+ifneq ("$(wildcard ${org}.keystore ${org}_private_key.pepk)","")
+	$(error Files "${org}.keystore" or "${org}_private_key.pepk" already exist. Remove them with "make org=${org} keyrm")
 endif
 
 ${org}.keystore: check-org
