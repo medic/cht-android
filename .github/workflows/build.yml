@@ -35,9 +35,9 @@ jobs:
       with:
         distribution: 'adopt'
         java-version: '11'
-
-    - name: Test
-      run: make test
+#
+#    - name: Test
+#      run: make test
 
     - name: Test Bash scripts to build Keystores
       run: make test-bash-keystore
