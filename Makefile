@@ -85,6 +85,9 @@ test-ui-url:
 	org.medicmobile.webapp.mobile.LastUrlTest
 test-ui-all: test-ui test-ui-gamma test-ui-url
 
+test-bash-keystore:
+	./src/test/bash/bats/bin/bats src/test/bash/test-keystore.bats
+
 
 #
 # "secrets" targets, to setup and unpack keystores

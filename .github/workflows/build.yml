@@ -37,6 +37,9 @@ jobs:
     - name: Test
       run: make test
 
+    - name: Test Bash scripts to build Keystores
+      run: make test-bash-keystore
+
     - name: Set up Ruby
       if: ${{ env.ANDROID_SECRETS_KEY }}
       uses: ruby/setup-ruby@v1
