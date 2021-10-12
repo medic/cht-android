@@ -1,12 +1,9 @@
 [submodule "src/test/bash/bats"]
 	path = src/test/bash/bats
 	url = https://github.com/bats-core/bats-core.git
-	ignore = dirty
 [submodule "src/test/bash/test_helper/bats-support"]
 	path = src/test/bash/test_helper/bats-support
 	url = https://github.com/bats-core/bats-support.git
-	ignore = dirty
 [submodule "src/test/bash/test_helper/bats-assert"]
 	path = src/test/bash/test_helper/bats-assert
 	url = https://github.com/bats-core/bats-assert.git
-	ignore = dirty
