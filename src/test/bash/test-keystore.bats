@@ -17,5 +17,13 @@ setup() {
 @test "can't execute key* targets without \"org\" argument when is required" {
   run make keygen
   assert_output --partial "\"org\" name not set. Try 'make org=name keygen'.  Stop."
-  refute_output --partial "Verifing the following executables"
+  refute_output --partial "Verifying the following executables"
+}
+
+@test "can generate and encrypt keystore" {
+  run bash -c 'yes | make org=test keygen'
+  refute_output --partial "\"org\" name not set. Try 'make org=name keygen'.  Stop."
+  assert_output --partial "Verifying the following executables"
+  assert_output --partial "keytool -genkey -storepass"
+  assert_output --partial "Secrets!"
 }

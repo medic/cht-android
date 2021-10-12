@@ -127,7 +127,7 @@ keydec: check-org keysetup check-env
 
 keysetup:
 	$(eval EXEC_CERT_REQUIRED = ${JAVA} ${KEYTOOL} ${OPENSSL} ${XXD})
-	$(info Verifing the following executables are in the $$PATH: ${EXEC_CERT_REQUIRED} ...)
+	$(info Verifying the following executables are in the $$PATH: ${EXEC_CERT_REQUIRED} ...)
 	$(foreach exec,$(EXEC_CERT_REQUIRED),\
 	        $(if $(shell which $(exec)),,$(error "No command '$(exec)' in $$PATH")))
 

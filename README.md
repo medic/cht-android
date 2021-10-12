@@ -172,7 +172,7 @@ These are the steps to create a new branded App. Each branded app has an identif
 
    ```
    $ make org=new_brand keygen
-   Verifing the following executables are in the $PATH: java keytool openssl ...
+   Verifying the following executables are in the $PATH: java keytool openssl ...
    keytool -genkey -storepass dd8668... -v -keystore new_brand.keystore -alias medicmobile -keyalg RSA -keysize 2048 -validity 9125
    What is your first and last name?
      [Unknown]:  
