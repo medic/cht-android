@@ -43,7 +43,7 @@ teardown() {
   assert [ -e './test_private_key.pepk' ]
   assert [ -e './secrets/secrets-test.tar.gz' ]
   assert [ -e './secrets/secrets-test.tar.gz.enc' ]
-  ANDROID_KEYSTORE_PASSWORD_TEST=$(echo $output | sed -n "s/.*ANDROID_KEYSTORE_PASSWORD_TEST=\(\S*\).*/\1/p")
+  ANDROID_KEYSTORE_PASSWORD_TEST=$(echo $output | sed -n "s/^.*ANDROID_KEYSTORE_PASSWORD_TEST=\(\S*\).*$/\1/p")
   assert [ ! -z "$ANDROID_KEYSTORE_PASSWORD_TEST" ]
 }
 
@@ -75,4 +75,21 @@ teardown() {
   run bash -c 'yes | make org=test keygen'
   assert_failure 2
   assert_output --partial "Files \"test.keystore\" or \"test_private_key.pepk\" already exist."
+}
+
+@test "can't decrypt keystore without right environment variable keys set" {
+  # Create a keystore
+  run bash -c 'yes | make org=test keygen'
+  # Removed the unencrypted files
+  make RM_KEY_OPTS="-f" org=test keyrm
+  # Set the environment variables needed to decrypt it but with wrong keys
+  ANDROID_KEYSTORE_PASSWORD_TEST="1232"
+  export ANDROID_KEY_PASSWORD_TEST="abc"
+  export ANDROID_SECRETS_IV_TEST="1234abc"
+  export ANDROID_SECRETS_KEY_TEST="111222"
+  export ANDROID_KEYSTORE_PATH_TEST="test.keystore"
+  export ANDROID_KEY_ALIAS_TEST="medicmobile"
+  # Now trying to decrypt without the env sets fails
+  run make org=test keydec
+  assert_failure 2
 }
