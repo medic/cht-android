@@ -25,7 +25,7 @@ teardown() {
   assert_output --partial "\"No command 'notxxd' in \$PATH\".  Stop."
 }
 
-@test "can't execute key* targets without \"org\" argument when is required" {
+@test "can't execute key* targets without \"org\" argument when org is required" {
   run make keygen
   assert_failure 2
   assert_output --partial "\"org\" name not set. Try 'make org=name keygen'.  Stop."
@@ -77,7 +77,7 @@ teardown() {
   assert_output --partial "Files \"test.keystore\" or \"test_private_key.pepk\" already exist."
 }
 
-@test "can't decrypt keystore without right environment variable keys set" {
+@test "can't decrypt keystore when having wrong environment variable keys set" {
   # Create a keystore
   run bash -c 'yes | make org=test keygen'
   # Removed the unencrypted files
@@ -92,4 +92,33 @@ teardown() {
   # Now trying to decrypt without the env sets fails
   run make org=test keydec
   assert_failure 2
+}
+
+@test "can decrypt keystore when having right environment variables set" {
+  # Create a keystore
+  run bash -c 'yes | make org=test keygen'
+  export out="$output"
+  export ANDROID_KEYSTORE_PASSWORD_TEST=$(echo "$out" | grep ANDROID_KEYSTORE_PASSWORD_TEST | awk 'BEGIN { FS="=" } {print $2}')
+  export ANDROID_KEY_PASSWORD_TEST=$(echo "$out" | grep ANDROID_KEY_PASSWORD_TEST | awk 'BEGIN { FS="=" } {print $2}')
+  export ANDROID_SECRETS_IV_TEST=$(echo "$out" | grep ANDROID_SECRETS_IV_TEST | awk 'BEGIN { FS="=" } {print $2}')
+  export ANDROID_SECRETS_KEY_TEST=$(echo "$out" | grep ANDROID_SECRETS_KEY_TEST | awk 'BEGIN { FS="=" } {print $2}')
+  export ANDROID_KEYSTORE_PATH_TEST=$(echo "$out" | grep ANDROID_KEYSTORE_PATH_TEST | awk 'BEGIN { FS="=" } {print $2}')
+  export ANDROID_KEY_ALIAS_TEST=$(echo "$out" | grep ANDROID_KEY_ALIAS_TEST | awk 'BEGIN { FS="=" } {print $2}')
+  # Removed the unencrypted files
+  make RM_KEY_OPTS="-f" org=test keyrm
+  # Now decrypt
+  run make org=test keydec
+  assert_success
+  assert [ -e './test.keystore' ]
+  assert [ -e './test_private_key.pepk' ]
+  assert [ -e './secrets/secrets-test.tar.gz' ]
+  # Can print the content of the cert
+  run make org=test keyprint
+  assert_output --partial "Your keystore contains 1 entry"
+  assert_output --partial "Alias name: $ANDROID_KEY_ALIAS_TEST"
+  # Changing password in the env variable the keystore cannot be accessed
+  export ANDROID_KEYSTORE_PASSWORD_TEST="123"
+  run make org=test keyprint
+  assert_failure
+  assert_output --partial "IOException: keystore password was incorrect"
 }
