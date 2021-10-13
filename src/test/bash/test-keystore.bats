@@ -15,6 +15,7 @@ teardown() {
 
 @test "can execute make key* targets" {
   run make keysetup
+  assert_success
   assert_output --partial "'keysetup' is up to date."
 }
 
@@ -26,12 +27,14 @@ teardown() {
 
 @test "can't execute key* targets without \"org\" argument when is required" {
   run make keygen
+  assert_failure 2
   assert_output --partial "\"org\" name not set. Try 'make org=name keygen'.  Stop."
   refute_output --partial "Verifying the following executables"
 }
 
 @test "can generate and encrypt keystore" {
   run bash -c 'yes | make org=test keygen'
+  assert_success
   refute_output --partial "\"org\" name not set. Try 'make org=name keygen'.  Stop."
   assert_output --partial "Verifying the following executables"
   assert_output --partial "keytool -genkey -storepass"
@@ -47,8 +50,19 @@ teardown() {
 @test "can remove all the generated files except the encrypted file" {
   run bash -c 'yes | make org=test keygen'
   make RM_KEY_OPTS="-f" org=test keyrm
+  assert_success
   assert [ ! -e './test.keystore' ]
   assert [ ! -e './test_private_key.pepk' ]
   assert [ ! -e './secrets/secrets-test.tar.gz' ]
   assert [ -e './secrets/secrets-test.tar.gz.enc' ]
+}
+
+@test "can't regenerate keystore without removing the previous one" {
+  # First attempt succeeded
+  run bash -c 'yes | make org=test keygen'
+  assert_success
+  # Second one fails
+  run bash -c 'yes | make org=test keygen'
+  assert_failure 2
+  assert_output --partial "Files \"test.keystore\" or \"test_private_key.pepk\" already exist."
 }
