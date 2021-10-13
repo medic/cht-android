@@ -43,8 +43,18 @@ teardown() {
   assert [ -e './test_private_key.pepk' ]
   assert [ -e './secrets/secrets-test.tar.gz' ]
   assert [ -e './secrets/secrets-test.tar.gz.enc' ]
-  ANDROID_KEYSTORE_PASSWORD_TEST=$(echo $output | grep -oP "ANDROID_KEYSTORE_PASSWORD_TEST=\K\w+")
+  ANDROID_KEYSTORE_PASSWORD_TEST=$(echo $output | sed -n "s/.*ANDROID_KEYSTORE_PASSWORD_TEST=\(\S*\).*/\1/p")
   assert [ ! -z "$ANDROID_KEYSTORE_PASSWORD_TEST" ]
+}
+
+@test "can remove all the generated files" {
+  run bash -c 'yes | make org=test keygen'
+  make RM_KEY_OPTS="-f" org=test keyrm-all
+  assert_success
+  assert [ ! -e './test.keystore' ]
+  assert [ ! -e './test_private_key.pepk' ]
+  assert [ ! -e './secrets/secrets-test.tar.gz' ]
+  assert [ ! -e './secrets/secrets-test.tar.gz.enc' ]
 }
 
 @test "can remove all the generated files except the encrypted file" {
@@ -58,7 +68,7 @@ teardown() {
 }
 
 @test "can't regenerate keystore without removing the previous one" {
-  # First attempt succeeded
+  # First attempt successes
   run bash -c 'yes | make org=test keygen'
   assert_success
   # Second one fails
