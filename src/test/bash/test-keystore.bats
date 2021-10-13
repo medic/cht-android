@@ -16,12 +16,12 @@ teardown() {
 @test "can execute make key* targets" {
   run make keysetup
   assert_success
-  assert_output --partial "'keysetup' is up to date."
+  assert_output --partial "keysetup' is up to date."
 }
 
 @test "can't execute make key* targets when one of the tool is missed" {
   run make XXD=notxxd keysetup
-  refute_output --partial "'keysetup' is up to date."
+  refute_output --partial "keysetup' is up to date."
   assert_output --partial "\"No command 'notxxd' in \$PATH\".  Stop."
 }
 
@@ -43,7 +43,7 @@ teardown() {
   assert [ -e './test_private_key.pepk' ]
   assert [ -e './secrets/secrets-test.tar.gz' ]
   assert [ -e './secrets/secrets-test.tar.gz.enc' ]
-  ANDROID_KEYSTORE_PASSWORD_TEST=$(echo $output | sed -n "s/^.*ANDROID_KEYSTORE_PASSWORD_TEST=\(\S*\).*$/\1/p")
+  ANDROID_KEYSTORE_PASSWORD_TEST=$(echo $output | grep ANDROID_KEYSTORE_PASSWORD_TEST | awk 'BEGIN { FS="=" } {print $2}')
   assert [ ! -z "$ANDROID_KEYSTORE_PASSWORD_TEST" ]
 }
 
