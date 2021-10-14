@@ -36,11 +36,11 @@ jobs:
         distribution: 'adopt'
         java-version: '11'
 
+    - name: Test Bash Keystores scripts
+      run: make test-bash-keystore
+
     - name: Test
       run: make test
-
-    - name: Test Bash scripts to build Keystores
-      run: make test-bash-keystore
 
     - name: Set up Ruby
       if: ${{ env.ANDROID_SECRETS_KEY }}
@@ -118,7 +118,7 @@ jobs:
         disable-animations: false
         script: echo "Generated AVD snapshot for caching."
 
-    - name: Test Bash scripts to build Keystores in MacOS
+    - name: Test Bash Keystores scripts on MacOS
       run: make test-bash-keystore
 
     - name: Run test-ui on unbranded
