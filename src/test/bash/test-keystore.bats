@@ -82,14 +82,14 @@ teardown() {
   run bash -c 'yes | make org=test keygen'
   # Removed the unencrypted files
   make RM_KEY_OPTS="-f" org=test keyrm
-  # Set the environment variables needed to decrypt it but with wrong keys
-  ANDROID_KEYSTORE_PASSWORD_TEST="1232"
+  # Set the environment variables needed to decrypt but with wrong keys
+  export ANDROID_KEYSTORE_PASSWORD_TEST="1232"
   export ANDROID_KEY_PASSWORD_TEST="abc"
   export ANDROID_SECRETS_IV_TEST="1234abc"
   export ANDROID_SECRETS_KEY_TEST="111222"
   export ANDROID_KEYSTORE_PATH_TEST="test.keystore"
   export ANDROID_KEY_ALIAS_TEST="medicmobile"
-  # Now trying to decrypt without the env sets fails
+  # Now trying to decrypt without the right env sets fails
   run make org=test keydec
   assert_failure 2
 }
@@ -98,6 +98,7 @@ teardown() {
   # Create a keystore
   run bash -c 'yes | make org=test keygen'
   export out="$output"
+  # Read the env values needed to decrypt from the generation output, and set them in the bash environment
   export ANDROID_KEYSTORE_PASSWORD_TEST=$(echo "$out" | grep ANDROID_KEYSTORE_PASSWORD_TEST | awk 'BEGIN { FS="=" } {print $2}')
   export ANDROID_KEY_PASSWORD_TEST=$(echo "$out" | grep ANDROID_KEY_PASSWORD_TEST | awk 'BEGIN { FS="=" } {print $2}')
   export ANDROID_SECRETS_IV_TEST=$(echo "$out" | grep ANDROID_SECRETS_IV_TEST | awk 'BEGIN { FS="=" } {print $2}')
@@ -106,8 +107,9 @@ teardown() {
   export ANDROID_KEY_ALIAS_TEST=$(echo "$out" | grep ANDROID_KEY_ALIAS_TEST | awk 'BEGIN { FS="=" } {print $2}')
   # Removed the unencrypted files
   make RM_KEY_OPTS="-f" org=test keyrm
-  # Now decrypt
+  # Now decrypt from the encrypted version (.tar.gz.enc file)
   run make org=test keydec
+  # The operation succeed and the unencrypted files are back
   assert_success
   assert [ -e './test.keystore' ]
   assert [ -e './test_private_key.pepk' ]

@@ -89,6 +89,13 @@ These tests run on your device.
 3. Execute steps 1 to 3 from [Development](#development).
 4. Execute: `make test-ui-all`.
 
+### Shell tests
+
+The project has bash tests that verify the Make targets used to create and manage the keystores used to sign the apps. Use `make test-bash-keystore` to run them. In CI they are executed in Linux and MacOS VMs.
+
+If you get an error like `make: ./src/test/bash/bats/bin/bats: Command not found`, it's because you cloned the project without the `--recurse-submodules` git argument. Execute first `git submodule update --init` to clone
+the submodules within the cht-android folder.
+
 ### Connecting to the server locally
 
 Refer to the [CHT Core Developer Guide](https://github.com/medic/cht-core/blob/master/DEVELOPMENT.md#testing-locally-with-devices).
