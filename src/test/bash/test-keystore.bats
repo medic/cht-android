@@ -21,6 +21,7 @@ teardown() {
 
 @test "can't execute make key* targets when one of the tool is missed" {
   run make XXD=notxxd keysetup
+  assert_failure 2
   refute_output --partial "keysetup' is up to date."
   assert_output --partial "\"No command 'notxxd' in \$PATH\".  Stop."
 }
