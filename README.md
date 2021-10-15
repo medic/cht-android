@@ -226,7 +226,7 @@ These are the steps to create a new branded App. Each branded app has an identif
 
 1. Execute `make org=new_brand keyprint` to see the certificate content, like the org name, the certificate fingerprints, etc.
 
-2. Sign your app! try locally to build the app with the certificate. To create the Webview versions of the .apk files: `make org=new_brand flavor=New_brandWebview assemble`. the "release" files signed should be placed in `build/outputs/apk/new_brandWebview/release/`. To ensure the files were signed with the right signature execute `make keyprint-apk`, it will check the certificate of the first apk file under the `build/` folder:
+2. Sign your app! try locally to build the app with the certificate. To create the Webview versions of the .apk files: `make org=new_brand flavor=New_brandWebview assemble`. The "release" files signed should be placed in `build/outputs/apk/new_brandWebview/release/`. To ensure the files were signed with the right signature execute `make keyprint-apk`, it will check the certificate of the first apk file under the `build/` folder:
 
 ```
 $ make keyprint-apk 
