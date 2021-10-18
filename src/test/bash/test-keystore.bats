@@ -19,7 +19,7 @@ teardown() {
   assert_output --partial "keysetup' is up to date."
 }
 
-@test "can't execute make key* targets when one of the tool is missed" {
+@test "can't execute make key* targets when one of the tools is missing" {
   run make XXD=notxxd keysetup
   assert_failure 2
   refute_output --partial "keysetup' is up to date."
