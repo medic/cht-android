@@ -6,7 +6,7 @@ buildscript {
     jcenter()
   }
   dependencies {
-    classpath 'com.android.tools.build:gradle:7.0.2'
+    classpath 'com.android.tools.build:gradle:7.0.3'
     classpath 'com.noveogroup.android:check:1.2.5'
   }
 }
@@ -376,10 +376,10 @@ dependencies {
   implementation 'com.github.Mariovc:ImagePicker:1.2.2'
   coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.1.5'
   xwalkImplementation files('src/xwalk/libs/xwalk_core_library-23.53.589.4-arm64-v8a.aar')
-  testImplementation 'junit:junit:4.13.1'
-  testImplementation 'org.mockito:mockito-inline:3.11.2'
+  testImplementation 'junit:junit:4.13.2'
+  testImplementation 'org.mockito:mockito-inline:4.0.0'
   testImplementation 'com.google.android:android-test:4.1.1.4'
-  testImplementation 'org.robolectric:robolectric:4.4'
+  testImplementation 'org.robolectric:robolectric:4.7'
   androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
   androidTestImplementation 'androidx.test.espresso:espresso-web:3.4.0'
   androidTestImplementation 'androidx.test:runner:1.4.0'
