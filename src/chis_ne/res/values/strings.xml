@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<string name="app_name">Community Health Information System</string>
+	<string name="app_host">chis.dohs.gov.np</string>
+</resources>
