@@ -347,6 +347,10 @@ android {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.alerte_niger'
     }
+    chis_ne {
+      dimension = 'brand'
+      applicationId = 'org.medicmobile.webapp.mobile.chis_ne'
+    }
   }
 
   splits {
