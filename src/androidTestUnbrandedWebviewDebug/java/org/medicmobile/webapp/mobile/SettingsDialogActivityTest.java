@@ -70,7 +70,7 @@ public class SettingsDialogActivityTest {
 
 		textAppUrl.perform(replaceText("something"), closeSoftKeyboard());
 		onView(withId(R.id.btnSaveSettings)).perform(click());
-		textAppUrl.check(matches(hasErrorText("must be a valid URL")));
+		textAppUrl.check(matches(hasErrorText("Must be a valid URL")));
 		pressBack();
 
 	}
