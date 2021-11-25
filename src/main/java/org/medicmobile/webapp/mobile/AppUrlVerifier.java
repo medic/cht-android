@@ -2,9 +2,9 @@ package org.medicmobile.webapp.mobile;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.regex.Pattern;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import static org.medicmobile.webapp.mobile.BuildConfig.DISABLE_APP_URL_VALIDATION;
 import static org.medicmobile.webapp.mobile.MedicLog.trace;
 import static org.medicmobile.webapp.mobile.R.string.errAppUrl_apiNotReady;
@@ -14,6 +14,20 @@ import static org.medicmobile.webapp.mobile.R.string.errInvalidUrl;
 import static org.medicmobile.webapp.mobile.SimpleJsonClient2.redactUrl;
 
 public class AppUrlVerifier {
+
+	private static final Pattern CLEANER_REGEX = Pattern.compile("^(\\s)+|(/|\\s)+$");
+
+	/**
+	 * Clean-up the URL passed, removing leading and trailing spaces, and trailing "/" char
+	 * that the user may input by mistake.
+	 */
+	public String clean(String appUrl) {
+		return CLEANER_REGEX.matcher(appUrl).replaceAll("");
+	}
+
+	/**
+	 * Verify the string passed is a valid CHT-Core URL.
+	 */
 	public AppUrlVerification verify(String appUrl) {
 		if(DISABLE_APP_URL_VALIDATION) {
 			return AppUrlVerification.ok(appUrl);
