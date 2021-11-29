@@ -35,7 +35,7 @@ public class SettingsDialogActivity extends LockableActivity {
 
 	private static class AppUrlVerificationTask extends ActivityBackgroundTask<SettingsDialogActivity, String, Void, AppUrlVerification> {
 
-		private AppUrlVerifier verifier = new AppUrlVerifier();
+		private final AppUrlVerifier verifier = new AppUrlVerifier();
 
 		AppUrlVerificationTask(SettingsDialogActivity a) {
 			super(a);
