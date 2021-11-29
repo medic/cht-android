@@ -22,7 +22,7 @@ public class AppUrlVerifier {
 	 * that the user may input by mistake.
 	 */
 	public String clean(String appUrl) {
-		return CLEANER_REGEX.matcher(appUrl).replaceAll("");
+		return CLEANER_REGEX.matcher(appUrl.trim()).replaceAll("");
 	}
 
 	/**
