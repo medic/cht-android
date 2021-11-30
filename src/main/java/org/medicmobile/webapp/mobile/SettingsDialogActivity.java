@@ -43,8 +43,7 @@ public class SettingsDialogActivity extends LockableActivity {
 
 		protected AppUrlVerification doInBackground(String... appUrl) {
 			if(DEBUG && appUrl.length != 1) throw new IllegalArgumentException();
-			String chtUrl = verifier.clean(appUrl[0]);
-			return verifier.verify(chtUrl);
+			return verifier.verify(appUrl[0]);
 		}
 		protected void onPostExecute(AppUrlVerification result) {
 			SettingsDialogActivity ctx = getRequiredCtx("AppUrlVerificationTask.onPostExecute()");
