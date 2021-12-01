@@ -120,7 +120,7 @@ public class AppUrlVerifierTest {
 	}
 
 	@Test
-	public void testMalformed() throws JSONException {
+	public void testMalformed() {
 		AppUrlVerifier verifier = buildAppUrlVerifierWithException(new JSONException("NOT A JSON"));
 		AppUrlVerification verification = verifier.verify("https://example.com/without/json");
 		assertFalse(verification.isOk);
