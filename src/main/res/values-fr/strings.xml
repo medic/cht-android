@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-  <string name="errInvalidUrl">L'adresse n'est pas valide</string>
+  <string name="errInvalidUrl">L\'adresse n\'est pas valide</string>
 
 	<string name="btnSave">Enregistrer</string>
 	<string name="btnCancel">Annuler</string>
