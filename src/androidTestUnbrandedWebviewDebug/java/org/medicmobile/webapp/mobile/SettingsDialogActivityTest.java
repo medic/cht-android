@@ -44,7 +44,7 @@ import static org.hamcrest.Matchers.containsString;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class SettingsDialogActivityTest {
 
-	private static final String WEBAPP_URL = "CHT-Core URL";
+	private static final String WEBAPP_URL = "CHT server URL";
 	private static final String SERVER_ONE = "https://medic.github.io/atp";
 	private static final String SERVER_TWO = "https://gamma-cht.dev.medicmobile.org";
 	private static final String SERVER_THREE = "https://gamma.dev.medicmobile.org";
