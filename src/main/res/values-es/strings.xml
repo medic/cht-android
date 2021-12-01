@@ -11,8 +11,8 @@
 	<string name="btnQuit">Salir</string>
 
   <string name="errAppUrl_serverNotFound">No se ha podido conectar con el servidor</string>
-  <string name="errAppUrl_appNotFound">La URL no es una instancia válida de CHT-Core</string>
-  <string name="errAppUrl_apiNotReady">CHT-Core no está listo aún, por favor inténtelo más tarde</string>
+  <string name="errAppUrl_appNotFound">La URL no es una instancia válida de CHT</string>
+  <string name="errAppUrl_apiNotReady">CHT no está listo aún, por favor inténtelo más tarde</string>
 
 	<string name="locRequestTitle">Acceso a la ubicación</string>
 	<string name="locRequestMessage">%s recolecta información de la ubicación para analizar y mejorar resultados de salud en tu área. Para permitir el acceso a la ubicación selecciona \"Activar\", y luego confirma en el próximo diálogo.</string>
