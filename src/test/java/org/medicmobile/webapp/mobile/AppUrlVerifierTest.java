@@ -67,7 +67,7 @@ public class AppUrlVerifierTest {
 	@Test
 	public void testLeadingSpacesUrl() {
 		AppUrlVerifier verifier = buildAppUrlVerifierOk();
-		AppUrlVerification verification = verifier.verify("https://example.com/uri");
+		AppUrlVerification verification = verifier.verify("  https://example.com/uri");
 		assertTrue(verification.isOk);
 		assertEquals("https://example.com/uri", verification.appUrl);
 	}
