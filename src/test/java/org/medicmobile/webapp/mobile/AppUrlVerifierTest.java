@@ -1,7 +1,7 @@
 package org.medicmobile.webapp.mobile;
 
 import java.io.IOException;
-import java.net.URL;
+import java.net.MalformedURLException;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Test;
@@ -13,39 +13,31 @@ import static org.medicmobile.webapp.mobile.R.string.errAppUrl_appNotFound;
 import static org.medicmobile.webapp.mobile.R.string.errAppUrl_serverNotFound;
 import static org.medicmobile.webapp.mobile.R.string.errInvalidUrl;
 import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk=28)
 public class AppUrlVerifierTest {
 
 	private AppUrlVerifier buildAppUrlVerifier(JSONObject jsonResponse) {
-		return new AppUrlVerifier() {
-			@Override protected SimpleJsonClient2 getJsonClient() {
-				return new SimpleJsonClient2() {
-					@Override public JSONObject get(URL url) {
-						return jsonResponse;
-					}
-				};
-			}
-		};
+		try {
+			SimpleJsonClient2 mockJsonClient = mock(SimpleJsonClient2.class);
+			when(mockJsonClient.get((String) any())).thenReturn(jsonResponse);
+			return new AppUrlVerifier(mockJsonClient);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	private AppUrlVerifier buildAppUrlVerifierWithException(Exception e) {
-		return new AppUrlVerifier() {
-			@Override protected SimpleJsonClient2 getJsonClient() {
-				return new SimpleJsonClient2() {
-					@Override public JSONObject get(URL url) throws JSONException, IOException {
-						try {
-							throw e;
-						} catch (JSONException | IOException exception) {
-							throw exception;
-						} catch (Exception otherException) {
-							throw new RuntimeException(otherException);
-						}
-					}
-				};
-			}
-		};
+		try {
+			SimpleJsonClient2 mockJsonClient = mock(SimpleJsonClient2.class);
+			when(mockJsonClient.get((String) any())).thenThrow(e);
+			return new AppUrlVerifier(mockJsonClient);
+		} catch (Exception exception) {
+			throw new RuntimeException(exception);
+		}
 	}
 
 	private AppUrlVerifier buildAppUrlVerifierOk() {
@@ -137,7 +129,7 @@ public class AppUrlVerifierTest {
 
 	@Test
 	public void testInvalidUrl() throws JSONException {
-		AppUrlVerifier verifier = buildAppUrlVerifier(new JSONObject("{\"ready\":true,\"handler\":\"medic-api\"}"));
+		AppUrlVerifier verifier = buildAppUrlVerifierWithException(new MalformedURLException("Nop"));
 		AppUrlVerification verification = verifier.verify("\\|NOT a URL***");
 		assertFalse(verification.isOk);
 		assertEquals(errInvalidUrl, verification.failure);

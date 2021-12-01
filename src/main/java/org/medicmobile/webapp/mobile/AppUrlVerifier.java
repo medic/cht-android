@@ -14,6 +14,16 @@ import static org.medicmobile.webapp.mobile.SimpleJsonClient2.redactUrl;
 
 public class AppUrlVerifier {
 
+	private final SimpleJsonClient2 jsonClient;
+
+	AppUrlVerifier(SimpleJsonClient2 jsonClient) {
+		this.jsonClient = jsonClient;
+	}
+
+	public AppUrlVerifier() {
+		this(new SimpleJsonClient2());
+	}
+
 	/**
 	 * Verify the string passed is a valid CHT-Core URL.
 	 */
@@ -24,7 +34,7 @@ public class AppUrlVerifier {
 		}
 
 		try {
-			JSONObject json = getJsonClient().get(appUrl + "/setup/poll");
+			JSONObject json = jsonClient.get(appUrl + "/setup/poll");
 
 			if(!json.getString("handler").equals("medic-api"))
 				return AppUrlVerification.failure(appUrl, errAppUrl_appNotFound);
@@ -56,10 +66,6 @@ public class AppUrlVerifier {
 			return appUrl.substring(0, appUrl.length()-1);
 		}
 		return appUrl;
-	}
-
-	protected SimpleJsonClient2 getJsonClient() {
-		return new SimpleJsonClient2();
 	}
 }
 
