@@ -12,7 +12,7 @@
 
   <string name="errAppUrl_serverNotFound">Impossible de contacter le serveur</string>
   <string name="errAppUrl_appNotFound">L\'URL n\'est pas un serveur CHT valide</string>
-  <string name="errAppUrl_apiNotReady">CHT-Core n\'est pas prêt, veuillez réessayer bientôt</string>
+  <string name="errAppUrl_apiNotReady">Le serveur CHT n\'est pas prêt, veuillez réessayer bientôt</string>
 
 	<string name="locRequestTitle">Accès à la position</string>
 	<string name="locRequestMessage">%s collecte votre position pour analyser et améliorer les services de santé dans votre région. Pour permettre l\'accès aux données de position, sélectionnez \"Activer\" et confirmez à l\'écran qui suivra.</string>
