@@ -7,7 +7,7 @@
 
 	<string name="txtAppUrl">CHT-Core URL</string>
 	<string name="errAppUrl_serverNotFound">Unable to contact server</string>
-	<string name="errAppUrl_appNotFound">URL is not a valid CHT-Core instance</string>
+	<string name="errAppUrl_appNotFound">URL is not a valid CHT server instance</string>
 	<string name="errAppUrl_apiNotReady">CHT-Core is not ready, please try again soon</string>
 
 	<string name="errRequired">required</string>
