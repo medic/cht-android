@@ -112,14 +112,6 @@ public class AppUrlVerifierTest {
 	}
 
 	@Test
-	public void testUrlMalformed() {
-		AppUrlVerifier verifier = buildAppUrlVerifierOk();
-		AppUrlVerification verification = verifier.verify(" https://example.com/uri/res/ ");
-		assertTrue(verification.isOk);
-		assertEquals("https://example.com/uri/res", verification.appUrl);
-	}
-
-	@Test
 	public void testMalformed() {
 		AppUrlVerifier verifier = buildAppUrlVerifierWithException(new JSONException("NOT A JSON"));
 		AppUrlVerification verification = verifier.verify("https://example.com/without/json");
