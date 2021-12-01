@@ -11,7 +11,7 @@
 	<string name="btnQuit">Quitter</string>
 
   <string name="errAppUrl_serverNotFound">Impossible de contacter le serveur</string>
-  <string name="errAppUrl_appNotFound">L\'URL n\'est pas une instance CHT-Core valide</string>
+  <string name="errAppUrl_appNotFound">L\'URL n\'est pas un serveur CHT valide</string>
   <string name="errAppUrl_apiNotReady">CHT-Core n\'est pas prêt, veuillez réessayer bientôt</string>
 
 	<string name="locRequestTitle">Accès à la position</string>
