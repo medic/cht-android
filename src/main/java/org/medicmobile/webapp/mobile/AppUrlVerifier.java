@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import static org.medicmobile.webapp.mobile.BuildConfig.DISABLE_APP_URL_VALIDATION;
 import static org.medicmobile.webapp.mobile.MedicLog.trace;
 import static org.medicmobile.webapp.mobile.R.string.errAppUrl_apiNotReady;
@@ -14,13 +13,28 @@ import static org.medicmobile.webapp.mobile.R.string.errInvalidUrl;
 import static org.medicmobile.webapp.mobile.SimpleJsonClient2.redactUrl;
 
 public class AppUrlVerifier {
+
+	private final SimpleJsonClient2 jsonClient;
+
+	AppUrlVerifier(SimpleJsonClient2 jsonClient) {
+		this.jsonClient = jsonClient;
+	}
+
+	public AppUrlVerifier() {
+		this(new SimpleJsonClient2());
+	}
+
+	/**
+	 * Verify the string passed is a valid CHT-Core URL.
+	 */
 	public AppUrlVerification verify(String appUrl) {
+		appUrl = clean(appUrl);
 		if(DISABLE_APP_URL_VALIDATION) {
 			return AppUrlVerification.ok(appUrl);
 		}
 
 		try {
-			JSONObject json = new SimpleJsonClient2().get(appUrl + "/setup/poll");
+			JSONObject json = jsonClient.get(appUrl + "/setup/poll");
 
 			if(!json.getString("handler").equals("medic-api"))
 				return AppUrlVerification.failure(appUrl, errAppUrl_appNotFound);
@@ -40,6 +54,18 @@ public class AppUrlVerifier {
 			return AppUrlVerification.failure(appUrl,
 					errAppUrl_serverNotFound);
 		}
+	}
+
+	/**
+	 * Clean-up the URL passed, removing leading and trailing spaces, and trailing "/" char
+	 * that the user may input by mistake.
+	 */
+	protected String clean(String appUrl) {
+		appUrl = appUrl.trim();
+		if (appUrl.endsWith("/")) {
+			return appUrl.substring(0, appUrl.length()-1);
+		}
+		return appUrl;
 	}
 }
 
