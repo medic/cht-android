@@ -5,13 +5,13 @@
 	<string name="scheme">https</string>
 	<string name="app_host"/>
 
-	<string name="txtAppUrl">CHT-Core URL</string>
+	<string name="txtAppUrl">CHT server URL</string>
 	<string name="errAppUrl_serverNotFound">Unable to contact server</string>
-	<string name="errAppUrl_appNotFound">URL is not a CHT-Core instance</string>
-	<string name="errAppUrl_apiNotReady">CHT-Core is not ready, please try again soon</string>
+	<string name="errAppUrl_appNotFound">URL is not a valid CHT server instance</string>
+	<string name="errAppUrl_apiNotReady">CHT server is not ready, please try again soon</string>
 
 	<string name="errRequired">required</string>
-	<string name="errInvalidUrl">must be a valid URL</string>
+	<string name="errInvalidUrl">Must be a valid URL</string>
 
 	<string name="btnOk">OK</string>
 	<string name="btnSave">Save</string>
@@ -39,7 +39,7 @@
 	<string name="tstUnlock_codeRejected">Try again</string>
 	<string name="tstUnlock_confirmFailed">Code does not match - try again</string>
 
-	<string name="txtFreeSpaceWarning">Space is running low on this device. CHT-Android may not be able to start, or may perform strangely.</string>
+	<string name="txtFreeSpaceWarning">Space is running low on this device. Application may not be able to start, or may perform strangely.</string>
 	<string name="txtFreeSpaceCurrent">Current space:\n%d MB</string>
 	<string name="txtFreeSpaceRecommended">Recommended space:\n%d MB</string>
 
