@@ -67,8 +67,9 @@ public abstract class SettingsStore {
 	void setUserDeniedGeolocation() throws SettingsException {
 		SharedPreferences.Editor ed = prefs.edit();
 		ed.putBoolean("denied-geolocation", true);
-		if(!ed.commit()) throw new SettingsException(
-				"Failed to save 'denied-geolocation' to SharedPreferences.");
+		if (!ed.commit()) {
+			throw new SettingsException("Failed to save 'denied-geolocation' to SharedPreferences.");
+		}
 	}
 
 	/**
