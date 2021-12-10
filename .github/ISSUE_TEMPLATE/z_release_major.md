@@ -27,7 +27,7 @@ Once all issues have passed acceptance testing and have been merged into `master
 
 - [ ] Create a new release branch from `master` named `v<major>.<minor>.x`.
 - [ ] Build an alpha named `v<major>.<minor>.<patch>-alpha.1` as described in the [release docs](https://docs.communityhealthtoolkit.org/core/guides/android/releasing/#alpha-for-release-testing).
-  - Until release testing passes, make sure regressions are fixed in `master`, cherry-pick them into the release branch, and release another alpha.
+  - [ ] Until release testing passes, make sure regressions are fixed in `master`, cherry-pick them into the release branch, and release another alpha.
 - [ ] Create a `release_notes_v<major>.<minor>.<patch>` branch from `master` and add a new section in the [CHANGELOG](https://github.com/medic/cht-android/blob/master/CHANGELOG.md). 
   - [ ] Ensure all issues are in the GH Milestone, that they're correctly labelled (in particular: they have the right Type, "UI/UX" if they change the UI, and "Breaking change" if appropriate), and have human readable descriptions. 
   - [ ] Document any known migration steps and known issues.
