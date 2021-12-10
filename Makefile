@@ -21,21 +21,20 @@ ifdef ComSpec	 # Windows
 endif
 
 default: deploy logs
-xwalk: deploy-xwalk logs
 
 logs:
 	${ADB} logcat MedicMobile:V AndroidRuntime:E '*:S' | tee android.log
 
 deploy:
 	${GRADLE} ${GRADLE_OPTS} install${flavor}Debug
-deploy-xwalk:
-	${GRADLE} ${GRADLE_OPTS} installUnbrandedXwalkDebug
+
 deploy-all:
 	find build/outputs/apk -name \*-debug.apk | \
 		xargs -n1 ${ADB} install -r
 
 clean:
 	${GRADLE} clean
+
 clean-apks:
 	rm -rf build/outputs/apk/
 
@@ -43,10 +42,12 @@ assemble: check-env
 	ANDROID_KEYSTORE_PATH=${ANDROID_KEYSTORE_PATH} ANDROID_KEY_ALIAS=${ANDROID_KEY_ALIAS} \
 	ANDROID_KEYSTORE_PASSWORD=${ANDROID_KEYSTORE_PASSWORD} ANDROID_KEY_PASSWORD=${ANDROID_KEY_PASSWORD} \
 	        ${GRADLE} ${GRADLE_OPTS} assemble${flavor}
+
 assemble-all: check-env
 	ANDROID_KEYSTORE_PATH=${ANDROID_KEYSTORE_PATH} ANDROID_KEY_ALIAS=${ANDROID_KEY_ALIAS} \
 	ANDROID_KEYSTORE_PASSWORD=${ANDROID_KEYSTORE_PASSWORD} ANDROID_KEY_PASSWORD=${ANDROID_KEY_PASSWORD} \
 	        ${GRADLE} ${GRADLE_OPTS} assembleRelease
+
 assemble-all-debug:
 	${GRADLE} ${GRADLE_OPTS} assembleDebug
 
@@ -54,6 +55,7 @@ bundle: check-env
 	ANDROID_KEYSTORE_PATH=${ANDROID_KEYSTORE_PATH} ANDROID_KEY_ALIAS=${ANDROID_KEY_ALIAS} \
 	ANDROID_KEYSTORE_PASSWORD=${ANDROID_KEYSTORE_PASSWORD} ANDROID_KEY_PASSWORD=${ANDROID_KEY_PASSWORD} \
 	        ${GRADLE} ${GRADLE_OPTS} bundle${flavor}Release
+
 bundle-all: check-env
 	ANDROID_KEYSTORE_PATH=${ANDROID_KEYSTORE_PATH} ANDROID_KEY_ALIAS=${ANDROID_KEY_ALIAS} \
 	ANDROID_KEYSTORE_PASSWORD=${ANDROID_KEYSTORE_PASSWORD} ANDROID_KEY_PASSWORD=${ANDROID_KEY_PASSWORD} \
@@ -70,6 +72,7 @@ uninstall:
 
 lint:
 	${GRADLE} ${GRADLE_OPTS} androidCheck lint${flavor}Debug
+
 test: lint
 	${GRADLE} ${GRADLE_OPTS} test
 
@@ -77,12 +80,15 @@ test-ui:
 	${GRADLE} connectedUnbrandedWebviewDebugAndroidTest \
 		-Pabi=${abi} --stacktrace -Pandroid.testInstrumentationRunnerArguments.class=\
 	org.medicmobile.webapp.mobile.SettingsDialogActivityTest
+
 test-ui-gamma:
 	${GRADLE} connectedMedicmobilegammaWebviewDebugAndroidTest -Pabi=${abi} --stacktrace
+
 test-ui-url:
 	DISABLE_APP_URL_VALIDATION=true ${GRADLE} connectedUnbrandedWebviewDebugAndroidTest \
 		-Pabi=${abi} --stacktrace -Pandroid.testInstrumentationRunnerArguments.class=\
 	org.medicmobile.webapp.mobile.LastUrlTest
+
 test-ui-all: test-ui test-ui-gamma test-ui-url
 
 test-bash-keystore:

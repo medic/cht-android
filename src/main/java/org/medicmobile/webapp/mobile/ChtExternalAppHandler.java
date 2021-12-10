@@ -12,8 +12,9 @@ import static org.medicmobile.webapp.mobile.MedicLog.warn;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
+import androidx.core.content.ContextCompat;
+import androidx.core.app.ActivityCompat;
+
 
 import org.json.JSONObject;
 
