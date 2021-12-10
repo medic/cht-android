@@ -1,7 +1,7 @@
 ---
 name: Patch release
 about: Schedule a patch release
-title: 'Release x.y.z'
+title: 'Release vX.Y.Z'
 labels: 'Type: Internal process'
 assignees: ''
 

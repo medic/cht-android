@@ -1,7 +1,7 @@
 ---
 name: Major/minor release
 about: Schedule a major or minor release
-title: 'Release x.y.z'
+title: 'Release vX.Y.Z'
 labels: 'Type: Internal process'
 assignees: ''
 
