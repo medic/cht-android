@@ -27,13 +27,18 @@ Once all issues have passed acceptance testing and have been merged into `master
 
 - [ ] Create a new release branch from `master` named `v<major>.<minor>.x`.
 - [ ] Build an alpha named `v<major>.<minor>.<patch>-alpha.1` as described in the [release docs](https://docs.communityhealthtoolkit.org/core/guides/android/releasing/#alpha-for-release-testing).
-- [ ] Create a `release_notes_v<major>.<minor>.<patch>` branch from `master` and add a new section in the [CHANGELOG](https://github.com/medic/cht-android/blob/master/CHANGELOG.md). Ensure all issues are in the GH Milestone, that they're correctly labelled (in particular: they have the right Type, "UI/UX" if they change the UI, and "Breaking change" if appropriate), and have human readable descriptions. Manually document any known migration steps and known issues. Provide description, screenshots, videos, and anything else to help communicate particularly important changes. Document any required or recommended upgrades to our other products (eg: cht-core, cht-conf, cht-gateway). Assign the PR to a) the Director of Technology, and b) an SRE to review and confirm the documentation on upgrade instructions and breaking changes is sufficient.
   - Until release testing passes, make sure regressions are fixed in `master`, cherry-pick them into the release branch, and release another alpha.
+- [ ] Create a `release_notes_v<major>.<minor>.<patch>` branch from `master` and add a new section in the [CHANGELOG](https://github.com/medic/cht-android/blob/master/CHANGELOG.md). 
+  - [ ] Ensure all issues are in the GH Milestone, that they're correctly labelled (in particular: they have the right Type, "UI/UX" if they change the UI, and "Breaking change" if appropriate), and have human readable descriptions. 
+  - [ ] Document any known migration steps and known issues.
+  - [ ] Provide description, screenshots, videos, and anything else to help communicate particularly important changes. 
+  - [ ] Document any required or recommended upgrades to our other products (eg: cht-core, cht-conf, cht-gateway). 
+  - [ ] Assign the PR to a) the Director of Technology, and b) an SRE to review and confirm the documentation on upgrade instructions and breaking changes is sufficient.
 - [ ] Create a release in GitHub as described in the [release docs](https://docs.communityhealthtoolkit.org/core/guides/android/releasing/#production-release).
   
 # Publishing - Release Engineer
 
-- [ ] Download the 3 `.apk` files (or 2 `.aab` files) from the assets on the release in GitHub for each reference flavor to publish:
+- [ ] Download the `.apk` files (or `.aab` files) from the assets on the release in GitHub for each reference flavor to publish:
   - `medicmobilegamma`
   - `unbranded`
 - [ ] Publish a release for each flavor as described in the [publishing docs](https://docs.communityhealthtoolkit.org/core/guides/android/publishing/#google-play-store).
