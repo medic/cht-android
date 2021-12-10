@@ -1,5 +1,21 @@
 # Release notes
 
+## 0.11.0
+
+### Changes
+
+- [feature] Remember previous URL when reloading app [#52](https://github.com/medic/cht-android/issues/52).
+- [feature] New flavor _CHIS Nepal_ [#231](https://github.com/medic/cht-android/issues/231)!
+- [improvement] Allow users to set cht-core URLs with leading or trailing spaces (and trailing slash) on unbranded app [#178](https://github.com/medic/cht-android/issues/178).
+- [improvement] Update labels to use generic app name [#128](https://github.com/medic/cht-android/issues/128).
+
+
+### Development changes
+
+- [improvement] New section with all the CHT-Android documentation that was previously in the README and different sections of the Community Docs, with updates and improvements: https://docs.communityhealthtoolkit.org/core/guides/android/ [#214](https://github.com/medic/cht-android/issues/214).
+- [improvement] Fix Makefile targets for keystore management [#222](https://github.com/medic/cht-android/issues/222).  
+- [improvement] Upgrade Gradle, plugins and test dependencies [#232](https://github.com/medic/cht-android/pull/232).
+
 ## 0.10.0
 
 ### Changes
