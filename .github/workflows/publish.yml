@@ -264,7 +264,7 @@ jobs:
       with:
         draft: true
         files: |
-          build/outputs/apk/**/*-webview-arm64-v8a-release.apk
+          build/outputs/apk/**/*-release.apk
           build/outputs/bundle/**/*-release.aab
       env:
         GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
