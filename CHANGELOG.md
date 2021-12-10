@@ -12,7 +12,8 @@
 
 ### Development changes
 
-- [improvement] New section with all the CHT-Android documentation that was previously in the README and different sections of the Community Docs, with updates and improvements: https://docs.communityhealthtoolkit.org/core/guides/android/ [#214](https://github.com/medic/cht-android/issues/214).
+- [improvement] Deduplicate and improve development docs [#214](https://github.com/medic/cht-android/issues/214).
+  - [New `Android` section](https://docs.communityhealthtoolkit.org/core/guides/android/) added to the CHT Documentation site with the cht-android documentation that was previously split between the README and various other sections of the CHT Documentation.
 - [improvement] Fix Makefile targets for keystore management [#222](https://github.com/medic/cht-android/issues/222).  
 - [improvement] Upgrade Gradle, plugins and test dependencies [#232](https://github.com/medic/cht-android/pull/232).
 
