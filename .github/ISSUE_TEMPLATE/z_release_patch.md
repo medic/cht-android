@@ -29,7 +29,7 @@ Once all issues have passed acceptance testing and have been merged into `master
   - [ ] Document any known migration steps and known issues.
   - [ ] Provide description, screenshots, videos, and anything else to help communicate particularly important changes.
   - [ ] Document any required or recommended upgrades to our other products (eg: cht-core, cht-conf, cht-gateway).
-  - [ ] Assign the PR to a) the Director of Technology, and b) an SRE to review and confirm the documentation on upgrade instructions and breaking changes is sufficient.
+  - [ ] Assign the PR to the Director of Technology to review and confirm the documentation on upgrade instructions and breaking changes is sufficient.
 - [ ] Create a release in GitHub as described in the [release docs](https://docs.communityhealthtoolkit.org/core/guides/android/releasing/#production-release).
 
 # Publishing - Release Engineer
