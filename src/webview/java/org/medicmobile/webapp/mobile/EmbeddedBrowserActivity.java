@@ -1,51 +1,41 @@
 package org.medicmobile.webapp.mobile;
 
-import android.Manifest;
-import android.annotation.SuppressLint;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.app.ActivityManager;
-import android.content.IntentFilter;
-import android.graphics.Bitmap;
-import android.net.Uri;
-import android.net.ConnectivityManager;
-import android.os.Bundle;
-import androidx.core.content.ContextCompat;
-import androidx.core.app.ActivityCompat;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.Window;
-import android.webkit.ConsoleMessage;
-import android.webkit.CookieManager;
-import android.webkit.GeolocationPermissions;
-import android.webkit.ValueCallback;
-import android.webkit.WebChromeClient;
-import android.webkit.WebResourceError;
-import android.webkit.WebResourceRequest;
-import android.webkit.WebSettings;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
-import android.widget.Toast;
-
-import java.util.Arrays;
-
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
-
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
-import static org.medicmobile.webapp.mobile.BuildConfig.DISABLE_APP_URL_VALIDATION;
 import static org.medicmobile.webapp.mobile.MedicLog.error;
 import static org.medicmobile.webapp.mobile.MedicLog.log;
 import static org.medicmobile.webapp.mobile.MedicLog.trace;
 import static org.medicmobile.webapp.mobile.MedicLog.warn;
 import static org.medicmobile.webapp.mobile.SimpleJsonClient2.redactUrl;
-import static org.medicmobile.webapp.mobile.ConnectionUtils.connectionErrorToString;
-import static org.medicmobile.webapp.mobile.ConnectionUtils.isConnectionError;
 import static org.medicmobile.webapp.mobile.Utils.createUseragentFrom;
-import static org.medicmobile.webapp.mobile.Utils.isUrlRelated;
 import static org.medicmobile.webapp.mobile.Utils.isValidNavigationUrl;
-import static org.medicmobile.webapp.mobile.Utils.restartApp;
+
+import android.Manifest;
+import android.annotation.SuppressLint;
+import android.app.ActivityManager;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.net.ConnectivityManager;
+import android.net.Uri;
+import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.Window;
+import android.webkit.ConsoleMessage;
+import android.webkit.GeolocationPermissions;
+import android.webkit.ValueCallback;
+import android.webkit.WebChromeClient;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.widget.Toast;
+
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
+import java.util.Arrays;
 
 @SuppressWarnings({ "PMD.GodClass", "PMD.TooManyMethods" })
 public class EmbeddedBrowserActivity extends LockableActivity {
@@ -312,7 +302,15 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		evaluateJavascript("console.error('" + escaped + "');");
 	}
 
-//> PRIVATE HELPERS
+	public boolean isMigrationRunning() {
+		return isMigrationRunning;
+	}
+
+	public void setMigrationRunning(boolean migrationRunning) {
+		isMigrationRunning = migrationRunning;
+	}
+
+	//> PRIVATE HELPERS
 	private String requestCodeToString(int requestCode) {
 		if (requestCode == ACCESS_FINE_LOCATION_PERMISSION_REQUEST_CODE) {
 			return "ACCESS_FINE_LOCATION_PERMISSION_REQUEST_CODE";
@@ -342,20 +340,8 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		finish();
 	}
 
-	private String getRootUrl() {
-		return appUrl + (DISABLE_APP_URL_VALIDATION ?
-				"" : "/medic/_design/medic/_rewrite/");
-	}
-
-	private String getUrlToLoad(Uri url) {
-		if (url != null) {
-			return url.toString();
-		}
-		return getRootUrl();
-	}
-
 	private void browseTo(Uri url) {
-		String urlToLoad = getUrlToLoad(url);
+		String urlToLoad = UrlUtils.getUrlToLoad(this.settings, url);
 		trace(this, "Pointing browser to: %s", redactUrl(urlToLoad));
 		container.loadUrl(urlToLoad, null);
 	}
@@ -463,86 +449,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	}
 
 	private void enableUrlHandlers(WebView container) {
-
-		container.setWebViewClient(new WebViewClient() {
-			@Override
-			public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-				Uri uri = request.getUrl();
-				if (isUrlRelated(appUrl, uri)) {
-					// load all related URLs in the webview
-					return false;
-				}
-
-				// let Android decide what to do with unrelated URLs
-				// unrelated URLs include `tel:` and `sms:` uri schemes
-				Intent i = new Intent(Intent.ACTION_VIEW, uri);
-				view.getContext().startActivity(i);
-				return true;
-			}
-
-			@Override
-			public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
-				String failingUrl = request.getUrl().toString();
-				log(this, "onReceivedLoadError() :: url: %s, error code: %s, description: %s",
-						failingUrl, error.getErrorCode(), error.getDescription());
-				if (!getRootUrl().equals(failingUrl)) {
-					super.onReceivedError(view, request, error);
-				} else if (isConnectionError(error)) {
-					String connErrorInfo = connectionErrorToString(error);
-					Intent intent = new Intent(view.getContext(), ConnectionErrorActivity.class);
-					intent.putExtra("connErrorInfo", connErrorInfo);
-					if (isMigrationRunning) {
-						// Activity is not closable if the migration is running
-						intent
-							.putExtra("isClosable", false)
-							.putExtra("backPressedMessage", getString(R.string.waitMigration));
-					}
-					startActivity(intent);
-				} else {
-					evaluateJavascript(String.format(
-							"var body = document.evaluate('/html/body', document);" +
-							"body = body.iterateNext();" +
-							"if(body) {" +
-							"  var content = document.createElement('div');" +
-							"  content.innerHTML = '" +
-							"<h1>Error loading page</h1>" +
-							"<p>[%s] %s</p>" +
-							"<button onclick=\"window.location.reload()\">Retry</button>" +
-							"';" +
-							"  body.appendChild(content);" +
-							"}", error.getErrorCode(), error.getDescription()), false);
-				}
-			}
-
-			// Check how the migration process is going if it was started.
-			// Because most of the cases after the XWalk -> Webview migration process ends
-			// the cookies are not available for unknowns reasons, making the webapp to
-			// redirect the user to the login page instead of the main page.
-			// If these conditions are met: migration running + /login page + no cookies,
-			// the app is restarted to refresh the Webview and prevent the user to
-			// login again.
-			@Override public void onPageStarted(WebView view, String url, Bitmap favicon) {
-				trace(this, "onPageStarted() :: url: %s, isMigrationRunning: %s", url, isMigrationRunning);
-				if (isMigrationRunning && url.contains("/login")) {
-					isMigrationRunning = false;
-					CookieManager cookieManager = CookieManager.getInstance();
-					String cookie = cookieManager.getCookie(appUrl);
-					if (cookie == null) {
-						log(this, "onPageStarted() :: Migration process in progress, and " +
-								"cookies were not loaded, restarting ...");
-						restartApp(view.getContext());
-					}
-					trace(this, "onPageStarted() :: Cookies loaded, skipping restart");
-				}
-			}
-
-			@Override public void onPageFinished(WebView view, String url) {
-				trace(this, "onPageFinished() :: url: %s", url);
-				// Broadcast the event so if the connection error
-				// activity is listening it will close
-				sendBroadcast(new Intent("onPageFinished"));
-			}
-		});
+		container.setWebViewClient(new UrlHandler(this, settings));
 	}
 
 	private void toast(String message) {
