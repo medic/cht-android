@@ -42,7 +42,7 @@ public class UrlHandler extends WebViewClient {
 	}
 
 	/**
-	 * Support for SDK 19 and 20.
+	 * Support for SDK 21 and 22.
 	 */
 	@Override
 	public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
