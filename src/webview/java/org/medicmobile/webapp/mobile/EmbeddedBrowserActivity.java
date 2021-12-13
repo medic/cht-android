@@ -115,7 +115,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 
 		container = findViewById(R.id.wbvMain);
 
-		configureUseragent();
+		configureUserAgent();
 
 		setUpUiClient(container);
 		enableRemoteChromeDebugging();
@@ -329,7 +329,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		evaluateJavascript(script);
 	}
 
-	private void configureUseragent() {
+	private void configureUserAgent() {
 		String current = WebSettings.getDefaultUserAgent(this);
 		container.getSettings().setUserAgentString(createUseragentFrom(current));
 	}
@@ -341,7 +341,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	}
 
 	private void browseTo(Uri url) {
-		String urlToLoad = UrlUtils.getUrlToLoad(this.settings, url);
+		String urlToLoad = this.settings.getUrlToLoad(url);
 		trace(this, "Pointing browser to: %s", redactUrl(urlToLoad));
 		container.loadUrl(urlToLoad, null);
 	}

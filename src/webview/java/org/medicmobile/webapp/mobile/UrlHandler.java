@@ -29,8 +29,8 @@ public class UrlHandler extends WebViewClient {
 	@Override
 	public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
 		Uri uri = request.getUrl();
-		if (isUrlRelated(settings.getAppUrl(), uri)) {
-			// Load all related URLs in the webview
+		if (isUrlRelated(this.settings.getAppUrl(), uri)) {
+			// Load all related URLs in the WebView
 			return false;
 		}
 
@@ -41,11 +41,14 @@ public class UrlHandler extends WebViewClient {
 		return true;
 	}
 
+	/**
+	 * Support for SDK 19 and 20.
+	 */
 	@Override
 	public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
 		logError(errorCode, description, failingUrl);
 
-		if (!UrlUtils.isRootUrl(settings, failingUrl)) {
+		if (!this.settings.isRootUrl(failingUrl)) {
 			super.onReceivedError(view, errorCode, description, failingUrl);
 			return;
 		}
@@ -62,7 +65,7 @@ public class UrlHandler extends WebViewClient {
 
 		logError(code, description, failingUrl);
 
-		if (!UrlUtils.isRootUrl(settings, failingUrl)) {
+		if (!this.settings.isRootUrl(failingUrl)) {
 			super.onReceivedError(view, request, error);
 			return;
 		}
@@ -77,24 +80,14 @@ public class UrlHandler extends WebViewClient {
 
 	private void processError(WebView view, int errorCode, String errorDescription) {
 		if (isConnectionError(errorCode)) {
-			String connErrorInfo = connectionErrorToString(errorCode, errorDescription);
-			Intent intent = new Intent(view.getContext(), ConnectionErrorActivity.class);
-			intent.putExtra("connErrorInfo", connErrorInfo);
-			if (parentActivity.isMigrationRunning()) {
-				// Activity is not closable if the migration is running
-				intent
-					.putExtra("isClosable", false)
-					.putExtra("backPressedMessage", parentActivity.getString(R.string.waitMigration));
-			}
-			parentActivity.startActivity(intent);
+			startConnectionErrorActivity(view, errorCode, errorDescription);
 			return;
 		}
 
-		parentActivity.evaluateJavascript(String.format(
-			"var body = document.evaluate('/html/body', document);" +
-				"body = body.iterateNext();" +
-				"if(body) {" +
-				"  var content = document.createElement('div');" +
+		this.parentActivity.evaluateJavascript(String.format(
+			"const body = document.evaluate('/html/body', document).iterateNext();" +
+				"if (body) {" +
+				"  const content = document.createElement('div');" +
 				"  content.innerHTML = '" +
 				"<h1>Error loading page</h1>" +
 				"<p>[%s] %s</p>" +
@@ -104,23 +97,38 @@ public class UrlHandler extends WebViewClient {
 				"}", errorCode, errorDescription), false);
 	}
 
+	private void startConnectionErrorActivity(WebView view, int errorCode, String errorDescription) {
+		String connErrorInfo = connectionErrorToString(errorCode, errorDescription);
+		Intent intent = new Intent(view.getContext(), ConnectionErrorActivity.class);
+		intent.putExtra("connErrorInfo", connErrorInfo);
+
+		if (this.parentActivity.isMigrationRunning()) {
+			// Activity is not closable if the migration is running
+			intent
+				.putExtra("isClosable", false)
+				.putExtra("backPressedMessage", this.parentActivity.getString(R.string.waitMigration));
+		}
+
+		this.parentActivity.startActivity(intent);
+	}
+
 	/**
 	 *  Check how the migration process is going if it was started.
-	 *  Because most of the cases after the XWalk -> Webview migration process ends
+	 *  Because most of the cases after the XWalk -> WebView migration process ends
 	 * 	the cookies are not available for unknowns reasons, making the webapp to
 	 * 	redirect the user to the login page instead of the main page.
 	 * 	If these conditions are met: migration running + /login page + no cookies,
-	 * 	the app is restarted to refresh the Webview and prevent the user to
+	 * 	the app is restarted to refresh the WebView and prevent the user to
 	 * 	login again.
 	 */
 	@Override public void onPageStarted(WebView view, String url, Bitmap favicon) {
-		boolean isMigrationRunning = parentActivity.isMigrationRunning();
+		boolean isMigrationRunning = this.parentActivity.isMigrationRunning();
 		trace(this, "onPageStarted() :: url: %s, isMigrationRunning: %s", url, isMigrationRunning);
 
 		if (isMigrationRunning && url.contains("/login")) {
-			parentActivity.setMigrationRunning(false);
+			this.parentActivity.setMigrationRunning(false);
 			CookieManager cookieManager = CookieManager.getInstance();
-			String cookie = cookieManager.getCookie(settings.getAppUrl());
+			String cookie = cookieManager.getCookie(this.settings.getAppUrl());
 			if (cookie == null) {
 				log(this, "onPageStarted() :: Migration process in progress, and " +
 					"cookies were not loaded, restarting ...");
@@ -134,6 +142,6 @@ public class UrlHandler extends WebViewClient {
 		trace(this, "onPageFinished() :: url: %s", url);
 		// Broadcast the event so if the connection error
 		// activity is listening it will close
-		parentActivity.sendBroadcast(new Intent("onPageFinished"));
+		this.parentActivity.sendBroadcast(new Intent("onPageFinished"));
 	}
 }
