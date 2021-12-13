@@ -5,7 +5,6 @@
 ### Changes
 
 - [feature] Remember previous URL when reloading app [#52](https://github.com/medic/cht-android/issues/52).
-- [feature] New flavor _CHIS Nepal_ [#231](https://github.com/medic/cht-android/issues/231)!
 - [improvement] Allow users to set cht-core URLs with leading or trailing spaces (and trailing slash) on unbranded app [#178](https://github.com/medic/cht-android/issues/178).
 - [improvement] Update labels to use generic app name [#128](https://github.com/medic/cht-android/issues/128).
 
