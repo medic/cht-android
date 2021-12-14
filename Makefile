@@ -1,7 +1,7 @@
 ADB = ${ANDROID_HOME}/platform-tools/adb
 GRADLE = ./gradlew
 GRADLE_OPTS = --daemon --parallel
-flavor = UnbrandedWebview
+flavor = Unbranded
 abi = x86
 KEYTOOL = keytool
 OPENSSL = openssl
@@ -77,15 +77,15 @@ test: lint
 	${GRADLE} ${GRADLE_OPTS} test
 
 test-ui:
-	${GRADLE} connectedUnbrandedWebviewDebugAndroidTest \
+	${GRADLE} connectedUnbrandedDebugAndroidTest \
 		-Pabi=${abi} --stacktrace -Pandroid.testInstrumentationRunnerArguments.class=\
 	org.medicmobile.webapp.mobile.SettingsDialogActivityTest
 
 test-ui-gamma:
-	${GRADLE} connectedMedicmobilegammaWebviewDebugAndroidTest -Pabi=${abi} --stacktrace
+	${GRADLE} connectedMedicmobilegammaDebugAndroidTest -Pabi=${abi} --stacktrace
 
 test-ui-url:
-	DISABLE_APP_URL_VALIDATION=true ${GRADLE} connectedUnbrandedWebviewDebugAndroidTest \
+	DISABLE_APP_URL_VALIDATION=true ${GRADLE} connectedUnbrandedDebugAndroidTest \
 		-Pabi=${abi} --stacktrace -Pandroid.testInstrumentationRunnerArguments.class=\
 	org.medicmobile.webapp.mobile.LastUrlTest
 

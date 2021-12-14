@@ -1,5 +1,9 @@
 package org.medicmobile.webapp.mobile;
 
+import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
+import static org.medicmobile.webapp.mobile.MedicLog.trace;
+import static org.medicmobile.webapp.mobile.SimpleJsonClient2.redactUrl;
+
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
@@ -8,12 +12,12 @@ import android.os.Bundle;
 import android.util.ArrayMap;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
-import android.widget.AdapterView.OnItemClickListener;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -21,10 +25,6 @@ import java.util.List;
 import java.util.Map;
 
 import medic.android.ActivityBackgroundTask;
-
-import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
-import static org.medicmobile.webapp.mobile.SimpleJsonClient2.redactUrl;
-import static org.medicmobile.webapp.mobile.MedicLog.trace;
 
 public class SettingsDialogActivity extends LockableActivity {
 	private static final int STATE_LIST = 1;
