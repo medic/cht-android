@@ -443,8 +443,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	}
 
 	public void locationRequestResolved() {
-		evaluateJavascript(
-			"angular.element(document.body).injector().get('AndroidApi').v1.locationPermissionRequestResolved();");
+		evaluateJavascript("window.CHTCore.AndroidApi.v1.locationPermissionRequestResolved();");
 	}
 
 	@SuppressLint("SetJavaScriptEnabled")
