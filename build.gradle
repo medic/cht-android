@@ -316,7 +316,7 @@ android {
       applicationId = 'org.medicmobile.webapp.mobile.vhw_burundi'
     }
 
-    urveillance_covid19_kenya {
+    surveillance_covid19_kenya {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.surveillance_covid19_kenya'
     }
