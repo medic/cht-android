@@ -6,7 +6,7 @@ buildscript {
     jcenter()
   }
   dependencies {
-    classpath 'com.android.tools.build:gradle:7.0.3'
+    classpath 'com.android.tools.build:gradle:7.0.4'
     classpath 'com.noveogroup.android:check:1.2.5'
   }
 }
@@ -41,7 +41,7 @@ def getVersionCode = {
       throw new RuntimeException("Unexpected version number - should be of formatted as 'v1.2.3' or 'v1.2.3-alpha.4', but was: $System.env.RELEASE_VERSION")
 
     versionParts = versionParts.drop(1).collect { Integer.parseInt(it) }
-    int alphaPart = versionParts.size() == 4 ? versionParts[3] : 99;
+    int alphaPart = versionParts.size() == 4 ? versionParts[3] : 99
 
     if (versionParts[1] > 99 || versionParts[2] > 99 || alphaPart > 99)
       throw new RuntimeException('Version part greater than 99 not allowed.')
@@ -66,10 +66,12 @@ android {
   }
 
   defaultConfig {
-    versionName getVersionName()
-    archivesBaseName = "${project.name}-${versionName}"
     //noinspection OldTargetApi
     targetSdkVersion 30
+    minSdkVersion 21 // Android 5.0
+    versionCode getVersionCode()
+    versionName getVersionName()
+    archivesBaseName = "${project.name}-${versionName}"
     //For espresso tests
     testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     // Test user credentials
@@ -81,9 +83,6 @@ android {
     } else {
       buildConfigField "String", "SERVER_URL", '"https://gamma-cht.dev.medicmobile.org"'
     }
-
-    // Required when setting minSdkVersion to 20 or lower (xwalk minSdkVersion is 19).
-    multiDexEnabled true
   }
 
   compileOptions {
@@ -94,7 +93,7 @@ android {
   }
 
   applicationVariants.all { variant ->
-    buildConfigField "boolean", "DISABLE_APP_URL_VALIDATION", "Boolean.parseBoolean(\"${System.env.DISABLE_APP_URL_VALIDATION}\")";
+    buildConfigField "boolean", "DISABLE_APP_URL_VALIDATION", "Boolean.parseBoolean(\"${System.env.DISABLE_APP_URL_VALIDATION}\")"
     buildConfigField "String",  "LOG_TAG", '"MedicMobile"'
     buildConfigField "Long",    "TTL_LAST_URL", '24l * 60 * 60 * 1000'  // 24 hs max time last URL loaded is remembered
 
@@ -125,7 +124,7 @@ android {
     // Every APK requires a unique version code.
     // So when compiling multiple APKS for the different ABIs, use the first digit
     variant.outputs.each { output ->
-      def versionAugmentation = (output.getFilter(com.android.build.OutputFile.ABI) == 'arm64-v8a') ? 1 : 0;
+      def versionAugmentation = (output.getFilter(com.android.build.OutputFile.ABI) == 'arm64-v8a') ? 1 : 0
       output.versionCodeOverride = variant.versionCode * 10 + versionAugmentation
     }
   }
@@ -145,7 +144,7 @@ android {
     }
     release {
       minifyEnabled true
-      proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'config/xwalk.pro', 'config/libsimprints.pro'
+      proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'config/libsimprints.pro'
       shrinkResources true
       signingConfig signingConfigs.release
     }
@@ -175,25 +174,9 @@ android {
     }
   }
 
-  flavorDimensions 'brand', 'version'
+  flavorDimensions 'brand'
+
   productFlavors {
-
-    webview {
-      dimension 'version'
-      minSdkVersion 29 // Android 10
-      // the APK with a higher minSdkVersion value must have a higher versionCode value
-      // https://developer.android.com/google/play/publishing/multiple-apks
-      versionCode getVersionCode() + 1;
-      versionNameSuffix '-webview'
-    }
-
-    xwalk {
-      dimension 'version'
-      minSdkVersion 19 // Android 4.4
-      versionCode getVersionCode();
-      versionNameSuffix '-xwalk'
-    }
-
     unbranded {
       // we will not create project-specific src directories
       // for `unbranded` - it will use the defaults in
@@ -203,10 +186,12 @@ android {
       simprintsModuleId = 'simprints.app'
       simprintsUserId = 'test@simprints.app'
     }
+
     medicmobiledemo {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.medicmobiledemo'
     }
+
     medicmobilegamma {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.medicmobilegamma'
@@ -216,6 +201,7 @@ android {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.bracuganda'
     }
+
     cic_guatemala {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.cic_guatemala'
@@ -230,74 +216,92 @@ android {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.ebpp_indonesia'
     }
+
     hope_through_health {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.hope_through_health'
     }
+
     livinggoods {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.livinggoods'
     }
+
     livinggoodskenya {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.livinggoodskenya'
     }
+
     livinggoods_assisted_networks {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.livinggoods_assisted_networks'
     }
+
     livinggoods_innovation_ke_supervisor {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.livinggoods_innovation_ke_supervisor'
     }
+
     livinggoods_innovation_ke_hivst {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.livinggoods_innovation_ke_hivst'
     }
+
     moh_kenya_siaya_white {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.moh_kenya_siaya'
     }
+
     moh_kenya_siaya_red {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.moh_kenya_siaya_red'
     }
+
     moh_kenya_siaya_green {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.moh_kenya_siaya_green'
     }
+
     moh_kenya_siaya_black {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.moh_kenya_siaya_black'
     }
+
     moh_mali {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.moh_mali'
     }
+
     moh_zanzibar_training {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.moh_zanzibar_training'
     }
+
     moh_zanzibar {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.moh_zanzibar'
     }
+
     musomali {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.musomali'
     }
+
     pih_malawi {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.pih_malawi'
     }
+
     pih_malawi_supervisor {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.pih_malawi_supervisor'
     }
+
     safaridoctors_kenya {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.safaridoctors_kenya'
     }
+
     simprints {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.simprints'
@@ -306,30 +310,37 @@ android {
       simprintsModuleId = 'simprints.app'
       simprintsUserId = 'test@simprints.app'
     }
+
     vhw_burundi {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.vhw_burundi'
     }
+
     surveillance_covid19_kenya {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.surveillance_covid19_kenya'
     }
+
     trippleeighty {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.trippleeighty'
     }
+
     covid_moh_mali {
       dimension = 'brand'
       applicationId = "org.medicmobile.webapp.mobile.covid_moh_mali"
     }
+
     icm_ph_chc {
       dimension = 'brand'
       applicationId = "org.medicmobile.webapp.mobile.icm_ph_chc"
     }
+
     vhtapp_uganda {
       dimension = 'brand'
       applicationId = "org.medicmobile.webapp.mobile.vhtapp_uganda"
     }
+
     unbranded_test {
       dimension = 'brand'
       applicationId = "org.medicmobile.webapp.mobile.unbranded_test"
@@ -339,14 +350,17 @@ android {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.itech_aurum'
     }
+
     itech_malawi {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.itech_malawi'
     }
+
     alerte_niger {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.alerte_niger'
     }
+
     chis_ne {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.chis_ne'
@@ -366,20 +380,14 @@ android {
       universalApk false
     }
   }
-
-  sourceSets {
-    xwalk {
-      jniLibs.srcDirs = ['src/xwalk/libs']
-    }
-  }
 }
 
 dependencies {
   implementation fileTree(dir: 'libs', include: ['*.jar'])
   implementation 'com.simprints:LibSimprints:1.0.11'
   implementation 'com.github.Mariovc:ImagePicker:1.2.2'
+  implementation 'androidx.core:core:1.6.0'
   coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.1.5'
-  xwalkImplementation files('src/xwalk/libs/xwalk_core_library-23.53.589.4-arm64-v8a.aar')
   testImplementation 'junit:junit:4.13.2'
   testImplementation 'org.mockito:mockito-inline:4.0.0'
   testImplementation 'com.google.android:android-test:4.1.1.4'

@@ -3,7 +3,7 @@ CHT Android App
 
 The cht-android application is a thin Android wrapper to load the [CHT Core Framework](https://github.com/medic/cht-core/) web application in a Webview native container.
 
-The repo contains “flavored” configurations, where each “flavor” or “brand” is an app. This allows the application to be hardcoded to a specific CHT deployment and have a partner specific logo and display name. The app also provides some deeper integration with other android apps and native phone functions that are otherwise unavailable to webapps.
+The repository contains “flavored” configurations, where each “flavor” or “brand” is an app. This allows the application to be hardcoded to a specific CHT deployment and have a partner specific logo and display name. The app also provides some deeper integration with other android apps and native phone functions that are otherwise unavailable to webapps.
 
 
 ## Release notes
@@ -18,7 +18,7 @@ Development guides are available in the "Android" section of the [Community Heal
 
 ## Copyright
 
-Copyright 2013-2021 Medic Mobile, Inc. <hello@medic.org>.
+Copyright 2013-2022 Medic Mobile, Inc. <hello@medic.org>.
 
 
 ## License
