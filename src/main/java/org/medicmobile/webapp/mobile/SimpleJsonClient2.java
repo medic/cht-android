@@ -12,7 +12,6 @@ import java.io.UnsupportedEncodingException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 
 import org.json.JSONException;
@@ -33,7 +32,7 @@ public class SimpleJsonClient2 {
 	private static final Pattern AUTH_URL = Pattern.compile("(.+)://(.*):(.*)@(.*)");
 
 //> PUBLIC METHODS
-	public JSONObject get(String url) throws MalformedURLException, JSONException, IOException {
+	public JSONObject get(String url) throws JSONException, IOException {
 		if(DEBUG) traceMethod("get", "url", redactUrl(url));
 		return get(new URL(url));
 	}

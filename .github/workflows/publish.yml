@@ -47,6 +47,12 @@ jobs:
         ANDROID_SECRETS_KEY: ${{ secrets.ANDROID_SECRETS_KEY_ALERTE_NIGER }}
         ANDROID_SECRETS_IV: ${{ secrets.ANDROID_SECRETS_IV_ALERTE_NIGER }}
       run: make org=alerte_niger keydec
+      
+    - name: Unpack secrets chis_ne
+      env:
+        ANDROID_SECRETS_KEY: ${{ secrets.ANDROID_SECRETS_KEY_CHIS_NE }}
+        ANDROID_SECRETS_IV: ${{ secrets.ANDROID_SECRETS_IV_CHIS_NE }}
+      run: make org=chis_ne keydec
 
     - name: Assemble unbranded
       uses: maierj/fastlane-action@v1.4.0
@@ -224,6 +230,15 @@ jobs:
         ANDROID_KEYSTORE_PATH: alerte_niger.keystore
         ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_ALERTE_NIGER }}
         ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_ALERTE_NIGER }}
+    - name: Assemble chis_ne
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: build
+        options: '{ "flavor": "chis_ne" }'
+      env:
+        ANDROID_KEYSTORE_PATH: chis_ne.keystore
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_CHIS_NE }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_CHIS_NE }}
     - name: Bundle alerte_niger
       uses: maierj/fastlane-action@v1.4.0
       with:
@@ -233,6 +248,15 @@ jobs:
         ANDROID_KEYSTORE_PATH: alerte_niger.keystore
         ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_ALERTE_NIGER }}
         ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_ALERTE_NIGER }}
+    - name: Bundle chis_ne
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: bundle
+        options: '{ "flavor": "chis_ne" }'
+      env:
+        ANDROID_KEYSTORE_PATH: chis_ne.keystore
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_CHIS_NE }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_CHIS_NE }}
 
     - name: GitHub release
       uses: softprops/action-gh-release@v1

@@ -29,19 +29,21 @@ import static org.medicmobile.webapp.mobile.MedicLog.trace;
 public class SettingsDialogActivity extends LockableActivity {
 	private static final int STATE_LIST = 1;
 	private static final int STATE_FORM = 2;
-
 	private SettingsStore settings;
 	private ServerRepo serverRepo;
 	private int state;
 
 	private static class AppUrlVerificationTask extends ActivityBackgroundTask<SettingsDialogActivity, String, Void, AppUrlVerification> {
+
+		private final AppUrlVerifier verifier = new AppUrlVerifier();
+
 		AppUrlVerificationTask(SettingsDialogActivity a) {
 			super(a);
 		}
 
 		protected AppUrlVerification doInBackground(String... appUrl) {
 			if(DEBUG && appUrl.length != 1) throw new IllegalArgumentException();
-			return new AppUrlVerifier().verify(appUrl[0]);
+			return verifier.verify(appUrl[0]);
 		}
 		protected void onPostExecute(AppUrlVerification result) {
 			SettingsDialogActivity ctx = getRequiredCtx("AppUrlVerificationTask.onPostExecute()");
