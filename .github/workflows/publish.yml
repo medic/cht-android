@@ -247,3 +247,29 @@ jobs:
           build/outputs/bundle/**/*-release.aab
       env:
         GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+
+    - name: Unpack secrets muso_cdi_test
+      env:
+        ANDROID_SECRETS_KEY: ${{ secrets.ANDROID_SECRETS_KEY_MUSO_CDI_TEST }}
+        ANDROID_SECRETS_IV: ${{ secrets.ANDROID_SECRETS_IV_MUSO_CDI_TEST }}
+      run: make org=muso_cdi_test keydec
+
+    - name: Assemble muso_cdi_test
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: build
+        options: '{ "flavor": "muso_cdi_test" }'
+      env:
+        ANDROID_KEYSTORE_PATH: muso_cdi_test.keystore
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_MUSO_CDI_TEST }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_MUSO_CDI_TEST }}
+
+    - name: Bundle muso_cdi_test
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: bundle
+        options: '{ "flavor": "muso_cdi_test" }'
+      env:
+        ANDROID_KEYSTORE_PATH: muso_cdi_test.keystore
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_MUSO_CDI_TEST }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_MUSO_CDI_TEST }}

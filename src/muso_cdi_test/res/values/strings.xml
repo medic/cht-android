@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="app_name">Muso CDI Test</string>
+  <string name="app_host">muso-cdi.dev.medicmobile.org</string>
+</resources>

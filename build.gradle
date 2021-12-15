@@ -347,6 +347,10 @@ android {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.alerte_niger'
     }
+    muso_cdi_test {
+      dimension = 'brand'
+      applicationId = 'org.medicmobile.webapp.mobile.muso_cdi_test'
+    }
   }
 
   splits {
