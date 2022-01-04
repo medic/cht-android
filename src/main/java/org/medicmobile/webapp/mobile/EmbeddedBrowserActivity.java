@@ -247,6 +247,30 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		}
 	}
 
+	@Override
+	public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+		boolean granted = grantResults.length > 0 && grantResults[0] == PERMISSION_GRANTED;
+
+		if (requestCode == ACCESS_LOCATION_PERMISSION_REQUEST_CODE) {
+			if (granted) {
+				locationRequestResolved();
+				return;
+			}
+			processGeolocationDeniedStatus();
+			return;
+		}
+
+		if (requestCode == ACCESS_STORAGE_PERMISSION_REQUEST_CODE) {
+			if (granted) {
+				this.chtExternalAppHandler.resumeActivity();
+				return;
+			}
+			trace(this, "ChtExternalAppHandler :: User rejected permission.");
+			return;
+		}
+	}
+
 //> ACCESSORS
 	SimprintsSupport getSimprintsSupport() {
 		return this.simprints;
@@ -294,7 +318,32 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		isMigrationRunning = migrationRunning;
 	}
 
-	//> PRIVATE HELPERS
+	public boolean getLocationPermissions() {
+		boolean hasFineLocation = ContextCompat.checkSelfPermission(this, ACCESS_FINE_LOCATION) == PERMISSION_GRANTED;
+		boolean hasCoarseLocation = ContextCompat.checkSelfPermission(this, ACCESS_COARSE_LOCATION) == PERMISSION_GRANTED;
+
+		if (hasFineLocation && hasCoarseLocation) {
+			trace(this, "getLocationPermissions() :: already granted");
+			return true;
+		}
+
+		if (settings != null && settings.hasUserDeniedGeolocation()) {
+			trace(this, "getLocationPermissions() :: user has previously denied to share location");
+			locationRequestResolved();
+			return false;
+		}
+
+		trace(this, "getLocationPermissions() :: location not granted before, requesting access...");
+		Intent intent = new Intent(this, RequestPermissionActivity.class);
+		startActivityForResult(intent, DISCLOSURE_LOCATION_ACTIVITY_REQUEST_CODE);
+		return false;
+	}
+
+	public void locationRequestResolved() {
+		evaluateJavascript("window.CHTCore.AndroidApi.v1.locationPermissionRequestResolved();");
+	}
+
+//> PRIVATE HELPERS
 	private String requestCodeToString(int requestCode) {
 		switch (requestCode) {
 			case ACCESS_LOCATION_PERMISSION_REQUEST_CODE:
@@ -395,55 +444,6 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 				callback.invoke(origin, true, true);
 			}
 		});
-	}
-
-	public boolean getLocationPermissions() {
-		boolean hasFineLocation = ContextCompat.checkSelfPermission(this, ACCESS_FINE_LOCATION) == PERMISSION_GRANTED;
-		boolean hasCoarseLocation = ContextCompat.checkSelfPermission(this, ACCESS_COARSE_LOCATION) == PERMISSION_GRANTED;
-
-		if (hasFineLocation && hasCoarseLocation) {
-			trace(this, "getLocationPermissions() :: already granted");
-			return true;
-		}
-
-		if (settings.hasUserDeniedGeolocation()) {
-			trace(this, "getLocationPermissions() :: user has previously denied to share location");
-			locationRequestResolved();
-			return false;
-		}
-
-		trace(this, "getLocationPermissions() :: location not granted before, requesting access...");
-		Intent intent = new Intent(this, RequestPermissionActivity.class);
-		startActivityForResult(intent, DISCLOSURE_LOCATION_ACTIVITY_REQUEST_CODE);
-		return false;
-	}
-
-	@Override
-	public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-		boolean granted = grantResults.length > 0 && grantResults[0] == PERMISSION_GRANTED;
-
-		if (requestCode == ACCESS_LOCATION_PERMISSION_REQUEST_CODE) {
-			if (granted) {
-				locationRequestResolved();
-				return;
-			}
-			processGeolocationDeniedStatus();
-			return;
-		}
-
-		if (requestCode == ACCESS_STORAGE_PERMISSION_REQUEST_CODE) {
-			if (granted) {
-				this.chtExternalAppHandler.resumeActivity();
-				return;
-			}
-			trace(this, "ChtExternalAppHandler :: User rejected permission.");
-			return;
-		}
-	}
-
-	public void locationRequestResolved() {
-		evaluateJavascript("window.CHTCore.AndroidApi.v1.locationPermissionRequestResolved();");
 	}
 
 	@SuppressLint("SetJavaScriptEnabled")
