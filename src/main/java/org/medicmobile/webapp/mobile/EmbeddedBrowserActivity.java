@@ -54,9 +54,9 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	static final int DISCLOSURE_LOCATION_ACTIVITY_REQUEST_CODE = (2 << 3) | NON_SIMPRINTS_FLAGS;
 	static final int ACCESS_STORAGE_PERMISSION_REQUEST_CODE = (3 << 3) | NON_SIMPRINTS_FLAGS;
 	static final int CHT_EXTERNAL_APP_ACTIVITY_REQUEST_CODE = (4 << 3) | NON_SIMPRINTS_FLAGS;
-	private static final int ACCESS_LOCATION_PERMISSION_REQUEST_CODE = (5 << 3) | NON_SIMPRINTS_FLAGS;
+	static final int ACCESS_LOCATION_PERMISSION_REQUEST_CODE = (5 << 3) | NON_SIMPRINTS_FLAGS;
 
-	private static final String[] LOCATION_PERMISSIONS = { ACCESS_FINE_LOCATION, ACCESS_COARSE_LOCATION };
+	static final String[] LOCATION_PERMISSIONS = { ACCESS_FINE_LOCATION, ACCESS_COARSE_LOCATION };
 
 	private static final ValueCallback<String> IGNORE_RESULT = new ValueCallback<String>() {
 		public void onReceiveValue(String result) { /* ignore */ }
@@ -327,7 +327,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 			return true;
 		}
 
-		if (settings != null && settings.hasUserDeniedGeolocation()) {
+		if (settings.hasUserDeniedGeolocation()) {
 			trace(this, "getLocationPermissions() :: user has previously denied to share location");
 			locationRequestResolved();
 			return false;
