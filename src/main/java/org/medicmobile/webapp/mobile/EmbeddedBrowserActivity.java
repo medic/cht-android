@@ -126,7 +126,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		Uri appLinkData = appLinkIntent.getData();
 		browseTo(appLinkData);
 
-		if(settings.allowsConfiguration()) {
+		if (settings.allowsConfiguration()) {
 			toast(redactUrl(appUrl));
 		}
 
@@ -470,7 +470,9 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	}
 
 	private void toast(String message) {
-		Toast.makeText(container.getContext(), message, Toast.LENGTH_LONG).show();
+		if (message != null) {
+			Toast.makeText(container.getContext(), message, Toast.LENGTH_LONG).show();
+		}
 	}
 
 	private void registerRetryConnectionBroadcastReceiver() {
