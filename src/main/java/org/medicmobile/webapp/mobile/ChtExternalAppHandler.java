@@ -3,8 +3,7 @@ package org.medicmobile.webapp.mobile;
 import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
 import static android.app.Activity.RESULT_OK;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
-import static org.medicmobile.webapp.mobile.EmbeddedBrowserActivity.ACCESS_STORAGE_PERMISSION_REQUEST_CODE;
-import static org.medicmobile.webapp.mobile.EmbeddedBrowserActivity.CHT_EXTERNAL_APP_ACTIVITY_REQUEST_CODE;
+import static org.medicmobile.webapp.mobile.EmbeddedBrowserActivity.RequestCode;
 import static org.medicmobile.webapp.mobile.JavascriptUtils.safeFormat;
 import static org.medicmobile.webapp.mobile.MedicLog.error;
 import static org.medicmobile.webapp.mobile.MedicLog.trace;
@@ -59,7 +58,7 @@ public class ChtExternalAppHandler {
 		if (ContextCompat.checkSelfPermission(this.context, READ_EXTERNAL_STORAGE) != PERMISSION_GRANTED) {
 			trace(this, "ChtExternalAppHandler :: Requesting storage permissions to process image files taken from external apps");
 			this.lastIntent = intent; // Saving intent to start it when permission is granted.
-			ActivityCompat.requestPermissions(this.context, PERMISSIONS_STORAGE, ACCESS_STORAGE_PERMISSION_REQUEST_CODE);
+			ActivityCompat.requestPermissions(this.context, PERMISSIONS_STORAGE, RequestCode.ACCESS_STORAGE_PERMISSION);
 			return;
 		}
 
@@ -80,7 +79,7 @@ public class ChtExternalAppHandler {
 	private void startActivity(Intent intent) {
 		try {
 			trace(this, "ChtExternalAppHandler :: Starting activity %s %s", intent, intent.getExtras());
-			this.context.startActivityForResult(intent, CHT_EXTERNAL_APP_ACTIVITY_REQUEST_CODE);
+			this.context.startActivityForResult(intent, RequestCode.CHT_EXTERNAL_APP_ACTIVITY);
 
 		} catch (Exception exception) {
 			error(exception, "ChtExternalAppHandler :: Error when starting the activity %s %s", intent, intent.getExtras());

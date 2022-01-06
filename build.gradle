@@ -30,8 +30,6 @@ repositories {
   }
 }
 
-def simprintsApiKey, simprintsModuleId, simprintsUserId
-
 def getVersionCode = {
   int versionCode = 2
   if (System.env.CI == 'true' && System.env.RELEASE_VERSION && System.env.RELEASE_VERSION.startsWith('v')) {
@@ -97,30 +95,6 @@ android {
     buildConfigField "String",  "LOG_TAG", '"MedicMobile"'
     buildConfigField "Long",    "TTL_LAST_URL", '24l * 60 * 60 * 1000'  // 24 hs max time last URL loaded is remembered
 
-    if (System.env.SIMPRINTS_API_KEY) {
-      buildConfigField "String", "SIMPRINTS_API_KEY", /"${System.env.SIMPRINTS_API_KEY}"/
-    } else if (simprintsApiKey) {
-      buildConfigField "String", "SIMPRINTS_API_KEY", /"${simprintsApiKey}"/
-    } else {
-      buildConfigField "String", "SIMPRINTS_API_KEY", /"Medic's API Key"/
-    }
-
-    if (System.env.SIMPRINTS_USER_ID) {
-      buildConfigField "String", "SIMPRINTS_USER_ID", /"${System.env.SIMPRINTS_USER_ID}"/
-    } else if (simprintsUserId) {
-      buildConfigField "String", "SIMPRINTS_USER_ID", /"${simprintsUserId}"/
-    } else {
-      buildConfigField "String", "SIMPRINTS_USER_ID", '"some-user-id"'
-    }
-
-    if (System.env.SIMPRINTS_MODULE_ID) {
-      buildConfigField "String", "SIMPRINTS_MODULE_ID", /"${System.env.SIMPRINTS_MODULE_ID}"/
-    } else if (simprintsModuleId) {
-      buildConfigField "String", "SIMPRINTS_MODULE_ID", /"${simprintsModuleId}"/
-    } else {
-      buildConfigField "String", "SIMPRINTS_MODULE_ID", '"Medic Module ID"'
-    }
-
     // Every APK requires a unique version code.
     // So when compiling multiple APKS for the different ABIs, use the first digit
     variant.outputs.each { output ->
@@ -144,7 +118,7 @@ android {
     }
     release {
       minifyEnabled true
-      proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'config/libsimprints.pro'
+      proguardFiles getDefaultProguardFile('proguard-android-optimize.txt')
       shrinkResources true
       signingConfig signingConfigs.release
     }
@@ -188,9 +162,6 @@ android {
       // for `unbranded` - it will use the defaults in
       // src/main
       dimension = 'brand'
-      simprintsApiKey = 'f4c47c4e-d6ee-444f-b16e-22a4761b1f3c'
-      simprintsModuleId = 'simprints.app'
-      simprintsUserId = 'test@simprints.app'
     }
 
     medicmobiledemo {
@@ -308,15 +279,6 @@ android {
       applicationId = 'org.medicmobile.webapp.mobile.safaridoctors_kenya'
     }
 
-    simprints {
-      dimension = 'brand'
-      applicationId = 'org.medicmobile.webapp.mobile.simprints'
-
-      simprintsApiKey = 'f4c47c4e-d6ee-444f-b16e-22a4761b1f3c'
-      simprintsModuleId = 'simprints.app'
-      simprintsUserId = 'test@simprints.app'
-    }
-
     vhw_burundi {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.vhw_burundi'
@@ -390,7 +352,6 @@ android {
 
 dependencies {
   implementation fileTree(dir: 'libs', include: ['*.jar'])
-  implementation 'com.simprints:LibSimprints:1.0.11'
   implementation 'com.github.Mariovc:ImagePicker:1.2.2'
   // Latest version of androidx.core requires Android 12+
   // noinspection GradleDependency

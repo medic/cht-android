@@ -8,7 +8,7 @@ import static android.content.pm.PackageManager.PERMISSION_DENIED;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.medicmobile.webapp.mobile.EmbeddedBrowserActivity.ACCESS_LOCATION_PERMISSION_REQUEST_CODE;
+import static org.medicmobile.webapp.mobile.EmbeddedBrowserActivity.RequestCode;
 import static org.medicmobile.webapp.mobile.EmbeddedBrowserActivity.LOCATION_PERMISSIONS;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -124,7 +124,7 @@ public class EmbeddedBrowserActivityTest {
 					activityCompatMock.verify(() -> ActivityCompat.requestPermissions(
 						embeddedBrowserActivity,
 						LOCATION_PERMISSIONS,
-						ACCESS_LOCATION_PERMISSION_REQUEST_CODE
+						RequestCode.ACCESS_LOCATION_PERMISSION
 					));
 
 					Intents.release();

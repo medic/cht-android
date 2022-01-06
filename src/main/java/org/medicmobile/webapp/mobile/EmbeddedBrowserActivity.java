@@ -40,28 +40,21 @@ import java.util.Arrays;
 
 @SuppressWarnings({ "PMD.GodClass", "PMD.TooManyMethods" })
 public class EmbeddedBrowserActivity extends LockableActivity {
-	/**
-	 * Any activity result with all 3 low bits set is _not_ a simprints result.
-	 *
-	 * The following block of bit-shifted integers are intended for use in the subsystem seen
-	 * in the onActivityResult below. These integers respect the reserved block of integers
-	 * which are used by simprints. Simprint intents are started in the webapp where a matching
-	 * bitmask is used to respect the scheme on that side of things.
-	 * */
-	private static final int NON_SIMPRINTS_FLAGS = 0x7;
-	static final int GRAB_PHOTO_ACTIVITY_REQUEST_CODE = (0 << 3) | NON_SIMPRINTS_FLAGS;
-	static final int GRAB_MRDT_PHOTO_ACTIVITY_REQUEST_CODE = (1 << 3) | NON_SIMPRINTS_FLAGS;
-	static final int DISCLOSURE_LOCATION_ACTIVITY_REQUEST_CODE = (2 << 3) | NON_SIMPRINTS_FLAGS;
-	static final int ACCESS_STORAGE_PERMISSION_REQUEST_CODE = (3 << 3) | NON_SIMPRINTS_FLAGS;
-	static final int CHT_EXTERNAL_APP_ACTIVITY_REQUEST_CODE = (4 << 3) | NON_SIMPRINTS_FLAGS;
-	static final int ACCESS_LOCATION_PERMISSION_REQUEST_CODE = (5 << 3) | NON_SIMPRINTS_FLAGS;
+
+	private WebView container;
+	private SettingsStore settings;
+	private String appUrl;
+	private MrdtSupport mrdt;
+	private PhotoGrabber photoGrabber;
+	private SmsSender smsSender;
+	private ChtExternalAppHandler chtExternalAppHandler;
+	private boolean isMigrationRunning = false;
 
 	static final String[] LOCATION_PERMISSIONS = { ACCESS_FINE_LOCATION, ACCESS_COARSE_LOCATION };
 
 	private static final ValueCallback<String> IGNORE_RESULT = new ValueCallback<String>() {
 		public void onReceiveValue(String result) { /* ignore */ }
 	};
-
 	private final ValueCallback<String> backButtonHandler = new ValueCallback<String>() {
 		public void onReceiveValue(String result) {
 			if(!"true".equals(result)) {
@@ -70,16 +63,6 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		}
 	};
 
-	private WebView container;
-	private SettingsStore settings;
-	private String appUrl;
-	private SimprintsSupport simprints;
-	private MrdtSupport mrdt;
-	private PhotoGrabber photoGrabber;
-	private SmsSender smsSender;
-	private ChtExternalAppHandler chtExternalAppHandler;
-
-	private boolean isMigrationRunning = false;
 
 //> ACTIVITY LIFECYCLE METHODS
 	@Override public void onCreate(Bundle savedInstanceState) {
@@ -87,7 +70,6 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 
 		trace(this, "Starting webview...");
 
-		this.simprints = new SimprintsSupport(this);
 		this.photoGrabber = new PhotoGrabber(this);
 		this.mrdt = new MrdtSupport(this);
 		this.chtExternalAppHandler = new ChtExternalAppHandler(this);
@@ -211,38 +193,31 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	}
 
 	@Override protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
+		String requestCodeLabel = RequestCode.requestCodeToString(requestCode);
+
 		try {
-			trace(this, "onActivityResult() :: requestCode=%s, resultCode=%s",
-				requestCodeToString(requestCode), resultCode);
+			trace(this, "onActivityResult() :: requestCode=%s, resultCode=%s", requestCodeLabel, resultCode);
 
-			if((requestCode & NON_SIMPRINTS_FLAGS) != NON_SIMPRINTS_FLAGS) {
-				String js = simprints.process(requestCode, intent);
-				trace(this, "Executing JavaScript: %s", js);
-				evaluateJavascript(js);
-				return;
-			}
-
-			switch(requestCode) {
-				case GRAB_PHOTO_ACTIVITY_REQUEST_CODE:
+			switch (requestCode) {
+				case RequestCode.GRAB_PHOTO_ACTIVITY:
 					photoGrabber.process(requestCode, resultCode, intent);
 					return;
-				case GRAB_MRDT_PHOTO_ACTIVITY_REQUEST_CODE:
+				case RequestCode.GRAB_MRDT_PHOTO_ACTIVITY:
 					processMrdtResult(requestCode, resultCode, intent);
 					return;
-				case DISCLOSURE_LOCATION_ACTIVITY_REQUEST_CODE:
+				case RequestCode.DISCLOSURE_LOCATION_ACTIVITY:
 					processLocationPermissionResult(resultCode);
 					return;
-				case CHT_EXTERNAL_APP_ACTIVITY_REQUEST_CODE:
+				case RequestCode.CHT_EXTERNAL_APP_ACTIVITY:
 					processChtExternalAppResult(resultCode, intent);
 					return;
 				default:
-					trace(this, "onActivityResult() :: no handling for requestCode=%s",
-						requestCodeToString(requestCode));
+					trace(this, "onActivityResult() :: no handling for requestCode=%s", requestCodeLabel);
 			}
 		} catch(Exception ex) {
 			String action = intent == null ? null : intent.getAction();
 			warn(ex, "Problem handling intent %s (%s) with requestCode=%s & resultCode=%s",
-				intent, action, requestCodeToString(requestCode), resultCode);
+				intent, action, requestCodeLabel, resultCode);
 		}
 	}
 
@@ -251,7 +226,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 		boolean granted = grantResults.length > 0 && grantResults[0] == PERMISSION_GRANTED;
 
-		if (requestCode == ACCESS_LOCATION_PERMISSION_REQUEST_CODE) {
+		if (requestCode == RequestCode.ACCESS_LOCATION_PERMISSION) {
 			if (granted) {
 				locationRequestResolved();
 				return;
@@ -260,7 +235,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 			return;
 		}
 
-		if (requestCode == ACCESS_STORAGE_PERMISSION_REQUEST_CODE) {
+		if (requestCode == RequestCode.ACCESS_STORAGE_PERMISSION) {
 			if (granted) {
 				this.chtExternalAppHandler.resumeActivity();
 				return;
@@ -271,10 +246,6 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	}
 
 //> ACCESSORS
-	SimprintsSupport getSimprintsSupport() {
-		return this.simprints;
-	}
-
 	MrdtSupport getMrdtSupport() {
 		return this.mrdt;
 	}
@@ -334,7 +305,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 
 		trace(this, "getLocationPermissions() :: location not granted before, requesting access...");
 		Intent intent = new Intent(this, RequestPermissionActivity.class);
-		startActivityForResult(intent, DISCLOSURE_LOCATION_ACTIVITY_REQUEST_CODE);
+		startActivityForResult(intent, RequestCode.DISCLOSURE_LOCATION_ACTIVITY);
 		return false;
 	}
 
@@ -343,23 +314,6 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	}
 
 //> PRIVATE HELPERS
-	private String requestCodeToString(int requestCode) {
-		switch (requestCode) {
-			case ACCESS_LOCATION_PERMISSION_REQUEST_CODE:
-				return "ACCESS_LOCATION_PERMISSION_REQUEST_CODE";
-			case DISCLOSURE_LOCATION_ACTIVITY_REQUEST_CODE:
-				return "DISCLOSURE_LOCATION_ACTIVITY_REQUEST_CODE";
-			case GRAB_PHOTO_ACTIVITY_REQUEST_CODE:
-				return "GRAB_PHOTO_ACTIVITY_REQUEST_CODE";
-			case GRAB_MRDT_PHOTO_ACTIVITY_REQUEST_CODE:
-				return "GRAB_MRDT_PHOTO_ACTIVITY_REQUEST_CODE";
-			case CHT_EXTERNAL_APP_ACTIVITY_REQUEST_CODE:
-				return "CHT_EXTERNAL_APP_ACTIVITY_REQUEST_CODE";
-			default:
-				return String.valueOf(requestCode);
-		}
-	}
-
 	private void processChtExternalAppResult(int resultCode, Intent intentData) {
 		String script = this.chtExternalAppHandler.processResult(resultCode, intentData);
 		trace(this, "ChtExternalAppHandler :: Executing JavaScript: %s", script);
@@ -374,7 +328,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 
 	private void processLocationPermissionResult(int resultCode) {
 		if (resultCode == RESULT_OK) {
-			ActivityCompat.requestPermissions(this, LOCATION_PERMISSIONS, ACCESS_LOCATION_PERMISSION_REQUEST_CODE);
+			ActivityCompat.requestPermissions(this, LOCATION_PERMISSIONS, RequestCode.ACCESS_LOCATION_PERMISSION);
 		} else if (resultCode == RESULT_CANCELED) {
 			processGeolocationDeniedStatus();
 		}
@@ -487,5 +441,34 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 			}
 		};
 		registerReceiver(broadcastReceiver, new IntentFilter("retryConnection"));
+	}
+
+//> CLASSES
+	public static class RequestCode {
+		static final int ACCESS_LOCATION_PERMISSION = 100;
+		static final int ACCESS_STORAGE_PERMISSION = 101;
+		static final int CHT_EXTERNAL_APP_ACTIVITY = 102;
+		static final int DISCLOSURE_LOCATION_ACTIVITY = 103;
+		static final int GRAB_MRDT_PHOTO_ACTIVITY = 104;
+		static final int GRAB_PHOTO_ACTIVITY = 105;
+
+		static String requestCodeToString(int requestCode) {
+			switch (requestCode) {
+				case ACCESS_LOCATION_PERMISSION:
+					return "ACCESS_LOCATION_PERMISSION";
+				case ACCESS_STORAGE_PERMISSION:
+					return "ACCESS_STORAGE_PERMISSION";
+				case CHT_EXTERNAL_APP_ACTIVITY:
+					return "CHT_EXTERNAL_APP_ACTIVITY";
+				case DISCLOSURE_LOCATION_ACTIVITY:
+					return "DISCLOSURE_LOCATION_ACTIVITY";
+				case GRAB_MRDT_PHOTO_ACTIVITY:
+					return "GRAB_MRDT_PHOTO_ACTIVITY";
+				case GRAB_PHOTO_ACTIVITY:
+					return "GRAB_PHOTO_ACTIVITY";
+				default:
+					return String.valueOf(requestCode);
+			}
+		}
 	}
 }

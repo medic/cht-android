@@ -6,7 +6,7 @@ import android.util.Base64;
 
 //import org.json.JSONException;
 
-import static org.medicmobile.webapp.mobile.EmbeddedBrowserActivity.GRAB_MRDT_PHOTO_ACTIVITY_REQUEST_CODE;
+import static org.medicmobile.webapp.mobile.EmbeddedBrowserActivity.RequestCode;
 import static org.medicmobile.webapp.mobile.JavascriptUtils.safeFormat;
 import static org.medicmobile.webapp.mobile.MedicLog.trace;
 import static org.medicmobile.webapp.mobile.MedicLog.warn;
@@ -26,14 +26,14 @@ class MrdtSupport {
 	}
 
 	void startVerify() {
-		ctx.startActivityForResult(verifyIntent(), GRAB_MRDT_PHOTO_ACTIVITY_REQUEST_CODE);
+		ctx.startActivityForResult(verifyIntent(), RequestCode.GRAB_MRDT_PHOTO_ACTIVITY);
 	}
 
 	String process(int requestCode, int resultCode, Intent i) {
 		trace(this, "process() :: requestCode=%s", requestCode);
 
 		switch(requestCode) {
-			case GRAB_MRDT_PHOTO_ACTIVITY_REQUEST_CODE: {
+			case RequestCode.GRAB_MRDT_PHOTO_ACTIVITY: {
 				try {
 					byte[] data = i.getByteArrayExtra("data");
 					String base64data = Base64.encodeToString(data, Base64.NO_WRAP);
