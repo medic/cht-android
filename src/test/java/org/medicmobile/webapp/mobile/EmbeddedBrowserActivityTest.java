@@ -64,6 +64,7 @@ public class EmbeddedBrowserActivityTest {
 				.getScenario()
 				.onActivity(embeddedBrowserActivity -> {
 					assertTrue(embeddedBrowserActivity.getLocationPermissions());
+					Intents.times(0);
 
 					medicLogMock.verify(() -> MedicLog.trace(
 						eq(embeddedBrowserActivity),
