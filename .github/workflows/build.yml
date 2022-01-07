@@ -77,6 +77,9 @@ jobs:
     name: Instrumentation tests
     runs-on: macos-latest
     needs: skip_check
+    strategy:
+      matrix:
+        api-level: ['21', '22', '29', '20']
     if: ${{ needs.skip_check.outputs.should_skip != 'true' }}
     steps:
 
@@ -112,7 +115,7 @@ jobs:
       if: steps.avd-cache.outputs.cache-hit != 'true'
       uses: reactivecircus/android-emulator-runner@v2
       with:
-        api-level: 29
+        api-level: ${{matrix.api-level}}
         target: default
         force-avd-creation: false
         emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
