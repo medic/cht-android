@@ -79,7 +79,7 @@ jobs:
     needs: skip_check
     strategy:
       matrix:
-        api-level: ['21', '22', '29', '30']
+        api-level: ['21', '22', '28', '29']
     if: ${{ needs.skip_check.outputs.should_skip != 'true' }}
     steps:
 
