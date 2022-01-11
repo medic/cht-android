@@ -194,7 +194,14 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	}
 
 	@Override protected void onActivityResult(int requestCd, int resultCode, Intent intent) {
-		RequestCode requestCode = RequestCode.valueOf(requestCd).get();
+		Optional<RequestCode> requestCodeOpt = RequestCode.valueOf(requestCd);
+
+		if (!requestCodeOpt.isPresent()) {
+			trace(this, "onActivityResult() :: no handling for requestCode=%s", requestCd);
+			return;
+		}
+
+		RequestCode requestCode = requestCodeOpt.get();
 
 		try {
 			trace(this, "onActivityResult() :: requestCode=%s, resultCode=%s", requestCode.name(), resultCode);
@@ -215,7 +222,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 				default:
 					trace(this, "onActivityResult() :: no handling for requestCode=%s", requestCode.name());
 			}
-		} catch(Exception ex) {
+		} catch (Exception ex) {
 			String action = intent == null ? null : intent.getAction();
 			warn(ex, "Problem handling intent %s (%s) with requestCode=%s & resultCode=%s",
 				intent, action, requestCode.name(), resultCode);
@@ -224,8 +231,15 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 
 	@Override
 	public void onRequestPermissionsResult(int requestCd, String[] permissions, int[] grantResults) {
+		Optional<RequestCode> requestCodeOpt = RequestCode.valueOf(requestCd);
+
+		if (!requestCodeOpt.isPresent()) {
+			trace(this, "onRequestPermissionsResult() :: no handling for requestCode=%s", requestCd);
+			return;
+		}
+
+		RequestCode requestCode = requestCodeOpt.get();
 		super.onRequestPermissionsResult(requestCd, permissions, grantResults);
-		RequestCode requestCode = RequestCode.valueOf(requestCd).get();
 		boolean granted = grantResults.length > 0 && grantResults[0] == PERMISSION_GRANTED;
 
 		if (requestCode == RequestCode.ACCESS_LOCATION_PERMISSION) {
