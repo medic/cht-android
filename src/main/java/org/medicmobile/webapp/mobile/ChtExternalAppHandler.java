@@ -58,7 +58,11 @@ public class ChtExternalAppHandler {
 		if (ContextCompat.checkSelfPermission(this.context, READ_EXTERNAL_STORAGE) != PERMISSION_GRANTED) {
 			trace(this, "ChtExternalAppHandler :: Requesting storage permissions to process image files taken from external apps");
 			this.lastIntent = intent; // Saving intent to start it when permission is granted.
-			ActivityCompat.requestPermissions(this.context, PERMISSIONS_STORAGE, RequestCode.ACCESS_STORAGE_PERMISSION);
+			ActivityCompat.requestPermissions(
+				this.context,
+				PERMISSIONS_STORAGE,
+				RequestCode.ACCESS_STORAGE_PERMISSION.getCode()
+			);
 			return;
 		}
 
@@ -79,7 +83,7 @@ public class ChtExternalAppHandler {
 	private void startActivity(Intent intent) {
 		try {
 			trace(this, "ChtExternalAppHandler :: Starting activity %s %s", intent, intent.getExtras());
-			this.context.startActivityForResult(intent, RequestCode.CHT_EXTERNAL_APP_ACTIVITY);
+			this.context.startActivityForResult(intent, RequestCode.CHT_EXTERNAL_APP_ACTIVITY.getCode());
 
 		} catch (Exception exception) {
 			error(exception, "ChtExternalAppHandler :: Error when starting the activity %s %s", intent, intent.getExtras());

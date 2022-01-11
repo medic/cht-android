@@ -174,7 +174,7 @@ public class ChtExternalAppHandlerTest {
 
 		//> THEN
 		verify(chtExternalApp).createIntent();
-		verify(mockContext).startActivityForResult(eq(intent), eq(RequestCode.CHT_EXTERNAL_APP_ACTIVITY));
+		verify(mockContext).startActivityForResult(eq(intent), eq(RequestCode.CHT_EXTERNAL_APP_ACTIVITY.getCode()));
 	}
 
 	@Test
@@ -197,7 +197,7 @@ public class ChtExternalAppHandlerTest {
 
 			//> THEN
 			verify(chtExternalApp).createIntent();
-			verify(mockContext).startActivityForResult(eq(intent), eq(RequestCode.CHT_EXTERNAL_APP_ACTIVITY));
+			verify(mockContext).startActivityForResult(eq(intent), eq(RequestCode.CHT_EXTERNAL_APP_ACTIVITY.getCode()));
 			medicLogMock.verify(() -> MedicLog.error(
 					any(),
 					eq("ChtExternalAppHandler :: Error when starting the activity %s %s"),
@@ -227,7 +227,11 @@ public class ChtExternalAppHandlerTest {
 			//> THEN
 			verify(chtExternalApp).createIntent();
 			contextCompatMock.verify(() -> ContextCompat.checkSelfPermission(mockContext, READ_EXTERNAL_STORAGE));
-			activityCompatMock.verify(() -> ActivityCompat.requestPermissions(mockContext, new String[]{READ_EXTERNAL_STORAGE}, RequestCode.ACCESS_STORAGE_PERMISSION));
+			activityCompatMock.verify(() -> ActivityCompat.requestPermissions(
+				mockContext,
+				new String[]{READ_EXTERNAL_STORAGE},
+				RequestCode.ACCESS_STORAGE_PERMISSION.getCode()
+			));
 			verify(mockContext, never()).startActivityForResult(any(), anyInt());
 
 		}
@@ -260,8 +264,12 @@ public class ChtExternalAppHandlerTest {
 			//> THEN
 			verify(chtExternalApp).createIntent();
 			contextCompatMock.verify(() -> ContextCompat.checkSelfPermission(mockContext, READ_EXTERNAL_STORAGE));
-			activityCompatMock.verify(() -> ActivityCompat.requestPermissions(mockContext, new String[]{READ_EXTERNAL_STORAGE}, RequestCode.ACCESS_STORAGE_PERMISSION));
-			verify(mockContext).startActivityForResult(eq(intent), eq(RequestCode.CHT_EXTERNAL_APP_ACTIVITY));
+			activityCompatMock.verify(() -> ActivityCompat.requestPermissions(
+				mockContext,
+				new String[]{READ_EXTERNAL_STORAGE},
+				RequestCode.ACCESS_STORAGE_PERMISSION.getCode()
+			));
+			verify(mockContext).startActivityForResult(eq(intent), eq(RequestCode.CHT_EXTERNAL_APP_ACTIVITY.getCode()));
 
 		}
 	}

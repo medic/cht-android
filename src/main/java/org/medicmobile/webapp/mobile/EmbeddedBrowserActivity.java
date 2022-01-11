@@ -37,6 +37,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import java.util.Arrays;
+import java.util.Optional;
 
 @SuppressWarnings({ "PMD.GodClass", "PMD.TooManyMethods" })
 public class EmbeddedBrowserActivity extends LockableActivity {
@@ -192,38 +193,39 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 				backButtonHandler);
 	}
 
-	@Override protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
-		String requestCodeLabel = RequestCode.requestCodeToString(requestCode);
+	@Override protected void onActivityResult(int requestCd, int resultCode, Intent intent) {
+		RequestCode requestCode = RequestCode.valueOf(requestCd).get();
 
 		try {
-			trace(this, "onActivityResult() :: requestCode=%s, resultCode=%s", requestCodeLabel, resultCode);
+			trace(this, "onActivityResult() :: requestCode=%s, resultCode=%s", requestCode.name(), resultCode);
 
 			switch (requestCode) {
-				case RequestCode.GRAB_PHOTO_ACTIVITY:
+				case GRAB_PHOTO_ACTIVITY:
 					photoGrabber.process(requestCode, resultCode, intent);
 					return;
-				case RequestCode.GRAB_MRDT_PHOTO_ACTIVITY:
+				case GRAB_MRDT_PHOTO_ACTIVITY:
 					processMrdtResult(requestCode, resultCode, intent);
 					return;
-				case RequestCode.DISCLOSURE_LOCATION_ACTIVITY:
+				case DISCLOSURE_LOCATION_ACTIVITY:
 					processLocationPermissionResult(resultCode);
 					return;
-				case RequestCode.CHT_EXTERNAL_APP_ACTIVITY:
+				case CHT_EXTERNAL_APP_ACTIVITY:
 					processChtExternalAppResult(resultCode, intent);
 					return;
 				default:
-					trace(this, "onActivityResult() :: no handling for requestCode=%s", requestCodeLabel);
+					trace(this, "onActivityResult() :: no handling for requestCode=%s", requestCode.name());
 			}
 		} catch(Exception ex) {
 			String action = intent == null ? null : intent.getAction();
 			warn(ex, "Problem handling intent %s (%s) with requestCode=%s & resultCode=%s",
-				intent, action, requestCodeLabel, resultCode);
+				intent, action, requestCode.name(), resultCode);
 		}
 	}
 
 	@Override
-	public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+	public void onRequestPermissionsResult(int requestCd, String[] permissions, int[] grantResults) {
+		super.onRequestPermissionsResult(requestCd, permissions, grantResults);
+		RequestCode requestCode = RequestCode.valueOf(requestCd).get();
 		boolean granted = grantResults.length > 0 && grantResults[0] == PERMISSION_GRANTED;
 
 		if (requestCode == RequestCode.ACCESS_LOCATION_PERMISSION) {
@@ -305,7 +307,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 
 		trace(this, "getLocationPermissions() :: location not granted before, requesting access...");
 		Intent intent = new Intent(this, RequestPermissionActivity.class);
-		startActivityForResult(intent, RequestCode.DISCLOSURE_LOCATION_ACTIVITY);
+		startActivityForResult(intent, RequestCode.DISCLOSURE_LOCATION_ACTIVITY.getCode());
 		return false;
 	}
 
@@ -320,15 +322,19 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		evaluateJavascript(script);
 	}
 
-	private void processMrdtResult(int requestCode, int resultCode, Intent intent) {
-		String js = mrdt.process(requestCode, resultCode, intent);
+	private void processMrdtResult(RequestCode requestCode, int resultCode, Intent intent) {
+		String js = mrdt.process(requestCode, intent);
 		trace(this, "Executing JavaScript: %s", js);
 		evaluateJavascript(js);
 	}
 
 	private void processLocationPermissionResult(int resultCode) {
 		if (resultCode == RESULT_OK) {
-			ActivityCompat.requestPermissions(this, LOCATION_PERMISSIONS, RequestCode.ACCESS_LOCATION_PERMISSION);
+			ActivityCompat.requestPermissions(
+				this,
+				LOCATION_PERMISSIONS,
+				RequestCode.ACCESS_LOCATION_PERMISSION.getCode()
+			);
 		} else if (resultCode == RESULT_CANCELED) {
 			processGeolocationDeniedStatus();
 		}
@@ -443,32 +449,31 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		registerReceiver(broadcastReceiver, new IntentFilter("retryConnection"));
 	}
 
-//> CLASSES
-	public static class RequestCode {
-		static final int ACCESS_LOCATION_PERMISSION = 100;
-		static final int ACCESS_STORAGE_PERMISSION = 101;
-		static final int CHT_EXTERNAL_APP_ACTIVITY = 102;
-		static final int DISCLOSURE_LOCATION_ACTIVITY = 103;
-		static final int GRAB_MRDT_PHOTO_ACTIVITY = 104;
-		static final int GRAB_PHOTO_ACTIVITY = 105;
+//> ENUMS
+	public enum RequestCode {
+		ACCESS_LOCATION_PERMISSION(100),
+		ACCESS_STORAGE_PERMISSION(101),
+		CHT_EXTERNAL_APP_ACTIVITY(102),
+		DISCLOSURE_LOCATION_ACTIVITY(103),
+		GRAB_MRDT_PHOTO_ACTIVITY(104),
+		GRAB_PHOTO_ACTIVITY(105);
 
-		static String requestCodeToString(int requestCode) {
-			switch (requestCode) {
-				case ACCESS_LOCATION_PERMISSION:
-					return "ACCESS_LOCATION_PERMISSION";
-				case ACCESS_STORAGE_PERMISSION:
-					return "ACCESS_STORAGE_PERMISSION";
-				case CHT_EXTERNAL_APP_ACTIVITY:
-					return "CHT_EXTERNAL_APP_ACTIVITY";
-				case DISCLOSURE_LOCATION_ACTIVITY:
-					return "DISCLOSURE_LOCATION_ACTIVITY";
-				case GRAB_MRDT_PHOTO_ACTIVITY:
-					return "GRAB_MRDT_PHOTO_ACTIVITY";
-				case GRAB_PHOTO_ACTIVITY:
-					return "GRAB_PHOTO_ACTIVITY";
-				default:
-					return String.valueOf(requestCode);
-			}
+		private final int requestCode;
+
+		RequestCode(int requestCode) {
+			this.requestCode = requestCode;
+		}
+
+		public static Optional<RequestCode> valueOf(int code) {
+			return Arrays
+				.stream(RequestCode.values())
+				.filter(e -> e.getCode() == code)
+				.findFirst();
+		}
+
+		public int getCode() {
+			return requestCode;
 		}
 	}
+
 }

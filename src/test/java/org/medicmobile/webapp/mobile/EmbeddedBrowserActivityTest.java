@@ -125,7 +125,7 @@ public class EmbeddedBrowserActivityTest {
 					activityCompatMock.verify(() -> ActivityCompat.requestPermissions(
 						embeddedBrowserActivity,
 						LOCATION_PERMISSIONS,
-						RequestCode.ACCESS_LOCATION_PERMISSION
+						RequestCode.ACCESS_LOCATION_PERMISSION.getCode()
 					));
 
 					Intents.release();

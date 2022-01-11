@@ -64,9 +64,9 @@ class PhotoGrabber {
 		else pickImage();
 	}
 
-	void process(int requestCode, int resultCode, Intent i) {
+	void process(RequestCode requestCode, int resultCode, Intent i) {
 		if(uploadCallback == null) {
-			warn(this, "uploadCallback is null for requestCode %s", requestCode);
+			warn(this, "uploadCallback is null for requestCode %s", requestCode.name());
 			return;
 		}
 
@@ -112,14 +112,14 @@ class PhotoGrabber {
 	}
 
 	private void takePhoto() {
-		a.startActivityForResult(cameraIntent(), RequestCode.GRAB_PHOTO_ACTIVITY);
+		a.startActivityForResult(cameraIntent(), RequestCode.GRAB_PHOTO_ACTIVITY.getCode());
 	}
 
 	private void pickImage() {
 		trace(this, "picking image intent");
 		Intent i = getPickImageIntent(a, a.getString(R.string.promptChooseImage));
 		trace(this, "starting activity :: %s", i);
-		a.startActivityForResult(i, RequestCode.GRAB_PHOTO_ACTIVITY);
+		a.startActivityForResult(i, RequestCode.GRAB_PHOTO_ACTIVITY.getCode());
 	}
 
 	private boolean canStartCamera() {
