@@ -7,6 +7,8 @@ import java.io.File;
 
 import static org.medicmobile.webapp.mobile.MedicLog.trace;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 /*
  * Stolen from https://github.com/dpa99c/cordova-plugin-crosswalk-data-migration
  */
@@ -103,12 +105,14 @@ public class XWalkMigration {
 		}
 	}
 
+	@SuppressFBWarnings("RV_RETURN_VALUE_IGNORED")
 	private void moveDirFromXWalkToWebView(String dirName) {
 		File xWalkLocalStorageDir = constructFilePaths(xWalkRoot, dirName);
 		File webviewLocalStorageDir = constructFilePaths(webviewRoot, dirName);
 		xWalkLocalStorageDir.renameTo(webviewLocalStorageDir);
 	}
 
+	@SuppressFBWarnings("RV_RETURN_VALUE_IGNORED")
 	private void moveDirFromXWalkToWebView(String sourceDirName, String targetDirName) {
 		File xWalkLocalStorageDir = constructFilePaths(xWalkRoot, sourceDirName);
 		File webviewLocalStorageDir = constructFilePaths(webviewRoot, targetDirName);
@@ -142,10 +146,6 @@ public class XWalkMigration {
 		return status;
 	}
 
-	private File constructFilePaths(File file1, File file2) {
-		return constructFilePaths(file1.getAbsolutePath(), file2.getAbsolutePath());
-	}
-
 	private File constructFilePaths(File file1, String file2) {
 		return constructFilePaths(file1.getAbsolutePath(), file2);
 	}
@@ -166,10 +166,18 @@ public class XWalkMigration {
 		return new File(filesPath);
 	}
 
+	@SuppressFBWarnings("RV_RETURN_VALUE_IGNORED")
 	private void deleteRecursive(File fileOrDirectory) {
-		if (fileOrDirectory.isDirectory())
-			for (File child : fileOrDirectory.listFiles())
+		if (fileOrDirectory == null) {
+			return;
+		}
+
+		if (fileOrDirectory.isDirectory()) {
+			File[] files = fileOrDirectory.listFiles();
+			if (files != null) for (File child : files) {
 				deleteRecursive(child);
+			}
+		}
 
 		fileOrDirectory.delete();
 	}

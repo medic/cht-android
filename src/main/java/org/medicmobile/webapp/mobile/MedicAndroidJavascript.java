@@ -38,6 +38,8 @@ import static java.util.Calendar.YEAR;
 import static java.util.Locale.UK;
 import static org.medicmobile.webapp.mobile.MedicLog.log;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 public class MedicAndroidJavascript {
 	private static final String DATE_FORMAT = "yyyy-MM-dd";
 
@@ -50,6 +52,7 @@ public class MedicAndroidJavascript {
 	private ConnectivityManager connectivityManager;
 	private Alert soundAlert;
 
+	@SuppressFBWarnings("EI_EXPOSE_REP2")
 	public MedicAndroidJavascript(EmbeddedBrowserActivity parent) {
 		this.parent = parent;
 		this.mrdt = parent.getMrdtSupport();
@@ -61,10 +64,12 @@ public class MedicAndroidJavascript {
 		this.soundAlert = soundAlert;
 	}
 
+	@SuppressFBWarnings("EI_EXPOSE_REP2")
 	public void setActivityManager(ActivityManager activityManager) {
 		this.activityManager = activityManager;
 	}
 
+	@SuppressFBWarnings("EI_EXPOSE_REP2")
 	public void setConnectivityManager(ConnectivityManager connectivityManager) {
 		this.connectivityManager = connectivityManager;
 	}
@@ -291,7 +296,11 @@ public class MedicAndroidJavascript {
 					.put("ram", ramObject)
 					.put("network", networkObject)
 					.toString();
-		} catch(Exception ex) {
+		} catch (RuntimeException e) {
+			// See: https://spotbugs.readthedocs.io/en/latest/bugDescriptions.html#rec-exception-is-caught-when-exception-is-not-thrown-rec-catch-exception
+			throw e;
+		} catch (Exception ex) {
+			logException(ex);
 			return jsonError("Problem fetching device info: ", ex);
 		}
 	}
@@ -328,6 +337,8 @@ public class MedicAndroidJavascript {
 		dialog.show();
 	}
 
+	@SuppressFBWarnings("DM_DEFAULT_ENCODING")
+	@SuppressWarnings("PMD.CloseResource")
 	private static HashMap getCPUInfo() throws IOException {
 		BufferedReader bufferedReader = new BufferedReader(new FileReader("/proc/cpuinfo"));
 		String line;

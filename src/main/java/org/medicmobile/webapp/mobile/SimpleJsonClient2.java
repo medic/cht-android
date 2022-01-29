@@ -37,6 +37,7 @@ public class SimpleJsonClient2 {
 		return get(new URL(url));
 	}
 
+	@SuppressWarnings("PMD.CloseResource")
 	public JSONObject get(URL url) throws JSONException, IOException {
 		if(DEBUG) traceMethod("get", "url", redactUrl(url));
 		HttpURLConnection conn = null;

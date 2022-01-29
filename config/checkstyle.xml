@@ -8,7 +8,7 @@
 	<!-- Checks whether files end with a new line. -->
 	<!-- See http://checkstyle.sourceforge.net/config_misc.html#NewlineAtEndOfFile -->
 	<module name="NewlineAtEndOfFile">
-		<property name="severity" value="info"/>
+		<property name="severity" value="warning"/>
 	</module>
 
 	<!-- Checks that property files contain the same keys. -->
@@ -17,9 +17,7 @@
 
 	<!-- Checks for Size Violations. -->
 	<!-- See http://checkstyle.sourceforge.net/config_sizes.html -->
-	<module name="FileLength">
-		<property name="severity" value="ignore"/>
-	</module>
+	<module name="FileLength"/>
 
 	<!-- Checks for whitespace -->
 	<!-- See http://checkstyle.sourceforge.net/config_whitespace.html -->
@@ -31,7 +29,7 @@
 		<property name="minimum" value="0"/>
 		<property name="maximum" value="0"/>
 		<property name="message" value="Line has trailing spaces."/>
-		<property name="severity" value="info"/>
+		<property name="severity" value="warning"/>
 	</module>
 
 	<module name="TreeWalker">
@@ -78,12 +76,8 @@
 			<property name="severity" value="ignore"/>
 		</module>
 		<module name="PackageName"/>
-		<module name="ParameterName">
-			<property name="severity" value="ignore"/>
-		</module>
-		<module name="StaticVariableName">
-			<property name="severity" value="ignore"/>
-		</module>
+		<module name="ParameterName"/>
+		<module name="StaticVariableName"/>
 		<module name="TypeName"/>
 
 		<!-- Checks for imports -->
@@ -106,9 +100,7 @@
 		<!-- Checks for whitespace -->
 		<!-- See http://checkstyle.sourceforge.net/config_whitespace.html -->
 		<module name="EmptyForIteratorPad"/>
-		<module name="GenericWhitespace">
-			<property name="severity" value="ignore"/>
-		</module>
+		<module name="GenericWhitespace"/>
 		<module name="MethodParamPad"/>
 		<module name="NoWhitespaceAfter">
 			<property name="severity" value="ignore"/>

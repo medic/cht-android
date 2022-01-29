@@ -77,7 +77,6 @@ class SmsSender {
 		String id = intent.getStringExtra("id");
 		String destination = intent.getStringExtra("destination");
 		String content = intent.getStringExtra("content");
-		int part = intent.getIntExtra("part", -1);
 
 		parent.evaluateJavascript(safeFormat(
 				"angular.element(document.body).injector().get('AndroidApi').v1.smsStatusUpdate('%s', '%s', '%s', '%s', '%s')",

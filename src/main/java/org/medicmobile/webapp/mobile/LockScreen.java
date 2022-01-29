@@ -14,6 +14,8 @@ import android.widget.Toast;
 import static org.medicmobile.webapp.mobile.MedicLog.trace;
 import static org.medicmobile.webapp.mobile.MedicLog.warn;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 public class LockScreen extends Activity {
 
 	private static final String X_TASK = "LockScreen.TASK";
@@ -61,6 +63,7 @@ public class LockScreen extends Activity {
 		final ViewGroup group = (ViewGroup) findViewById(R.id.divButtons);
 		int i = group.getChildCount();
 		OnClickListener buttonListener = new OnClickListener() {
+			@SuppressFBWarnings("BC_UNCONFIRMED_CAST")
 			@Override public void onClick(View v) {
 				String newText = txtPin.getText() + ((Button) v).getText().toString();
 				txtPin.setText(newText);

@@ -70,8 +70,17 @@ url-tester:
 uninstall:
 	adb uninstall org.medicmobile.webapp.mobile
 
-lint:
-	${GRADLE} ${GRADLE_OPTS} androidCheck lint${flavor}Debug
+pmd:
+	${GRADLE} ${GRADLE_OPTS} pmd
+
+checkstyle:
+	${GRADLE} ${GRADLE_OPTS} checkstyle
+
+spotbugs:
+	${GRADLE} ${GRADLE_OPTS} spotbugs${flavor}Debug
+
+lint: pmd checkstyle spotbugs
+	${GRADLE} ${GRADLE_OPTS} lint${flavor}Debug
 
 test: lint
 	${GRADLE} ${GRADLE_OPTS} test
