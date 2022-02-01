@@ -59,6 +59,10 @@
         <data android:scheme="@string/scheme" android:host="@string/app_host" android:pathPattern=".*"/>
       </intent-filter>
     </activity>
+    <activity android:name="UpgradingActivity"
+      android:screenOrientation="portrait"
+      android:configChanges="orientation|screenSize"
+      android:launchMode="singleTop"/>
   </application>
 
   <queries>

@@ -1,11 +1,13 @@
 package org.medicmobile.webapp.mobile;
 
 import android.content.*;
+import android.net.Uri;
 
 import java.util.*;
 import java.util.regex.*;
 
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
+import static org.medicmobile.webapp.mobile.BuildConfig.DISABLE_APP_URL_VALIDATION;
 import static org.medicmobile.webapp.mobile.BuildConfig.TTL_LAST_URL;
 import static org.medicmobile.webapp.mobile.SimpleJsonClient2.redactUrl;
 import static org.medicmobile.webapp.mobile.MedicLog.trace;
@@ -19,9 +21,24 @@ public abstract class SettingsStore {
 	}
 
 	public abstract String getAppUrl();
+
+	public String getRootUrl() {
+		String appUrl = getAppUrl();
+		return appUrl + (DISABLE_APP_URL_VALIDATION ? "" : "/medic/_design/medic/_rewrite/");
+	}
+
+	public String getUrlToLoad(Uri url) {
+		return url != null ? url.toString() : getRootUrl();
+	}
+
+	public boolean isRootUrl(String url) {
+		return getRootUrl().equals(url);
+	}
+
 	public abstract boolean hasWebappSettings();
 
 	public abstract boolean allowsConfiguration();
+
 	public abstract void update(SharedPreferences.Editor ed, WebappSettings s);
 
 	String getUnlockCode() {
