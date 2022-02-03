@@ -39,7 +39,6 @@ public class SimpleJsonClient2 {
 		return get(new URL(url));
 	}
 
-	@SuppressWarnings("PMD.CloseResource")
 	public JSONObject get(URL url) throws JSONException, IOException {
 		if(DEBUG) traceMethod("get", "url", redactUrl(url));
 		HttpURLConnection conn = null;
@@ -161,7 +160,7 @@ public class SimpleJsonClient2 {
 		Log.d(LOG_TAG, "SimpleJsonClient2." + methodName + "() :: " + message);
 	}
 
-	@SuppressFBWarnings("UPM_UNCALLED_PRIVATE_METHOD")
+	@SuppressFBWarnings(value = "UPM_UNCALLED_PRIVATE_METHOD", justification = "Only called in Debug flavor")
 	private static void log(Exception ex, String message, Object... extras) {
 		Log.i(LOG_TAG, String.format(message, extras), ex);
 	}

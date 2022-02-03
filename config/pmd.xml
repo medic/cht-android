@@ -22,4 +22,10 @@
     <exclude name="UseLocaleWithCaseConversions"/>
   </rule>
 
+  <rule ref="category/java/errorprone.xml/CloseResource">
+    <properties>
+      <property name="closeTargets" value="closeSafely"/>
+    </properties>
+  </rule>
+
 </ruleset>

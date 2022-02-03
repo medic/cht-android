@@ -6,8 +6,7 @@ import android.os.Build;
 import java.io.File;
 
 import static org.medicmobile.webapp.mobile.MedicLog.trace;
-
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import static org.medicmobile.webapp.mobile.MedicLog.warn;
 
 /*
  * Stolen from https://github.com/dpa99c/cordova-plugin-crosswalk-data-migration
@@ -105,18 +104,24 @@ public class XWalkMigration {
 		}
 	}
 
-	@SuppressFBWarnings("RV_RETURN_VALUE_IGNORED")
 	private void moveDirFromXWalkToWebView(String dirName) {
 		File xWalkLocalStorageDir = constructFilePaths(xWalkRoot, dirName);
 		File webviewLocalStorageDir = constructFilePaths(webviewRoot, dirName);
-		xWalkLocalStorageDir.renameTo(webviewLocalStorageDir);
+		boolean renamed = xWalkLocalStorageDir.renameTo(webviewLocalStorageDir);
+
+		if (!renamed) {
+			warn(this, "XWalkMigration :: Cannot move directory from XWalk to WebView. Directory: %s", dirName);
+		}
 	}
 
-	@SuppressFBWarnings("RV_RETURN_VALUE_IGNORED")
 	private void moveDirFromXWalkToWebView(String sourceDirName, String targetDirName) {
 		File xWalkLocalStorageDir = constructFilePaths(xWalkRoot, sourceDirName);
 		File webviewLocalStorageDir = constructFilePaths(webviewRoot, targetDirName);
-		xWalkLocalStorageDir.renameTo(webviewLocalStorageDir);
+		boolean renamed = xWalkLocalStorageDir.renameTo(webviewLocalStorageDir);
+
+		if (!renamed) {
+			warn(this, "XWalkMigration :: Cannot move directory from XWalk to WebView. XWalk directory: %s, WebView: %s", sourceDirName, targetDirName);
+		}
 	}
 
 
@@ -166,7 +171,6 @@ public class XWalkMigration {
 		return new File(filesPath);
 	}
 
-	@SuppressFBWarnings("RV_RETURN_VALUE_IGNORED")
 	private void deleteRecursive(File fileOrDirectory) {
 		if (fileOrDirectory == null) {
 			return;
@@ -179,6 +183,10 @@ public class XWalkMigration {
 			}
 		}
 
-		fileOrDirectory.delete();
+		boolean deleted = fileOrDirectory.delete();
+
+		if (!deleted) {
+			warn(this, "XWalkMigration :: Cannot delete file or directory: %s", fileOrDirectory.getPath());
+		}
 	}
 }

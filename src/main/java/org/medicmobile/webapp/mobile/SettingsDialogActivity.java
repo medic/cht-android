@@ -277,13 +277,13 @@ class ServerRepo {
 			return url.substring("192.168.".length());
 		} else {
 			String[] parts = url.split("\\.");
-			StringBuffer stringBuffer = new StringBuffer();
+			StringBuilder stringBuilder = new StringBuilder();
 			for(String p : parts) {
-				stringBuffer.append(" ");
-				stringBuffer.append(p.substring(0, 1).toUpperCase());
-				stringBuffer.append(p.substring(1));
+				stringBuilder.append(" ");
+				stringBuilder.append(p.substring(0, 1).toUpperCase());
+				stringBuilder.append(p.substring(1));
 			}
-			return stringBuffer.toString().substring(1);
+			return stringBuilder.toString().substring(1);
 		}
 	}
 }
