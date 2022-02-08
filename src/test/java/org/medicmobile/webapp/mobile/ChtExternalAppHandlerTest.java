@@ -15,8 +15,7 @@ import androidx.core.content.ContextCompat;
 import androidx.core.app.ActivityCompat;
 
 import static org.junit.Assert.assertEquals;
-import static org.medicmobile.webapp.mobile.EmbeddedBrowserActivity.ACCESS_STORAGE_PERMISSION_REQUEST_CODE;
-import static org.medicmobile.webapp.mobile.EmbeddedBrowserActivity.CHT_EXTERNAL_APP_ACTIVITY_REQUEST_CODE;
+import static org.medicmobile.webapp.mobile.EmbeddedBrowserActivity.RequestCode;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -175,7 +174,7 @@ public class ChtExternalAppHandlerTest {
 
 		//> THEN
 		verify(chtExternalApp).createIntent();
-		verify(mockContext).startActivityForResult(eq(intent), eq(CHT_EXTERNAL_APP_ACTIVITY_REQUEST_CODE));
+		verify(mockContext).startActivityForResult(eq(intent), eq(RequestCode.CHT_EXTERNAL_APP_ACTIVITY.getCode()));
 	}
 
 	@Test
@@ -198,7 +197,7 @@ public class ChtExternalAppHandlerTest {
 
 			//> THEN
 			verify(chtExternalApp).createIntent();
-			verify(mockContext).startActivityForResult(eq(intent), eq(CHT_EXTERNAL_APP_ACTIVITY_REQUEST_CODE));
+			verify(mockContext).startActivityForResult(eq(intent), eq(RequestCode.CHT_EXTERNAL_APP_ACTIVITY.getCode()));
 			medicLogMock.verify(() -> MedicLog.error(
 					any(),
 					eq("ChtExternalAppHandler :: Error when starting the activity %s %s"),
@@ -228,7 +227,11 @@ public class ChtExternalAppHandlerTest {
 			//> THEN
 			verify(chtExternalApp).createIntent();
 			contextCompatMock.verify(() -> ContextCompat.checkSelfPermission(mockContext, READ_EXTERNAL_STORAGE));
-			activityCompatMock.verify(() -> ActivityCompat.requestPermissions(mockContext, new String[]{READ_EXTERNAL_STORAGE}, ACCESS_STORAGE_PERMISSION_REQUEST_CODE));
+			activityCompatMock.verify(() -> ActivityCompat.requestPermissions(
+				mockContext,
+				new String[]{READ_EXTERNAL_STORAGE},
+				RequestCode.ACCESS_STORAGE_PERMISSION.getCode()
+			));
 			verify(mockContext, never()).startActivityForResult(any(), anyInt());
 
 		}
@@ -261,8 +264,12 @@ public class ChtExternalAppHandlerTest {
 			//> THEN
 			verify(chtExternalApp).createIntent();
 			contextCompatMock.verify(() -> ContextCompat.checkSelfPermission(mockContext, READ_EXTERNAL_STORAGE));
-			activityCompatMock.verify(() -> ActivityCompat.requestPermissions(mockContext, new String[]{READ_EXTERNAL_STORAGE}, ACCESS_STORAGE_PERMISSION_REQUEST_CODE));
-			verify(mockContext).startActivityForResult(eq(intent), eq(CHT_EXTERNAL_APP_ACTIVITY_REQUEST_CODE));
+			activityCompatMock.verify(() -> ActivityCompat.requestPermissions(
+				mockContext,
+				new String[]{READ_EXTERNAL_STORAGE},
+				RequestCode.ACCESS_STORAGE_PERMISSION.getCode()
+			));
+			verify(mockContext).startActivityForResult(eq(intent), eq(RequestCode.CHT_EXTERNAL_APP_ACTIVITY.getCode()));
 
 		}
 	}

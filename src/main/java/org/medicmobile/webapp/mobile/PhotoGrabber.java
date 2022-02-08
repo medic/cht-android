@@ -17,7 +17,7 @@ import static android.app.Activity.RESULT_OK;
 import static android.provider.MediaStore.ACTION_IMAGE_CAPTURE;
 import static com.mvc.imagepicker.ImagePicker.getImageFromResult;
 import static com.mvc.imagepicker.ImagePicker.getPickImageIntent;
-import static org.medicmobile.webapp.mobile.EmbeddedBrowserActivity.GRAB_PHOTO_ACTIVITY_REQUEST_CODE;
+import static org.medicmobile.webapp.mobile.EmbeddedBrowserActivity.RequestCode;
 import static org.medicmobile.webapp.mobile.MedicLog.log;
 import static org.medicmobile.webapp.mobile.MedicLog.trace;
 import static org.medicmobile.webapp.mobile.MedicLog.warn;
@@ -64,9 +64,9 @@ class PhotoGrabber {
 		else pickImage();
 	}
 
-	void process(int requestCode, int resultCode, Intent i) {
+	void process(RequestCode requestCode, int resultCode, Intent i) {
 		if(uploadCallback == null) {
-			warn(this, "uploadCallback is null for requestCode %s", requestCode);
+			warn(this, "uploadCallback is null for requestCode %s", requestCode.name());
 			return;
 		}
 
@@ -112,14 +112,14 @@ class PhotoGrabber {
 	}
 
 	private void takePhoto() {
-		a.startActivityForResult(cameraIntent(), GRAB_PHOTO_ACTIVITY_REQUEST_CODE);
+		a.startActivityForResult(cameraIntent(), RequestCode.GRAB_PHOTO_ACTIVITY.getCode());
 	}
 
 	private void pickImage() {
 		trace(this, "picking image intent");
 		Intent i = getPickImageIntent(a, a.getString(R.string.promptChooseImage));
 		trace(this, "starting activity :: %s", i);
-		a.startActivityForResult(i, GRAB_PHOTO_ACTIVITY_REQUEST_CODE);
+		a.startActivityForResult(i, RequestCode.GRAB_PHOTO_ACTIVITY.getCode());
 	}
 
 	private boolean canStartCamera() {

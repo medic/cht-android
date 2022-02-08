@@ -70,9 +70,6 @@
       <action android:name="android.media.action.IMAGE_CAPTURE" />
     </intent>
     <intent>
-      <action android:name="simprints.app" />
-    </intent>
-    <intent>
       <action android:name="medic.mrdt.verify" />
     </intent>
   </queries>

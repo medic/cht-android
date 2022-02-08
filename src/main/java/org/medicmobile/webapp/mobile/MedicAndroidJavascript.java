@@ -42,7 +42,6 @@ public class MedicAndroidJavascript {
 	private static final String DATE_FORMAT = "yyyy-MM-dd";
 
 	private final EmbeddedBrowserActivity parent;
-	private final SimprintsSupport simprints;
 	private final MrdtSupport mrdt;
 	private final SmsSender smsSender;
 	private final ChtExternalAppHandler chtExternalAppHandler;
@@ -53,7 +52,6 @@ public class MedicAndroidJavascript {
 
 	public MedicAndroidJavascript(EmbeddedBrowserActivity parent) {
 		this.parent = parent;
-		this.simprints = parent.getSimprintsSupport();
 		this.mrdt = parent.getMrdtSupport();
 		this.smsSender = parent.getSmsSender();
 		this.chtExternalAppHandler = parent.getChtExternalAppLauncherActivity();
@@ -161,38 +159,6 @@ public class MedicAndroidJavascript {
 			logException(ex);
 		}
 	}
-
-	/**
-	 * @return {@code true} iff an app is available to handle supported simprints {@code Intent}s
-	 */
-	@android.webkit.JavascriptInterface
-	public boolean simprints_available() {
-		try {
-			return simprints.isAppInstalled();
-		} catch(Exception ex) {
-			logException(ex);
-			return false;
-		}
-	}
-
-	@android.webkit.JavascriptInterface
-	public void simprints_ident(int targetInputId) {
-		try {
-			simprints.startIdent(targetInputId);
-		} catch(Exception ex) {
-			logException(ex);
-		}
-	}
-
-	@android.webkit.JavascriptInterface
-	public void simprints_reg(int targetInputId) {
-		try {
-			simprints.startReg(targetInputId);
-		} catch(Exception ex) {
-			logException(ex);
-		}
-	}
-
 
 	@android.webkit.JavascriptInterface
 	public boolean sms_available() {
