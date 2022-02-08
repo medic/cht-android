@@ -1,5 +1,7 @@
 package org.medicmobile.webapp.mobile;
 
+import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
+import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static org.medicmobile.webapp.mobile.MedicLog.error;
@@ -10,7 +12,6 @@ import static org.medicmobile.webapp.mobile.SimpleJsonClient2.redactUrl;
 import static org.medicmobile.webapp.mobile.Utils.createUseragentFrom;
 import static org.medicmobile.webapp.mobile.Utils.isValidNavigationUrl;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.content.BroadcastReceiver;
@@ -53,11 +54,9 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	static final int DISCLOSURE_LOCATION_ACTIVITY_REQUEST_CODE = (2 << 3) | NON_SIMPRINTS_FLAGS;
 	static final int ACCESS_STORAGE_PERMISSION_REQUEST_CODE = (3 << 3) | NON_SIMPRINTS_FLAGS;
 	static final int CHT_EXTERNAL_APP_ACTIVITY_REQUEST_CODE = (4 << 3) | NON_SIMPRINTS_FLAGS;
+	static final int ACCESS_LOCATION_PERMISSION_REQUEST_CODE = (5 << 3) | NON_SIMPRINTS_FLAGS;
 
-	// Arbitrarily selected value
-	private static final int ACCESS_FINE_LOCATION_PERMISSION_REQUEST_CODE = 7038678;
-
-	private static final String[] LOCATION_PERMISSIONS = { Manifest.permission.ACCESS_FINE_LOCATION };
+	static final String[] LOCATION_PERMISSIONS = { ACCESS_FINE_LOCATION, ACCESS_COARSE_LOCATION };
 
 	private static final ValueCallback<String> IGNORE_RESULT = new ValueCallback<String>() {
 		public void onReceiveValue(String result) { /* ignore */ }
@@ -106,8 +105,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 
 		// Add an alarming red border if using configurable (i.e. dev)
 		// app with a medic production server.
-		if(settings.allowsConfiguration() &&
-				appUrl.contains("app.medicmobile.org")) {
+		if (settings.allowsConfiguration() && appUrl != null && appUrl.contains("app.medicmobile.org")) {
 			View webviewContainer = findViewById(R.id.lytWebView);
 			webviewContainer.setPadding(10, 10, 10, 10);
 			webviewContainer.setBackgroundColor(R.drawable.warning_background);
@@ -128,7 +126,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		Uri appLinkData = appLinkIntent.getData();
 		browseTo(appLinkData);
 
-		if(settings.allowsConfiguration()) {
+		if (settings.allowsConfiguration()) {
 			toast(redactUrl(appUrl));
 		}
 
@@ -212,54 +210,63 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 				backButtonHandler);
 	}
 
-	@Override protected void onActivityResult(int requestCode, int resultCode, Intent i) {
+	@Override protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
 		try {
 			trace(this, "onActivityResult() :: requestCode=%s, resultCode=%s",
-					requestCodeToString(requestCode), resultCode);
-			if((requestCode & NON_SIMPRINTS_FLAGS) == NON_SIMPRINTS_FLAGS) {
-				switch(requestCode) {
-					case GRAB_PHOTO_ACTIVITY_REQUEST_CODE:
-						photoGrabber.process(requestCode, resultCode, i);
-						return;
-					case GRAB_MRDT_PHOTO_ACTIVITY_REQUEST_CODE:
-						String js = mrdt.process(requestCode, resultCode, i);
-						trace(this, "Execing JS: %s", js);
-						evaluateJavascript(js);
-						return;
-					case DISCLOSURE_LOCATION_ACTIVITY_REQUEST_CODE:
-						// User accepted or denied to allow the app to access
-						// location data in RequestPermissionActivity
-						if (resultCode == RESULT_OK) {                    // user accepted
-							// Request to Android location data access
-							ActivityCompat.requestPermissions(
-									this,
-									LOCATION_PERMISSIONS,
-									ACCESS_FINE_LOCATION_PERMISSION_REQUEST_CODE);
-						} else if (resultCode == RESULT_CANCELED) {        // user rejected
-							try {
-								this.locationRequestResolved();
-								settings.setUserDeniedGeolocation();
-							} catch (SettingsException e) {
-								error(e, "Error recording negative to access location");
-							}
-						}
-						return;
-					case CHT_EXTERNAL_APP_ACTIVITY_REQUEST_CODE:
-						processChtExternalAppResult(resultCode, i);
-						return;
-					default:
-						trace(this, "onActivityResult() :: no handling for requestCode=%s",
-								requestCodeToString(requestCode));
-				}
-			} else {
-				String js = simprints.process(requestCode, i);
-				trace(this, "Execing JS: %s", js);
+				requestCodeToString(requestCode), resultCode);
+
+			if((requestCode & NON_SIMPRINTS_FLAGS) != NON_SIMPRINTS_FLAGS) {
+				String js = simprints.process(requestCode, intent);
+				trace(this, "Executing JavaScript: %s", js);
 				evaluateJavascript(js);
+				return;
+			}
+
+			switch(requestCode) {
+				case GRAB_PHOTO_ACTIVITY_REQUEST_CODE:
+					photoGrabber.process(requestCode, resultCode, intent);
+					return;
+				case GRAB_MRDT_PHOTO_ACTIVITY_REQUEST_CODE:
+					processMrdtResult(requestCode, resultCode, intent);
+					return;
+				case DISCLOSURE_LOCATION_ACTIVITY_REQUEST_CODE:
+					processLocationPermissionResult(resultCode);
+					return;
+				case CHT_EXTERNAL_APP_ACTIVITY_REQUEST_CODE:
+					processChtExternalAppResult(resultCode, intent);
+					return;
+				default:
+					trace(this, "onActivityResult() :: no handling for requestCode=%s",
+						requestCodeToString(requestCode));
 			}
 		} catch(Exception ex) {
-			String action = i == null ? null : i.getAction();
+			String action = intent == null ? null : intent.getAction();
 			warn(ex, "Problem handling intent %s (%s) with requestCode=%s & resultCode=%s",
-					i, action, requestCodeToString(requestCode), resultCode);
+				intent, action, requestCodeToString(requestCode), resultCode);
+		}
+	}
+
+	@Override
+	public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+		boolean granted = grantResults.length > 0 && grantResults[0] == PERMISSION_GRANTED;
+
+		if (requestCode == ACCESS_LOCATION_PERMISSION_REQUEST_CODE) {
+			if (granted) {
+				locationRequestResolved();
+				return;
+			}
+			processGeolocationDeniedStatus();
+			return;
+		}
+
+		if (requestCode == ACCESS_STORAGE_PERMISSION_REQUEST_CODE) {
+			if (granted) {
+				this.chtExternalAppHandler.resumeActivity();
+				return;
+			}
+			trace(this, "ChtExternalAppHandler :: User rejected permission.");
+			return;
 		}
 	}
 
@@ -310,17 +317,47 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		isMigrationRunning = migrationRunning;
 	}
 
-	//> PRIVATE HELPERS
+	public boolean getLocationPermissions() {
+		boolean hasFineLocation = ContextCompat.checkSelfPermission(this, ACCESS_FINE_LOCATION) == PERMISSION_GRANTED;
+		boolean hasCoarseLocation = ContextCompat.checkSelfPermission(this, ACCESS_COARSE_LOCATION) == PERMISSION_GRANTED;
+
+		if (hasFineLocation && hasCoarseLocation) {
+			trace(this, "getLocationPermissions() :: already granted");
+			return true;
+		}
+
+		if (settings.hasUserDeniedGeolocation()) {
+			trace(this, "getLocationPermissions() :: user has previously denied to share location");
+			locationRequestResolved();
+			return false;
+		}
+
+		trace(this, "getLocationPermissions() :: location not granted before, requesting access...");
+		Intent intent = new Intent(this, RequestPermissionActivity.class);
+		startActivityForResult(intent, DISCLOSURE_LOCATION_ACTIVITY_REQUEST_CODE);
+		return false;
+	}
+
+	public void locationRequestResolved() {
+		evaluateJavascript("window.CHTCore.AndroidApi.v1.locationPermissionRequestResolved();");
+	}
+
+//> PRIVATE HELPERS
 	private String requestCodeToString(int requestCode) {
-		if (requestCode == ACCESS_FINE_LOCATION_PERMISSION_REQUEST_CODE) {
-			return "ACCESS_FINE_LOCATION_PERMISSION_REQUEST_CODE";
+		switch (requestCode) {
+			case ACCESS_LOCATION_PERMISSION_REQUEST_CODE:
+				return "ACCESS_LOCATION_PERMISSION_REQUEST_CODE";
+			case DISCLOSURE_LOCATION_ACTIVITY_REQUEST_CODE:
+				return "DISCLOSURE_LOCATION_ACTIVITY_REQUEST_CODE";
+			case GRAB_PHOTO_ACTIVITY_REQUEST_CODE:
+				return "GRAB_PHOTO_ACTIVITY_REQUEST_CODE";
+			case GRAB_MRDT_PHOTO_ACTIVITY_REQUEST_CODE:
+				return "GRAB_MRDT_PHOTO_ACTIVITY_REQUEST_CODE";
+			case CHT_EXTERNAL_APP_ACTIVITY_REQUEST_CODE:
+				return "CHT_EXTERNAL_APP_ACTIVITY_REQUEST_CODE";
+			default:
+				return String.valueOf(requestCode);
 		}
-
-		if (requestCode == DISCLOSURE_LOCATION_ACTIVITY_REQUEST_CODE) {
-			return "DISCLOSURE_LOCATION_ACTIVITY_REQUEST_CODE";
-		}
-
-		return String.valueOf(requestCode);
 	}
 
 	private void processChtExternalAppResult(int resultCode, Intent intentData) {
@@ -329,14 +366,36 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		evaluateJavascript(script);
 	}
 
+	private void processMrdtResult(int requestCode, int resultCode, Intent intent) {
+		String js = mrdt.process(requestCode, resultCode, intent);
+		trace(this, "Executing JavaScript: %s", js);
+		evaluateJavascript(js);
+	}
+
+	private void processLocationPermissionResult(int resultCode) {
+		if (resultCode == RESULT_OK) {
+			ActivityCompat.requestPermissions(this, LOCATION_PERMISSIONS, ACCESS_LOCATION_PERMISSION_REQUEST_CODE);
+		} else if (resultCode == RESULT_CANCELED) {
+			processGeolocationDeniedStatus();
+		}
+	}
+
+	private void processGeolocationDeniedStatus() {
+		try {
+			settings.setUserDeniedGeolocation();
+			locationRequestResolved();
+		} catch (SettingsException e) {
+			error(e, "LocationPermissionRequest :: Error recording negative to access location");
+		}
+	}
+
 	private void configureUserAgent() {
 		String current = WebSettings.getDefaultUserAgent(this);
 		container.getSettings().setUserAgentString(createUseragentFrom(current));
 	}
 
 	private void openSettings() {
-		startActivity(new Intent(this,
-				SettingsDialogActivity.class));
+		startActivity(new Intent(this, SettingsDialogActivity.class));
 		finish();
 	}
 
@@ -386,48 +445,6 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		});
 	}
 
-	public boolean getLocationPermissions() {
-		if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PERMISSION_GRANTED) {
-			trace(this, "getLocationPermissions() :: already granted");
-			return true;
-		}
-		if (settings.hasUserDeniedGeolocation()) {
-			trace(this, "getLocationPermissions() :: user has previously denied to share location");
-			this.locationRequestResolved();
-			return false;
-		}
-		trace(this, "getLocationPermissions() :: location not granted before, requesting access...");
-		startActivityForResult(
-				new Intent(this, RequestPermissionActivity.class),
-				DISCLOSURE_LOCATION_ACTIVITY_REQUEST_CODE);
-		return false;
-	}
-
-	@Override
-	public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-		boolean granted = grantResults.length > 0 && grantResults[0] == PERMISSION_GRANTED;
-
-		if (requestCode == ACCESS_FINE_LOCATION_PERMISSION_REQUEST_CODE) {
-			locationRequestResolved();
-			return;
-		}
-
-		if (requestCode == ACCESS_STORAGE_PERMISSION_REQUEST_CODE) {
-			if (granted) {
-				this.chtExternalAppHandler.resumeActivity();
-				return;
-			}
-			trace(this, "ChtExternalAppHandler :: User rejected permission.");
-			return;
-		}
-	}
-
-	public void locationRequestResolved() {
-		evaluateJavascript(
-			"angular.element(document.body).injector().get('AndroidApi').v1.locationPermissionRequestResolved();");
-	}
-
 	@SuppressLint("SetJavaScriptEnabled")
 	private void enableJavascript(WebView container) {
 		container.getSettings().setJavaScriptEnabled(true);
@@ -453,7 +470,9 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	}
 
 	private void toast(String message) {
-		Toast.makeText(container.getContext(), message, Toast.LENGTH_LONG).show();
+		if (message != null) {
+			Toast.makeText(container.getContext(), message, Toast.LENGTH_LONG).show();
+		}
 	}
 
 	private void registerRetryConnectionBroadcastReceiver() {
