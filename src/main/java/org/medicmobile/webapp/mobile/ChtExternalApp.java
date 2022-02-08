@@ -27,8 +27,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collector;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 public class ChtExternalApp {
 
 	private final String action;
@@ -196,7 +194,6 @@ public class ChtExternalApp {
 			return this;
 		}
 
-		@SuppressFBWarnings("EI_EXPOSE_REP2")
 		public Builder setExtras(JSONObject extras) {
 			this.extras = extras;
 			return this;
@@ -227,7 +224,6 @@ public class ChtExternalApp {
 		private final Intent intent;
 		private final Activity context;
 
-		@SuppressFBWarnings("EI_EXPOSE_REP2")
 		public Response(Intent intent, Activity context) {
 			this.intent = intent;
 			this.context = context;

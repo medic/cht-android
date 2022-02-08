@@ -178,8 +178,10 @@ public class XWalkMigration {
 
 		if (fileOrDirectory.isDirectory()) {
 			File[] files = fileOrDirectory.listFiles();
-			if (files != null) for (File child : files) {
-				deleteRecursive(child);
+			if (files != null) {
+				for (File child : files) {
+					deleteRecursive(child);
+				}
 			}
 		}
 

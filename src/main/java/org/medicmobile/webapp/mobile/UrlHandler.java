@@ -17,13 +17,10 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 public class UrlHandler extends WebViewClient {
 	EmbeddedBrowserActivity parentActivity;
 	SettingsStore settings;
 
-	@SuppressFBWarnings("EI_EXPOSE_REP2")
 	public UrlHandler(EmbeddedBrowserActivity parentActivity, SettingsStore settings) {
 		this.parentActivity = parentActivity;
 		this.settings = settings;

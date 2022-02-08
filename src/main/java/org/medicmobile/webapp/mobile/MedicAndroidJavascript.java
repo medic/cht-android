@@ -55,7 +55,6 @@ public class MedicAndroidJavascript {
 	private ConnectivityManager connectivityManager;
 	private Alert soundAlert;
 
-	@SuppressFBWarnings("EI_EXPOSE_REP2")
 	public MedicAndroidJavascript(EmbeddedBrowserActivity parent) {
 		this.parent = parent;
 		this.mrdt = parent.getMrdtSupport();
@@ -67,12 +66,10 @@ public class MedicAndroidJavascript {
 		this.soundAlert = soundAlert;
 	}
 
-	@SuppressFBWarnings("EI_EXPOSE_REP2")
 	public void setActivityManager(ActivityManager activityManager) {
 		this.activityManager = activityManager;
 	}
 
-	@SuppressFBWarnings("EI_EXPOSE_REP2")
 	public void setConnectivityManager(ConnectivityManager connectivityManager) {
 		this.connectivityManager = connectivityManager;
 	}
@@ -338,7 +335,6 @@ public class MedicAndroidJavascript {
 		dialog.show();
 	}
 
-	@SuppressWarnings("PMD.CloseResource")
 	private static HashMap getCPUInfo() throws IOException {
 		try(
 			Reader fileReader = new InputStreamReader(new FileInputStream("/proc/cpuinfo"), StandardCharsets.UTF_8);

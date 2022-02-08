@@ -6,7 +6,7 @@ buildscript {
     google()
   }
   dependencies {
-    classpath 'com.android.tools.build:gradle:7.1.0'
+    classpath 'com.android.tools.build:gradle:7.1.1'
     classpath 'com.github.spotbugs.snom:spotbugs-gradle-plugin:5.0.5'
   }
 }
@@ -14,7 +14,7 @@ buildscript {
 apply plugin: 'com.android.application'
 apply plugin: 'checkstyle'
 apply plugin: 'pmd'
-apply plugin: "com.github.spotbugs"
+apply plugin: 'com.github.spotbugs'
 
 // enable verbose lint warnings
 gradle.projectsEvaluated {
@@ -46,6 +46,9 @@ spotbugs {
   effort = 'default'
   reportLevel = 'default'
   maxHeapSize = '1g'
+  omitVisitors = [
+    'FindReturnRef' // This app exchanges data with external applications, we assume is safe.
+  ]
   onlyAnalyze = [ 'org.medicmobile.webapp.mobile.*' ]
 }
 
