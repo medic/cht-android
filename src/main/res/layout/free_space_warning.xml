@@ -34,26 +34,20 @@
 			     incorrectly.  Test with future build tool versions
 			     to see if this exception can be removed -->
 			<Button android:id="@+id/btnFreeSpaceQuit"
+          style="@style/standardButton"
 					android:text="@string/btnQuit"
 					android:onClick="evtQuit"
 					tools:ignore="OnClick"
-					android:layout_height="wrap_content"
-					android:layout_width="wrap_content"
-					android:paddingLeft="16dp"
-					android:paddingRight="16dp"
 					android:layout_toStartOf="@+id/btnFreeSpaceContinue"
 					android:layout_alignParentBottom="true"/>
 			<!-- OnClick is ignored because lint generates error
 			     incorrectly.  Test with future build tool versions
 			     to see if this exception can be removed -->
 			<Button android:id="@+id/btnFreeSpaceContinue"
+          style="@style/standardButton"
 					android:text="@string/btnContinue"
 					android:onClick="evtContinue"
 					tools:ignore="OnClick"
-					android:layout_height="wrap_content"
-					android:layout_width="wrap_content"
-					android:paddingLeft="16dp"
-					android:paddingRight="16dp"
 					android:layout_alignParentEnd="true"
 					android:layout_alignParentBottom="true"/>
 		</RelativeLayout>

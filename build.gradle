@@ -352,7 +352,6 @@ android {
 
 dependencies {
   implementation fileTree(dir: 'libs', include: ['*.jar'])
-  implementation 'com.github.Mariovc:ImagePicker:1.2.2'
   // Latest version of androidx.core requires Android 12+
   // noinspection GradleDependency
   implementation 'androidx.core:core:1.6.0'
