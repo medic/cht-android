@@ -6,6 +6,7 @@ import android.os.Build;
 import java.io.File;
 
 import static org.medicmobile.webapp.mobile.MedicLog.trace;
+import static org.medicmobile.webapp.mobile.MedicLog.warn;
 
 /*
  * Stolen from https://github.com/dpa99c/cordova-plugin-crosswalk-data-migration
@@ -106,13 +107,21 @@ public class XWalkMigration {
 	private void moveDirFromXWalkToWebView(String dirName) {
 		File xWalkLocalStorageDir = constructFilePaths(xWalkRoot, dirName);
 		File webviewLocalStorageDir = constructFilePaths(webviewRoot, dirName);
-		xWalkLocalStorageDir.renameTo(webviewLocalStorageDir);
+		boolean renamed = xWalkLocalStorageDir.renameTo(webviewLocalStorageDir);
+
+		if (!renamed) {
+			warn(this, "XWalkMigration :: Cannot move directory from XWalk to WebView. Directory: %s", dirName);
+		}
 	}
 
 	private void moveDirFromXWalkToWebView(String sourceDirName, String targetDirName) {
 		File xWalkLocalStorageDir = constructFilePaths(xWalkRoot, sourceDirName);
 		File webviewLocalStorageDir = constructFilePaths(webviewRoot, targetDirName);
-		xWalkLocalStorageDir.renameTo(webviewLocalStorageDir);
+		boolean renamed = xWalkLocalStorageDir.renameTo(webviewLocalStorageDir);
+
+		if (!renamed) {
+			warn(this, "XWalkMigration :: Cannot move directory from XWalk to WebView. XWalk directory: %s, WebView: %s", sourceDirName, targetDirName);
+		}
 	}
 
 
@@ -142,10 +151,6 @@ public class XWalkMigration {
 		return status;
 	}
 
-	private File constructFilePaths(File file1, File file2) {
-		return constructFilePaths(file1.getAbsolutePath(), file2.getAbsolutePath());
-	}
-
 	private File constructFilePaths(File file1, String file2) {
 		return constructFilePaths(file1.getAbsolutePath(), file2);
 	}
@@ -167,10 +172,23 @@ public class XWalkMigration {
 	}
 
 	private void deleteRecursive(File fileOrDirectory) {
-		if (fileOrDirectory.isDirectory())
-			for (File child : fileOrDirectory.listFiles())
-				deleteRecursive(child);
+		if (fileOrDirectory == null) {
+			return;
+		}
 
-		fileOrDirectory.delete();
+		if (fileOrDirectory.isDirectory()) {
+			File[] files = fileOrDirectory.listFiles();
+			if (files != null) {
+				for (File child : files) {
+					deleteRecursive(child);
+				}
+			}
+		}
+
+		boolean deleted = fileOrDirectory.delete();
+
+		if (!deleted) {
+			warn(this, "XWalkMigration :: Cannot delete file or directory: %s", fileOrDirectory.getPath());
+		}
 	}
 }

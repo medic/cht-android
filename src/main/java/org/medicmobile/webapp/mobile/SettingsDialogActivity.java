@@ -260,26 +260,30 @@ class ServerRepo {
 	@SuppressLint("DefaultLocale")
 	private static String friendly(String url) {
 		int slashes = url.indexOf("//");
+
 		if(slashes != -1) {
 			url = url.substring(slashes + 2);
 		}
+
 		if(url.endsWith(".medicmobile.org")) {
 			url = url.substring(0, url.length() - ".medicmobile.org".length());
 		}
+
 		if(url.endsWith(".medicmobile.org/")) {
 			url = url.substring(0, url.length() - ".medicmobile.org/".length());
 		}
+
 		if(url.startsWith("192.168.")) {
 			return url.substring("192.168.".length());
 		} else {
 			String[] parts = url.split("\\.");
-			url = "";
+			StringBuilder stringBuilder = new StringBuilder();
 			for(String p : parts) {
-				url += " ";
-				url += p.substring(0, 1).toUpperCase();
-				url += p.substring(1);
+				stringBuilder.append(" ");
+				stringBuilder.append(p.substring(0, 1).toUpperCase());
+				stringBuilder.append(p.substring(1));
 			}
-			return url.substring(1);
+			return stringBuilder.toString().substring(1);
 		}
 	}
 }

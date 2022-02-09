@@ -18,10 +18,13 @@ import android.os.StatFs;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.io.Reader;
 import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -37,6 +40,8 @@ import static java.util.Calendar.MONTH;
 import static java.util.Calendar.YEAR;
 import static java.util.Locale.UK;
 import static org.medicmobile.webapp.mobile.MedicLog.log;
+
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 public class MedicAndroidJavascript {
 	private static final String DATE_FORMAT = "yyyy-MM-dd";
@@ -206,6 +211,7 @@ public class MedicAndroidJavascript {
 	}
 
 	@SuppressLint("ObsoleteSdkInt")
+	@SuppressFBWarnings("REC_CATCH_EXCEPTION")
 	@android.webkit.JavascriptInterface
 	public String getDeviceInfo() {
 		try {
@@ -291,7 +297,8 @@ public class MedicAndroidJavascript {
 					.put("ram", ramObject)
 					.put("network", networkObject)
 					.toString();
-		} catch(Exception ex) {
+		} catch (Exception ex) {
+			logException(ex);
 			return jsonError("Problem fetching device info: ", ex);
 		}
 	}
@@ -329,28 +336,31 @@ public class MedicAndroidJavascript {
 	}
 
 	private static HashMap getCPUInfo() throws IOException {
-		BufferedReader bufferedReader = new BufferedReader(new FileReader("/proc/cpuinfo"));
-		String line;
-		HashMap output = new HashMap();
-		while ((line = bufferedReader.readLine()) != null) {
-			String[] data = line.split(":");
-			if (data.length > 1) {
-				String key = data[0].trim();
-				if (key.equals("model name")) {
-					output.put(key, data[1].trim());
-					break;
+		try(
+			Reader fileReader = new InputStreamReader(new FileInputStream("/proc/cpuinfo"), StandardCharsets.UTF_8);
+			BufferedReader bufferedReader = new BufferedReader(fileReader);
+		) {
+			String line;
+			HashMap output = new HashMap();
+			while ((line = bufferedReader.readLine()) != null) {
+				String[] data = line.split(":");
+				if (data.length > 1) {
+					String key = data[0].trim();
+					if (key.equals("model name")) {
+						output.put(key, data[1].trim());
+						break;
+					}
 				}
 			}
+
+			int cores = Runtime.getRuntime().availableProcessors();
+			output.put("cores", cores);
+
+			String arch = System.getProperty("os.arch");
+			output.put("arch", arch);
+
+			return output;
 		}
-		bufferedReader.close();
-
-		int cores = Runtime.getRuntime().availableProcessors();
-		output.put("cores", cores);
-
-		String arch = System.getProperty("os.arch");
-		output.put("arch", arch);
-
-		return output;
 	}
 
 	private void logException(Exception ex) {
