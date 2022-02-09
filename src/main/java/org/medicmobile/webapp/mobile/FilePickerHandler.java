@@ -38,27 +38,33 @@ public class FilePickerHandler {
 			String message = "FilePickerHandler :: Bad result code: %s. " +
 				"Either the user didn't select a file or there's an error during the operation.";
 			warn(this, message, resultCode);
-			sendSelectedFile(null);
+			sendDataToWebapp(null);
 			return;
 		}
 
 		Uri uri = intent.getData();
-		sendSelectedFile(uri == null ? null : new Uri[]{ uri });
+		sendDataToWebapp(uri == null ? null : new Uri[]{ uri });
 	}
 
 //> PRIVATE
-	private void sendSelectedFile(Uri[] uris) {
+	private void sendDataToWebapp(Uri[] uris) {
 		if (this.filePickerCallback == null) {
 			warn(this, "FilePickerHandler :: Cannot send file back to webapp, filePickerCallback is null.");
 			return;
 		}
 
-		trace(this, "FilePickerHandler :: Sending file back to webapp, URIs: %s", Arrays.toString(uris));
+		trace(this, "FilePickerHandler :: Sending data back to webapp, URIs: %s", Arrays.toString(uris));
 		this.filePickerCallback.onReceiveValue(uris);
 		this.filePickerCallback = null;
 	}
 
 	private void startFilePicker(String[] mimeTypes) {
+		if (mimeTypes == null) {
+			warn(this, "FilePickerHandler :: MIME type is null, specify a MIME type.");
+			sendDataToWebapp(null);
+			return;
+		}
+
 		trace(this, "FilePickerHandler :: Accepted MIME types: %s", Arrays.toString(mimeTypes));
 		Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
 
