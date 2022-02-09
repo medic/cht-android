@@ -34,7 +34,7 @@
 			     incorrectly.  Test with future build tool versions
 			     to see if this exception can be removed -->
 			<Button android:id="@+id/btnFreeSpaceQuit"
-          style="@style/standardButton"
+					style="@style/standardButton"
 					android:text="@string/btnQuit"
 					android:onClick="evtQuit"
 					tools:ignore="OnClick"
@@ -44,7 +44,7 @@
 			     incorrectly.  Test with future build tool versions
 			     to see if this exception can be removed -->
 			<Button android:id="@+id/btnFreeSpaceContinue"
-          style="@style/standardButton"
+					style="@style/standardButton"
 					android:text="@string/btnContinue"
 					android:onClick="evtContinue"
 					tools:ignore="OnClick"
