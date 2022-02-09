@@ -14,8 +14,8 @@
 			android:autofillHints=""
 			android:padding="32dp"/>
 	<!-- OnClick is ignored because lint generates error
-	incorrectly.  Test with future build tool versions
-	to see if this exception can be removed -->
+		incorrectly.  Test with future build tool versions
+		to see if this exception can be removed -->
 	<Button android:id="@+id/btnCancelSettings"
 			style="@style/standardButton"
 			android:layout_toStartOf="@+id/btnSaveSettings"
@@ -24,8 +24,8 @@
 			android:text="@string/btnCancel"
 			tools:ignore="OnClick" />
 	<!-- OnClick is ignored because lint generates error
-	incorrectly.  Test with future build tool versions
-	to see if this exception can be removed -->
+		incorrectly.  Test with future build tool versions
+		to see if this exception can be removed -->
 	<Button android:id="@+id/btnSaveSettings"
 			style="@style/standardButton"
 			android:layout_alignParentEnd="true"
