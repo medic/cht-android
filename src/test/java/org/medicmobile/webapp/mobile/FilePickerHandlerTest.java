@@ -68,7 +68,7 @@ public class FilePickerHandlerTest {
 			));
 			medicLogMock.verify(() -> MedicLog.warn(
 				eq(filePickerHandler),
-				eq("FilePickerHandler :: Cannot send file back to webapp, filePickerCallback is null.")
+				eq("FilePickerHandler :: Cannot send data back to webapp, filePickerCallback is null.")
 			), never());
 		}
 	}
@@ -96,7 +96,7 @@ public class FilePickerHandlerTest {
 			);
 			medicLogMock.verify(() -> MedicLog.warn(
 				eq(filePickerHandler),
-				eq("FilePickerHandler :: Cannot send file back to webapp, filePickerCallback is null.")
+				eq("FilePickerHandler :: Cannot send data back to webapp, filePickerCallback is null.")
 			), never());
 		}
 	}
@@ -149,7 +149,7 @@ public class FilePickerHandlerTest {
 			//> THEN
 			medicLogMock.verify(() -> MedicLog.warn(
 				eq(filePickerHandler),
-				eq("FilePickerHandler :: Cannot send file back to webapp, filePickerCallback is null."))
+				eq("FilePickerHandler :: Cannot send data back to webapp, filePickerCallback is null."))
 			);
 			medicLogMock.verify(() -> MedicLog.trace(
 				eq(filePickerHandler),

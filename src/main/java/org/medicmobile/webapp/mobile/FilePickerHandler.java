@@ -47,9 +47,19 @@ public class FilePickerHandler {
 	}
 
 //> PRIVATE
+
+	/**
+	 * Executes the file picker callback.
+	 * The callback will give back control to WebView that automatically fetches the file by using the
+	 * provided URI and assigns the bytes to the form's input. Even if there's not URI (ie null)
+	 * it needs to give back control to WebView, otherwise when clicking again on the form's input
+	 * it won't open the file picker.
+	 *
+	 * @param uris Array of files' URI
+	 */
 	private void sendDataToWebapp(Uri[] uris) {
 		if (this.filePickerCallback == null) {
-			warn(this, "FilePickerHandler :: Cannot send file back to webapp, filePickerCallback is null.");
+			warn(this, "FilePickerHandler :: Cannot send data back to webapp, filePickerCallback is null.");
 			return;
 		}
 

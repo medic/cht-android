@@ -1,21 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-		xmlns:tools="http://schemas.android.com/tools"
-		android:layout_width="fill_parent"
-		android:layout_height="fill_parent"
-		android:paddingLeft="16dp"
-		android:paddingRight="16dp"
-		android:orientation="vertical">
-	<EditText android:id="@+id/txtAppUrl"
-			android:hint="@string/txtAppUrl"
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:inputType="textUri"
-			android:autofillHints=""
-			android:padding="32dp"/>
-	<!-- OnClick is ignored because lint generates error
-	     incorrectly.  Test with future build tool versions
-	     to see if this exception can be removed -->
+  xmlns:tools="http://schemas.android.com/tools"
+  android:layout_width="fill_parent"
+  android:layout_height="fill_parent"
+  android:paddingLeft="16dp"
+  android:paddingRight="16dp"
+  android:orientation="vertical">
+
+  <EditText android:id="@+id/txtAppUrl"
+    android:hint="@string/txtAppUrl"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:inputType="textUri"
+    android:autofillHints=""
+    android:padding="32dp"/>
+
+  <!-- OnClick is ignored because lint generates error
+  incorrectly.  Test with future build tool versions
+  to see if this exception can be removed -->
   <Button
     android:id="@+id/btnCancelSettings"
     style="@style/standardButton"
@@ -24,9 +26,10 @@
     android:onClick="cancelSettingsEdit"
     android:text="@string/btnCancel"
     tools:ignore="OnClick" />
-	<!-- OnClick is ignored because lint generates error
-	     incorrectly.  Test with future build tool versions
-	     to see if this exception can be removed -->
+  
+  <!-- OnClick is ignored because lint generates error
+  incorrectly.  Test with future build tool versions
+  to see if this exception can be removed -->
   <Button
     android:id="@+id/btnSaveSettings"
     style="@style/standardButton"
