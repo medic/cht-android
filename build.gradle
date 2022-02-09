@@ -1,17 +1,20 @@
 buildscript {
   repositories {
     mavenCentral()
-    maven { url "https://jitpack.io" }
+    maven { url 'https://jitpack.io' }
+    maven { url 'https://plugins.gradle.org/m2/' }
     google()
-    jcenter()
   }
   dependencies {
-    classpath 'com.android.tools.build:gradle:7.0.4'
-    classpath 'com.noveogroup.android:check:1.2.5'
+    classpath 'com.android.tools.build:gradle:7.1.1'
+    classpath 'com.github.spotbugs.snom:spotbugs-gradle-plugin:5.0.5'
   }
 }
+
 apply plugin: 'com.android.application'
-apply plugin: 'com.noveogroup.android.check'
+apply plugin: 'checkstyle'
+apply plugin: 'pmd'
+apply plugin: 'com.github.spotbugs'
 
 // enable verbose lint warnings
 gradle.projectsEvaluated {
@@ -20,10 +23,38 @@ gradle.projectsEvaluated {
   }
 }
 
+task checkstyle(type: Checkstyle) {
+  description 'Check code standard'
+  group 'verification'
+  configFile file('config/checkstyle.xml')
+  source 'src'
+  classpath = files()
+  ignoreFailures = false
+}
+
+task pmd(type: Pmd) {
+  ruleSetFiles = files('config/pmd.xml')
+  ruleSets = []
+  ignoreFailures = false
+  source 'src'
+}
+
+spotbugs {
+  ignoreFailures = false
+  showStackTraces = true
+  showProgress = true
+  effort = 'default'
+  reportLevel = 'default'
+  maxHeapSize = '1g'
+  omitVisitors = [
+    'FindReturnRef' // This app exchanges data with external applications, we assume is safe.
+  ]
+  onlyAnalyze = [ 'org.medicmobile.webapp.mobile.*' ]
+}
+
 repositories {
   mavenCentral()
-  jcenter()
-  maven { url "https://jitpack.io" }
+  maven { url 'https://jitpack.io' }
   google()
   flatDir {
     dirs 'libs'
@@ -124,17 +155,12 @@ android {
     }
   }
 
-  check {
-    abortOnError true
-  }
-
   lintOptions {
     lintConfig = new File('config/lint.xml')
 
     disable 'UnusedResources' // linter can't handle static imports, so just skip this test
     disable 'MissingTranslation'
     disable 'StringFormatCount'
-    disable 'JcenterRepositoryObsolete'
 
     warningsAsErrors true
 
@@ -352,6 +378,7 @@ android {
 
 dependencies {
   implementation fileTree(dir: 'libs', include: ['*.jar'])
+  compileOnly 'com.github.spotbugs:spotbugs-annotations:4.5.3'
   implementation 'com.github.Mariovc:ImagePicker:1.2.2'
   // Latest version of androidx.core requires Android 12+
   // noinspection GradleDependency

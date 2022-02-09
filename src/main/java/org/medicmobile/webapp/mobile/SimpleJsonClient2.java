@@ -20,6 +20,8 @@ import org.json.JSONObject;
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static org.medicmobile.webapp.mobile.BuildConfig.LOG_TAG;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 /**
  * <p>New and improved - SimpleJsonClient2 is SimpleJsonClient, but using <code>
  * HttpURLConnection</code> instead of <code>DefaultHttpClient</code>.
@@ -158,6 +160,7 @@ public class SimpleJsonClient2 {
 		Log.d(LOG_TAG, "SimpleJsonClient2." + methodName + "() :: " + message);
 	}
 
+	@SuppressFBWarnings(value = "UPM_UNCALLED_PRIVATE_METHOD", justification = "Only called in Debug flavor")
 	private static void log(Exception ex, String message, Object... extras) {
 		Log.i(LOG_TAG, String.format(message, extras), ex);
 	}
