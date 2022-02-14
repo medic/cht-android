@@ -85,6 +85,9 @@ lint: pmd checkstyle spotbugs
 test: lint
 	${GRADLE} ${GRADLE_OPTS} test
 
+test-coverage:
+	${GRADLE} ${GRADLE_OPTS} makeUnbrandedDebugUnitTestCoverageReport
+
 test-ui:
 	${GRADLE} connectedUnbrandedDebugAndroidTest \
 		-Pabi=${abi} --stacktrace -Pandroid.testInstrumentationRunnerArguments.class=\
