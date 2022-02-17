@@ -158,5 +158,6 @@ public class FilePickerHandler {
 		File file = File.createTempFile(imageFileName, ".jpg", storageDir);
 		Uri uri = FileProvider.getUriForFile(this.context, this.context.getPackageName() + ".fileprovider", file);
 		setTempFileUri(uri);
+		file.deleteOnExit();
 	}
 }
