@@ -13,11 +13,9 @@ project.afterEvaluate {
   tasks.create(name: "make${testType}CoverageReport", type: JacocoReport, dependsOn: testTaskName) {
     group = 'Reporting'
     description = "Generate Jacoco coverage report for the ${variantName} build."
-    onlyIf = { true }
 
     reports {
       html.enabled(true)
-      xml.enabled(true)
     }
 
     def excludes = [
@@ -28,8 +26,6 @@ project.afterEvaluate {
       '**/*Test*.*',
       'android/**/*.*',
       'androidx/**/*.*',
-      '**/*$ViewInjector*.*',
-      '**/*MembersInjector*.*',
       '**/*_Factory.*',
       '**/*_Provide*Factory*.*',
       '**/*_ViewBinding*.*',
@@ -41,10 +37,10 @@ project.afterEvaluate {
       '**/*Binding.*'
     ]
 
-    classDirectories.from = files([fileTree(
+    classDirectories.from = files(fileTree(
       dir: "${project.buildDir}/intermediates/javac/${variantName}/classes",
       excludes: excludes
-    )])
+    ))
     sourceDirectories.from = file("${project.projectDir}/src/main/java")
     executionData.from = file("${project.buildDir}/outputs/unit_test_code_coverage/${testType}/${testTaskName}.exec")
   }
