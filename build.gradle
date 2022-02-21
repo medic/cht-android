@@ -15,6 +15,7 @@ apply plugin: 'com.android.application'
 apply plugin: 'checkstyle'
 apply plugin: 'pmd'
 apply plugin: 'com.github.spotbugs'
+apply from: 'coverage.gradle'
 
 // enable verbose lint warnings
 gradle.projectsEvaluated {
