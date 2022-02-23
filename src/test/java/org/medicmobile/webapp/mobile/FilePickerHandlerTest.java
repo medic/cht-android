@@ -99,7 +99,7 @@ public class FilePickerHandlerTest {
 			medicLogMock.verify(() -> MedicLog.trace(
 				eq(filePickerHandler),
 				eq("FilePickerHandler :: Sending data back to webapp, URI: %s"),
-				eq(uri)
+				eq("[content://some/content/image.jpg]")
 			));
 			medicLogMock.verify(() -> MedicLog.warn(
 				eq(filePickerHandler),
@@ -127,7 +127,7 @@ public class FilePickerHandlerTest {
 			medicLogMock.verify(() -> MedicLog.trace(
 				eq(filePickerHandler),
 				eq("FilePickerHandler :: Sending data back to webapp, URI: %s"),
-				eq(null))
+				eq("null"))
 			);
 			medicLogMock.verify(() -> MedicLog.warn(
 				eq(filePickerHandler),
@@ -163,7 +163,7 @@ public class FilePickerHandlerTest {
 			medicLogMock.verify(() -> MedicLog.trace(
 				eq(filePickerHandler),
 				eq("FilePickerHandler :: Sending data back to webapp, URI: %s"),
-				eq(null)
+				eq("null")
 			));
 		}
 	}
@@ -453,12 +453,40 @@ public class FilePickerHandlerTest {
 			verify(filePickerCallbackMock).onReceiveValue(null);
 			medicLogMock.verify(() -> MedicLog.warn(
 				eq(filePickerHandlerMock),
-				eq("FilePickerHandler :: MIME type is null, please specify a MIME type.")
+				eq("FilePickerHandler :: MIME type is null or empty, please specify a MIME type.")
 			));
 			medicLogMock.verify(() -> MedicLog.trace(
 				eq(filePickerHandlerMock),
 				eq("FilePickerHandler :: Sending data back to webapp, URI: %s"),
-				eq(null)
+				eq("null")
+			));
+		}
+	}
+
+	@Test
+	public void openPicker_withEmptyMimeType_finishesPicker() {
+		try (MockedStatic<MedicLog> medicLogMock = mockStatic(MedicLog.class)) {
+			//> GIVEN
+			FileChooserParams fileChooserParamsMock = mock(FileChooserParams.class);
+			when(fileChooserParamsMock.getAcceptTypes()).thenReturn(new String[]{});
+			ValueCallback<Uri[]> filePickerCallbackMock = mock(ValueCallback.class);
+			FilePickerHandler filePickerHandlerMock = spy(new FilePickerHandler(contextMock));
+
+			//> WHEN
+			filePickerHandlerMock.openPicker(fileChooserParamsMock, filePickerCallbackMock);
+
+			//> THEN
+			verify(filePickerHandlerMock).setFilePickerCallback(filePickerCallbackMock);
+			verify(contextMock, never()).startActivityForResult(any(), eq(RequestCode.FILE_PICKER_ACTIVITY.getCode()));
+			verify(filePickerCallbackMock).onReceiveValue(null);
+			medicLogMock.verify(() -> MedicLog.warn(
+				eq(filePickerHandlerMock),
+				eq("FilePickerHandler :: MIME type is null or empty, please specify a MIME type.")
+			));
+			medicLogMock.verify(() -> MedicLog.trace(
+				eq(filePickerHandlerMock),
+				eq("FilePickerHandler :: Sending data back to webapp, URI: %s"),
+				eq("null")
 			));
 		}
 	}

@@ -20,12 +20,13 @@ import androidx.core.content.FileProvider;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.Optional;
 
 public class FilePickerHandler {
 
 	private final Activity context;
 	private ValueCallback<Uri[]> filePickerCallback;
-	private Uri tempFileUri;
+	private File tempFile;
 
 	public FilePickerHandler(Activity context) {
 		this.context = context;
@@ -35,14 +36,14 @@ public class FilePickerHandler {
 		this.filePickerCallback = filePickerCallback;
 	}
 
-	void setTempFileUri(Uri tempFileUri) {
-		this.tempFileUri = tempFileUri;
+	void setTempFile(File tempFile) {
+		this.tempFile = tempFile;
 	}
 
 	void openPicker(FileChooserParams fileChooserParams, ValueCallback<Uri[]> filePickerCallback) {
 		trace(this, "FilePickerHandler :: Start file capture activity");
 		setFilePickerCallback(filePickerCallback);
-		setTempFileUri(null);
+		setTempFile(null);
 		startFileCaptureActivity(fileChooserParams);
 	}
 
@@ -75,27 +76,31 @@ public class FilePickerHandler {
 			return;
 		}
 
-		Uri uri = getSelectedFileUri(intent);
-		trace(this, "FilePickerHandler :: Sending data back to webapp, URI: %s", uri);
-		this.filePickerCallback.onReceiveValue(uri == null ? null : new Uri[] { uri });
+		Uri[] uris = getSelectedFileUri(intent)
+			.map(uri -> new Uri[]{uri})
+			.orElse(null);
+		trace(this, "FilePickerHandler :: Sending data back to webapp, URI: %s", Arrays.toString(uris));
+		this.filePickerCallback.onReceiveValue(uris);
 		this.filePickerCallback = null;
 	}
 
-	private Uri getSelectedFileUri(Intent intent) {
-		Uri uri = intent == null ? null : intent.getData();
+	private Optional<Uri> getSelectedFileUri(Intent intent) {
+		Optional<Uri> uri = intent == null ? Optional.empty() : Optional.ofNullable(intent.getData());
 
-		if (uri == null && this.tempFileUri != null) {
-			uri = this.tempFileUri;
-			setTempFileUri(null);
+		if (!uri.isPresent() && this.tempFile != null) {
+			if (this.tempFile.length() > 0) {
+				uri = Optional.ofNullable(getTempFileUri(this.tempFile));
+			}
+			setTempFile(null);
 		}
 
 		return uri;
 	}
 
 	private void startFileCaptureActivity(FileChooserParams fileChooserParams) {
-		String[] mimeTypes = fileChooserParams.getAcceptTypes();
-		if (mimeTypes == null) {
-			warn(this, "FilePickerHandler :: MIME type is null, please specify a MIME type.");
+		String[] mimeTypes = cleanMimeTypes(fileChooserParams);
+		if (mimeTypes.length == 0) {
+			warn(this, "FilePickerHandler :: MIME type is null or empty, please specify a MIME type.");
 			sendDataToWebapp(null);
 			return;
 		}
@@ -140,8 +145,9 @@ public class FilePickerHandler {
 		if (mimeType.contains("image/")) {
 			try {
 				createTempImageFile();
+				Uri uri = getTempFileUri(this.tempFile);
 				Intent imageIntent = new Intent(ACTION_IMAGE_CAPTURE);
-				imageIntent.putExtra(EXTRA_OUTPUT, this.tempFileUri);
+				imageIntent.putExtra(EXTRA_OUTPUT, uri);
 				return imageIntent;
 			} catch (Exception ex) {
 				warn(this, "FilePickerHandler :: Cannot create temporary file for image capture: %s", ex);
@@ -156,8 +162,22 @@ public class FilePickerHandler {
 		String imageFileName = "medic-" + System.currentTimeMillis();
 		File storageDir = this.context.getExternalFilesDir(Environment.DIRECTORY_PICTURES);
 		File file = File.createTempFile(imageFileName, ".jpg", storageDir);
-		Uri uri = FileProvider.getUriForFile(this.context, this.context.getPackageName() + ".fileprovider", file);
-		setTempFileUri(uri);
 		file.deleteOnExit();
+		setTempFile(file);
+	}
+
+	private Uri getTempFileUri(File file) {
+		return FileProvider.getUriForFile(this.context, this.context.getPackageName() + ".fileprovider", file);
+	}
+
+	private String[] cleanMimeTypes(FileChooserParams fileChooserParams) {
+		String[] types = Optional
+			.ofNullable(fileChooserParams.getAcceptTypes())
+			.orElse(new String[]{});
+
+		return Arrays
+			.stream(types)
+			.filter(type -> !type.isEmpty())
+			.toArray(String[]::new);
 	}
 }
