@@ -436,58 +436,60 @@ public class FilePickerHandlerTest {
 	}
 
 	@Test
-	public void openPicker_withNullMimeType_finishesPicker() {
-		try (MockedStatic<MedicLog> medicLogMock = mockStatic(MedicLog.class)) {
-			//> GIVEN
-			FileChooserParams fileChooserParamsMock = mock(FileChooserParams.class);
-			when(fileChooserParamsMock.getAcceptTypes()).thenReturn(null);
-			ValueCallback<Uri[]> filePickerCallbackMock = mock(ValueCallback.class);
-			FilePickerHandler filePickerHandlerMock = spy(new FilePickerHandler(contextMock));
+	public void openPicker_withNullMimeType_startActivityWithoutCaptureIntent() {
+		//> GIVEN
+		FileChooserParams fileChooserParamsMock = mock(FileChooserParams.class);
+		when(fileChooserParamsMock.getAcceptTypes()).thenReturn(null);
+		ValueCallback<Uri[]> filePickerCallbackMock = mock(ValueCallback.class);
+		FilePickerHandler filePickerHandlerMock = spy(new FilePickerHandler(contextMock));
 
-			//> WHEN
-			filePickerHandlerMock.openPicker(fileChooserParamsMock, filePickerCallbackMock);
+		//> WHEN
+		filePickerHandlerMock.openPicker(fileChooserParamsMock, filePickerCallbackMock);
 
-			//> THEN
-			verify(filePickerHandlerMock).setFilePickerCallback(filePickerCallbackMock);
-			verify(contextMock, never()).startActivityForResult(any(), eq(RequestCode.FILE_PICKER_ACTIVITY.getCode()));
-			verify(filePickerCallbackMock).onReceiveValue(null);
-			medicLogMock.verify(() -> MedicLog.warn(
-				eq(filePickerHandlerMock),
-				eq("FilePickerHandler :: MIME type is null or empty, please specify a MIME type.")
-			));
-			medicLogMock.verify(() -> MedicLog.trace(
-				eq(filePickerHandlerMock),
-				eq("FilePickerHandler :: Sending data back to webapp, URI: %s"),
-				eq("null")
-			));
-		}
+		//> THEN
+		verify(filePickerHandlerMock).setFilePickerCallback(filePickerCallbackMock);
+		ArgumentCaptor<Intent> argument = ArgumentCaptor.forClass(Intent.class);
+		verify(contextMock).startActivityForResult(argument.capture(), eq(RequestCode.FILE_PICKER_ACTIVITY.getCode()));
+
+		Intent chooserIntent = argument.getValue();
+		assertEquals(Intent.ACTION_CHOOSER, chooserIntent.getAction());
+		Bundle chooserExtras = chooserIntent.getExtras();
+		assertNull(chooserExtras.get(Intent.EXTRA_INITIAL_INTENTS));
+
+		Intent pickerIntent = chooserExtras.getParcelable(Intent.EXTRA_INTENT);
+		assertEquals("*/*", pickerIntent.getType());
+		assertTrue(pickerIntent.getCategories().contains(Intent.CATEGORY_OPENABLE));
+		assertTrue(pickerIntent.getBooleanExtra(Intent.EXTRA_LOCAL_ONLY, false));
+		String[] extraMimeTypes = pickerIntent.getStringArrayExtra(Intent.EXTRA_MIME_TYPES);
+		assertEquals("[]", Arrays.toString(extraMimeTypes));
 	}
 
 	@Test
-	public void openPicker_withEmptyMimeType_finishesPicker() {
-		try (MockedStatic<MedicLog> medicLogMock = mockStatic(MedicLog.class)) {
-			//> GIVEN
-			FileChooserParams fileChooserParamsMock = mock(FileChooserParams.class);
-			when(fileChooserParamsMock.getAcceptTypes()).thenReturn(new String[]{});
-			ValueCallback<Uri[]> filePickerCallbackMock = mock(ValueCallback.class);
-			FilePickerHandler filePickerHandlerMock = spy(new FilePickerHandler(contextMock));
+	public void openPicker_withEmptyMimeType_startActivityWithoutCaptureIntent() {
+		//> GIVEN
+		FileChooserParams fileChooserParamsMock = mock(FileChooserParams.class);
+		when(fileChooserParamsMock.getAcceptTypes()).thenReturn(new String[]{});
+		ValueCallback<Uri[]> filePickerCallbackMock = mock(ValueCallback.class);
+		FilePickerHandler filePickerHandlerMock = spy(new FilePickerHandler(contextMock));
 
-			//> WHEN
-			filePickerHandlerMock.openPicker(fileChooserParamsMock, filePickerCallbackMock);
+		//> WHEN
+		filePickerHandlerMock.openPicker(fileChooserParamsMock, filePickerCallbackMock);
 
-			//> THEN
-			verify(filePickerHandlerMock).setFilePickerCallback(filePickerCallbackMock);
-			verify(contextMock, never()).startActivityForResult(any(), eq(RequestCode.FILE_PICKER_ACTIVITY.getCode()));
-			verify(filePickerCallbackMock).onReceiveValue(null);
-			medicLogMock.verify(() -> MedicLog.warn(
-				eq(filePickerHandlerMock),
-				eq("FilePickerHandler :: MIME type is null or empty, please specify a MIME type.")
-			));
-			medicLogMock.verify(() -> MedicLog.trace(
-				eq(filePickerHandlerMock),
-				eq("FilePickerHandler :: Sending data back to webapp, URI: %s"),
-				eq("null")
-			));
-		}
+		//> THEN
+		verify(filePickerHandlerMock).setFilePickerCallback(filePickerCallbackMock);
+		ArgumentCaptor<Intent> argument = ArgumentCaptor.forClass(Intent.class);
+		verify(contextMock).startActivityForResult(argument.capture(), eq(RequestCode.FILE_PICKER_ACTIVITY.getCode()));
+
+		Intent chooserIntent = argument.getValue();
+		assertEquals(Intent.ACTION_CHOOSER, chooserIntent.getAction());
+		Bundle chooserExtras = chooserIntent.getExtras();
+		assertNull(chooserExtras.get(Intent.EXTRA_INITIAL_INTENTS));
+
+		Intent pickerIntent = chooserExtras.getParcelable(Intent.EXTRA_INTENT);
+		assertEquals("*/*", pickerIntent.getType());
+		assertTrue(pickerIntent.getCategories().contains(Intent.CATEGORY_OPENABLE));
+		assertTrue(pickerIntent.getBooleanExtra(Intent.EXTRA_LOCAL_ONLY, false));
+		String[] extraMimeTypes = pickerIntent.getStringArrayExtra(Intent.EXTRA_MIME_TYPES);
+		assertEquals("[]", Arrays.toString(extraMimeTypes));
 	}
 }

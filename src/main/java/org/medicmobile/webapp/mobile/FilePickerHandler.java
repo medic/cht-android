@@ -99,12 +99,6 @@ public class FilePickerHandler {
 
 	private void startFileCaptureActivity(FileChooserParams fileChooserParams) {
 		String[] mimeTypes = cleanMimeTypes(fileChooserParams);
-		if (mimeTypes.length == 0) {
-			warn(this, "FilePickerHandler :: MIME type is null or empty, please specify a MIME type.");
-			sendDataToWebapp(null);
-			return;
-		}
-
 		trace(this, "FilePickerHandler :: Accepted MIME types: %s", Arrays.toString(mimeTypes));
 
 		Intent pickerIntent = new Intent(Intent.ACTION_GET_CONTENT);
@@ -170,6 +164,14 @@ public class FilePickerHandler {
 		return FileProvider.getUriForFile(this.context, this.context.getPackageName() + ".fileprovider", file);
 	}
 
+	/**
+	 * Removes empty strings from the array of AcceptTypes that is returned by FileChooserParams.
+	 * That happens when defining [mediatype=""] in an Enketo form, example:
+	 * <upload mediatype="" ref="/enketo_widgets/media_widgets/any_file"/>
+	 *
+	 * @param fileChooserParams WebView's FileChooserParams
+	 * @return
+	 */
 	private String[] cleanMimeTypes(FileChooserParams fileChooserParams) {
 		String[] types = Optional
 			.ofNullable(fileChooserParams.getAcceptTypes())
