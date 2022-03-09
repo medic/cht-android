@@ -251,7 +251,6 @@ jobs:
         ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_CHT_RCI }}
         ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_CHT_RCI }}
 
-
     - name: Bundle alerte_niger
       uses: maierj/fastlane-action@v1.4.0
       with:
