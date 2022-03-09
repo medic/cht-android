@@ -351,6 +351,12 @@ android {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.chis_ne'
     }
+    
+    cht_rci {
+      dimension = 'brand'
+      applicationId = 'org.medicmobile.webapp.mobile.cht_rci'
+    }
+    
   }
 
   splits {
