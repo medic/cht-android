@@ -46,7 +46,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	private SettingsStore settings;
 	private String appUrl;
 	private MrdtSupport mrdt;
-	private PhotoGrabber photoGrabber;
+	private FilePickerHandler filePickerHandler;
 	private SmsSender smsSender;
 	private ChtExternalAppHandler chtExternalAppHandler;
 	private boolean isMigrationRunning = false;
@@ -71,9 +71,10 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 
 		trace(this, "Starting webview...");
 
-		this.photoGrabber = new PhotoGrabber(this);
+		this.filePickerHandler = new FilePickerHandler(this);
 		this.mrdt = new MrdtSupport(this);
 		this.chtExternalAppHandler = new ChtExternalAppHandler(this);
+
 		try {
 			this.smsSender = new SmsSender(this);
 		} catch(Exception ex) {
@@ -207,8 +208,8 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 			trace(this, "onActivityResult() :: requestCode=%s, resultCode=%s", requestCode.name(), resultCode);
 
 			switch (requestCode) {
-				case GRAB_PHOTO_ACTIVITY:
-					photoGrabber.process(requestCode, resultCode, intent);
+				case FILE_PICKER_ACTIVITY:
+					this.filePickerHandler.processResult(resultCode, intent);
 					return;
 				case GRAB_MRDT_PHOTO_ACTIVITY:
 					processMrdtResult(requestCode, resultCode, intent);
@@ -386,33 +387,18 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	private void setUpUiClient(WebView container) {
 		container.setWebChromeClient(new WebChromeClient() {
 			@Override public boolean onConsoleMessage(ConsoleMessage cm) {
-				if(!DEBUG) {
+				if (!DEBUG) {
 					return super.onConsoleMessage(cm);
 				}
-
-				trace(this, "onConsoleMessage() :: %s:%s | %s",
-						cm.sourceId(),
-						cm.lineNumber(),
-						cm.message());
+				trace(this, "onConsoleMessage() :: %s:%s | %s", cm.sourceId(), cm.lineNumber(), cm.message());
 				return true;
 			}
-			@Override public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, WebChromeClient.FileChooserParams fileChooserParams){
-				trace(this, "onShowFileChooser() :: webView: %s,filePathCallback: %s,fileChooserParams: %s", webView, filePathCallback, fileChooserParams);
 
-				boolean capture = fileChooserParams.isCaptureEnabled();
-				trace(this, "onShowFileChooser() capture :: %s", capture);
-				String[] acceptTypes = fileChooserParams.getAcceptTypes();
-				trace(this, "onShowFileChooser() acceptTypes :: %s", Arrays.toString(acceptTypes));
-
-				if(!photoGrabber.canHandle(acceptTypes, capture)) {
-					warn(this, "openFileChooser() :: No file chooser is currently implemented for \"accept\" value: %s", Arrays.toString(acceptTypes));
-					return false;
-				}
-
-				trace(this, "onShowFileChooser() opening chooser");
-				photoGrabber.chooser(filePathCallback, capture);
+			@Override public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, FileChooserParams fileChooserParams) {
+				filePickerHandler.openPicker(fileChooserParams, filePathCallback);
 				return true;
 			}
+
 			@Override public void onGeolocationPermissionsShowPrompt(final String origin, final GeolocationPermissions.Callback callback) {
 				callback.invoke(origin, true, true);
 			}
@@ -470,7 +456,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		CHT_EXTERNAL_APP_ACTIVITY(102),
 		DISCLOSURE_LOCATION_ACTIVITY(103),
 		GRAB_MRDT_PHOTO_ACTIVITY(104),
-		GRAB_PHOTO_ACTIVITY(105);
+		FILE_PICKER_ACTIVITY(105);
 
 		private final int requestCode;
 

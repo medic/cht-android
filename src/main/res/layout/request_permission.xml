@@ -52,9 +52,7 @@
 
         <Button
             android:id="@+id/locNegativeButton"
-            style="@style/Widget.AppCompat.Button.Borderless.Blue"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            style="@style/borderlessButton"
             android:onClick="onClickNegative"
             android:text="@string/locRequestDenyButton"
             tools:ignore="OnClick" />
@@ -66,9 +64,7 @@
 
         <Button
             android:id="@+id/locOkButton"
-            style="@style/Widget.AppCompat.Button.Borderless.Blue"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            style="@style/borderlessButton"
             android:onClick="onClickOk"
             android:text="@string/locRequestOkButton"
             tools:ignore="OnClick" />
