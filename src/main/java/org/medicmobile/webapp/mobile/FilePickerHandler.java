@@ -1,6 +1,8 @@
 package org.medicmobile.webapp.mobile;
 
+import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
 import static android.app.Activity.RESULT_OK;
+import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.provider.MediaStore.ACTION_IMAGE_CAPTURE;
 import static android.provider.MediaStore.ACTION_VIDEO_CAPTURE;
 import static android.provider.MediaStore.Audio.Media.RECORD_SOUND_ACTION;
@@ -16,6 +18,7 @@ import android.os.Environment;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient.FileChooserParams;
 
+import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 
 import java.io.File;
@@ -26,6 +29,7 @@ public class FilePickerHandler {
 
 	private final Activity context;
 	private ValueCallback<Uri[]> filePickerCallback;
+	String[] mimeTypes;
 	private File tempFile;
 
 	public FilePickerHandler(Activity context) {
@@ -41,10 +45,13 @@ public class FilePickerHandler {
 	}
 
 	void openPicker(FileChooserParams fileChooserParams, ValueCallback<Uri[]> filePickerCallback) {
-		trace(this, "FilePickerHandler :: Start file capture activity");
 		setFilePickerCallback(filePickerCallback);
 		setTempFile(null);
-		startFileCaptureActivity(fileChooserParams);
+		setMimeTypes(cleanMimeTypes(fileChooserParams));
+
+		if (checkPermissions()) {
+			startFileCaptureActivity();
+		}
 	}
 
 	void processResult(int resultCode, Intent intent) {
@@ -59,7 +66,54 @@ public class FilePickerHandler {
 		sendDataToWebapp(intent);
 	}
 
+	void startFileCaptureActivity() {
+		trace(this, "FilePickerHandler :: Accepted MIME types: %s", Arrays.toString(this.mimeTypes));
+
+		Intent pickerIntent = new Intent(Intent.ACTION_GET_CONTENT);
+		pickerIntent.addCategory(Intent.CATEGORY_OPENABLE);
+		pickerIntent.putExtra(Intent.EXTRA_LOCAL_ONLY, true);
+		Intent captureIntent = null;
+
+		if (this.mimeTypes.length == 1) {
+			String mimeType = this.mimeTypes[0];
+			pickerIntent.setType(mimeType);
+			captureIntent = getCaptureIntent(mimeType);
+		} else {
+			pickerIntent.setType("*/*");
+			pickerIntent.putExtra(Intent.EXTRA_MIME_TYPES, this.mimeTypes);
+		}
+
+		Intent chooserIntent = Intent.createChooser(pickerIntent, this.context.getString(R.string.promptChooseFile));
+		// Ensure that there's an activity to handle the intent for capturing media.
+		if (captureIntent != null && captureIntent.resolveActivity(this.context.getPackageManager()) != null) {
+			chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Intent[]{ captureIntent });
+		}
+
+		trace(this, "FilePickerHandler :: Starting activity with intents: chooser=%s, picker=%s, capture=%s",
+			chooserIntent, pickerIntent, captureIntent);
+
+		this.context.startActivityForResult(chooserIntent, RequestCode.FILE_PICKER_ACTIVITY.getCode());
+	}
+
 //> PRIVATE
+	private void setMimeTypes(String[] mimeTypes) {
+		this.mimeTypes = mimeTypes;
+	}
+
+	private boolean checkPermissions() {
+		if (ContextCompat.checkSelfPermission(this.context, READ_EXTERNAL_STORAGE) == PERMISSION_GRANTED) {
+			return true;
+		}
+
+		trace(this, "FilePickerHandler :: Requesting permissions.");
+		Intent intent = new Intent(this.context, RequestStoragePermissionActivity.class);
+		intent.putExtra(
+			RequestStoragePermissionActivity.TRIGGER_CLASS,
+			FilePickerHandler.class.getName()
+		);
+		this.context.startActivityForResult(intent, RequestCode.ACCESS_STORAGE_PERMISSION.getCode());
+		return false;
+	}
 
 	/**
 	 * Executes the file picker callback.
@@ -95,36 +149,6 @@ public class FilePickerHandler {
 		}
 
 		return uri;
-	}
-
-	private void startFileCaptureActivity(FileChooserParams fileChooserParams) {
-		String[] mimeTypes = cleanMimeTypes(fileChooserParams);
-		trace(this, "FilePickerHandler :: Accepted MIME types: %s", Arrays.toString(mimeTypes));
-
-		Intent pickerIntent = new Intent(Intent.ACTION_GET_CONTENT);
-		pickerIntent.addCategory(Intent.CATEGORY_OPENABLE);
-		pickerIntent.putExtra(Intent.EXTRA_LOCAL_ONLY, true);
-		Intent captureIntent = null;
-
-		if (mimeTypes.length == 1) {
-			String mimeType = mimeTypes[0];
-			pickerIntent.setType(mimeType);
-			captureIntent = getCaptureIntent(mimeType);
-		} else {
-			pickerIntent.setType("*/*");
-			pickerIntent.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes);
-		}
-
-		Intent chooserIntent = Intent.createChooser(pickerIntent, this.context.getString(R.string.promptChooseFile));
-		// Ensure that there's an activity to handle the intent for capturing media.
-		if (captureIntent != null && captureIntent.resolveActivity(this.context.getPackageManager()) != null) {
-			chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Intent[]{ captureIntent });
-		}
-
-		trace(this, "FilePickerHandler :: Starting activity with intents: chooser=%s, picker=%s, capture=%s",
-			chooserIntent, pickerIntent, captureIntent);
-
-		this.context.startActivityForResult(chooserIntent, RequestCode.FILE_PICKER_ACTIVITY.getCode());
 	}
 
 	private Intent getCaptureIntent(String mimeType) {

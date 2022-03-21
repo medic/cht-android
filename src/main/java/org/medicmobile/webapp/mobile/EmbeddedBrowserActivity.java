@@ -33,7 +33,6 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.Toast;
 
-import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import java.util.Arrays;
@@ -50,8 +49,6 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	private SmsSender smsSender;
 	private ChtExternalAppHandler chtExternalAppHandler;
 	private boolean isMigrationRunning = false;
-
-	static final String[] LOCATION_PERMISSIONS = { ACCESS_FINE_LOCATION, ACCESS_COARSE_LOCATION };
 
 	private static final ValueCallback<String> IGNORE_RESULT = new ValueCallback<String>() {
 		public void onReceiveValue(String result) { /* ignore */ }
@@ -194,7 +191,9 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 				backButtonHandler);
 	}
 
-	@Override protected void onActivityResult(int requestCd, int resultCode, Intent intent) {
+	@SuppressLint("MissingSuperCall")
+	@Override
+	protected void onActivityResult(int requestCd, int resultCode, Intent intent) {
 		Optional<RequestCode> requestCodeOpt = RequestCode.valueOf(requestCd);
 
 		if (!requestCodeOpt.isPresent()) {
@@ -212,13 +211,16 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 					this.filePickerHandler.processResult(resultCode, intent);
 					return;
 				case GRAB_MRDT_PHOTO_ACTIVITY:
-					processMrdtResult(requestCode, resultCode, intent);
-					return;
-				case DISCLOSURE_LOCATION_ACTIVITY:
-					processLocationPermissionResult(resultCode);
+					processMrdtResult(requestCode, intent);
 					return;
 				case CHT_EXTERNAL_APP_ACTIVITY:
 					processChtExternalAppResult(resultCode, intent);
+					return;
+				case ACCESS_STORAGE_PERMISSION:
+					processStoragePermissionResult(resultCode, intent);
+					return;
+				case ACCESS_LOCATION_PERMISSION:
+					processLocationPermissionResult(resultCode, intent);
 					return;
 				default:
 					trace(this, "onActivityResult() :: no handling for requestCode=%s", requestCode.name());
@@ -227,38 +229,6 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 			String action = intent == null ? null : intent.getAction();
 			warn(ex, "Problem handling intent %s (%s) with requestCode=%s & resultCode=%s",
 				intent, action, requestCode.name(), resultCode);
-		}
-	}
-
-	@Override
-	public void onRequestPermissionsResult(int requestCd, String[] permissions, int[] grantResults) {
-		Optional<RequestCode> requestCodeOpt = RequestCode.valueOf(requestCd);
-
-		if (!requestCodeOpt.isPresent()) {
-			trace(this, "onRequestPermissionsResult() :: no handling for requestCode=%s", requestCd);
-			return;
-		}
-
-		RequestCode requestCode = requestCodeOpt.get();
-		super.onRequestPermissionsResult(requestCd, permissions, grantResults);
-		boolean granted = grantResults.length > 0 && grantResults[0] == PERMISSION_GRANTED;
-
-		if (requestCode == RequestCode.ACCESS_LOCATION_PERMISSION) {
-			if (granted) {
-				locationRequestResolved();
-				return;
-			}
-			processGeolocationDeniedStatus();
-			return;
-		}
-
-		if (requestCode == RequestCode.ACCESS_STORAGE_PERMISSION) {
-			if (granted) {
-				this.chtExternalAppHandler.resumeActivity();
-				return;
-			}
-			trace(this, "ChtExternalAppHandler :: User rejected permission.");
-			return;
 		}
 	}
 
@@ -321,47 +291,67 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		}
 
 		trace(this, "getLocationPermissions() :: location not granted before, requesting access...");
-		Intent intent = new Intent(this, RequestPermissionActivity.class);
-		startActivityForResult(intent, RequestCode.DISCLOSURE_LOCATION_ACTIVITY.getCode());
+		startActivityForResult(
+			new Intent(this, RequestLocationPermissionActivity.class),
+			RequestCode.ACCESS_LOCATION_PERMISSION.getCode()
+		);
 		return false;
 	}
 
-	public void locationRequestResolved() {
+//> PRIVATE HELPERS
+	private void locationRequestResolved() {
 		evaluateJavascript("window.CHTCore.AndroidApi.v1.locationPermissionRequestResolved();");
 	}
 
-//> PRIVATE HELPERS
+	private void processLocationPermissionResult(int resultCode, Intent intent) {
+		if (resultCode == RESULT_OK) {
+			locationRequestResolved();
+			return;
+		}
+
+		try {
+			settings.setUserDeniedGeolocation();
+			locationRequestResolved();
+		} catch (SettingsException e) {
+			error(e, "processLocationPermissionResult :: Error recording negative to access location.");
+		}
+	}
+
 	private void processChtExternalAppResult(int resultCode, Intent intentData) {
 		String script = this.chtExternalAppHandler.processResult(resultCode, intentData);
 		trace(this, "ChtExternalAppHandler :: Executing JavaScript: %s", script);
 		evaluateJavascript(script);
 	}
 
-	private void processMrdtResult(RequestCode requestCode, int resultCode, Intent intent) {
+	private void processMrdtResult(RequestCode requestCode, Intent intent) {
 		String js = mrdt.process(requestCode, intent);
 		trace(this, "Executing JavaScript: %s", js);
 		evaluateJavascript(js);
 	}
 
-	private void processLocationPermissionResult(int resultCode) {
-		if (resultCode == RESULT_OK) {
-			ActivityCompat.requestPermissions(
-				this,
-				LOCATION_PERMISSIONS,
-				RequestCode.ACCESS_LOCATION_PERMISSION.getCode()
-			);
-		} else if (resultCode == RESULT_CANCELED) {
-			processGeolocationDeniedStatus();
+	private void processStoragePermissionResult(int resultCode, Intent intent) {
+		if (resultCode != RESULT_OK) {
+			return;
 		}
-	}
 
-	private void processGeolocationDeniedStatus() {
-		try {
-			settings.setUserDeniedGeolocation();
-			locationRequestResolved();
-		} catch (SettingsException e) {
-			error(e, "LocationPermissionRequest :: Error recording negative to access location");
+		String triggerClass = intent.getStringExtra(RequestStoragePermissionActivity.TRIGGER_CLASS);
+
+		if (FilePickerHandler.class.getName().equals(triggerClass)) {
+			this.filePickerHandler.startFileCaptureActivity();
+			return;
 		}
+
+		if (ChtExternalAppHandler.class.getName().equals(triggerClass)) {
+			this.chtExternalAppHandler.resumeActivity();
+			return;
+		}
+
+		trace(
+			this,
+			"EmbeddedBrowserActivity :: No handling for trigger: %s, resultCode:",
+			triggerClass,
+			RequestCode.ACCESS_STORAGE_PERMISSION.name()
+		);
 	}
 
 	private void configureUserAgent() {
@@ -454,9 +444,8 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		ACCESS_LOCATION_PERMISSION(100),
 		ACCESS_STORAGE_PERMISSION(101),
 		CHT_EXTERNAL_APP_ACTIVITY(102),
-		DISCLOSURE_LOCATION_ACTIVITY(103),
-		GRAB_MRDT_PHOTO_ACTIVITY(104),
-		FILE_PICKER_ACTIVITY(105);
+		GRAB_MRDT_PHOTO_ACTIVITY(103),
+		FILE_PICKER_ACTIVITY(104);
 
 		private final int requestCode;
 

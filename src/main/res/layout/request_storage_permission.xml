@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:layout_width="fill_parent"
+  android:layout_height="wrap_content"
+  android:orientation="vertical"
+  android:paddingLeft="16dp"
+  android:paddingRight="16dp">
+
+  <ImageView
+    android:id="@+id/storageIcon"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="80dp"
+    android:contentDescription="@string/storageRequestIconDescription"
+    android:scaleType="center"
+    android:src="@drawable/storage" />
+
+  <TextView
+    android:id="@+id/storageTitleText"
+    style="@android:style/Widget.DeviceDefault.Light.TextView"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_below="@+id/storageIcon"
+    android:layout_marginTop="8dp"
+    android:gravity="center"
+    android:padding="10dp"
+    android:text="@string/storageRequestTitle"
+    android:textSize="18sp"
+    android:textStyle="bold" />
+
+  <TextView
+    android:id="@+id/storageMessageText"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_below="@+id/storageTitleText"
+    android:layout_marginTop="10dp"
+    android:gravity="center"
+    android:padding="20dp"
+    android:text="@string/storageRequestMessage"
+    android:textSize="18sp" />
+
+  <LinearLayout
+    android:id="@+id/storageButtons"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_alignParentEnd="true"
+    android:layout_alignParentBottom="true"
+    android:paddingLeft="20dp"
+    android:paddingRight="20dp"
+    android:paddingBottom="20dp">
+
+    <Button
+      android:id="@+id/storageDenyButton"
+      style="@style/borderlessButton"
+      android:onClick="onClickDeny"
+      android:text="@string/storageRequestDenyButton"
+      tools:ignore="OnClick" />
+
+    <View
+      android:layout_width="0dp"
+      android:layout_height="0dp"
+      android:layout_weight="1" />
+
+    <Button
+      android:id="@+id/storageAllowButton"
+      style="@style/borderlessButton"
+      android:onClick="onClickAllow"
+      android:text="@string/storageRequestAllowButton"
+      tools:ignore="OnClick" />
+  </LinearLayout>
+
+</RelativeLayout>

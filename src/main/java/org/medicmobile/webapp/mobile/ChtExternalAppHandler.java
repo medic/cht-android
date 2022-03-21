@@ -12,8 +12,6 @@ import static org.medicmobile.webapp.mobile.MedicLog.warn;
 import android.app.Activity;
 import android.content.Intent;
 import androidx.core.content.ContextCompat;
-import androidx.core.app.ActivityCompat;
-
 
 import org.json.JSONObject;
 
@@ -22,7 +20,6 @@ import java.util.Optional;
 public class ChtExternalAppHandler {
 
 	private final Activity context;
-	private final static String[] PERMISSIONS_STORAGE = { READ_EXTERNAL_STORAGE };
 	private Intent lastIntent;
 
 	ChtExternalAppHandler(Activity context) {
@@ -53,20 +50,21 @@ public class ChtExternalAppHandler {
 	}
 
 	void startIntent(ChtExternalApp chtExternalApp) {
-		Intent intent = chtExternalApp.createIntent();
+		Intent chtExternalAppIntent = chtExternalApp.createIntent();
 
 		if (ContextCompat.checkSelfPermission(this.context, READ_EXTERNAL_STORAGE) != PERMISSION_GRANTED) {
 			trace(this, "ChtExternalAppHandler :: Requesting storage permissions to process image files taken from external apps");
-			this.lastIntent = intent; // Saving intent to start it when permission is granted.
-			ActivityCompat.requestPermissions(
-				this.context,
-				PERMISSIONS_STORAGE,
-				RequestCode.ACCESS_STORAGE_PERMISSION.getCode()
+			this.lastIntent = chtExternalAppIntent; // Saving intent to start it when permission is granted.
+			Intent requestStorageIntent = new Intent(this.context, RequestStoragePermissionActivity.class);
+			requestStorageIntent.putExtra(
+				RequestStoragePermissionActivity.TRIGGER_CLASS,
+				ChtExternalAppHandler.class.getName()
 			);
+			this.context.startActivityForResult(requestStorageIntent, RequestCode.ACCESS_STORAGE_PERMISSION.getCode());
 			return;
 		}
 
-		startActivity(intent);
+		startActivity(chtExternalAppIntent);
 	}
 
 	void resumeActivity() {
