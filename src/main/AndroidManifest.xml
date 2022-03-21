@@ -47,7 +47,7 @@
         android:screenOrientation="portrait"/>
     <activity android:name="SettingsDialogActivity"
         android:screenOrientation="portrait"/>
-    <activity android:name=".RequestLocationPermissionActivity"
+    <activity android:name="RequestLocationPermissionActivity"
         android:screenOrientation="portrait"/>
     <activity android:name="RequestStoragePermissionActivity"
         android:screenOrientation="portrait"/>
