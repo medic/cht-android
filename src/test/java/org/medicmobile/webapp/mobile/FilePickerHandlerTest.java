@@ -1,7 +1,9 @@
 package org.medicmobile.webapp.mobile;
 
+import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
 import static android.app.Activity.RESULT_CANCELED;
 import static android.app.Activity.RESULT_OK;
+import static android.content.pm.PackageManager.PERMISSION_DENIED;
 import static android.provider.MediaStore.ACTION_IMAGE_CAPTURE;
 import static android.provider.MediaStore.ACTION_VIDEO_CAPTURE;
 import static android.provider.MediaStore.Audio.Media.RECORD_SOUND_ACTION;
@@ -12,8 +14,10 @@ import static org.junit.Assert.assertTrue;
 import static org.medicmobile.webapp.mobile.EmbeddedBrowserActivity.RequestCode;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.matches;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
@@ -32,6 +36,7 @@ import android.os.Bundle;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient.FileChooserParams;
 
+import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 
 import org.junit.Before;
@@ -491,5 +496,88 @@ public class FilePickerHandlerTest {
 		assertTrue(pickerIntent.getBooleanExtra(Intent.EXTRA_LOCAL_ONLY, false));
 		String[] extraMimeTypes = pickerIntent.getStringArrayExtra(Intent.EXTRA_MIME_TYPES);
 		assertEquals("[]", Arrays.toString(extraMimeTypes));
+	}
+
+	@Test
+	public void openPicker_withoutStoragePermission_requestPermission() {
+		try (MockedStatic<ContextCompat> contextCompatMock = mockStatic(ContextCompat.class)) {
+			//> GIVEN
+			doNothing().when(contextMock).startActivityForResult(any(), anyInt());
+			contextCompatMock.when(() -> ContextCompat.checkSelfPermission(any(), anyString())).thenReturn(PERMISSION_DENIED);
+
+			FileChooserParams fileChooserParamsMock = mock(FileChooserParams.class);
+			when(fileChooserParamsMock.getAcceptTypes()).thenReturn(new String[]{});
+			ValueCallback<Uri[]> filePickerCallbackMock = mock(ValueCallback.class);
+			FilePickerHandler filePickerHandlerMock = spy(new FilePickerHandler(contextMock));
+
+			//> WHEN
+			filePickerHandlerMock.openPicker(fileChooserParamsMock, filePickerCallbackMock);
+
+			//> THEN
+			contextCompatMock.verify(() -> ContextCompat.checkSelfPermission(contextMock, READ_EXTERNAL_STORAGE));
+			verify(contextMock, never()).startActivityForResult(any(), eq(RequestCode.FILE_PICKER_ACTIVITY.getCode()));
+
+			ArgumentCaptor<Intent> argument = ArgumentCaptor.forClass(Intent.class);
+			verify(contextMock).startActivityForResult(
+				argument.capture(),
+				eq(RequestCode.ACCESS_STORAGE_PERMISSION.getCode())
+			);
+			Intent requestStorageIntent = argument.getValue();
+			assertEquals(RequestStoragePermissionActivity.class.getName(), requestStorageIntent.getComponent().getClassName());
+			assertEquals(
+				FilePickerHandler.class.getName(),
+				requestStorageIntent.getStringExtra(RequestStoragePermissionActivity.TRIGGER_CLASS)
+			);
+		}
+	}
+
+	@Test
+	public void resumeProcess_withResultOk_startActivity() {
+		try (MockedStatic<ContextCompat> contextCompatMock = mockStatic(ContextCompat.class)) {
+			//> GIVEN
+			stubMethodsInContextMock();
+			ValueCallback<Uri[]> filePickerCallbackMock = mock(ValueCallback.class);
+			FilePickerHandler filePickerHandlerMock = spy(new FilePickerHandler(contextMock));
+			contextCompatMock.when(() -> ContextCompat.checkSelfPermission(any(), anyString())).thenReturn(PERMISSION_DENIED);
+
+			FileChooserParams fileChooserParamsMock = mock(FileChooserParams.class);
+			when(fileChooserParamsMock.getAcceptTypes()).thenReturn(new String[]{"audio/*"});
+			filePickerHandlerMock.openPicker(fileChooserParamsMock, filePickerCallbackMock);
+
+			//> WHEN
+			filePickerHandlerMock.resumeProcess(RESULT_OK);
+
+			//> THEN
+			verify(filePickerHandlerMock).setFilePickerCallback(filePickerCallbackMock);
+			verify(contextMock).startActivityForResult(any(), eq(RequestCode.FILE_PICKER_ACTIVITY.getCode()));
+		}
+	}
+
+	@Test
+	public void resumeProcess_withBadResult_logWarningAndFinishesPicker() {
+		try (
+			MockedStatic<ContextCompat> contextCompatMock = mockStatic(ContextCompat.class);
+			MockedStatic<MedicLog> medicLogMock = mockStatic(MedicLog.class);
+		) {
+			//> GIVEN
+			ValueCallback<Uri[]> filePickerCallbackMock = mock(ValueCallback.class);
+			FilePickerHandler filePickerHandlerMock = spy(new FilePickerHandler(contextMock));
+			contextCompatMock.when(() -> ContextCompat.checkSelfPermission(any(), anyString())).thenReturn(PERMISSION_DENIED);
+
+			FileChooserParams fileChooserParamsMock = mock(FileChooserParams.class);
+			when(fileChooserParamsMock.getAcceptTypes()).thenReturn(new String[]{});
+			filePickerHandlerMock.openPicker(fileChooserParamsMock, filePickerCallbackMock);
+
+			//> WHEN
+			filePickerHandlerMock.resumeProcess(RESULT_CANCELED);
+
+			//> THEN
+			verify(filePickerCallbackMock).onReceiveValue(null);
+			medicLogMock.verify(() -> MedicLog.trace(
+				eq(filePickerHandlerMock),
+				eq("FilePickerHandler :: Sending data back to webapp, URI: %s"),
+				eq("null")
+			));
+		}
 	}
 }

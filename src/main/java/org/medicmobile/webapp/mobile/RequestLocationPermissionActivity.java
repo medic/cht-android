@@ -31,10 +31,10 @@ import androidx.fragment.app.FragmentActivity;
  */
 public class RequestLocationPermissionActivity extends FragmentActivity {
 	/**
-	 * TRIGGER_CLASS {String} Extra in the request intent to specify the class that trigger this activity,
-     *                        it will be passed on to the result intent. It can be used to continue the
-	 *                        action of the trigger class after the intent is resolved.
-	 */
+	* TRIGGER_CLASS {String} Extra in the request intent to specify the class that trigger this activity,
+	*                        it will be passed on to the result intent. It can be used to continue the
+	*                        action of the trigger class after the intent is resolved.
+	*/
 	static final String TRIGGER_CLASS = "TRIGGER_CLASS";
 	static final String[] LOCATION_PERMISSIONS = { ACCESS_FINE_LOCATION, ACCESS_COARSE_LOCATION };
 

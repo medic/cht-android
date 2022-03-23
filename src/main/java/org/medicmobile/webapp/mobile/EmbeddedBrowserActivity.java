@@ -240,7 +240,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		return this.smsSender;
 	}
 
-	ChtExternalAppHandler getChtExternalAppLauncherActivity() {
+	ChtExternalAppHandler getChtExternalAppHandler() {
 		return this.chtExternalAppHandler;
 	}
 
@@ -332,11 +332,13 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		String triggerClass = intent == null ? null : intent.getStringExtra(RequestStoragePermissionActivity.TRIGGER_CLASS);
 
 		if (FilePickerHandler.class.getName().equals(triggerClass)) {
+			trace(this, "EmbeddedBrowserActivity :: Resuming FilePickerHandler process. Trigger:%s", triggerClass);
 			this.filePickerHandler.resumeProcess(resultCode);
 			return;
 		}
 
 		if (ChtExternalAppHandler.class.getName().equals(triggerClass)) {
+			trace(this, "EmbeddedBrowserActivity :: Resuming ChtExternalAppHandler activity. Trigger:%s", triggerClass);
 			this.chtExternalAppHandler.resumeActivity(resultCode);
 			return;
 		}

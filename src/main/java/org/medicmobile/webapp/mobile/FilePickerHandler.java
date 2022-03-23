@@ -72,6 +72,7 @@ public class FilePickerHandler {
 			return;
 		}
 
+		// Giving control back to WebView without files.
 		sendDataToWebapp(null);
 	}
 
