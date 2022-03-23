@@ -191,7 +191,6 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 				backButtonHandler);
 	}
 
-	@SuppressLint("MissingSuperCall")
 	@Override
 	protected void onActivityResult(int requestCd, int resultCode, Intent intent) {
 		Optional<RequestCode> requestCodeOpt = RequestCode.valueOf(requestCd);
@@ -220,7 +219,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 					processStoragePermissionResult(resultCode, intent);
 					return;
 				case ACCESS_LOCATION_PERMISSION:
-					processLocationPermissionResult(resultCode, intent);
+					processLocationPermissionResult(resultCode);
 					return;
 				default:
 					trace(this, "onActivityResult() :: no handling for requestCode=%s", requestCode.name());
@@ -303,7 +302,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		evaluateJavascript("window.CHTCore.AndroidApi.v1.locationPermissionRequestResolved();");
 	}
 
-	private void processLocationPermissionResult(int resultCode, Intent intent) {
+	private void processLocationPermissionResult(int resultCode) {
 		if (resultCode == RESULT_OK) {
 			locationRequestResolved();
 			return;
@@ -330,25 +329,21 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	}
 
 	private void processStoragePermissionResult(int resultCode, Intent intent) {
-		if (resultCode != RESULT_OK) {
-			return;
-		}
-
 		String triggerClass = intent.getStringExtra(RequestStoragePermissionActivity.TRIGGER_CLASS);
 
 		if (FilePickerHandler.class.getName().equals(triggerClass)) {
-			this.filePickerHandler.startFileCaptureActivity();
+			this.filePickerHandler.resumeProcess(resultCode);
 			return;
 		}
 
 		if (ChtExternalAppHandler.class.getName().equals(triggerClass)) {
-			this.chtExternalAppHandler.resumeActivity();
+			this.chtExternalAppHandler.resumeActivity(resultCode);
 			return;
 		}
 
 		trace(
 			this,
-			"EmbeddedBrowserActivity :: No handling for trigger: %s, resultCode:",
+			"EmbeddedBrowserActivity :: No handling for trigger: %s, requestCode:",
 			triggerClass,
 			RequestCode.ACCESS_STORAGE_PERMISSION.name()
 		);

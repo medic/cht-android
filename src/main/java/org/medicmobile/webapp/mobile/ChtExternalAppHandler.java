@@ -67,8 +67,8 @@ public class ChtExternalAppHandler {
 		startActivity(chtExternalAppIntent);
 	}
 
-	void resumeActivity() {
-		if (this.lastIntent == null) {
+	void resumeActivity(int resultCode) {
+		if (resultCode != RESULT_OK || this.lastIntent == null) {
 			return;
 		}
 

@@ -29,7 +29,7 @@ public class FilePickerHandler {
 
 	private final Activity context;
 	private ValueCallback<Uri[]> filePickerCallback;
-	String[] mimeTypes;
+	private String[] mimeTypes;
 	private File tempFile;
 
 	public FilePickerHandler(Activity context) {
@@ -66,33 +66,13 @@ public class FilePickerHandler {
 		sendDataToWebapp(intent);
 	}
 
-	void startFileCaptureActivity() {
-		trace(this, "FilePickerHandler :: Accepted MIME types: %s", Arrays.toString(this.mimeTypes));
-
-		Intent pickerIntent = new Intent(Intent.ACTION_GET_CONTENT);
-		pickerIntent.addCategory(Intent.CATEGORY_OPENABLE);
-		pickerIntent.putExtra(Intent.EXTRA_LOCAL_ONLY, true);
-		Intent captureIntent = null;
-
-		if (this.mimeTypes.length == 1) {
-			String mimeType = this.mimeTypes[0];
-			pickerIntent.setType(mimeType);
-			captureIntent = getCaptureIntent(mimeType);
-		} else {
-			pickerIntent.setType("*/*");
-			pickerIntent.putExtra(Intent.EXTRA_MIME_TYPES, this.mimeTypes);
+	void resumeProcess(int resultCode) {
+		if (resultCode == RESULT_OK) {
+			startFileCaptureActivity();
+			return;
 		}
 
-		Intent chooserIntent = Intent.createChooser(pickerIntent, this.context.getString(R.string.promptChooseFile));
-		// Ensure that there's an activity to handle the intent for capturing media.
-		if (captureIntent != null && captureIntent.resolveActivity(this.context.getPackageManager()) != null) {
-			chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Intent[]{ captureIntent });
-		}
-
-		trace(this, "FilePickerHandler :: Starting activity with intents: chooser=%s, picker=%s, capture=%s",
-			chooserIntent, pickerIntent, captureIntent);
-
-		this.context.startActivityForResult(chooserIntent, RequestCode.FILE_PICKER_ACTIVITY.getCode());
+		sendDataToWebapp(null);
 	}
 
 //> PRIVATE
@@ -149,6 +129,35 @@ public class FilePickerHandler {
 		}
 
 		return uri;
+	}
+
+	private void startFileCaptureActivity() {
+		trace(this, "FilePickerHandler :: Accepted MIME types: %s", Arrays.toString(this.mimeTypes));
+
+		Intent pickerIntent = new Intent(Intent.ACTION_GET_CONTENT);
+		pickerIntent.addCategory(Intent.CATEGORY_OPENABLE);
+		pickerIntent.putExtra(Intent.EXTRA_LOCAL_ONLY, true);
+		Intent captureIntent = null;
+
+		if (this.mimeTypes.length == 1) {
+			String mimeType = this.mimeTypes[0];
+			pickerIntent.setType(mimeType);
+			captureIntent = getCaptureIntent(mimeType);
+		} else {
+			pickerIntent.setType("*/*");
+			pickerIntent.putExtra(Intent.EXTRA_MIME_TYPES, this.mimeTypes);
+		}
+
+		Intent chooserIntent = Intent.createChooser(pickerIntent, this.context.getString(R.string.promptChooseFile));
+		// Ensure that there's an activity to handle the intent for capturing media.
+		if (captureIntent != null && captureIntent.resolveActivity(this.context.getPackageManager()) != null) {
+			chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Intent[]{ captureIntent });
+		}
+
+		trace(this, "FilePickerHandler :: Starting activity with intents: chooser=%s, picker=%s, capture=%s",
+			chooserIntent, pickerIntent, captureIntent);
+
+		this.context.startActivityForResult(chooserIntent, RequestCode.FILE_PICKER_ACTIVITY.getCode());
 	}
 
 	private Intent getCaptureIntent(String mimeType) {
