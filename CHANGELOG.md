@@ -1,3 +1,10 @@
+# Compatibility
+
+| CHT Android | Android OS | cht-core |
+| -- | -- | -- |
+| 1.x | 5.0+ | 3.x and 4.x |
+| 0.x | 4.4+ | 3.x |
+
 # Release notes
 
 ## 0.11.0
