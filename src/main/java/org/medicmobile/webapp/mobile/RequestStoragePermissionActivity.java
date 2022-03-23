@@ -1,16 +1,21 @@
 package org.medicmobile.webapp.mobile;
 
 import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
+import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static org.medicmobile.webapp.mobile.MedicLog.trace;
 
 import android.content.Intent;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.view.View;
 import android.view.Window;
 import android.widget.TextView;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
 
 public class RequestStoragePermissionActivity extends FragmentActivity {
@@ -23,21 +28,45 @@ public class RequestStoragePermissionActivity extends FragmentActivity {
 
 	private ActivityResultLauncher<String> requestPermissionLauncher =
 		registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+			Intent responseIntent = createResponseIntent();
+
 			if (isGranted) {
 				trace(this, "RequestStoragePermissionActivity :: User allowed storage permission.");
-
-				Intent requestIntent = getIntent();
-				String triggerClass = requestIntent == null ? null : requestIntent.getStringExtra(TRIGGER_CLASS);
-				Intent responseIntent = new Intent();
-				responseIntent.putExtra(TRIGGER_CLASS, triggerClass);
-
 				setResult(RESULT_OK, responseIntent);
 				finish();
 				return;
 			}
 
+			if (Build.VERSION.SDK_INT >= 23 && !shouldShowRequestPermissionRationale(READ_EXTERNAL_STORAGE)) {
+				trace(
+					this,
+					"RequestStoragePermissionActivity :: User rejected storage permission twice or has selected \"never ask again\"." +
+						" Sending user to the app's setting to manually grant the permission."
+				);
+				Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+				intent.setData(Uri.fromParts("package", getPackageName(), null));
+				this.appSettingsLauncher.launch(intent);
+				return;
+			}
+
 			trace(this, "RequestStoragePermissionActivity :: User rejected storage permission.");
-			setResult(RESULT_CANCELED);
+			setResult(RESULT_CANCELED, responseIntent);
+			finish();
+		});
+
+	private ActivityResultLauncher<Intent> appSettingsLauncher =
+		registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+			Intent responseIntent = createResponseIntent();
+
+			if (ContextCompat.checkSelfPermission(this, READ_EXTERNAL_STORAGE) == PERMISSION_GRANTED) {
+				trace(this, "RequestStoragePermissionActivity :: User granted storage permission from app's settings.");
+				setResult(RESULT_OK, responseIntent);
+				finish();
+				return;
+			}
+
+			trace(this, "RequestStoragePermissionActivity :: User didn't grant storage permission from app's settings.");
+			setResult(RESULT_CANCELED, responseIntent);
 			finish();
 		});
 
@@ -56,12 +85,20 @@ public class RequestStoragePermissionActivity extends FragmentActivity {
 
 	public void onClickAllow(View view) {
 		trace(this, "RequestStoragePermissionActivity :: User agree with prominent disclosure message.");
-		requestPermissionLauncher.launch(READ_EXTERNAL_STORAGE);
+		this.requestPermissionLauncher.launch(READ_EXTERNAL_STORAGE);
 	}
 
 	public void onClickDeny(View view) {
 		trace(this, "RequestStoragePermissionActivity :: User disagree with prominent disclosure message.");
-		setResult(RESULT_CANCELED);
+		setResult(RESULT_CANCELED, createResponseIntent());
 		finish();
+	}
+
+	private Intent createResponseIntent() {
+		Intent requestIntent = getIntent();
+		String triggerClass = requestIntent == null ? null : requestIntent.getStringExtra(this.TRIGGER_CLASS);
+		Intent responseIntent = new Intent();
+		responseIntent.putExtra(this.TRIGGER_CLASS, triggerClass);
+		return responseIntent;
 	}
 }

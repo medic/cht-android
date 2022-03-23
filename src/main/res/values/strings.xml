@@ -52,7 +52,7 @@
 	<string name="locRequestIconDescription">My location icon</string>
 
   <string name="storageRequestTitle">Storage access</string>
-  <string name="storageRequestMessage">%s uploads files into reports to analyze and improve health outcomes in your area. To permit storage access select \"Allow\", and then confirm the next prompt.</string>
+  <string name="storageRequestMessage">%s uploads files into reports to analyze and improve health outcomes in your area. To permit storage access select \"Allow\", and then grant storage access in the next prompt.</string>
   <string name="storageRequestAllowButton">Allow</string>
   <string name="storageRequestDenyButton">Deny</string>
   <string name="storageRequestIconDescription">My storage icon</string>

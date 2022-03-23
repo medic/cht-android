@@ -2,16 +2,21 @@ package org.medicmobile.webapp.mobile;
 
 import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
+import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static org.medicmobile.webapp.mobile.MedicLog.trace;
 
 import android.content.Intent;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.view.View;
 import android.view.Window;
 import android.widget.TextView;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
 
 /**
@@ -36,22 +41,49 @@ public class RequestLocationPermissionActivity extends FragmentActivity {
 	private ActivityResultLauncher<String[]> requestPermissionLauncher =
 		registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), grantedMap -> {
 			boolean allGranted = !grantedMap.containsValue(false);
+			Intent responseIntent = createResponseIntent();
 
 			if (allGranted) {
 				trace(this, "RequestLocationPermissionActivity :: User allowed location permission.");
-
-				Intent requestIntent = getIntent();
-				String triggerClass = requestIntent == null ? null : requestIntent.getStringExtra(TRIGGER_CLASS);
-				Intent responseIntent = new Intent();
-				responseIntent.putExtra(TRIGGER_CLASS, triggerClass);
-
 				setResult(RESULT_OK, responseIntent);
 				finish();
 				return;
 			}
 
+			boolean rationalFineLocation = Build.VERSION.SDK_INT >= 23 && !shouldShowRequestPermissionRationale(ACCESS_FINE_LOCATION);
+			boolean rationalCoarseLocation = Build.VERSION.SDK_INT >= 23 && !shouldShowRequestPermissionRationale(ACCESS_COARSE_LOCATION);
+			if (rationalFineLocation || rationalCoarseLocation) {
+				trace(
+					this,
+					"RequestLocationPermissionActivity :: User rejected location permission twice or has selected \"never ask again\"." +
+						" Sending user to the app's setting to manually grant the permission."
+				);
+				Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+				intent.setData(Uri.fromParts("package", getPackageName(), null));
+				this.appSettingsLauncher.launch(intent);
+				return;
+			}
+
 			trace(this, "RequestLocationPermissionActivity :: User rejected location permission.");
-			setResult(RESULT_CANCELED);
+			setResult(RESULT_CANCELED, responseIntent);
+			finish();
+		});
+
+	private ActivityResultLauncher<Intent> appSettingsLauncher =
+		registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+			Intent responseIntent = createResponseIntent();
+			boolean hasFineLocation = ContextCompat.checkSelfPermission(this, ACCESS_FINE_LOCATION) == PERMISSION_GRANTED;
+			boolean hasCoarseLocation = ContextCompat.checkSelfPermission(this, ACCESS_COARSE_LOCATION) == PERMISSION_GRANTED;
+
+			if (hasFineLocation && hasCoarseLocation) {
+				trace(this, "RequestLocationPermissionActivity :: User granted location permission from app's settings.");
+				setResult(RESULT_OK, responseIntent);
+				finish();
+				return;
+			}
+
+			trace(this, "RequestLocationPermissionActivity :: User didn't grant location permission from app's settings.");
+			setResult(RESULT_CANCELED, responseIntent);
 			finish();
 		});
 
@@ -75,7 +107,15 @@ public class RequestLocationPermissionActivity extends FragmentActivity {
 
 	public void onClickNegative(View view) {
 		trace(this, "RequestLocationPermissionActivity :: User disagree with prominent disclosure message.");
-		setResult(RESULT_CANCELED);
+		setResult(RESULT_CANCELED, createResponseIntent());
 		finish();
+	}
+
+	private Intent createResponseIntent() {
+		Intent requestIntent = getIntent();
+		String triggerClass = requestIntent == null ? null : requestIntent.getStringExtra(TRIGGER_CLASS);
+		Intent responseIntent = new Intent();
+		responseIntent.putExtra(TRIGGER_CLASS, triggerClass);
+		return responseIntent;
 	}
 }

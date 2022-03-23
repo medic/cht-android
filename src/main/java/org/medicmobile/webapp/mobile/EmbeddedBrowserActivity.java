@@ -329,7 +329,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	}
 
 	private void processStoragePermissionResult(int resultCode, Intent intent) {
-		String triggerClass = intent.getStringExtra(RequestStoragePermissionActivity.TRIGGER_CLASS);
+		String triggerClass = intent == null ? null : intent.getStringExtra(RequestStoragePermissionActivity.TRIGGER_CLASS);
 
 		if (FilePickerHandler.class.getName().equals(triggerClass)) {
 			this.filePickerHandler.resumeProcess(resultCode);
