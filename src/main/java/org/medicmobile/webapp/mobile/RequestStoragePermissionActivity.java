@@ -37,7 +37,7 @@ public class RequestStoragePermissionActivity extends FragmentActivity {
 				return;
 			}
 
-			if (Build.VERSION.SDK_INT >= 23 && !shouldShowRequestPermissionRationale(READ_EXTERNAL_STORAGE)) {
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !shouldShowRequestPermissionRationale(READ_EXTERNAL_STORAGE)) {
 				trace(
 					this,
 					"RequestStoragePermissionActivity :: User rejected storage permission twice or has selected \"never ask again\"." +

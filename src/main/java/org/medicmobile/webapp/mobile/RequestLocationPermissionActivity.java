@@ -40,7 +40,7 @@ public class RequestLocationPermissionActivity extends FragmentActivity {
 
 	private ActivityResultLauncher<String[]> requestPermissionLauncher =
 		registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), grantedMap -> {
-			boolean allGranted = !grantedMap.containsValue(false);
+			boolean allGranted = grantedMap.size() > 0 && !grantedMap.containsValue(false);
 			Intent responseIntent = createResponseIntent();
 
 			if (allGranted) {
@@ -50,18 +50,21 @@ public class RequestLocationPermissionActivity extends FragmentActivity {
 				return;
 			}
 
-			boolean rationalFineLocation = Build.VERSION.SDK_INT >= 23 && !shouldShowRequestPermissionRationale(ACCESS_FINE_LOCATION);
-			boolean rationalCoarseLocation = Build.VERSION.SDK_INT >= 23 && !shouldShowRequestPermissionRationale(ACCESS_COARSE_LOCATION);
-			if (rationalFineLocation || rationalCoarseLocation) {
-				trace(
-					this,
-					"RequestLocationPermissionActivity :: User rejected location permission twice or has selected \"never ask again\"." +
-						" Sending user to the app's setting to manually grant the permission."
-				);
-				Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-				intent.setData(Uri.fromParts("package", getPackageName(), null));
-				this.appSettingsLauncher.launch(intent);
-				return;
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+				boolean rationalFineLocation = !shouldShowRequestPermissionRationale(ACCESS_FINE_LOCATION);
+				boolean rationalCoarseLocation = !shouldShowRequestPermissionRationale(ACCESS_COARSE_LOCATION);
+
+				if (rationalFineLocation || rationalCoarseLocation) {
+					trace(
+						this,
+						"RequestLocationPermissionActivity :: User rejected location permission twice or has selected \"never ask again\"." +
+							" Sending user to the app's setting to manually grant the permission."
+					);
+					Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+					intent.setData(Uri.fromParts("package", getPackageName(), null));
+					this.appSettingsLauncher.launch(intent);
+					return;
+				}
 			}
 
 			trace(this, "RequestLocationPermissionActivity :: User rejected location permission.");
