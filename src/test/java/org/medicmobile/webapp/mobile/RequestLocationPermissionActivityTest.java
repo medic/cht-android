@@ -7,7 +7,6 @@ import static android.app.Activity.RESULT_OK;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.medicmobile.webapp.mobile.RequestLocationPermissionActivity.TRIGGER_CLASS;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mockStatic;
@@ -55,7 +54,6 @@ public class RequestLocationPermissionActivityTest {
 
 			scenario.onActivity(requestLocationPermissionActivity -> {
 				//> GIVEN
-				requestLocationPermissionActivity.getIntent().putExtra(TRIGGER_CLASS, "a.trigger.class");
 				ShadowActivity shadowActivity = shadowOf(requestLocationPermissionActivity);
 				shadowActivity.grantPermissions(ACCESS_FINE_LOCATION, ACCESS_COARSE_LOCATION);
 
@@ -68,41 +66,7 @@ public class RequestLocationPermissionActivityTest {
 			ActivityResult result = scenario.getResult();
 			assertEquals(RESULT_OK, result.getResultCode());
 			Intent resultIntent = result.getResultData();
-			assertNotNull(resultIntent);
-			assertEquals("a.trigger.class", resultIntent.getStringExtra(TRIGGER_CLASS));
-
-			medicLogMock.verify(() -> MedicLog.trace(
-				any(RequestLocationPermissionActivity.class),
-				eq("RequestLocationPermissionActivity :: User agree with prominent disclosure message.")
-			));
-			medicLogMock.verify(() -> MedicLog.trace(
-				any(RequestLocationPermissionActivity.class),
-				eq("RequestLocationPermissionActivity :: User allowed location permission.")
-			));
-		}
-	}
-
-	@Test
-	public void onClickAllow_withoutExtras_setTriggerClassNull() {
-		try(MockedStatic<MedicLog> medicLogMock = mockStatic(MedicLog.class)) {
-			ActivityScenario<RequestLocationPermissionActivity> scenario = scenarioRule.getScenario();
-
-			scenario.onActivity(requestLocationPermissionActivity -> {
-				//> GIVEN
-				ShadowActivity shadowActivity = shadowOf(requestLocationPermissionActivity);
-				shadowActivity.grantPermissions(ACCESS_FINE_LOCATION, ACCESS_COARSE_LOCATION);
-
-				//> WHEN
-				requestLocationPermissionActivity.onClickOk(null);
-			});
-			scenario.moveToState(Lifecycle.State.DESTROYED);
-
-			//> THEN
-			ActivityResult result = scenario.getResult();
-			assertEquals(RESULT_OK, result.getResultCode());
-			Intent resultIntent = result.getResultData();
-			assertNotNull(resultIntent);
-			assertNull(resultIntent.getStringExtra(TRIGGER_CLASS));
+			assertNull(resultIntent);
 
 			medicLogMock.verify(() -> MedicLog.trace(
 				any(RequestLocationPermissionActivity.class),
@@ -124,7 +88,6 @@ public class RequestLocationPermissionActivityTest {
 				Intents.init();
 
 				//> GIVEN
-				requestLocationPermissionActivity.getIntent().putExtra(TRIGGER_CLASS, "a.trigger.class");
 				ShadowActivity shadowActivity = shadowOf(requestLocationPermissionActivity);
 				packageManager.setShouldShowRequestPermissionRationale(ACCESS_FINE_LOCATION, true);
 				packageManager.setShouldShowRequestPermissionRationale(ACCESS_COARSE_LOCATION, true);
@@ -149,8 +112,7 @@ public class RequestLocationPermissionActivityTest {
 			ActivityResult result = scenario.getResult();
 			assertEquals(RESULT_CANCELED, result.getResultCode());
 			Intent resultIntent = result.getResultData();
-			assertNotNull(resultIntent);
-			assertEquals("a.trigger.class", resultIntent.getStringExtra(TRIGGER_CLASS));
+			assertNull(resultIntent);
 
 			medicLogMock.verify(() -> MedicLog.trace(
 				any(RequestLocationPermissionActivity.class),
@@ -173,7 +135,6 @@ public class RequestLocationPermissionActivityTest {
 
 				//> GIVEN
 				String packageName = "package:" + requestLocationPermissionActivity.getPackageName();
-				requestLocationPermissionActivity.getIntent().putExtra(TRIGGER_CLASS, "a.trigger.class");
 				ShadowActivity shadowActivity = shadowOf(requestLocationPermissionActivity);
 				// Setting "Never ask again" case.
 				packageManager.setShouldShowRequestPermissionRationale(ACCESS_FINE_LOCATION, false);
@@ -198,8 +159,7 @@ public class RequestLocationPermissionActivityTest {
 			ActivityResult result = scenario.getResult();
 			assertEquals(RESULT_OK, result.getResultCode());
 			Intent resultIntent = result.getResultData();
-			assertNotNull(resultIntent);
-			assertEquals("a.trigger.class", resultIntent.getStringExtra(TRIGGER_CLASS));
+			assertNull(resultIntent);
 
 			medicLogMock.verify(() -> MedicLog.trace(
 				any(RequestLocationPermissionActivity.class),
@@ -227,7 +187,6 @@ public class RequestLocationPermissionActivityTest {
 
 				//> GIVEN
 				String packageName = "package:" + requestLocationPermissionActivity.getPackageName();
-				requestLocationPermissionActivity.getIntent().putExtra(TRIGGER_CLASS, "a.trigger.class");
 				ShadowActivity shadowActivity = shadowOf(requestLocationPermissionActivity);
 				// Setting "Never ask again" case.
 				packageManager.setShouldShowRequestPermissionRationale(ACCESS_FINE_LOCATION, false);
@@ -251,8 +210,7 @@ public class RequestLocationPermissionActivityTest {
 			ActivityResult result = scenario.getResult();
 			assertEquals(RESULT_CANCELED, result.getResultCode());
 			Intent resultIntent = result.getResultData();
-			assertNotNull(resultIntent);
-			assertEquals("a.trigger.class", resultIntent.getStringExtra(TRIGGER_CLASS));
+			assertNull(resultIntent);
 
 			medicLogMock.verify(() -> MedicLog.trace(
 				any(RequestLocationPermissionActivity.class),
@@ -272,15 +230,12 @@ public class RequestLocationPermissionActivityTest {
 
 
 	@Test
-	public void onClickNegative_withExtras_setResolveCanceled() {
+	public void onClickNegative_noIntentsStarted_setResolveCanceled() {
 		try(MockedStatic<MedicLog> medicLogMock = mockStatic(MedicLog.class)) {
 			ActivityScenario<RequestLocationPermissionActivity> scenario = scenarioRule.getScenario();
 
 			scenario.onActivity(requestLocationPermissionActivity -> {
 				Intents.init();
-				//> GIVEN
-				ShadowActivity shadowActivity = shadowOf(requestLocationPermissionActivity);
-
 				//> WHEN
 				requestLocationPermissionActivity.onClickNegative(null);
 
@@ -294,8 +249,7 @@ public class RequestLocationPermissionActivityTest {
 			ActivityResult result = scenario.getResult();
 			assertEquals(RESULT_CANCELED, result.getResultCode());
 			Intent resultIntent = result.getResultData();
-			assertNotNull(resultIntent);
-			assertNull(resultIntent.getStringExtra(RequestLocationPermissionActivity.TRIGGER_CLASS));
+			assertNull(resultIntent);
 
 			medicLogMock.verify(() -> MedicLog.trace(
 				any(RequestLocationPermissionActivity.class),

@@ -266,15 +266,12 @@ public class RequestStoragePermissionActivityTest {
 	}
 
 	@Test
-	public void onClickNegative_withExtras_setResolveCanceled() {
+	public void onClickNegative_noIntentsStarted_setResolveCanceled() {
 		try(MockedStatic<MedicLog> medicLogMock = mockStatic(MedicLog.class)) {
 			ActivityScenario<RequestStoragePermissionActivity> scenario = scenarioRule.getScenario();
 
 			scenario.onActivity(requestStoragePermissionActivity -> {
 				Intents.init();
-				//> GIVEN
-				ShadowActivity shadowActivity = shadowOf(requestStoragePermissionActivity);
-
 				//> WHEN
 				requestStoragePermissionActivity.onClickDeny(null);
 

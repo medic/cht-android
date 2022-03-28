@@ -30,22 +30,15 @@ import androidx.fragment.app.FragmentActivity;
  * requesting the same next time.
  */
 public class RequestLocationPermissionActivity extends FragmentActivity {
-	/**
-	* TRIGGER_CLASS {String} Extra in the request intent to specify the class that trigger this activity,
-	*                        it will be passed on to the result intent. It can be used to continue the
-	*                        action of the trigger class after the intent is resolved.
-	*/
-	static final String TRIGGER_CLASS = "TRIGGER_CLASS";
 	static final String[] LOCATION_PERMISSIONS = { ACCESS_FINE_LOCATION, ACCESS_COARSE_LOCATION };
 
-	private ActivityResultLauncher<String[]> requestPermissionLauncher =
+	private final ActivityResultLauncher<String[]> requestPermissionLauncher =
 		registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), grantedMap -> {
 			boolean allGranted = grantedMap.size() > 0 && !grantedMap.containsValue(false);
-			Intent responseIntent = createResponseIntent();
 
 			if (allGranted) {
 				trace(this, "RequestLocationPermissionActivity :: User allowed location permission.");
-				setResult(RESULT_OK, responseIntent);
+				setResult(RESULT_OK);
 				finish();
 				return;
 			}
@@ -68,25 +61,24 @@ public class RequestLocationPermissionActivity extends FragmentActivity {
 			}
 
 			trace(this, "RequestLocationPermissionActivity :: User rejected location permission.");
-			setResult(RESULT_CANCELED, responseIntent);
+			setResult(RESULT_CANCELED);
 			finish();
 		});
 
-	private ActivityResultLauncher<Intent> appSettingsLauncher =
+	private final ActivityResultLauncher<Intent> appSettingsLauncher =
 		registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
-			Intent responseIntent = createResponseIntent();
 			boolean hasFineLocation = ContextCompat.checkSelfPermission(this, ACCESS_FINE_LOCATION) == PERMISSION_GRANTED;
 			boolean hasCoarseLocation = ContextCompat.checkSelfPermission(this, ACCESS_COARSE_LOCATION) == PERMISSION_GRANTED;
 
 			if (hasFineLocation && hasCoarseLocation) {
 				trace(this, "RequestLocationPermissionActivity :: User granted location permission from app's settings.");
-				setResult(RESULT_OK, responseIntent);
+				setResult(RESULT_OK);
 				finish();
 				return;
 			}
 
 			trace(this, "RequestLocationPermissionActivity :: User didn't grant location permission from app's settings.");
-			setResult(RESULT_CANCELED, responseIntent);
+			setResult(RESULT_CANCELED);
 			finish();
 		});
 
@@ -99,7 +91,7 @@ public class RequestLocationPermissionActivity extends FragmentActivity {
 
 		String appName = getResources().getString(R.string.app_name);
 		String message = getResources().getString(R.string.locRequestMessage);
-		TextView field = (TextView) findViewById(R.id.locMessageText);
+		TextView field = findViewById(R.id.locMessageText);
 		field.setText(String.format(message, appName));
 	}
 
@@ -110,15 +102,7 @@ public class RequestLocationPermissionActivity extends FragmentActivity {
 
 	public void onClickNegative(View view) {
 		trace(this, "RequestLocationPermissionActivity :: User disagree with prominent disclosure message.");
-		setResult(RESULT_CANCELED, createResponseIntent());
+		setResult(RESULT_CANCELED);
 		finish();
-	}
-
-	private Intent createResponseIntent() {
-		Intent requestIntent = getIntent();
-		String triggerClass = requestIntent == null ? null : requestIntent.getStringExtra(TRIGGER_CLASS);
-		Intent responseIntent = new Intent();
-		responseIntent.putExtra(TRIGGER_CLASS, triggerClass);
-		return responseIntent;
 	}
 }

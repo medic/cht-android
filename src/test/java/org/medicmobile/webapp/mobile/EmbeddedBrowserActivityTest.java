@@ -238,7 +238,7 @@ public class EmbeddedBrowserActivityTest {
 					), never());
 					medicLogMock.verify(() -> MedicLog.trace(
 						eq(embeddedBrowserActivity),
-						eq("EmbeddedBrowserActivity :: No handling for trigger: %s, requestCode:"),
+						eq("EmbeddedBrowserActivity :: No handling for trigger: %s, requestCode: %s"),
 						eq(null),
 						eq(RequestCode.ACCESS_STORAGE_PERMISSION.name())
 					));

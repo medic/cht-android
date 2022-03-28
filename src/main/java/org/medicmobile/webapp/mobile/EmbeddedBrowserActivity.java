@@ -303,17 +303,15 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	}
 
 	private void processLocationPermissionResult(int resultCode) {
-		if (resultCode == RESULT_OK) {
-			locationRequestResolved();
-			return;
+		if (resultCode != RESULT_OK) {
+			try {
+				settings.setUserDeniedGeolocation();
+			} catch (SettingsException e) {
+				error(e, "processLocationPermissionResult :: Error recording negative to access location.");
+			}
 		}
 
-		try {
-			settings.setUserDeniedGeolocation();
-			locationRequestResolved();
-		} catch (SettingsException e) {
-			error(e, "processLocationPermissionResult :: Error recording negative to access location.");
-		}
+		locationRequestResolved();
 	}
 
 	private void processChtExternalAppResult(int resultCode, Intent intentData) {
@@ -345,7 +343,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 
 		trace(
 			this,
-			"EmbeddedBrowserActivity :: No handling for trigger: %s, requestCode:",
+			"EmbeddedBrowserActivity :: No handling for trigger: %s, requestCode: %s",
 			triggerClass,
 			RequestCode.ACCESS_STORAGE_PERMISSION.name()
 		);

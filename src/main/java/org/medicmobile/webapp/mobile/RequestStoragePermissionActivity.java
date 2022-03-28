@@ -26,7 +26,7 @@ public class RequestStoragePermissionActivity extends FragmentActivity {
 	*/
 	static final String TRIGGER_CLASS = "TRIGGER_CLASS";
 
-	private ActivityResultLauncher<String> requestPermissionLauncher =
+	private final ActivityResultLauncher<String> requestPermissionLauncher =
 		registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
 			Intent responseIntent = createResponseIntent();
 
@@ -54,7 +54,7 @@ public class RequestStoragePermissionActivity extends FragmentActivity {
 			finish();
 		});
 
-	private ActivityResultLauncher<Intent> appSettingsLauncher =
+	private final ActivityResultLauncher<Intent> appSettingsLauncher =
 		registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
 			Intent responseIntent = createResponseIntent();
 
@@ -79,7 +79,7 @@ public class RequestStoragePermissionActivity extends FragmentActivity {
 
 		String appName = getResources().getString(R.string.app_name);
 		String message = getResources().getString(R.string.storageRequestMessage);
-		TextView field = (TextView) findViewById(R.id.storageMessageText);
+		TextView field = findViewById(R.id.storageMessageText);
 		field.setText(String.format(message, appName));
 	}
 
