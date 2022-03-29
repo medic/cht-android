@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import org.json.JSONException;
 import org.json.JSONObject;
-import static org.medicmobile.webapp.mobile.BuildConfig.DISABLE_APP_URL_VALIDATION;
 import static org.medicmobile.webapp.mobile.MedicLog.trace;
 import static org.medicmobile.webapp.mobile.R.string.errAppUrl_apiNotReady;
 import static org.medicmobile.webapp.mobile.R.string.errAppUrl_appNotFound;
@@ -29,30 +28,28 @@ public class AppUrlVerifier {
 	 */
 	public AppUrlVerification verify(String appUrl) {
 		appUrl = clean(appUrl);
-		if(DISABLE_APP_URL_VALIDATION) {
-			return AppUrlVerification.ok(appUrl);
-		}
 
 		try {
 			JSONObject json = jsonClient.get(appUrl + "/setup/poll");
 
-			if(!json.getString("handler").equals("medic-api"))
+			if (!json.getString("handler").equals("medic-api")) {
 				return AppUrlVerification.failure(appUrl, errAppUrl_appNotFound);
-			if(!json.getBoolean("ready"))
+			}
+
+			if (!json.getBoolean("ready")) {
 				return AppUrlVerification.failure(appUrl, errAppUrl_apiNotReady);
+			}
 
 			return AppUrlVerification.ok(appUrl);
+
 		} catch(MalformedURLException ex) {
 			// seems unlikely, as we should have verified this already
-			return AppUrlVerification.failure(appUrl,
-					errInvalidUrl);
+			return AppUrlVerification.failure(appUrl, errInvalidUrl);
 		} catch(JSONException ex) {
-			return AppUrlVerification.failure(appUrl,
-					errAppUrl_appNotFound);
+			return AppUrlVerification.failure(appUrl, errAppUrl_appNotFound);
 		} catch(IOException ex) {
 			trace(ex, "Exception caught trying to verify url: %s", redactUrl(appUrl));
-			return AppUrlVerification.failure(appUrl,
-					errAppUrl_serverNotFound);
+			return AppUrlVerification.failure(appUrl, errAppUrl_serverNotFound);
 		}
 	}
 
