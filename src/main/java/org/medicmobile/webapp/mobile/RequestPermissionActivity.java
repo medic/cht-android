@@ -1,5 +1,6 @@
 package org.medicmobile.webapp.mobile;
 
+import android.app.Activity;
 import android.os.Bundle;
 import android.view.View;
 import android.view.Window;
@@ -17,7 +18,7 @@ import static org.medicmobile.webapp.mobile.MedicLog.trace;
  * confirmation, the request to the API is omitted and the decision recorded to avoid
  * requesting the same next time.
  */
-public class RequestPermissionActivity extends LockableActivity {
+public class RequestPermissionActivity extends Activity {
 
 	@Override public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);

@@ -13,6 +13,7 @@ import static org.medicmobile.webapp.mobile.Utils.createUseragentFrom;
 import static org.medicmobile.webapp.mobile.Utils.isValidNavigationUrl;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -21,9 +22,10 @@ import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
+import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.View.OnTouchListener;
 import android.view.Window;
 import android.webkit.ConsoleMessage;
 import android.webkit.GeolocationPermissions;
@@ -40,7 +42,7 @@ import java.util.Arrays;
 import java.util.Optional;
 
 @SuppressWarnings({ "PMD.GodClass", "PMD.TooManyMethods" })
-public class EmbeddedBrowserActivity extends LockableActivity {
+public class EmbeddedBrowserActivity extends Activity {
 
 	private WebView container;
 	private SettingsStore settings;
@@ -50,6 +52,8 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 	private SmsSender smsSender;
 	private ChtExternalAppHandler chtExternalAppHandler;
 	private boolean isMigrationRunning = false;
+	private boolean isVolumeBtnPressed = false;
+	private GestureHandler swipeGesture;
 
 	static final String[] LOCATION_PERMISSIONS = { ACCESS_FINE_LOCATION, ACCESS_COARSE_LOCATION };
 
@@ -66,6 +70,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 
 
 //> ACTIVITY LIFECYCLE METHODS
+	@SuppressLint("ClickableViewAccessibility")
 	@Override public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
@@ -96,6 +101,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		}
 
 		container = findViewById(R.id.wbvMain);
+		container.setOnTouchListener(onTouchEvent());
 
 		configureUserAgent();
 
@@ -122,6 +128,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		}
 	}
 
+	@SuppressWarnings("PMD.CallSuperFirst")
 	@Override
 	protected void onStart() {
 		trace(this, "onStart() :: Checking Crosswalk migration ...");
@@ -143,7 +150,6 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 
 	@Override
 	protected void onStop() {
-		super.onStop();
 		String recentNavigation = container.getUrl();
 		if (isValidNavigationUrl(appUrl, recentNavigation)) {
 			try {
@@ -152,39 +158,7 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 				error(e, "Error recording last URL loaded");
 			}
 		}
-	}
-
-	@Override public boolean onCreateOptionsMenu(Menu menu) {
-		if(settings.allowsConfiguration()) {
-			getMenuInflater().inflate(R.menu.unbranded_web_menu, menu);
-		} else {
-			getMenuInflater().inflate(R.menu.web_menu, menu);
-		}
-		return super.onCreateOptionsMenu(menu);
-	}
-
-	@Override public boolean onOptionsItemSelected(MenuItem item) {
-		if (item.getItemId() == R.id.mnuGotoTestPages) {
-			evaluateJavascript("window.location.href = 'https://medic.github.io/atp'");
-			return true;
-		}
-		if (item.getItemId() == R.id.mnuSetUnlockCode) {
-			changeCode();
-			return true;
-		}
-		if (item.getItemId() == R.id.mnuSettings) {
-			openSettings();
-			return true;
-		}
-		if (item.getItemId() == R.id.mnuHardRefresh) {
-			browseTo(null);
-			return true;
-		}
-		if (item.getItemId() == R.id.mnuLogout) {
-			evaluateJavascript("angular.element(document.body).injector().get('AndroidApi').v1.logout()");
-			return true;
-		}
-		return super.onOptionsItemSelected(item);
+		super.onStop();
 	}
 
 	@Override public void onBackPressed() {
@@ -262,7 +236,23 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 		}
 	}
 
-//> ACCESSORS
+	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
+			this.isVolumeBtnPressed = true;
+		}
+		return false;
+	}
+
+	@Override
+	public boolean onKeyUp(int keyCode, KeyEvent event) {
+		if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
+			this.isVolumeBtnPressed = false;
+		}
+		return false;
+	}
+
+	//> ACCESSORS
 	MrdtSupport getMrdtSupport() {
 		return this.mrdt;
 	}
@@ -328,6 +318,34 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 
 	public void locationRequestResolved() {
 		evaluateJavascript("window.CHTCore.AndroidApi.v1.locationPermissionRequestResolved();");
+	}
+
+//> PROTECTED
+	OnTouchListener onTouchEvent() {
+		return new OnTouchListener() {
+			@SuppressLint("ClickableViewAccessibility")
+			@Override
+			public boolean onTouch(View view, MotionEvent event) {
+				if (event.getPointerCount() > 1) {
+					switch (event.getActionMasked()) {
+						case MotionEvent.ACTION_POINTER_DOWN:
+							swipeGesture = new GestureHandler(event.getX(0), event.getX(1));
+							return true;
+						case MotionEvent.ACTION_MOVE:
+							if (swipeGesture != null && isVolumeBtnPressed && swipeGesture.isSwipeRight(event)) {
+								openSettings();
+							}
+							return true;
+						case MotionEvent.ACTION_POINTER_UP:
+							swipeGesture = null;
+							return true;
+						default:
+							return false;
+					}
+				}
+				return false;
+			}
+		};
 	}
 
 //> PRIVATE HELPERS
