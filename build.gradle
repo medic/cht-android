@@ -194,6 +194,11 @@ android {
       versionNameSuffix '-xwalk'
     }
 
+    new_brand {
+      dimension = 'brand'
+      applicationId = 'org.medicmobile.webapp.mobile.new_brand'
+    }
+
     unbranded {
       // we will not create project-specific src directories
       // for `unbranded` - it will use the defaults in
