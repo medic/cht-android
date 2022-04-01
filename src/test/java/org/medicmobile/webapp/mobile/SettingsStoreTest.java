@@ -4,14 +4,18 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.withSettings;
 
 import android.content.SharedPreferences;
 import android.net.Uri;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.MockSettings;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
@@ -19,226 +23,89 @@ import org.robolectric.annotation.Config;
 @Config(sdk=28)
 public class SettingsStoreTest {
 
-	public SettingsStore setup(String appUrl, SharedPreferences sharedPreferences) {
-		return new SettingsStore(sharedPreferences) {
-			@Override
-			public String getAppUrl() {
-				return appUrl;
-			}
+	SharedPreferences sharedPreferences;
+	SettingsStore settingsStore;
+	static String APP_URL = "https://project-abc.medic.org";
 
-			@Override
-			public boolean hasWebappSettings() {
-				return false;
-			}
+	@Before
+	public void setup() {
+		sharedPreferences = mock(SharedPreferences.class);
 
-			@Override
-			public boolean allowsConfiguration() {
-				return false;
-			}
+		MockSettings mockSettings = withSettings()
+			.useConstructor(sharedPreferences)
+			.defaultAnswer(CALLS_REAL_METHODS);
 
-			@Override
-			public void update(SharedPreferences.Editor ed, WebappSettings s) {
-
-			}
-		};
-	}
-
-	@Test
-	public void getAppUrl_withUrlSet_returnsUrlString() {
-		//> GIVEN
-		SettingsStore settingsStore = setup("https://project-abc.medic.org", null);
-
-		//> WHEN
-		String expected = settingsStore.getAppUrl();
-
-		//> THEN
-		assertEquals("https://project-abc.medic.org", expected);
-	}
-
-	@Test
-	public void getAppUrl_withNullUrl_returnsNull() {
-		//> GIVEN
-		SettingsStore settingsStore = setup(null, null);
-
-		//> WHEN
-		String expected = settingsStore.getAppUrl();
-
-		//> THEN
-		assertNull(expected);
+		settingsStore = mock(SettingsStore.class, mockSettings);
+		when(settingsStore.getAppUrl()).thenReturn(APP_URL);
 	}
 
 	@Test
 	public void getUrlToLoad_withValidUrl_returnsUrlString() {
-		//> GIVEN
-		SettingsStore settingsStore = setup("https://project-abc.medic.org", null);
 		Uri uri = Uri.parse("https://project-zxy.medic.org");
 
-		//> WHEN
-		String expected = settingsStore.getUrlToLoad(uri);
-
-		//> THEN
-		assertEquals("https://project-zxy.medic.org", expected);
+		assertEquals("https://project-zxy.medic.org", settingsStore.getUrlToLoad(uri));
 	}
 
 	@Test
 	public void getUrlToLoad_withInvalidUrl_returnsAppUrlString() {
-		//> GIVEN
-		SettingsStore settingsStore = setup("https://project-abc.medic.org", null);
-
-		//> WHEN
-		String expected = settingsStore.getUrlToLoad(null);
-
-		//> THEN
-		assertEquals("https://project-abc.medic.org", expected);
+		assertEquals(APP_URL, settingsStore.getUrlToLoad(null));
 	}
 
 	@Test
 	public void isRootUrl_withAppUrl_returnsTrue() {
-		//> GIVEN
-		SettingsStore settingsStore = setup("https://project-abc.medic.org", null);
-
-		//> WHEN
-		boolean expected = settingsStore.isRootUrl("https://project-abc.medic.org");
-
-		//> THEN
-		assertTrue(expected);
+		assertTrue(settingsStore.isRootUrl(APP_URL));
 	}
 
 	@Test
 	public void isRootUrl_withOtherUrl_returnsFalse() {
-		//> GIVEN
-		SettingsStore settingsStore = setup("https://project-abc.medic.org", null);
-
-		//> WHEN
-		boolean expected = settingsStore.isRootUrl("https://project.health-ministry.org");
-
-		//> THEN
-		assertFalse(expected);
+		assertFalse(settingsStore.isRootUrl("https://project.health-ministry.org"));
 	}
 
 	@Test
 	public void isRootUrl_withNullUrl_returnsFalse() {
-		//> GIVEN
-		SettingsStore settingsStore = setup("https://project-abc.medic.org", null);
-
-		//> WHEN
-		boolean expected = settingsStore.isRootUrl(null);
-
-		//> THEN
-		assertFalse(expected);
+		assertFalse(settingsStore.isRootUrl(null));
 	}
 
 	@Test
 	public void get_withPrefSet_returnsValue() {
-		//> GIVEN
-		SharedPreferences sharedPreferences = mock(SharedPreferences.class);
 		when(sharedPreferences.getString("a_setting", null)).thenReturn("a_value");
-		SettingsStore settingsStore = setup("https://project-abc.medic.org", sharedPreferences);
 
-		//> WHEN
-		String expected = settingsStore.get("a_setting");
-
-		//> THEN
-		assertEquals("a_value", expected);
+		assertEquals("a_value", settingsStore.get("a_setting"));
 	}
 
 	@Test
 	public void get_withNoPrefSet_returnsNull() {
-		//> GIVEN
-		SharedPreferences sharedPreferences = mock(SharedPreferences.class);
 		when(sharedPreferences.getString("a_setting", null)).thenReturn(null);
-		SettingsStore settingsStore = setup("https://project-abc.medic.org", sharedPreferences);
 
-		//> WHEN
-		String expected = settingsStore.get("a_setting");
-
-		//> THEN
-		assertNull(expected);
-	}
-
-	@Test
-	public void getUnlockCode_withPrefSet_returnsValue() {
-		//> GIVEN
-		SharedPreferences sharedPreferences = mock(SharedPreferences.class);
-		when(sharedPreferences.getString("unlock-code", null)).thenReturn("a_value");
-		SettingsStore settingsStore = setup("https://project-abc.medic.org", sharedPreferences);
-
-		//> WHEN
-		String expected = settingsStore.get("unlock-code");
-
-		//> THEN
-		assertEquals("a_value", expected);
-	}
-
-	@Test
-	public void getUnlockCode_withNoPrefSet_returnsNull() {
-		//> GIVEN
-		SharedPreferences sharedPreferences = mock(SharedPreferences.class);
-		when(sharedPreferences.getString("unlock-code", null)).thenReturn(null);
-		SettingsStore settingsStore = setup("https://project-abc.medic.org", sharedPreferences);
-
-		//> WHEN
-		String expected = settingsStore.get("unlock-code");
-
-		//> THEN
-		assertNull(expected);
+		assertNull(settingsStore.get("a_setting"));
 	}
 
 	@Test
 	public void hasUserDeniedGeolocation_withPrefSet_returnsValue() {
-		//> GIVEN
-		SharedPreferences sharedPreferences = mock(SharedPreferences.class);
 		when(sharedPreferences.getBoolean("denied-geolocation", false)).thenReturn(true);
-		SettingsStore settingsStore = setup("https://project-abc.medic.org", sharedPreferences);
 
-		//> WHEN
-		boolean expected = settingsStore.hasUserDeniedGeolocation();
-
-		//> THEN
-		assertTrue(expected);
+		assertTrue(settingsStore.hasUserDeniedGeolocation());
 	}
 
 	@Test
-	public void getUnlockCode_withNoPrefSet_returnsFalse() {
-		//> GIVEN
-		SharedPreferences sharedPreferences = mock(SharedPreferences.class);
-		when(sharedPreferences.getBoolean("denied-geolocation", false)).thenReturn(true);
-		SettingsStore settingsStore = setup("https://project-abc.medic.org", sharedPreferences);
+	public void hasUserDeniedGeolocation_withNoPrefSet_returnsFalse() {
+		when(sharedPreferences.getBoolean("denied-geolocation", false)).thenReturn(false);
 
-		//> WHEN
-		boolean expected = settingsStore.hasUserDeniedGeolocation();
-
-		//> THEN
-		assertTrue(expected);
+		assertFalse(settingsStore.hasUserDeniedGeolocation());
 	}
 
 	@Test
 	public void getLastUrl_withLastUrlTime_returnsLastUrl() {
-		//> GIVEN
-		SharedPreferences sharedPreferences = mock(SharedPreferences.class);
 		when(sharedPreferences.getLong("last-url-time-ms", 0)).thenReturn(System.currentTimeMillis());
 		when(sharedPreferences.getString("last-url", null)).thenReturn("https://project-abc.medic.org/#messages");
-		SettingsStore settingsStore = setup("https://project-abc.medic.org", sharedPreferences);
 
-		//> WHEN
-		String expected = settingsStore.getLastUrl();
-
-		//> THEN
-		assertEquals("https://project-abc.medic.org/#messages", expected);
+		assertEquals("https://project-abc.medic.org/#messages", settingsStore.getLastUrl());
 	}
 
 	@Test
 	public void getLastUrl_withTooOldLastUrlTime_returnsNull() {
-		//> GIVEN
-		SharedPreferences sharedPreferences = mock(SharedPreferences.class);
 		when(sharedPreferences.getLong("last-url-time-ms", 0)).thenReturn(60L);
-		when(sharedPreferences.getString("last-url", null)).thenReturn("https://project-abc.medic.org/#messages");
-		SettingsStore settingsStore = setup("https://project-abc.medic.org", sharedPreferences);
 
-		//> WHEN
-		String expected = settingsStore.getLastUrl();
-
-		//> THEN
-		assertNull(expected);
+		assertNull(settingsStore.getLastUrl());
 	}
 }

@@ -64,9 +64,6 @@ bundle-all: check-env
 uninstall-all:
 	${GRADLE} uninstallAll
 
-url-tester:
-	${GRADLE} ${GRADLE_OPTS} install${flavor}Debug
-
 uninstall:
 	adb uninstall org.medicmobile.webapp.mobile
 
