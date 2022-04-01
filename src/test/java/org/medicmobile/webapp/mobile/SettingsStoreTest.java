@@ -25,7 +25,7 @@ public class SettingsStoreTest {
 
 	SharedPreferences sharedPreferences;
 	SettingsStore settingsStore;
-	static String APP_URL = "https://project-abc.medic.org";
+	static final String APP_URL = "https://project-abc.medic.org";
 
 	@Before
 	public void setup() {
