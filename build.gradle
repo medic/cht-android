@@ -38,6 +38,13 @@ task pmd(type: Pmd) {
   ruleSets = []
   ignoreFailures = false
   source 'src'
+  exclude '**/**.png'
+  exclude '**/**.mp3'
+  exclude '**/**.bats'
+  dependencies {
+    pmd 'net.sourceforge.pmd:pmd-java:6.36.0'
+    pmd 'net.sourceforge.pmd:pmd-xml:6.36.0'
+  }
 }
 
 spotbugs {
