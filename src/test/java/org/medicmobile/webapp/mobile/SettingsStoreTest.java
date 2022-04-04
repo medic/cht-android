@@ -23,9 +23,9 @@ import org.robolectric.annotation.Config;
 @Config(sdk=28)
 public class SettingsStoreTest {
 
-	SharedPreferences sharedPreferences;
-	SettingsStore settingsStore;
-	static final String APP_URL = "https://project-abc.medic.org";
+	private SharedPreferences sharedPreferences;
+	private SettingsStore settingsStore;
+	private static final String APP_URL = "https://project-abc.medic.org";
 
 	@Before
 	public void setup() {
