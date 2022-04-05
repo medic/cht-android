@@ -9,15 +9,16 @@ import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.medicmobile.webapp.mobile.EmbeddedBrowserActivity.RequestCode;
-import static org.medicmobile.webapp.mobile.EmbeddedBrowserActivity.LOCATION_PERMISSIONS;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.when;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.content.Intent;
 
-import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.test.espresso.intent.Intents;
 import androidx.test.espresso.intent.matcher.IntentMatchers;
@@ -90,42 +91,10 @@ public class EmbeddedBrowserActivityTest {
 
 					assertFalse(embeddedBrowserActivity.getLocationPermissions());
 
-					Intents.intended(IntentMatchers.hasComponent(RequestPermissionActivity.class.getName()));
+					Intents.intended(IntentMatchers.hasComponent(RequestLocationPermissionActivity.class.getName()));
 					medicLogMock.verify(() -> MedicLog.trace(
 						eq(embeddedBrowserActivity),
 						eq("getLocationPermissions() :: location not granted before, requesting access...")
-					));
-
-					Intents.release();
-				});
-		}
-	}
-
-	@Test
-	public void getLocationPermissions_withPermissionsDenied_requestPermissions() {
-		try(
-			MockedStatic<ContextCompat> contextCompatMock = mockStatic(ContextCompat.class);
-			MockedStatic<ActivityCompat> activityCompatMock = mockStatic(ActivityCompat.class);
-		) {
-			contextCompatMock.when(() -> ContextCompat.checkSelfPermission(any(), eq(ACCESS_FINE_LOCATION))).thenReturn(PERMISSION_DENIED);
-			contextCompatMock.when(() -> ContextCompat.checkSelfPermission(any(), eq(ACCESS_COARSE_LOCATION))).thenReturn(PERMISSION_DENIED);
-
-			scenarioRule
-				.getScenario()
-				.onActivity(embeddedBrowserActivity -> {
-					Intents.init();
-
-					assertFalse(embeddedBrowserActivity.getLocationPermissions());
-					Intents.intended(IntentMatchers.hasComponent(RequestPermissionActivity.class.getName()));
-
-					ShadowActivity shadowActivity = shadowOf(embeddedBrowserActivity);
-					Intent requestIntent = shadowActivity.peekNextStartedActivityForResult().intent;
-					shadowActivity.receiveResult(requestIntent, RESULT_OK, new Intent());
-
-					activityCompatMock.verify(() -> ActivityCompat.requestPermissions(
-						embeddedBrowserActivity,
-						LOCATION_PERMISSIONS,
-						RequestCode.ACCESS_LOCATION_PERMISSION.getCode()
 					));
 
 					Intents.release();
@@ -148,7 +117,7 @@ public class EmbeddedBrowserActivityTest {
 					Intents.init();
 
 					assertFalse(embeddedBrowserActivity.getLocationPermissions());
-					Intents.intended(IntentMatchers.hasComponent(RequestPermissionActivity.class.getName()));
+					Intents.intended(IntentMatchers.hasComponent(RequestLocationPermissionActivity.class.getName()));
 
 					ShadowActivity shadowActivity = shadowOf(embeddedBrowserActivity);
 					Intent requestIntent = shadowActivity.peekNextStartedActivityForResult().intent;
@@ -158,6 +127,153 @@ public class EmbeddedBrowserActivityTest {
 					medicLogMock.verify(() -> MedicLog.trace(
 						eq(embeddedBrowserActivity),
 						eq("getLocationPermissions() :: user has previously denied to share location")
+					));
+
+					Intents.release();
+				});
+		}
+	}
+
+	@Test
+	public void processStoragePermissionResult_withResponseIntent_resumeCHTExternalApp(){
+		try(MockedStatic<MedicLog> medicLogMock = mockStatic(MedicLog.class)) {
+			scenarioRule
+				.getScenario()
+				.onActivity(embeddedBrowserActivity -> {
+					Intents.init();
+
+					//> GIVEN
+					Intent responseIntent = mock(Intent.class);
+					when(responseIntent.getStringExtra(RequestStoragePermissionActivity.TRIGGER_CLASS))
+						.thenReturn(ChtExternalAppHandler.class.getName());
+
+					//> WHEN
+					embeddedBrowserActivity.startActivityForResult(new Intent(), RequestCode.ACCESS_STORAGE_PERMISSION.getCode());
+
+					//> THEN
+					ShadowActivity shadowActivity = shadowOf(embeddedBrowserActivity);
+					Intent requestIntent = shadowActivity.peekNextStartedActivityForResult().intent;
+
+					shadowActivity.receiveResult(requestIntent, RESULT_CANCELED, responseIntent);
+					medicLogMock.verify(() -> MedicLog.trace(
+						eq(embeddedBrowserActivity),
+						eq("EmbeddedBrowserActivity :: Resuming ChtExternalAppHandler activity. Trigger:%s"),
+						eq(ChtExternalAppHandler.class.getName())
+					));
+					medicLogMock.verify(() -> MedicLog.trace(
+						eq(embeddedBrowserActivity),
+						eq("EmbeddedBrowserActivity :: No handling for trigger: %s, requestCode:"),
+						eq(null),
+						eq(RequestCode.ACCESS_STORAGE_PERMISSION.name())
+					), never());
+
+					Intents.release();
+				});
+		}
+	}
+
+	@Test
+	public void processStoragePermissionResult_withResponseIntent_resumeFilePickerHander(){
+		try(MockedStatic<MedicLog> medicLogMock = mockStatic(MedicLog.class)) {
+			scenarioRule
+				.getScenario()
+				.onActivity(embeddedBrowserActivity -> {
+					Intents.init();
+
+					//> GIVEN
+					Intent responseIntent = mock(Intent.class);
+					when(responseIntent.getStringExtra(RequestStoragePermissionActivity.TRIGGER_CLASS))
+						.thenReturn(FilePickerHandler.class.getName());
+
+					//> WHEN
+					embeddedBrowserActivity.startActivityForResult(new Intent(), RequestCode.ACCESS_STORAGE_PERMISSION.getCode());
+
+					//> THEN
+					ShadowActivity shadowActivity = shadowOf(embeddedBrowserActivity);
+					Intent requestIntent = shadowActivity.peekNextStartedActivityForResult().intent;
+
+					shadowActivity.receiveResult(requestIntent, RESULT_CANCELED, responseIntent);
+					medicLogMock.verify(() -> MedicLog.trace(
+						eq(embeddedBrowserActivity),
+						eq("EmbeddedBrowserActivity :: Resuming FilePickerHandler process. Trigger:%s"),
+						eq(FilePickerHandler.class.getName())
+					));
+					medicLogMock.verify(() -> MedicLog.trace(
+						eq(embeddedBrowserActivity),
+						eq("EmbeddedBrowserActivity :: No handling for trigger: %s, requestCode:"),
+						eq(null),
+						eq(RequestCode.ACCESS_STORAGE_PERMISSION.name())
+					), never());
+
+					Intents.release();
+				});
+		}
+	}
+
+	@Test
+	public void processStoragePermissionResult_withoutResponseIntent_doesntResumeProcess(){
+		try(MockedStatic<MedicLog> medicLogMock = mockStatic(MedicLog.class)) {
+			scenarioRule
+				.getScenario()
+				.onActivity(embeddedBrowserActivity -> {
+					Intents.init();
+
+					//> WHEN
+					embeddedBrowserActivity.startActivityForResult(new Intent(), RequestCode.ACCESS_STORAGE_PERMISSION.getCode());
+
+					//> THEN
+					ShadowActivity shadowActivity = shadowOf(embeddedBrowserActivity);
+					Intent requestIntent = shadowActivity.peekNextStartedActivityForResult().intent;
+
+					shadowActivity.receiveResult(requestIntent, RESULT_CANCELED, null);
+					medicLogMock.verify(() -> MedicLog.trace(
+						eq(embeddedBrowserActivity),
+						eq("EmbeddedBrowserActivity :: Resuming FilePickerHandler process. Trigger:%s"),
+						eq(FilePickerHandler.class.getName())
+					), never());
+					medicLogMock.verify(() -> MedicLog.trace(
+						eq(embeddedBrowserActivity),
+						eq("EmbeddedBrowserActivity :: Resuming ChtExternalAppHandler activity. Trigger:%s"),
+						eq(ChtExternalAppHandler.class.getName())
+					), never());
+					medicLogMock.verify(() -> MedicLog.trace(
+						eq(embeddedBrowserActivity),
+						eq("EmbeddedBrowserActivity :: No handling for trigger: %s, requestCode: %s"),
+						eq(null),
+						eq(RequestCode.ACCESS_STORAGE_PERMISSION.name())
+					));
+
+					Intents.release();
+				});
+		}
+	}
+
+	@Test
+	public void onActivityResult_unknownRequestCode_logRequestCode(){
+		try(MockedStatic<MedicLog> medicLogMock = mockStatic(MedicLog.class)) {
+			scenarioRule
+				.getScenario()
+				.onActivity(embeddedBrowserActivity -> {
+					Intents.init();
+
+					//> WHEN
+					embeddedBrowserActivity.startActivityForResult(new Intent(), 123456789);
+
+					//> THEN
+					ShadowActivity shadowActivity = shadowOf(embeddedBrowserActivity);
+					Intent requestIntent = shadowActivity.peekNextStartedActivityForResult().intent;
+
+					shadowActivity.receiveResult(requestIntent, RESULT_OK, new Intent());
+					medicLogMock.verify(() -> MedicLog.trace(
+						eq(embeddedBrowserActivity),
+						eq("onActivityResult() :: requestCode=%s, resultCode=%s"),
+						any(),
+						any()
+					), never());
+					medicLogMock.verify(() -> MedicLog.trace(
+						eq(embeddedBrowserActivity),
+						eq("onActivityResult() :: no handling for requestCode=%s"),
+						eq(123456789)
 					));
 
 					Intents.release();
