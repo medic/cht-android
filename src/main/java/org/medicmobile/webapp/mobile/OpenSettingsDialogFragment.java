@@ -51,6 +51,7 @@ public class OpenSettingsDialogFragment extends Fragment {
 	}
 
 	private boolean hasTabEnough() {
+		// 5 tabs by the user + 1 for the swipe right.
 		return fingerTabCount == 6;
 	}
 
