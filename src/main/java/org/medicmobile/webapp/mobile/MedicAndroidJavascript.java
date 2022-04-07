@@ -59,7 +59,7 @@ public class MedicAndroidJavascript {
 		this.parent = parent;
 		this.mrdt = parent.getMrdtSupport();
 		this.smsSender = parent.getSmsSender();
-		this.chtExternalAppHandler = parent.getChtExternalAppLauncherActivity();
+		this.chtExternalAppHandler = parent.getChtExternalAppHandler();
 	}
 
 	public void setAlert(Alert soundAlert) {

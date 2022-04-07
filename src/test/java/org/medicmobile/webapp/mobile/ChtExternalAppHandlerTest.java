@@ -12,7 +12,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import androidx.core.content.ContextCompat;
-import androidx.core.app.ActivityCompat;
 
 import static org.junit.Assert.assertEquals;
 import static org.medicmobile.webapp.mobile.EmbeddedBrowserActivity.RequestCode;
@@ -31,6 +30,7 @@ import static org.mockito.Mockito.when;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.MockitoAnnotations;
@@ -41,7 +41,7 @@ import org.robolectric.annotation.Config;
 @Config(sdk=28)
 public class ChtExternalAppHandlerTest {
 	@Mock
-	Activity mockContext;
+	Activity contextMock;
 
 	@Before
 	public void setup() {
@@ -51,7 +51,7 @@ public class ChtExternalAppHandlerTest {
 	@Test
 	public void processResult_withIntentExtras_returnsScriptCorrectly() {
 		//> GIVEN
-		ChtExternalAppHandler chtExternalAppHandler = new ChtExternalAppHandler(mockContext);
+		ChtExternalAppHandler chtExternalAppHandler = new ChtExternalAppHandler(contextMock);
 
 		Bundle secondLevelExtras = new Bundle();
 		secondLevelExtras.putString("id", "abc-1234");
@@ -95,7 +95,7 @@ public class ChtExternalAppHandlerTest {
 	@Test
 	public void processResult_withoutIntentExtras_returnsScriptCorrectly() {
 		//> GIVEN
-		ChtExternalAppHandler chtExternalAppHandler = new ChtExternalAppHandler(mockContext);
+		ChtExternalAppHandler chtExternalAppHandler = new ChtExternalAppHandler(contextMock);
 
 		Intent intent = mock(Intent.class);
 		when(intent.getExtras()).thenReturn(null);
@@ -119,7 +119,7 @@ public class ChtExternalAppHandlerTest {
 	@Test
 	public void processResult_withException_catchesException() {
 		//> GIVEN
-		ChtExternalAppHandler chtExternalAppHandler = new ChtExternalAppHandler(mockContext);
+		ChtExternalAppHandler chtExternalAppHandler = new ChtExternalAppHandler(contextMock);
 
 		Intent intent = mock(Intent.class);
 		when(intent.getExtras()).thenThrow(NullPointerException.class);
@@ -136,7 +136,7 @@ public class ChtExternalAppHandlerTest {
 		try (MockedStatic<MedicLog> medicLogMock = mockStatic(MedicLog.class)) {
 			//> GIVEN
 			Intent intent = mock(Intent.class);
-			ChtExternalAppHandler chtExternalAppHandler = new ChtExternalAppHandler(mockContext);
+			ChtExternalAppHandler chtExternalAppHandler = new ChtExternalAppHandler(contextMock);
 			String expectedMessageWarn = "ChtExternalAppHandler :: Bad result code: %s. The external app either: " +
 					"explicitly returned this result, didn't return any result or crashed during the operation.";
 			String expectedMessageConsole = "ChtExternalAppHandler :: Bad result code: " + RESULT_CANCELED + ". The external app either: " +
@@ -155,8 +155,8 @@ public class ChtExternalAppHandlerTest {
 	public void startIntent_withValidIntent_startsIntentCorrectly() {
 		//> GIVEN
 		ChtExternalApp chtExternalApp = mock(ChtExternalApp.class);
-		ChtExternalAppHandler chtExternalAppHandler = new ChtExternalAppHandler(mockContext);
-		doNothing().when(mockContext).startActivityForResult(any(), anyInt());
+		ChtExternalAppHandler chtExternalAppHandler = new ChtExternalAppHandler(contextMock);
+		doNothing().when(contextMock).startActivityForResult(any(), anyInt());
 
 		Intent intent = new Intent();
 		intent.setAction("an.action");
@@ -174,7 +174,7 @@ public class ChtExternalAppHandlerTest {
 
 		//> THEN
 		verify(chtExternalApp).createIntent();
-		verify(mockContext).startActivityForResult(eq(intent), eq(RequestCode.CHT_EXTERNAL_APP_ACTIVITY.getCode()));
+		verify(contextMock).startActivityForResult(eq(intent), eq(RequestCode.CHT_EXTERNAL_APP_ACTIVITY.getCode()));
 	}
 
 	@Test
@@ -182,8 +182,8 @@ public class ChtExternalAppHandlerTest {
 		try (MockedStatic<MedicLog> medicLogMock = mockStatic(MedicLog.class)) {
 			//> GIVEN
 			ChtExternalApp chtExternalApp = mock(ChtExternalApp.class);
-			ChtExternalAppHandler chtExternalAppHandler = new ChtExternalAppHandler(mockContext);
-			doThrow(ActivityNotFoundException.class).when(mockContext).startActivityForResult(any(), anyInt());
+			ChtExternalAppHandler chtExternalAppHandler = new ChtExternalAppHandler(contextMock);
+			doThrow(ActivityNotFoundException.class).when(contextMock).startActivityForResult(any(), anyInt());
 
 			Intent intent = new Intent();
 			intent.setAction("an.action");
@@ -197,7 +197,7 @@ public class ChtExternalAppHandlerTest {
 
 			//> THEN
 			verify(chtExternalApp).createIntent();
-			verify(mockContext).startActivityForResult(eq(intent), eq(RequestCode.CHT_EXTERNAL_APP_ACTIVITY.getCode()));
+			verify(contextMock).startActivityForResult(eq(intent), eq(RequestCode.CHT_EXTERNAL_APP_ACTIVITY.getCode()));
 			medicLogMock.verify(() -> MedicLog.error(
 					any(),
 					eq("ChtExternalAppHandler :: Error when starting the activity %s %s"),
@@ -210,14 +210,11 @@ public class ChtExternalAppHandlerTest {
 
 	@Test
 	public void startIntent_withoutStoragePermissions_requestsPermissions() {
-		try (
-			MockedStatic<ActivityCompat> activityCompatMock = mockStatic(ActivityCompat.class);
-			MockedStatic<ContextCompat> contextCompatMock = mockStatic(ContextCompat.class);
-		) {
+		try (MockedStatic<ContextCompat> contextCompatMock = mockStatic(ContextCompat.class)) {
 			//> GIVEN
 			ChtExternalApp chtExternalApp = mock(ChtExternalApp.class);
-			ChtExternalAppHandler chtExternalAppHandler = new ChtExternalAppHandler(mockContext);
-			doNothing().when(mockContext).startActivityForResult(any(), anyInt());
+			ChtExternalAppHandler chtExternalAppHandler = new ChtExternalAppHandler(contextMock);
+			doNothing().when(contextMock).startActivityForResult(any(), anyInt());
 			when(chtExternalApp.createIntent()).thenReturn(new Intent());
 			contextCompatMock.when(() -> ContextCompat.checkSelfPermission(any(), anyString())).thenReturn(PERMISSION_DENIED);
 
@@ -226,27 +223,30 @@ public class ChtExternalAppHandlerTest {
 
 			//> THEN
 			verify(chtExternalApp).createIntent();
-			contextCompatMock.verify(() -> ContextCompat.checkSelfPermission(mockContext, READ_EXTERNAL_STORAGE));
-			activityCompatMock.verify(() -> ActivityCompat.requestPermissions(
-				mockContext,
-				new String[]{READ_EXTERNAL_STORAGE},
-				RequestCode.ACCESS_STORAGE_PERMISSION.getCode()
-			));
-			verify(mockContext, never()).startActivityForResult(any(), anyInt());
+			contextCompatMock.verify(() -> ContextCompat.checkSelfPermission(contextMock, READ_EXTERNAL_STORAGE));
+			verify(contextMock, never()).startActivityForResult(any(), eq(RequestCode.CHT_EXTERNAL_APP_ACTIVITY.getCode()));
 
+			ArgumentCaptor<Intent> argument = ArgumentCaptor.forClass(Intent.class);
+			verify(contextMock).startActivityForResult(
+				argument.capture(),
+				eq(RequestCode.ACCESS_STORAGE_PERMISSION.getCode())
+			);
+			Intent requestStorageIntent = argument.getValue();
+			assertEquals(RequestStoragePermissionActivity.class.getName(), requestStorageIntent.getComponent().getClassName());
+			assertEquals(
+				ChtExternalAppHandler.class.getName(),
+				requestStorageIntent.getStringExtra(RequestStoragePermissionActivity.TRIGGER_CLASS)
+			);
 		}
 	}
 
 	@Test
 	public void resumeActivity_withLastIntent_startsIntentCorrectly() {
-		try (
-			MockedStatic<ActivityCompat> activityCompatMock = mockStatic(ActivityCompat.class);
-			MockedStatic<ContextCompat> contextCompatMock = mockStatic(ContextCompat.class);
-		) {
+		try (MockedStatic<ContextCompat> contextCompatMock = mockStatic(ContextCompat.class)) {
 			//> GIVEN
 			ChtExternalApp chtExternalApp = mock(ChtExternalApp.class);
-			ChtExternalAppHandler chtExternalAppHandler = new ChtExternalAppHandler(mockContext);
-			doNothing().when(mockContext).startActivityForResult(any(), anyInt());
+			ChtExternalAppHandler chtExternalAppHandler = new ChtExternalAppHandler(contextMock);
+			doNothing().when(contextMock).startActivityForResult(any(), anyInt());
 			contextCompatMock.when(() -> ContextCompat.checkSelfPermission(any(), anyString())).thenReturn(PERMISSION_DENIED);
 
 			Intent intent = new Intent();
@@ -259,31 +259,50 @@ public class ChtExternalAppHandlerTest {
 			chtExternalAppHandler.startIntent(chtExternalApp);
 
 			//> WHEN
-			chtExternalAppHandler.resumeActivity();
+			chtExternalAppHandler.resumeActivity(RESULT_OK);
 
 			//> THEN
 			verify(chtExternalApp).createIntent();
-			contextCompatMock.verify(() -> ContextCompat.checkSelfPermission(mockContext, READ_EXTERNAL_STORAGE));
-			activityCompatMock.verify(() -> ActivityCompat.requestPermissions(
-				mockContext,
-				new String[]{READ_EXTERNAL_STORAGE},
-				RequestCode.ACCESS_STORAGE_PERMISSION.getCode()
-			));
-			verify(mockContext).startActivityForResult(eq(intent), eq(RequestCode.CHT_EXTERNAL_APP_ACTIVITY.getCode()));
+			contextCompatMock.verify(() -> ContextCompat.checkSelfPermission(contextMock, READ_EXTERNAL_STORAGE));
+			verify(contextMock).startActivityForResult(eq(intent), eq(RequestCode.CHT_EXTERNAL_APP_ACTIVITY.getCode()));
 
+			ArgumentCaptor<Intent> argument = ArgumentCaptor.forClass(Intent.class);
+			verify(contextMock).startActivityForResult(
+				argument.capture(),
+				eq(RequestCode.ACCESS_STORAGE_PERMISSION.getCode())
+			);
+			Intent requestStorageIntent = argument.getValue();
+			assertEquals(RequestStoragePermissionActivity.class.getName(), requestStorageIntent.getComponent().getClassName());
+			assertEquals(
+				ChtExternalAppHandler.class.getName(),
+				requestStorageIntent.getStringExtra(RequestStoragePermissionActivity.TRIGGER_CLASS)
+			);
 		}
 	}
 
 	@Test
 	public void resumeActivity_withoutIntent_doesNothing() {
 		//> GIVEN
-		ChtExternalAppHandler chtExternalAppHandler = new ChtExternalAppHandler(mockContext);
-		doNothing().when(mockContext).startActivityForResult(any(), anyInt());
+		ChtExternalAppHandler chtExternalAppHandler = new ChtExternalAppHandler(contextMock);
+		doNothing().when(contextMock).startActivityForResult(any(), anyInt());
 
 		//> WHEN
-		chtExternalAppHandler.resumeActivity();
+		chtExternalAppHandler.resumeActivity(RESULT_OK);
 
 		//> THEN
-		verify(mockContext, never()).startActivityForResult(any(), anyInt());
+		verify(contextMock, never()).startActivityForResult(any(), anyInt());
+	}
+
+	@Test
+	public void resumeActivity_withBadResult_doesNothing() {
+		//> GIVEN
+		ChtExternalAppHandler chtExternalAppHandler = new ChtExternalAppHandler(contextMock);
+		doNothing().when(contextMock).startActivityForResult(any(), anyInt());
+
+		//> WHEN
+		chtExternalAppHandler.resumeActivity(RESULT_CANCELED);
+
+		//> THEN
+		verify(contextMock, never()).startActivityForResult(any(), anyInt());
 	}
 }
