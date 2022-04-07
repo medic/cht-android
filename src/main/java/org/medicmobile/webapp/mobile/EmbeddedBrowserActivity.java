@@ -22,10 +22,7 @@ import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.view.KeyEvent;
-import android.view.MotionEvent;
 import android.view.View;
-import android.view.View.OnTouchListener;
 import android.view.Window;
 import android.webkit.ConsoleMessage;
 import android.webkit.GeolocationPermissions;
@@ -52,8 +49,6 @@ public class EmbeddedBrowserActivity extends Activity {
 	private SmsSender smsSender;
 	private ChtExternalAppHandler chtExternalAppHandler;
 	private boolean isMigrationRunning = false;
-	private boolean isVolumeBtnPressed = false;
-	private GestureHandler swipeGesture;
 
 	static final String[] LOCATION_PERMISSIONS = { ACCESS_FINE_LOCATION, ACCESS_COARSE_LOCATION };
 
@@ -101,7 +96,10 @@ public class EmbeddedBrowserActivity extends Activity {
 		}
 
 		container = findViewById(R.id.wbvMain);
-		container.setOnTouchListener(onTouchEvent());
+		getFragmentManager()
+			.beginTransaction()
+			.add(new OpenSettingsDialogFragment(container), OpenSettingsDialogFragment.class.getName())
+			.commit();
 
 		configureUserAgent();
 
@@ -236,22 +234,6 @@ public class EmbeddedBrowserActivity extends Activity {
 		}
 	}
 
-	@Override
-	public boolean onKeyDown(int keyCode, KeyEvent event) {
-		if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
-			this.isVolumeBtnPressed = true;
-		}
-		return false;
-	}
-
-	@Override
-	public boolean onKeyUp(int keyCode, KeyEvent event) {
-		if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
-			this.isVolumeBtnPressed = false;
-		}
-		return false;
-	}
-
 	//> ACCESSORS
 	MrdtSupport getMrdtSupport() {
 		return this.mrdt;
@@ -320,34 +302,6 @@ public class EmbeddedBrowserActivity extends Activity {
 		evaluateJavascript("window.CHTCore.AndroidApi.v1.locationPermissionRequestResolved();");
 	}
 
-//> PROTECTED
-	OnTouchListener onTouchEvent() {
-		return new OnTouchListener() {
-			@SuppressLint("ClickableViewAccessibility")
-			@Override
-			public boolean onTouch(View view, MotionEvent event) {
-				if (event.getPointerCount() > 1) {
-					switch (event.getActionMasked()) {
-						case MotionEvent.ACTION_POINTER_DOWN:
-							swipeGesture = new GestureHandler(event.getX(0), event.getX(1));
-							return true;
-						case MotionEvent.ACTION_MOVE:
-							if (swipeGesture != null && isVolumeBtnPressed && swipeGesture.isSwipeRight(event)) {
-								openSettings();
-							}
-							return true;
-						case MotionEvent.ACTION_POINTER_UP:
-							swipeGesture = null;
-							return true;
-						default:
-							return false;
-					}
-				}
-				return false;
-			}
-		};
-	}
-
 //> PRIVATE HELPERS
 	private void processChtExternalAppResult(int resultCode, Intent intentData) {
 		String script = this.chtExternalAppHandler.processResult(resultCode, intentData);
@@ -385,11 +339,6 @@ public class EmbeddedBrowserActivity extends Activity {
 	private void configureUserAgent() {
 		String current = WebSettings.getDefaultUserAgent(this);
 		container.getSettings().setUserAgentString(createUseragentFrom(current));
-	}
-
-	private void openSettings() {
-		startActivity(new Intent(this, SettingsDialogActivity.class));
-		finish();
 	}
 
 	private void browseTo(Uri url) {
