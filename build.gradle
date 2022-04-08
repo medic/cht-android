@@ -6,7 +6,7 @@ buildscript {
     google()
   }
   dependencies {
-    classpath 'com.android.tools.build:gradle:7.1.1'
+    classpath 'com.android.tools.build:gradle:7.1.3'
     classpath 'com.github.spotbugs.snom:spotbugs-gradle-plugin:5.0.5'
   }
 }
@@ -95,7 +95,7 @@ def getVersionName = {
 }
 
 android {
-  compileSdkVersion 30
+  compileSdkVersion 31
   buildToolsVersion '30.0.3'
   packagingOptions {
     exclude 'META-INF/LICENSE'
@@ -104,7 +104,7 @@ android {
 
   defaultConfig {
     //noinspection OldTargetApi
-    targetSdkVersion 30
+    targetSdkVersion 31
     minSdkVersion 21 // Android 5.0
     versionCode getVersionCode()
     versionName getVersionName()
@@ -394,18 +394,18 @@ dependencies {
   // Latest version of androidx.core requires Android 12+
   // noinspection GradleDependency
   implementation 'androidx.core:core:1.6.0'
-  implementation 'androidx.activity:activity:1.3.1'
-  implementation 'androidx.fragment:fragment:1.3.6'
+  implementation 'androidx.activity:activity:1.4.0'
+  implementation 'androidx.fragment:fragment:1.4.1'
   compileOnly 'com.github.spotbugs:spotbugs-annotations:4.5.3'
   coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.1.5'
   testImplementation 'junit:junit:4.13.2'
   testImplementation 'org.mockito:mockito-inline:4.0.0'
   testImplementation 'com.google.android:android-test:4.1.1.4'
   testImplementation 'org.robolectric:robolectric:4.7'
-  testImplementation 'androidx.test.espresso:espresso-core:3.5.0-alpha03'
-  testImplementation 'androidx.test.espresso:espresso-intents:3.5.0-alpha03'
+  testImplementation 'androidx.test.espresso:espresso-core:3.5.0-alpha05'
+  testImplementation 'androidx.test.espresso:espresso-intents:3.5.0-alpha05'
   testImplementation 'androidx.test.ext:junit:1.1.3'
-  androidTestImplementation 'androidx.test.espresso:espresso-web:3.5.0-alpha03'
+  androidTestImplementation 'androidx.test.espresso:espresso-web:3.5.0-alpha05'
   androidTestImplementation 'androidx.test:runner:1.4.0'
   androidTestImplementation 'androidx.test:rules:1.4.0'
   androidTestImplementation 'androidx.test:core:1.4.0'

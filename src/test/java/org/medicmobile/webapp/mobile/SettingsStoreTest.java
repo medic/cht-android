@@ -57,6 +57,11 @@ public class SettingsStoreTest {
 	}
 
 	@Test
+	public void isRootUrl_withAppUrlEndingInSlash_returnsTrue() {
+		assertTrue(settingsStore.isRootUrl(APP_URL + "/"));
+	}
+
+	@Test
 	public void isRootUrl_withOtherUrl_returnsFalse() {
 		assertFalse(settingsStore.isRootUrl("https://project.health-ministry.org"));
 	}

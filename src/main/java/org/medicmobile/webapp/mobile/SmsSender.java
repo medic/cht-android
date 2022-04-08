@@ -2,6 +2,9 @@ package org.medicmobile.webapp.mobile;
 
 import android.annotation.SuppressLint;
 import android.app.PendingIntent;
+import static android.app.PendingIntent.getBroadcast;
+import static android.app.PendingIntent.FLAG_ONE_SHOT;
+import static android.app.PendingIntent.FLAG_IMMUTABLE;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -106,7 +109,6 @@ class SmsSender {
 		return intents;
 	}
 
-	@SuppressLint("UnspecifiedImmutableFlag")
 	private PendingIntent intentFor(String intentType, String id, String destination, String content, int partIndex, int totalParts) {
 		Intent intent = new Intent(intentType);
 		intent.putExtra("id", id);
@@ -114,18 +116,19 @@ class SmsSender {
 		intent.putExtra("content", content);
 		intent.putExtra("partIndex", partIndex);
 		intent.putExtra("totalParts", totalParts);
+		int flags = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ? FLAG_ONE_SHOT | FLAG_IMMUTABLE : FLAG_ONE_SHOT;
 
 		// Use a random number for the PendingIntent's requestCode - we
 		// will never want to cancel these intents, and we do not want
 		// collisions.  There is a small chance of collisions if two
 		// SMS are in-flight at the same time and are given the same id.
 
-		return PendingIntent.getBroadcast(parent, UNUSED_REQUEST_CODE, intent, PendingIntent.FLAG_ONE_SHOT);
+		return getBroadcast(parent, UNUSED_REQUEST_CODE, intent, flags);
 	}
 
 //> STATIC HELPERS
 	/**
-	 * @see https://developer.android.com/reference/android/telephony/SmsMessage.html#createFromPdu%28byte[],%20java.lang.String%29
+	 * @see <a href="https://developer.android.com/reference/android/telephony/SmsMessage#createFromPdu(byte[])">createFromPdu(byte[])</a>
 	 */
 	@SuppressLint("ObsoleteSdkInt")
 	private  static SmsMessage createFromPdu(Intent intent) {
@@ -151,7 +154,7 @@ class SmsSender {
 	class DeliveryReportHandler {
 		/**
 		 * Mask for differentiating GSM and CDMA message statuses.
-		 * @see https://developer.android.com/reference/android/telephony/SmsMessage.html#getStatus%28%29
+		 * @see <a href="https://developer.android.com/reference/android/telephony/SmsMessage#getStatus()>getStatus()</a>
 		 */
 		private static final int GSM_STATUS_MASK = 0xFF;
 
@@ -174,12 +177,12 @@ class SmsSender {
 	//> INTERNAL METHODS
 		/**
 		 * Decode the status value as per ETSI TS 123 040 V13.1.0 (2016-04) 9.2.3.15 (TP-Status (TP-ST)).
-		 * @see http://www.etsi.org/deliver/etsi_ts/123000_123099/123040/13.01.00_60/ts_123040v130100p.pdf
+		 * @see <a href="http://www.etsi.org/deliver/etsi_ts/123000_123099/123040/13.01.00_60/ts_123040v130100p.pdf">ETSI TS</a>
 		 */
 		@SuppressWarnings("PMD.EmptyIfStmt")
 		private void handleGsmDelivery(Intent intent, int status) {
 			// Detail of the failure.  Must be set for FAILED messages.
-			String fDetail = null;
+			String fDetail;
 
 			if(status < 0x20) {
 				//> Short message transaction completed
