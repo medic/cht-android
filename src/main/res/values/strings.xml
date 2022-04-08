@@ -65,4 +65,5 @@
 	<string name="connErrorMessage">You don\'t seem to be connected to the Internet. Please check your connection and try again.</string>
 
 	<string name="waitMigration">Please wait until the migration process is finished</string>
+  <string name="usingTrainingApp">Use only during training</string>
 </resources>

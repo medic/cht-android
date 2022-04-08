@@ -92,6 +92,13 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 			webviewContainer.setBackgroundColor(R.drawable.warning_background);
 		}
 
+		// Add a noticeable border to easily identify a training app
+		if (BuildConfig.IS_TRAINING_APP) {
+			View webviewContainer = findViewById(R.id.lytWebView);
+			webviewContainer.setPadding(10, 10, 10, 10);
+			webviewContainer.setBackgroundResource(R.drawable.training_background);
+		}
+
 		container = findViewById(R.id.wbvMain);
 
 		configureUserAgent();
@@ -135,6 +142,11 @@ public class EmbeddedBrowserActivity extends LockableActivity {
 			trace(this, "onStart() :: Crosswalk installation not found - skipping migration");
 		}
 		trace(this, "onStart() :: Checking Crosswalk migration done.");
+
+		if (BuildConfig.IS_TRAINING_APP) {
+			toast(getString(R.string.usingTrainingApp));
+		}
+
 		super.onStart();
 	}
 
