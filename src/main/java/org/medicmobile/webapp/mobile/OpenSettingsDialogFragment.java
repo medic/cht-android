@@ -15,16 +15,16 @@ import androidx.annotation.Nullable;
 public class OpenSettingsDialogFragment extends Fragment {
 
 	private final View view;
-	private int fingerTabCount = 0;
-	private long lastTimeTab = 0;
+	private int fingerTapCount = 0;
+	private long lastTimeTap = 0;
 	private GestureHandler swipeGesture;
-	private static final int TIME_BETWEEN_TABS = 500;
+	private static final int TIME_BETWEEN_TAPS = 500;
 
-	private final OnTouchListener swipeRightListener = new OnTouchListener() {
+	private final OnTouchListener onTouchListener = new OnTouchListener() {
 		@SuppressLint("ClickableViewAccessibility")
 		@Override
 		public boolean onTouch(View view, MotionEvent event) {
-			countTabs(event);
+			countTaps(event);
 			onSwipe(event);
 			return false;
 		}
@@ -37,22 +37,22 @@ public class OpenSettingsDialogFragment extends Fragment {
 	@Override
 	public void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		view.setOnTouchListener(swipeRightListener);
+		view.setOnTouchListener(onTouchListener);
 	}
 
-	private void countTabs(MotionEvent event) {
+	private void countTaps(MotionEvent event) {
 		if (event.getPointerCount() != 1 || event.getActionMasked() != MotionEvent.ACTION_DOWN) {
 			return;
 		}
 
 		long currentTime = System.currentTimeMillis();
-		fingerTabCount = lastTimeTab + TIME_BETWEEN_TABS >= currentTime ? fingerTabCount + 1 : 1;
-		lastTimeTab = currentTime;
+		fingerTapCount = lastTimeTap + TIME_BETWEEN_TAPS >= currentTime ? fingerTapCount + 1 : 1;
+		lastTimeTap = currentTime;
 	}
 
-	private boolean hasTabEnough() {
-		// 5 tabs by the user + 1 for the swipe right.
-		return fingerTabCount == 6;
+	private boolean hasTapEnough() {
+		// 5 taps by the user + 1 for the swipe right.
+		return fingerTapCount == 6;
 	}
 
 	private void onSwipe(MotionEvent event) {
@@ -62,10 +62,10 @@ public class OpenSettingsDialogFragment extends Fragment {
 
 		switch (event.getActionMasked()) {
 			case MotionEvent.ACTION_POINTER_DOWN:
-				swipeGesture = hasTabEnough() ? new GestureHandler(event) : null;
+				swipeGesture = hasTapEnough() ? new GestureHandler(event) : null;
 				return;
 			case MotionEvent.ACTION_MOVE:
-				if (swipeGesture != null && hasTabEnough() && swipeGesture.isSwipeRight(event)) {
+				if (swipeGesture != null && hasTapEnough() && swipeGesture.isSwipeRight(event)) {
 					openSettings();
 				}
 				return;

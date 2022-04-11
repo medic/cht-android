@@ -25,6 +25,8 @@ import org.mockito.MockSettings;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
+import java.util.stream.IntStream;
+
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk=28)
 public class OpenSettingsDialogFragmentTest {
@@ -55,10 +57,10 @@ public class OpenSettingsDialogFragmentTest {
 		openSettingsDialogFragment.onCreate(null);
 	}
 
-	private void tap(OnTouchListener onTouchListener, MotionEvent eventTab, int times) {
-		for (int i = 0; i < times; i++) {
-			onTouchListener.onTouch(null, eventTab);
-		}
+	private void tap(OnTouchListener onTouchListener, MotionEvent eventTap, int times) {
+		IntStream
+			.range(0, times)
+			.forEach(i -> onTouchListener.onTouch(null, eventTap));
 	}
 
 	private void positionPointers(OnTouchListener onTouchListener, MotionEvent eventSwipe, float pointer1, float pointer2) {
@@ -70,16 +72,16 @@ public class OpenSettingsDialogFragmentTest {
 	@Test
 	public void onTouch_withRightGestures_opensSettingsDialog() {
 		//> GIVEN
-		MotionEvent eventTab = mock(MotionEvent.class);
-		when(eventTab.getPointerCount()).thenReturn(1);
-		when(eventTab.getActionMasked()).thenReturn(MotionEvent.ACTION_DOWN);
+		MotionEvent eventTap = mock(MotionEvent.class);
+		when(eventTap.getPointerCount()).thenReturn(1);
+		when(eventTap.getActionMasked()).thenReturn(MotionEvent.ACTION_DOWN);
 
 		MotionEvent eventSwipe = mock(MotionEvent.class);
 		when(eventSwipe.getPointerCount()).thenReturn(2);
 
 		//> WHEN
 		OnTouchListener onTouchListener = argsOnTouch.getValue();
-		tap(onTouchListener, eventTab, 6);
+		tap(onTouchListener, eventTap, 6);
 
 		when(eventSwipe.getActionMasked()).thenReturn(MotionEvent.ACTION_POINTER_DOWN);
 		positionPointers(onTouchListener, eventSwipe, (float) 261.81, (float) 264.99);
@@ -96,20 +98,19 @@ public class OpenSettingsDialogFragmentTest {
 	@Test
 	public void onTouch_withNoSwipe_doesNotOpenSettingsDialog() {
 		//> GIVEN
-		MotionEvent eventTab = mock(MotionEvent.class);
-		when(eventTab.getPointerCount()).thenReturn(1);
-		when(eventTab.getActionMasked()).thenReturn(MotionEvent.ACTION_DOWN);
+		MotionEvent eventTap = mock(MotionEvent.class);
+		when(eventTap.getPointerCount()).thenReturn(1);
+		when(eventTap.getActionMasked()).thenReturn(MotionEvent.ACTION_DOWN);
 
 		MotionEvent eventSwipe = mock(MotionEvent.class);
 		when(eventSwipe.getPointerCount()).thenReturn(2);
 
 		//> WHEN
 		OnTouchListener onTouchListener = argsOnTouch.getValue();
-		tap(onTouchListener, eventTab, 6);
+		tap(onTouchListener, eventTap, 6);
 
 		when(eventSwipe.getActionMasked()).thenReturn(MotionEvent.ACTION_POINTER_DOWN);
 		positionPointers(onTouchListener, eventSwipe, (float) 261.81, (float) 264.99);
-		when(eventSwipe.getActionMasked()).thenReturn(MotionEvent.ACTION_POINTER_UP);
 
 		//> THEN
 		verify(openSettingsDialogFragment, never()).startActivity(any());
@@ -119,16 +120,16 @@ public class OpenSettingsDialogFragmentTest {
 	@Test
 	public void onTouch_with1FingerSwipe_doesNotOpenSettingsDialog() {
 		//> GIVEN
-		MotionEvent eventTab = mock(MotionEvent.class);
-		when(eventTab.getPointerCount()).thenReturn(1);
-		when(eventTab.getActionMasked()).thenReturn(MotionEvent.ACTION_DOWN);
+		MotionEvent eventTap = mock(MotionEvent.class);
+		when(eventTap.getPointerCount()).thenReturn(1);
+		when(eventTap.getActionMasked()).thenReturn(MotionEvent.ACTION_DOWN);
 
 		MotionEvent eventSwipe = mock(MotionEvent.class);
 		when(eventSwipe.getPointerCount()).thenReturn(1);
 
 		//> WHEN
 		OnTouchListener onTouchListener = argsOnTouch.getValue();
-		tap(onTouchListener, eventTab, 6);
+		tap(onTouchListener, eventTap, 6);
 
 		when(eventSwipe.getActionMasked()).thenReturn(MotionEvent.ACTION_POINTER_DOWN);
 		positionPointers(onTouchListener, eventSwipe, (float) 261.81, (float) 264.99);
@@ -142,18 +143,18 @@ public class OpenSettingsDialogFragmentTest {
 	}
 
 	@Test
-	public void onTouch_withNoEnoughTabs_doesNotOpenSettingsDialog() {
+	public void onTouch_withNoEnoughTaps_doesNotOpenSettingsDialog() {
 		//> GIVEN
-		MotionEvent eventTab = mock(MotionEvent.class);
-		when(eventTab.getPointerCount()).thenReturn(1);
-		when(eventTab.getActionMasked()).thenReturn(MotionEvent.ACTION_DOWN);
+		MotionEvent eventTap = mock(MotionEvent.class);
+		when(eventTap.getPointerCount()).thenReturn(1);
+		when(eventTap.getActionMasked()).thenReturn(MotionEvent.ACTION_DOWN);
 
 		MotionEvent eventSwipe = mock(MotionEvent.class);
 		when(eventSwipe.getPointerCount()).thenReturn(2);
 
 		//> WHEN
 		OnTouchListener onTouchListener = argsOnTouch.getValue();
-		tap(onTouchListener, eventTab, 4);
+		tap(onTouchListener, eventTap, 4);
 
 		when(eventSwipe.getActionMasked()).thenReturn(MotionEvent.ACTION_POINTER_DOWN);
 		positionPointers(onTouchListener, eventSwipe, (float) 261.81, (float) 264.99);
@@ -167,18 +168,18 @@ public class OpenSettingsDialogFragmentTest {
 	}
 
 	@Test
-	public void onTouch_with2FingerTabs_doesNotOpenSettingsDialog() {
+	public void onTouch_with2FingerTaps_doesNotOpenSettingsDialog() {
 		//> GIVEN
-		MotionEvent eventTab = mock(MotionEvent.class);
-		when(eventTab.getPointerCount()).thenReturn(2);
-		when(eventTab.getActionMasked()).thenReturn(MotionEvent.ACTION_DOWN);
+		MotionEvent eventTap = mock(MotionEvent.class);
+		when(eventTap.getPointerCount()).thenReturn(2);
+		when(eventTap.getActionMasked()).thenReturn(MotionEvent.ACTION_DOWN);
 
 		MotionEvent eventSwipe = mock(MotionEvent.class);
 		when(eventSwipe.getPointerCount()).thenReturn(2);
 
 		//> WHEN
 		OnTouchListener onTouchListener = argsOnTouch.getValue();
-		tap(onTouchListener, eventTab, 6);
+		tap(onTouchListener, eventTap, 6);
 
 		when(eventSwipe.getActionMasked()).thenReturn(MotionEvent.ACTION_POINTER_DOWN);
 		positionPointers(onTouchListener, eventSwipe, (float) 261.81, (float) 264.99);
