@@ -17,7 +17,6 @@ import static org.medicmobile.webapp.mobile.MedicLog.trace;
 import static org.medicmobile.webapp.mobile.MedicLog.warn;
 import static java.lang.Integer.toHexString;
 
-import android.annotation.SuppressLint;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -44,9 +43,15 @@ class SmsSender {
 	private final SmsManager smsManager;
 	private Sms sms;
 
+	@SuppressWarnings("deprecation")
 	SmsSender(EmbeddedBrowserActivity parent) {
 		this.parent = parent;
-		this.smsManager = SmsManager.getDefault();
+
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+			this.smsManager = this.parent.getSystemService(SmsManager.class);
+		} else {
+			this.smsManager = SmsManager.getDefault();
+		}
 
 		parent.registerReceiver(new BroadcastReceiver() {
 			@Override public void onReceive(Context ctx, Intent intent) {
@@ -173,7 +178,7 @@ class SmsSender {
 	/**
 	 * @see <a href="https://developer.android.com/reference/android/telephony/SmsMessage#createFromPdu(byte[])">createFromPdu(byte[])</a>
 	 */
-	@SuppressLint("ObsoleteSdkInt")
+	@SuppressWarnings("deprecation")
 	private  static SmsMessage createFromPdu(Intent intent) {
 		byte[] pdu = intent.getByteArrayExtra("pdu");
 		if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
