@@ -44,6 +44,7 @@ public class UrlHandler extends WebViewClient {
 	/**
 	 * Support for SDK 21 and 22.
 	 */
+	@SuppressWarnings("deprecation")
 	@Override
 	public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
 		logError(errorCode, description, failingUrl);
