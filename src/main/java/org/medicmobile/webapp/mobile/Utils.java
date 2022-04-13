@@ -1,17 +1,16 @@
 package org.medicmobile.webapp.mobile;
 
+import static org.medicmobile.webapp.mobile.BuildConfig.APPLICATION_ID;
+import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
+import static org.medicmobile.webapp.mobile.BuildConfig.VERSION_NAME;
+
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import static org.medicmobile.webapp.mobile.BuildConfig.APPLICATION_ID;
-import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
-import static org.medicmobile.webapp.mobile.BuildConfig.VERSION_NAME;
 
 import java.io.File;
 import java.util.Optional;
@@ -76,20 +75,6 @@ final class Utils {
 			a.startActivity(new Intent(a, SettingsDialogActivity.class));
 		}
 		a.finish();
-	}
-
-	public static ProgressDialog showSpinner(Context ctx, int messageId) {
-		return showSpinner(ctx, ctx.getString(messageId));
-	}
-
-	public static ProgressDialog showSpinner(Context ctx, String message) {
-		ProgressDialog p = new ProgressDialog(ctx);
-		p.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-		if(message != null) p.setMessage(message);
-		p.setIndeterminate(true);
-		p.setCanceledOnTouchOutside(false);
-		p.show();
-		return p;
 	}
 
 	static String createUseragentFrom(String current) {
