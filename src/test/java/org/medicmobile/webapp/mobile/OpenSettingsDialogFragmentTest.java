@@ -6,6 +6,7 @@ import static org.mockito.Mockito.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.RETURNS_SMART_NULLS;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -22,9 +23,13 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.MockSettings;
+import org.mockito.MockedStatic;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.stream.IntStream;
 
 @RunWith(RobolectricTestRunner.class)
@@ -190,5 +195,39 @@ public class OpenSettingsDialogFragmentTest {
 		//> THEN
 		verify(openSettingsDialogFragment, never()).startActivity(any());
 		verify(activity, never()).finish();
+	}
+
+	@Test
+	public void onTouch_withTapTimeout_doesNotOpenSettingsDialog() {
+		Clock startTime = Clock.fixed(Instant.ofEpochMilli(1000), ZoneOffset.UTC);
+		Clock otherTapsTime = Clock.fixed(Instant.ofEpochMilli(1501), ZoneOffset.UTC);
+
+		try (MockedStatic<Clock> mockClock = mockStatic(Clock.class)) {
+			//> GIVEN
+			MotionEvent eventTap = mock(MotionEvent.class);
+			when(eventTap.getPointerCount()).thenReturn(1);
+			when(eventTap.getActionMasked()).thenReturn(MotionEvent.ACTION_DOWN);
+
+			MotionEvent eventSwipe = mock(MotionEvent.class);
+			when(eventSwipe.getPointerCount()).thenReturn(2);
+
+			mockClock.when(Clock::systemUTC).thenReturn(startTime);
+
+			//> WHEN
+			OnTouchListener onTouchListener = argsOnTouch.getValue();
+			tap(onTouchListener, eventTap, 2);
+			mockClock.when(Clock::systemUTC).thenReturn(otherTapsTime);
+			tap(onTouchListener, eventTap, 4);
+
+			when(eventSwipe.getActionMasked()).thenReturn(MotionEvent.ACTION_POINTER_DOWN);
+			positionPointers(onTouchListener, eventSwipe, (float) 261.81, (float) 264.99);
+
+			when(eventSwipe.getActionMasked()).thenReturn(MotionEvent.ACTION_MOVE);
+			positionPointers(onTouchListener, eventSwipe, (float) 800.90, (float) 850.13);
+
+			//> THEN
+			verify(openSettingsDialogFragment, never()).startActivity(any());
+			verify(activity, never()).finish();
+		}
 	}
 }

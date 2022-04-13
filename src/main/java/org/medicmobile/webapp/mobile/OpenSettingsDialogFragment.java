@@ -11,6 +11,8 @@ import android.view.View.OnTouchListener;
 
 import androidx.annotation.Nullable;
 
+import java.time.Clock;
+
 @SuppressLint("ValidFragment")
 public class OpenSettingsDialogFragment extends Fragment {
 
@@ -45,7 +47,7 @@ public class OpenSettingsDialogFragment extends Fragment {
 			return;
 		}
 
-		long currentTime = System.currentTimeMillis();
+		long currentTime = Clock.systemUTC().millis();
 		fingerTapCount = lastTimeTap + TIME_BETWEEN_TAPS >= currentTime ? fingerTapCount + 1 : 1;
 		lastTimeTap = currentTime;
 	}
