@@ -1,10 +1,24 @@
 package org.medicmobile.webapp.mobile;
 
+import static android.Manifest.permission.SEND_SMS;
+import static android.app.Activity.RESULT_OK;
+import static android.app.PendingIntent.FLAG_IMMUTABLE;
+import static android.app.PendingIntent.FLAG_ONE_SHOT;
+import static android.app.PendingIntent.getBroadcast;
+import static android.content.pm.PackageManager.PERMISSION_GRANTED;
+import static android.telephony.SmsManager.RESULT_ERROR_GENERIC_FAILURE;
+import static android.telephony.SmsManager.RESULT_ERROR_NO_SERVICE;
+import static android.telephony.SmsManager.RESULT_ERROR_NULL_PDU;
+import static android.telephony.SmsManager.RESULT_ERROR_RADIO_OFF;
+import static org.medicmobile.webapp.mobile.EmbeddedBrowserActivity.RequestCode;
+import static org.medicmobile.webapp.mobile.JavascriptUtils.safeFormat;
+import static org.medicmobile.webapp.mobile.MedicLog.log;
+import static org.medicmobile.webapp.mobile.MedicLog.trace;
+import static org.medicmobile.webapp.mobile.MedicLog.warn;
+import static java.lang.Integer.toHexString;
+
 import android.annotation.SuppressLint;
 import android.app.PendingIntent;
-import static android.app.PendingIntent.getBroadcast;
-import static android.app.PendingIntent.FLAG_ONE_SHOT;
-import static android.app.PendingIntent.FLAG_IMMUTABLE;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -13,17 +27,11 @@ import android.os.Build;
 import android.telephony.SmsManager;
 import android.telephony.SmsMessage;
 
-import java.util.ArrayList;
+import androidx.core.content.ContextCompat;
 
-import static java.lang.Integer.toHexString;
-import static org.medicmobile.webapp.mobile.JavascriptUtils.safeFormat;
-import static org.medicmobile.webapp.mobile.MedicLog.log;
-import static org.medicmobile.webapp.mobile.MedicLog.warn;
-import static android.app.Activity.RESULT_OK;
-import static android.telephony.SmsManager.RESULT_ERROR_GENERIC_FAILURE;
-import static android.telephony.SmsManager.RESULT_ERROR_NO_SERVICE;
-import static android.telephony.SmsManager.RESULT_ERROR_NULL_PDU;
-import static android.telephony.SmsManager.RESULT_ERROR_RADIO_OFF;
+import java.util.ArrayList;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 class SmsSender {
 	private static final int UNUSED_REQUEST_CODE = 0;
@@ -34,6 +42,7 @@ class SmsSender {
 
 	private final EmbeddedBrowserActivity parent;
 	private final SmsManager smsManager;
+	private Sms sms;
 
 	SmsSender(EmbeddedBrowserActivity parent) {
 		this.parent = parent;
@@ -62,16 +71,52 @@ class SmsSender {
 		}, createIntentFilter());
 	}
 
-	void send(String id, String destination, String content) {
-		ArrayList<String> parts = smsManager.divideMessage(content);
-		smsManager.sendMultipartTextMessage(destination,
-				DEFAULT_SMSC,
-				parts,
-				intentsFor(SENDING_REPORT, id, destination, content, parts),
-				intentsFor(DELIVERY_REPORT, id, destination, content, parts));
+	void send(Sms sms) {
+		if (!checkPermissions()) {
+			setSms(sms);
+			return;
+		}
+
+		sendSmsMultipart(sms);
+	}
+
+	void resumeProcess(int resultCode) {
+		if (resultCode == RESULT_OK && this.sms != null) {
+			sendSmsMultipart(this.sms);
+			return;
+		}
+
+		trace(this.parent, "SmsSender :: Cannot send sms without Send SMS permission. Sms=%s", this.sms);
 	}
 
 //> PRIVATE HELPERS
+	private void setSms(Sms sms) {
+		this.sms = sms;
+	}
+
+	private void sendSmsMultipart(Sms sms) {
+		ArrayList<String> parts = smsManager.divideMessage(sms.getContent());
+
+		smsManager.sendMultipartTextMessage(
+			sms.getDestination(),
+			DEFAULT_SMSC,
+			parts,
+			createIntentsFromSmsParts(SENDING_REPORT, sms, parts),
+			createIntentsFromSmsParts(DELIVERY_REPORT, sms, parts)
+		);
+	}
+
+	private boolean checkPermissions() {
+		if (ContextCompat.checkSelfPermission(this.parent, SEND_SMS) == PERMISSION_GRANTED) {
+			return true;
+		}
+
+		trace(this, "SmsSender :: Requesting permissions.");
+		Intent intent = new Intent(this.parent, RequestSendSmsPermissionActivity.class);
+		this.parent.startActivityForResult(intent, RequestCode.ACCESS_SEND_SMS_PERMISSION.getCode());
+		return false;
+	}
+
 	private void reportStatus(Intent intent, String status) {
 		reportStatus(intent, status, null);
 	}
@@ -98,22 +143,20 @@ class SmsSender {
 		return String.format("[id:%s to %s (part %s) content:%s]", id, destination, part, content);
 	}
 
-	private ArrayList<PendingIntent> intentsFor(String intentType, String id, String destination, String content, ArrayList<String> parts) {
+	private ArrayList<PendingIntent> createIntentsFromSmsParts(String intentType, Sms sms, ArrayList<String> parts) {
 		int totalParts = parts.size();
-		ArrayList<PendingIntent> intents = new ArrayList<>(totalParts);
 
-		for(int partIndex=0; partIndex<totalParts; ++partIndex) {
-			intents.add(intentFor(intentType, id, destination, content, partIndex, totalParts));
-		}
-
-		return intents;
+		return IntStream
+			.range(0, totalParts)
+			.mapToObj(index -> intentFor(intentType, sms, index, totalParts))
+			.collect(Collectors.toCollection(ArrayList::new));
 	}
 
-	private PendingIntent intentFor(String intentType, String id, String destination, String content, int partIndex, int totalParts) {
+	private PendingIntent intentFor(String intentType, Sms sms, int partIndex, int totalParts) {
 		Intent intent = new Intent(intentType);
-		intent.putExtra("id", id);
-		intent.putExtra("destination", destination);
-		intent.putExtra("content", content);
+		intent.putExtra("id", sms.getId());
+		intent.putExtra("destination", sms.getDestination());
+		intent.putExtra("content", sms.getContent());
 		intent.putExtra("partIndex", partIndex);
 		intent.putExtra("totalParts", totalParts);
 		int flags = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ? FLAG_ONE_SHOT | FLAG_IMMUTABLE : FLAG_ONE_SHOT;
@@ -282,6 +325,30 @@ class SmsSender {
 			} else {
 				return "generic; no errorCode supplied";
 			}
+		}
+	}
+
+	static class Sms {
+		private final String id;
+		private final String destination;
+		private final String content;
+
+		public Sms(String id, String destination, String content) {
+			this.id = id;
+			this.destination = destination;
+			this.content = content;
+		}
+
+		public String getId() {
+			return id;
+		}
+
+		public String getDestination() {
+			return destination;
+		}
+
+		public String getContent() {
+			return content;
 		}
 	}
 }

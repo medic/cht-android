@@ -214,7 +214,7 @@ public class RequestStoragePermissionActivityTest {
 	}
 
 	@Test
-	public void onClickAllow_withNeverAskAgainAndPermissionDenied_setResolveOk() {
+	public void onClickAllow_withNeverAskAgainAndPermissionDenied_setResolveCanceled() {
 		try(MockedStatic<MedicLog> medicLogMock = mockStatic(MedicLog.class)) {
 			ActivityScenario<RequestStoragePermissionActivity> scenario = scenarioRule.getScenario();
 
