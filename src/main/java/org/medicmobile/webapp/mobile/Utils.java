@@ -113,4 +113,8 @@ final class Utils {
 
 		return Optional.of(Uri.fromFile(file));
 	}
+
+	static boolean isDebug() {
+		return DEBUG;
+	}
 }

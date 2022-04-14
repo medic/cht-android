@@ -1,19 +1,18 @@
 package org.medicmobile.webapp.mobile;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.util.concurrent.Callable;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static org.medicmobile.webapp.mobile.MedicLog.trace;
 import static org.medicmobile.webapp.mobile.R.string.errAppUrl_apiNotReady;
 import static org.medicmobile.webapp.mobile.R.string.errAppUrl_appNotFound;
 import static org.medicmobile.webapp.mobile.R.string.errAppUrl_serverNotFound;
 import static org.medicmobile.webapp.mobile.R.string.errInvalidUrl;
 import static org.medicmobile.webapp.mobile.SimpleJsonClient2.redactUrl;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.util.concurrent.Callable;
 
 public class AppUrlVerifier {
 
@@ -103,7 +102,7 @@ class AppUrlVerificationTask implements Callable<AppUrlVerification> {
 	public AppUrlVerification call() {
 		trace(this, "AppUrlVerificationTask :: Executing call, appUrl=%s", appUrl);
 
-		if (DEBUG && (appUrl == null || appUrl.isEmpty())) {
+		if (Utils.isDebug() && (appUrl == null || appUrl.isEmpty())) {
 			throw new RuntimeException("AppUrlVerificationTask :: Cannot verify APP URL because it is not defined.");
 		}
 

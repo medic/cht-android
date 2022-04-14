@@ -3,9 +3,11 @@ package org.medicmobile.webapp.mobile;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
+import static org.mockito.Mockito.mockStatic;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.MockedStatic;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
@@ -24,13 +26,18 @@ public class AppUrlVerificationTaskTest {
 
 	@Test
 	public void call_withNoAppURL_throwsException() {
-		RuntimeException runtimeException = assertThrows(
-			RuntimeException.class,
-			() -> new AppUrlVerificationTask(null).call()
-		);
-		assertEquals(
-			"AppUrlVerificationTask :: Cannot verify APP URL because it is not defined.",
-			runtimeException.getMessage()
-		);
+		try (MockedStatic<Utils> utilsMock = mockStatic(Utils.class)) {
+			utilsMock.when(() -> Utils.isDebug()).thenReturn(true);
+
+			RuntimeException runtimeException = assertThrows(
+				RuntimeException.class,
+				() -> new AppUrlVerificationTask(null).call()
+			);
+
+			assertEquals(
+				"AppUrlVerificationTask :: Cannot verify APP URL because it is not defined.",
+				runtimeException.getMessage()
+			);
+		}
 	}
 }
