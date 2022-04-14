@@ -30,7 +30,7 @@ public abstract class SettingsStore {
 			return false;
 		}
 
-		return getAppUrl().equals(url.replaceAll("/$", ""));
+		return getAppUrl().equals(url.trim().replaceAll("/$", ""));
 	}
 
 	public abstract boolean hasWebappSettings();
