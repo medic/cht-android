@@ -193,6 +193,9 @@ public class EmbeddedBrowserActivity extends Activity {
 				case ACCESS_LOCATION_PERMISSION:
 					processLocationPermissionResult(resultCode);
 					return;
+				case ACCESS_SEND_SMS_PERMISSION:
+					this.smsSender.resumeProcess(resultCode);
+					return;
 				default:
 					trace(this, "onActivityResult() :: no handling for requestCode=%s", requestCode.name());
 			}
@@ -405,9 +408,10 @@ public class EmbeddedBrowserActivity extends Activity {
 	public enum RequestCode {
 		ACCESS_LOCATION_PERMISSION(100),
 		ACCESS_STORAGE_PERMISSION(101),
-		CHT_EXTERNAL_APP_ACTIVITY(102),
-		GRAB_MRDT_PHOTO_ACTIVITY(103),
-		FILE_PICKER_ACTIVITY(104);
+		ACCESS_SEND_SMS_PERMISSION(102),
+		CHT_EXTERNAL_APP_ACTIVITY(103),
+		GRAB_MRDT_PHOTO_ACTIVITY(104),
+		FILE_PICKER_ACTIVITY(105);
 
 		private final int requestCode;
 

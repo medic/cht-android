@@ -27,7 +27,11 @@ public abstract class SettingsStore {
 	}
 
 	public boolean isRootUrl(String url) {
-		return getAppUrl().equals(url);
+		if (url == null) {
+			return false;
+		}
+
+		return getAppUrl().equals(url.trim().replaceAll("/$", ""));
 	}
 
 	public abstract boolean hasWebappSettings();
