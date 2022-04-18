@@ -57,7 +57,7 @@ public class EmbeddedBrowserActivityTest {
 		try(
 			MockedStatic<ContextCompat> contextCompatMock = mockStatic(ContextCompat.class);
 			MockedStatic<MedicLog> medicLogMock = mockStatic(MedicLog.class);
-			) {
+		) {
 			contextCompatMock.when(() -> ContextCompat.checkSelfPermission(any(), eq(ACCESS_FINE_LOCATION))).thenReturn(PERMISSION_GRANTED);
 			contextCompatMock.when(() -> ContextCompat.checkSelfPermission(any(), eq(ACCESS_COARSE_LOCATION))).thenReturn(PERMISSION_GRANTED);
 
