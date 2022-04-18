@@ -74,7 +74,9 @@ public class RequestLocationPermissionActivityTest {
 			));
 			medicLogMock.verify(() -> MedicLog.trace(
 				any(RequestLocationPermissionActivity.class),
-				eq("RequestLocationPermissionActivity :: User allowed location permission.")
+				eq("RequestLocationPermissionActivity :: User allowed at least one location permission. Fine:%s, Coarse:%s"),
+				eq(true),
+				eq(true)
 			));
 		}
 	}
@@ -167,12 +169,9 @@ public class RequestLocationPermissionActivityTest {
 			));
 			medicLogMock.verify(() -> MedicLog.trace(
 				any(RequestLocationPermissionActivity.class),
-				eq("RequestLocationPermissionActivity :: User rejected location permission twice or has selected \"never ask again\"." +
-					" Sending user to the app's setting to manually grant the permission.")
-			));
-			medicLogMock.verify(() -> MedicLog.trace(
-				any(RequestLocationPermissionActivity.class),
-				eq("RequestLocationPermissionActivity :: User granted location permission from app's settings.")
+				eq("RequestLocationPermissionActivity :: User granted at least one location permission from app's settings. Fine:%s, Coarse:%s"),
+				eq(true),
+				eq(true)
 			));
 		}
 	}
@@ -218,7 +217,7 @@ public class RequestLocationPermissionActivityTest {
 			));
 			medicLogMock.verify(() -> MedicLog.trace(
 				any(RequestLocationPermissionActivity.class),
-				eq("RequestLocationPermissionActivity :: User rejected location permission twice or has selected \"never ask again\"." +
+				eq("RequestLocationPermissionActivity :: User rejected all location permissions twice or has selected \"never ask again\"." +
 					" Sending user to the app's setting to manually grant the permission.")
 			));
 			medicLogMock.verify(() -> MedicLog.trace(
@@ -227,7 +226,6 @@ public class RequestLocationPermissionActivityTest {
 			));
 		}
 	}
-
 
 	@Test
 	public void onClickNegative_noIntentsStarted_setResolveCanceled() {

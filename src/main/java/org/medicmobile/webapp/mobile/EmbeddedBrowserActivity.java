@@ -191,7 +191,7 @@ public class EmbeddedBrowserActivity extends Activity {
 					processStoragePermissionResult(resultCode, intent);
 					return;
 				case ACCESS_LOCATION_PERMISSION:
-					processLocationPermissionResult(resultCode);
+					locationRequestResolved();
 					return;
 				case ACCESS_SEND_SMS_PERMISSION:
 					this.smsSender.resumeProcess(resultCode);
@@ -254,17 +254,11 @@ public class EmbeddedBrowserActivity extends Activity {
 		boolean hasCoarseLocation = ContextCompat.checkSelfPermission(this, ACCESS_COARSE_LOCATION) == PERMISSION_GRANTED;
 
 		if (hasFineLocation && hasCoarseLocation) {
-			trace(this, "getLocationPermissions() :: already granted");
+			trace(this, "getLocationPermissions() :: Fine and Coarse location already granted");
 			return true;
 		}
 
-		if (settings.hasUserDeniedGeolocation()) {
-			trace(this, "getLocationPermissions() :: user has previously denied to share location");
-			locationRequestResolved();
-			return false;
-		}
-
-		trace(this, "getLocationPermissions() :: location not granted before, requesting access...");
+		trace(this, "getLocationPermissions() :: Fine or Coarse location not granted before, requesting access...");
 		startActivityForResult(
 			new Intent(this, RequestLocationPermissionActivity.class),
 			RequestCode.ACCESS_LOCATION_PERMISSION.getCode()
@@ -275,18 +269,6 @@ public class EmbeddedBrowserActivity extends Activity {
 //> PRIVATE HELPERS
 	private void locationRequestResolved() {
 		evaluateJavascript("window.CHTCore.AndroidApi.v1.locationPermissionRequestResolved();");
-	}
-
-	private void processLocationPermissionResult(int resultCode) {
-		if (resultCode != RESULT_OK) {
-			try {
-				settings.setUserDeniedGeolocation();
-			} catch (SettingsException e) {
-				error(e, "processLocationPermissionResult :: Error recording negative to access location.");
-			}
-		}
-
-		locationRequestResolved();
 	}
 
 	private void processChtExternalAppResult(int resultCode, Intent intentData) {

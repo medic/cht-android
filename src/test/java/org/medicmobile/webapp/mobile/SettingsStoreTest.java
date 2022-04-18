@@ -86,20 +86,6 @@ public class SettingsStoreTest {
 	}
 
 	@Test
-	public void hasUserDeniedGeolocation_withPrefSet_returnsValue() {
-		when(sharedPreferences.getBoolean("denied-geolocation", false)).thenReturn(true);
-
-		assertTrue(settingsStore.hasUserDeniedGeolocation());
-	}
-
-	@Test
-	public void hasUserDeniedGeolocation_withNoPrefSet_returnsFalse() {
-		when(sharedPreferences.getBoolean("denied-geolocation", false)).thenReturn(false);
-
-		assertFalse(settingsStore.hasUserDeniedGeolocation());
-	}
-
-	@Test
 	public void getLastUrl_withLastUrlTime_returnsLastUrl() {
 		when(sharedPreferences.getLong("last-url-time-ms", 0)).thenReturn(System.currentTimeMillis());
 		when(sharedPreferences.getString("last-url", null)).thenReturn("https://project-abc.medic.org/#messages");
