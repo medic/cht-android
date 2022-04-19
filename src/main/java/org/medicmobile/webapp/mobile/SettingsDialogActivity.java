@@ -5,6 +5,7 @@ import static org.medicmobile.webapp.mobile.MedicLog.trace;
 import static org.medicmobile.webapp.mobile.SimpleJsonClient2.redactUrl;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -26,7 +27,8 @@ import java.util.Map;
 
 import medic.android.ActivityBackgroundTask;
 
-public class SettingsDialogActivity extends LockableActivity {
+public class SettingsDialogActivity extends Activity {
+
 	private static final int STATE_LIST = 1;
 	private static final int STATE_FORM = 2;
 	private SettingsStore settings;
