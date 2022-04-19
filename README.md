@@ -16,7 +16,7 @@ Checkout the release notes in the [Changelog](CHANGELOG.md) page, our you can se
 Development guides are available in the "Android" section of the [Community Health Toolkit Docs Site](https://docs.communityhealthtoolkit.org/core/guides/android/). You will find instructions of how to setup your development environment, build and test new features, creates new branded apps, release, publish... and so on.
 
 ## Settings page
-To open the app's Settings page, tap 5 times with one finger on the screen and then swipe right with two fingers, make sure to do this sequence fast.
+To open the app's Settings page, tap 5 times with one finger on the screen and then swipe right with two fingers, make sure to do this sequence fast. Once opened, you can change the URL of the CHT server and click "Save" to save the changes and close the Settings page.
 
 ## Settings Dialog
 To open the Settings Dialog page, tap 5 times with one finger on the screen and then swipe right with two fingers, make sure to do this sequence fast.
