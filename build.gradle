@@ -394,9 +394,7 @@ android {
 
 dependencies {
   implementation fileTree(dir: 'libs', include: ['*.jar'])
-  // Latest version of androidx.core requires Android 12+
-  // noinspection GradleDependency
-  implementation 'androidx.core:core:1.6.0'
+  implementation 'androidx.core:core:1.7.0'
   implementation 'androidx.activity:activity:1.4.0'
   implementation 'androidx.fragment:fragment:1.4.1'
   compileOnly 'com.github.spotbugs:spotbugs-annotations:4.5.3'

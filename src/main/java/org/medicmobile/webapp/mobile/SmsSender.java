@@ -78,7 +78,7 @@ class SmsSender {
 
 	void send(Sms sms) {
 		if (!checkPermissions()) {
-			setSms(sms);
+			this.sms = sms;
 			return;
 		}
 
@@ -91,13 +91,10 @@ class SmsSender {
 			return;
 		}
 
-		trace(this.parent, "SmsSender :: Cannot send sms without Send SMS permission. Sms=%s", this.sms);
+		trace(this.parent, "SmsSender :: Cannot send sms without Send SMS permission. Sms ID=%s", this.sms.getId());
 	}
 
 //> PRIVATE HELPERS
-	private void setSms(Sms sms) {
-		this.sms = sms;
-	}
 
 	private void sendSmsMultipart(Sms sms) {
 		ArrayList<String> parts = smsManager.divideMessage(sms.getContent());
