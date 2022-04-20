@@ -71,6 +71,11 @@ jobs:
       with:
         lane: build
         options: '{ "flavor": "medicmobilegamma" }'
+    - name: Assemble gamma training
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: build
+        options: '{ "flavor": "medicmobilegamma_training" }'
     # demo app is disabled for now
     #- name: Assemble demo
     #  uses: maierj/fastlane-action@v1.4.0
