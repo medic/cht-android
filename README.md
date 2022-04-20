@@ -18,9 +18,6 @@ Development guides are available in the "Android" section of the [Community Heal
 ## Settings page
 To open the app's Settings page, tap 5 times with one finger on the screen and then swipe right with two fingers, make sure to do this sequence fast. Once opened, you can change the URL of the CHT server and click "Save" to save the changes and close the Settings page.
 
-## Settings Dialog
-To open the Settings Dialog page, tap 5 times with one finger on the screen and then swipe right with two fingers, make sure to do this sequence fast.
-
 ## Copyright
 
 Copyright 2013-2022 Medic Mobile, Inc. <hello@medic.org>.

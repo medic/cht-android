@@ -207,8 +207,8 @@ public class SmsSenderTest {
 			verify(smsManager, never()).sendMultipartTextMessage(any(), any(), any(), any(), any());
 			medicLogMock.verify(() -> MedicLog.trace(
 				eq(parentMock),
-				eq("SmsSender :: Cannot send sms without Send SMS permission. Sms=%s"),
-				eq(sms)
+				eq("SmsSender :: Cannot send sms without Send SMS permission. Sms ID=%s"),
+				eq(sms.getId())
 			));
 		}
 	}

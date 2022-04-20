@@ -115,6 +115,8 @@ android {
     buildConfigField "String", "TEST_USERNAME", "\"${System.env.ANDROID_TEST_USERNAME}\""
     buildConfigField "String", "TEST_PASSWORD", "\"${System.env.ANDROID_TEST_PASSWORD}\""
 
+    buildConfigField "boolean", "IS_TRAINING_APP", 'false'
+
     if (System.env.ANDROID_TEST_URL) {
       buildConfigField "String", "SERVER_URL", "\"${System.env.ANDROID_TEST_URL}\""
     } else {
@@ -205,6 +207,12 @@ android {
     medicmobilegamma {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.medicmobilegamma'
+    }
+
+    medicmobilegamma_training {
+      dimension = 'brand'
+      applicationId = 'org.medicmobile.webapp.mobile.medicmobilegamma_training'
+      buildConfigField "boolean", "IS_TRAINING_APP", 'true'
     }
 
     bracuganda {
@@ -386,9 +394,7 @@ android {
 
 dependencies {
   implementation fileTree(dir: 'libs', include: ['*.jar'])
-  // Latest version of androidx.core requires Android 12+
-  // noinspection GradleDependency
-  implementation 'androidx.core:core:1.6.0'
+  implementation 'androidx.core:core:1.7.0'
   implementation 'androidx.activity:activity:1.4.0'
   implementation 'androidx.fragment:fragment:1.4.1'
   compileOnly 'com.github.spotbugs:spotbugs-annotations:4.5.3'
