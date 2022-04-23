@@ -89,7 +89,7 @@ public class EmbeddedBrowserActivity extends Activity {
 		if (settings.allowsConfiguration() && appUrl != null && appUrl.contains("app.medicmobile.org")) {
 			View webviewContainer = findViewById(R.id.lytWebView);
 			webviewContainer.setPadding(10, 10, 10, 10);
-			webviewContainer.setBackgroundColor(R.drawable.warning_background);
+			webviewContainer.setBackgroundResource(R.drawable.warning_background);
 		}
 
 		// Add a noticeable border to easily identify a training app
