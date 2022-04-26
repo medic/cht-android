@@ -76,6 +76,33 @@ public class EmbeddedBrowserActivityTest {
 	}
 
 	@Test
+	public void getLocationPermissions_with_COARSE_PermissionsGranted() {
+		try(
+			MockedStatic<ContextCompat> contextCompatMock = mockStatic(ContextCompat.class);
+			MockedStatic<MedicLog> medicLogMock = mockStatic(MedicLog.class);
+		) {
+			contextCompatMock.when(() -> ContextCompat.checkSelfPermission(any(), eq(ACCESS_FINE_LOCATION))).thenReturn(PERMISSION_DENIED);
+			contextCompatMock.when(() -> ContextCompat.checkSelfPermission(any(), eq(ACCESS_COARSE_LOCATION))).thenReturn(PERMISSION_GRANTED);
+
+			scenarioRule
+				.getScenario()
+				.onActivity(embeddedBrowserActivity -> {
+					Intents.init();
+
+					assertFalse(embeddedBrowserActivity.getLocationPermissions());
+
+					Intents.intended(IntentMatchers.hasComponent(RequestLocationPermissionActivity.class.getName()));
+					medicLogMock.verify(() -> MedicLog.trace(
+						eq(embeddedBrowserActivity),
+						eq("getLocationPermissions() :: Fine or Coarse location not granted before, requesting access...")
+					));
+
+					Intents.release();
+				});
+		}
+	}
+
+	@Test
 	public void getLocationPermissions_withPermissionsDenied_returnsFalse() {
 		try(
 			MockedStatic<ContextCompat> contextCompatMock = mockStatic(ContextCompat.class);

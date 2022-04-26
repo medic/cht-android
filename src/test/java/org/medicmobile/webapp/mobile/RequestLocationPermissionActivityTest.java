@@ -82,6 +82,46 @@ public class RequestLocationPermissionActivityTest {
 	}
 
 	@Test
+	public void onClickAllow_with_COARSE_PermissionGranted_setResolveOk() {
+		try (MockedStatic<MedicLog> medicLogMock = mockStatic(MedicLog.class)) {
+			ActivityScenario<RequestLocationPermissionActivity> scenario = scenarioRule.getScenario();
+
+			scenario.onActivity(requestLocationPermissionActivity -> {
+				//> GIVEN
+				ShadowActivity shadowActivity = shadowOf(requestLocationPermissionActivity);
+
+				//> WHEN
+				requestLocationPermissionActivity.onClickOk(null);
+				// Have to manually pass the result since the ShadowActivity.grantPermissions method
+				// does not seem to support only granting some of the requested permissions.
+				// https://github.com/robolectric/robolectric/issues/7272
+				Intent permsIntent = new Intent();
+				permsIntent.putExtra("android.content.pm.extra.REQUEST_PERMISSIONS_NAMES", new String[]{ACCESS_FINE_LOCATION, ACCESS_COARSE_LOCATION});
+				permsIntent.putExtra("android.content.pm.extra.REQUEST_PERMISSIONS_RESULTS", new int[]{-1, 0});
+				shadowActivity.receiveResult(shadowActivity.getNextStartedActivity(), RESULT_OK, permsIntent);
+			});
+			scenario.moveToState(Lifecycle.State.DESTROYED);
+
+			//> THEN
+			ActivityResult result = scenario.getResult();
+			assertEquals(RESULT_OK, result.getResultCode());
+			Intent resultIntent = result.getResultData();
+			assertNull(resultIntent);
+
+			medicLogMock.verify(() -> MedicLog.trace(
+				any(RequestLocationPermissionActivity.class),
+				eq("RequestLocationPermissionActivity :: User agree with prominent disclosure message.")
+			));
+			medicLogMock.verify(() -> MedicLog.trace(
+				any(RequestLocationPermissionActivity.class),
+				eq("RequestLocationPermissionActivity :: User allowed at least one location permission. Fine:%s, Coarse:%s"),
+				eq(false),
+				eq(true)
+			));
+		}
+	}
+
+	@Test
 	public void onClickAllow_withPermissionDenied_setResolveCanceled() {
 		try(MockedStatic<MedicLog> medicLogMock = mockStatic(MedicLog.class)) {
 			ActivityScenario<RequestLocationPermissionActivity> scenario = scenarioRule.getScenario();
@@ -171,6 +211,55 @@ public class RequestLocationPermissionActivityTest {
 				any(RequestLocationPermissionActivity.class),
 				eq("RequestLocationPermissionActivity :: User granted at least one location permission from app's settings. Fine:%s, Coarse:%s"),
 				eq(true),
+				eq(true)
+			));
+		}
+	}
+
+	@Test
+	public void onClickAllow_withNeverAskAgainAnd_COARSE_PermissionGranted_setResolveOk() {
+		try(MockedStatic<MedicLog> medicLogMock = mockStatic(MedicLog.class)) {
+			ActivityScenario<RequestLocationPermissionActivity> scenario = scenarioRule.getScenario();
+
+			scenario.onActivity(requestLocationPermissionActivity -> {
+				Intents.init();
+
+				//> GIVEN
+				String packageName = "package:" + requestLocationPermissionActivity.getPackageName();
+				ShadowActivity shadowActivity = shadowOf(requestLocationPermissionActivity);
+				// Setting "Never ask again" case.
+				packageManager.setShouldShowRequestPermissionRationale(ACCESS_FINE_LOCATION, false);
+				packageManager.setShouldShowRequestPermissionRationale(ACCESS_COARSE_LOCATION, false);
+
+				//> WHEN
+				requestLocationPermissionActivity.onClickOk(null);
+				Intent permissionIntent = shadowActivity.peekNextStartedActivityForResult().intent;
+				shadowActivity.receiveResult(permissionIntent, RESULT_OK, null);
+
+				shadowActivity.grantPermissions(ACCESS_COARSE_LOCATION);
+				Intent settingsIntent = shadowActivity.peekNextStartedActivityForResult().intent;
+				shadowActivity.receiveResult(settingsIntent, RESULT_OK, null);
+
+				//> THEN
+				assertEquals(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, settingsIntent.getAction());
+				assertEquals(packageName, settingsIntent.getData().toString());
+
+				Intents.release();
+			});
+
+			ActivityResult result = scenario.getResult();
+			assertEquals(RESULT_OK, result.getResultCode());
+			Intent resultIntent = result.getResultData();
+			assertNull(resultIntent);
+
+			medicLogMock.verify(() -> MedicLog.trace(
+				any(RequestLocationPermissionActivity.class),
+				eq("RequestLocationPermissionActivity :: User agree with prominent disclosure message.")
+			));
+			medicLogMock.verify(() -> MedicLog.trace(
+				any(RequestLocationPermissionActivity.class),
+				eq("RequestLocationPermissionActivity :: User granted at least one location permission from app's settings. Fine:%s, Coarse:%s"),
+				eq(false),
 				eq(true)
 			));
 		}
