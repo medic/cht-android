@@ -31,7 +31,7 @@
       android:fullBackupContent="@xml/backup_rules_sdk_30_and_lower"
       android:dataExtractionRules="@xml/backup_rules"
       android:largeHeap="true"
-      tools:ignore="GoogleAppIndexingWarning,Instantiatable,LockedOrientationActivity,UnusedAttribute">
+      tools:ignore="LockedOrientationActivity,UnusedAttribute">
     <activity android:name="StartupActivity" android:exported="true">
       <intent-filter>
         <action android:name="android.intent.action.MAIN"/>
