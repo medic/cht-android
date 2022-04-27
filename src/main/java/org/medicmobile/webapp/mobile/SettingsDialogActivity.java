@@ -84,7 +84,7 @@ public class SettingsDialogActivity extends Activity {
 		String appUrl = text(R.id.txtAppUrl);
 
 		AsyncExecutor asyncExecutor = new AsyncExecutor();
-		asyncExecutor.executeAsync(new AppUrlVerificationTask(appUrl), (result) -> {
+		asyncExecutor.executeAsync(new AppUrlVerifier(appUrl), (result) -> {
 			trace(
 				this,
 				"SettingsDialogActivity :: Executing verification callback, result isOkay=%s, appUrl=%s",

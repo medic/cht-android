@@ -9,28 +9,35 @@ import static org.medicmobile.webapp.mobile.SimpleJsonClient2.redactUrl;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.medicmobile.webapp.mobile.AppUrlVerifier.AppUrlVerification;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.concurrent.Callable;
 
-public class AppUrlVerifier {
+public class AppUrlVerifier implements Callable<AppUrlVerification> {
 
 	private final SimpleJsonClient2 jsonClient;
+	private final String appUrl;
 
-	AppUrlVerifier(SimpleJsonClient2 jsonClient) {
+	AppUrlVerifier(SimpleJsonClient2 jsonClient, String appUrl) {
+		if (Utils.isDebug() && (appUrl == null || appUrl.trim().isEmpty())) {
+			throw new RuntimeException("AppUrlVerifier :: Cannot verify APP URL because it is not defined.");
+		}
+
 		this.jsonClient = jsonClient;
+		this.appUrl = appUrl;
 	}
 
-	public AppUrlVerifier() {
-		this(new SimpleJsonClient2());
+	public AppUrlVerifier(String appUrl) {
+		this(new SimpleJsonClient2(), appUrl);
 	}
 
 	/**
 	 * Verify the string passed is a valid CHT-Core URL.
 	 */
-	public AppUrlVerification verify(String appUrl) {
-		appUrl = clean(appUrl);
+	public AppUrlVerification call() {
+		String appUrl = clean(this.appUrl);
 
 		try {
 			JSONObject json = jsonClient.get(appUrl + "/setup/poll");
@@ -67,45 +74,26 @@ public class AppUrlVerifier {
 		}
 		return appUrl;
 	}
-}
 
-@SuppressWarnings("PMD.ShortMethodName")
-class AppUrlVerification {
-	public final String appUrl;
-	public final boolean isOk;
-	public final int failure;
+	@SuppressWarnings("PMD.ShortMethodName")
+	public static class AppUrlVerification {
+		public final String appUrl;
+		public final boolean isOk;
+		public final int failure;
 
-	private AppUrlVerification(String appUrl, boolean isOk, int failure) {
-		this.appUrl = appUrl;
-		this.isOk = isOk;
-		this.failure = failure;
-	}
-
-//> FACTORIES
-	public static AppUrlVerification ok(String appUrl) {
-		return new AppUrlVerification(appUrl, true, 0);
-	}
-
-	public static AppUrlVerification failure(String appUrl, int failure) {
-		return new AppUrlVerification(appUrl, false, failure);
-	}
-}
-
-class AppUrlVerificationTask implements Callable<AppUrlVerification> {
-	private final String appUrl;
-
-	public AppUrlVerificationTask(String appUrl) {
-		this.appUrl = appUrl;
-	}
-
-	@Override
-	public AppUrlVerification call() {
-		trace(this, "AppUrlVerificationTask :: Executing call, appUrl=%s", appUrl);
-
-		if (Utils.isDebug() && (appUrl == null || appUrl.isEmpty())) {
-			throw new RuntimeException("AppUrlVerificationTask :: Cannot verify APP URL because it is not defined.");
+		private AppUrlVerification(String appUrl, boolean isOk, int failure) {
+			this.appUrl = appUrl;
+			this.isOk = isOk;
+			this.failure = failure;
 		}
 
-		return new AppUrlVerifier().verify(appUrl);
+		//> FACTORIES
+		public static AppUrlVerification ok(String appUrl) {
+			return new AppUrlVerification(appUrl, true, 0);
+		}
+
+		public static AppUrlVerification failure(String appUrl, int failure) {
+			return new AppUrlVerification(appUrl, false, failure);
+		}
 	}
 }
