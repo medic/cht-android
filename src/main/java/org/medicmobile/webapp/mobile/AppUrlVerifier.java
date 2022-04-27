@@ -67,7 +67,7 @@ public class AppUrlVerifier implements Callable<AppUrlVerification> {
 	 * Clean-up the URL passed, removing leading and trailing spaces, and trailing "/" char
 	 * that the user may input by mistake.
 	 */
-	protected String clean(String appUrl) {
+	public static String clean(String appUrl) {
 		appUrl = appUrl.trim();
 		if (appUrl.endsWith("/")) {
 			return appUrl.substring(0, appUrl.length()-1);
