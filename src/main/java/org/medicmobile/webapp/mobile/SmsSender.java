@@ -17,6 +17,7 @@ import static org.medicmobile.webapp.mobile.MedicLog.trace;
 import static org.medicmobile.webapp.mobile.MedicLog.warn;
 import static java.lang.Integer.toHexString;
 
+import android.annotation.TargetApi;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -40,18 +41,10 @@ class SmsSender {
 	private static final String DELIVERY_REPORT = "medic.android.sms.DELIVERY_REPORT";
 
 	private final EmbeddedBrowserActivity parent;
-	private final SmsManager smsManager;
 	private Sms sms;
 
-	@SuppressWarnings("deprecation")
-	SmsSender(EmbeddedBrowserActivity parent) {
+	protected SmsSender(EmbeddedBrowserActivity parent) {
 		this.parent = parent;
-
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-			this.smsManager = this.parent.getSystemService(SmsManager.class);
-		} else {
-			this.smsManager = SmsManager.getDefault();
-		}
 
 		parent.registerReceiver(new BroadcastReceiver() {
 			@Override public void onReceive(Context ctx, Intent intent) {
@@ -76,6 +69,15 @@ class SmsSender {
 		}, createIntentFilter());
 	}
 
+	public static SmsSender createInstance(EmbeddedBrowserActivity parent) {
+		if(Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+			return new LSmsSender(parent);
+		} else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+			return new RSmsSender(parent);
+		}
+		return new SmsSender(parent);
+	}
+
 	void send(Sms sms) {
 		if (!checkPermissions()) {
 			this.sms = sms;
@@ -94,9 +96,30 @@ class SmsSender {
 		trace(this.parent, "SmsSender :: Cannot send sms without Send SMS permission. Sms ID=%s", this.sms.getId());
 	}
 
+	@TargetApi(31)
+	protected SmsManager getManager() {
+		return parent.getSystemService(android.telephony.SmsManager.class);
+	}
+
+	@TargetApi(23)
+	protected int getBroadcastFlags() {
+		return FLAG_ONE_SHOT | FLAG_IMMUTABLE;
+	}
+
+	/**
+	 * @see <a href="https://developer.android.com/reference/android/telephony/SmsMessage#createFromPdu(byte[])">createFromPdu(byte[])</a>
+	 */
+	@TargetApi(23)
+	protected SmsMessage createFromPdu(Intent intent) {
+		byte[] pdu = intent.getByteArrayExtra("pdu");
+		String format = intent.getStringExtra("format");
+		return SmsMessage.createFromPdu(pdu, format);
+	}
+
 //> PRIVATE HELPERS
 
 	private void sendSmsMultipart(Sms sms) {
+		SmsManager smsManager = getManager();
 		ArrayList<String> parts = smsManager.divideMessage(sms.getContent());
 
 		smsManager.sendMultipartTextMessage(
@@ -161,31 +184,16 @@ class SmsSender {
 		intent.putExtra("content", sms.getContent());
 		intent.putExtra("partIndex", partIndex);
 		intent.putExtra("totalParts", totalParts);
-		int flags = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ? FLAG_ONE_SHOT | FLAG_IMMUTABLE : FLAG_ONE_SHOT;
 
 		// Use a random number for the PendingIntent's requestCode - we
 		// will never want to cancel these intents, and we do not want
 		// collisions.  There is a small chance of collisions if two
 		// SMS are in-flight at the same time and are given the same id.
 
-		return getBroadcast(parent, UNUSED_REQUEST_CODE, intent, flags);
+		return getBroadcast(parent, UNUSED_REQUEST_CODE, intent, getBroadcastFlags());
 	}
 
 //> STATIC HELPERS
-	/**
-	 * @see <a href="https://developer.android.com/reference/android/telephony/SmsMessage#createFromPdu(byte[])">createFromPdu(byte[])</a>
-	 */
-	@SuppressWarnings("deprecation")
-	private  static SmsMessage createFromPdu(Intent intent) {
-		byte[] pdu = intent.getByteArrayExtra("pdu");
-		if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-			String format = intent.getStringExtra("format");
-			return SmsMessage.createFromPdu(pdu, format);
-		} else {
-			return SmsMessage.createFromPdu(pdu);
-		}
-	}
-
 	private static IntentFilter createIntentFilter() {
 		IntentFilter filter = new IntentFilter();
 
@@ -327,6 +335,31 @@ class SmsSender {
 			} else {
 				return "generic; no errorCode supplied";
 			}
+		}
+	}
+
+	static class RSmsSender extends SmsSender {
+
+		RSmsSender(EmbeddedBrowserActivity parent) {
+			super(parent);
+		}
+
+		protected SmsManager getManager(){
+			return SmsManager.getDefault();
+		}
+	}
+
+	static class LSmsSender extends RSmsSender {
+		LSmsSender(EmbeddedBrowserActivity parent) {
+			super(parent);
+		}
+
+		protected int getBroadcastFlags() {
+			return FLAG_ONE_SHOT;
+		}
+
+		protected SmsMessage createFromPdu(Intent intent) {
+			return SmsMessage.createFromPdu(intent.getByteArrayExtra("pdu"));
 		}
 	}
 

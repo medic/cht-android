@@ -1,7 +1,6 @@
 package org.medicmobile.webapp.mobile;
 
-import static android.app.Activity.RESULT_CANCELED;
-import static android.app.Activity.RESULT_OK;
+import static android.Manifest.permission.SEND_SMS;
 import static android.app.PendingIntent.FLAG_IMMUTABLE;
 import static android.app.PendingIntent.FLAG_ONE_SHOT;
 import static android.content.pm.PackageManager.PERMISSION_DENIED;
@@ -10,14 +9,14 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.mock;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.telephony.SmsManager;
@@ -25,6 +24,7 @@ import android.telephony.SmsManager;
 import androidx.core.content.ContextCompat;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.medicmobile.webapp.mobile.SmsSender.Sms;
@@ -32,102 +32,169 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
+import org.mockito.quality.Strictness;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @RunWith(RobolectricTestRunner.class)
-@Config(sdk=28)
 public class SmsSenderTest {
+	@Rule
+	public MockitoRule rule = MockitoJUnit.rule().strictness(Strictness.STRICT_STUBS);
 
+	private static final String SENDING_REPORT = "medic.android.sms.SENDING_REPORT";
+	private static final String DELIVERY_REPORT = "medic.android.sms.DELIVERY_REPORT";
+
+	@Mock
+	private PendingIntent mockPendingIntent;
 	@Mock
 	private SmsManager smsManager;
-
 	@Mock
-	EmbeddedBrowserActivity parentMock;
-
+	private EmbeddedBrowserActivity parentMock;
 	@Captor
-	ArgumentCaptor<Intent> argIntent;
+	private ArgumentCaptor<ArrayList<PendingIntent>> sentIntentsArg;
+	@Captor
+	private ArgumentCaptor<ArrayList<PendingIntent>> deliveryIntentsArg;
+	@Captor
+	private ArgumentCaptor<Intent> broadcastIntentArg;
+
+	private SmsSender smsSender;
 
 	@Before
 	public void setup() {
-		MockitoAnnotations.openMocks(this);
-		when(parentMock.registerReceiver(any(), any())).thenReturn(mock(Intent.class));
-		doNothing().when(smsManager).sendMultipartTextMessage(any(), any(), any(), any(), any());
+		smsSender = SmsSender.createInstance(parentMock);
+	}
+
+	@Test
+	public void createInstance() {
+		assertEquals(SmsSender.class, smsSender.getClass());
+	}
+
+	@Test
+	@Config(sdk = 30)
+	public void createInstance_RSmsSender() {
+		assertEquals(SmsSender.RSmsSender.class, smsSender.getClass());
+	}
+
+	@Test
+	@Config(sdk = 22)
+	public void createInstance_LSmsSender() {
+		assertEquals(SmsSender.LSmsSender.class, smsSender.getClass());
 	}
 
 	@Test
 	public void send_withPermissions_sendsMultipartTextMessage() {
 		try (
 			MockedStatic<ContextCompat> contextCompatMock = mockStatic(ContextCompat.class);
-			MockedStatic<SmsManager> smsManagerStaticMock = mockStatic(SmsManager.class);
-			MockedStatic<PendingIntent> pendingIntentMock = mockStatic(PendingIntent.class);
+			MockedStatic<PendingIntent> pendingIntentMock = mockStatic(PendingIntent.class)
 		) {
 			//> GIVEN
-			contextCompatMock.when(() -> ContextCompat.checkSelfPermission(any(), anyString())).thenReturn(PERMISSION_GRANTED);
-
-			ArrayList<String> expectedParts = new ArrayList<>();
-			expectedParts.add("some");
-			expectedParts.add("content");
-			when(smsManager.divideMessage(any())).thenReturn(expectedParts);
-			smsManagerStaticMock.when(() -> SmsManager.getDefault()).thenReturn(smsManager);
-
-			SmsSender smsSender = new SmsSender(parentMock);
+			contextCompatMock.when(() -> ContextCompat.checkSelfPermission(eq(parentMock), eq(SEND_SMS))).thenReturn(PERMISSION_GRANTED);
+			int expectedBroadcastFlags = FLAG_ONE_SHOT | FLAG_IMMUTABLE;
+			mockGetBroadcast(pendingIntentMock, expectedBroadcastFlags);
+			when(parentMock.getSystemService(android.telephony.SmsManager.class)).thenReturn(smsManager);
 			Sms sms = new Sms("id-123", "+12234556543", "some content");
+			ArrayList<String> expectedParts = new ArrayList<>(Arrays.asList("some", "content"));
+			when(smsManager.divideMessage(eq(sms.getContent()))).thenReturn(expectedParts);
 
 			//> WHEN
 			smsSender.send(sms);
 
 			//> THEN
-			verify(smsManager).sendMultipartTextMessage(
-				eq("+12234556543"),
-				eq(null),
-				eq(expectedParts),
-				any(ArrayList.class),
-				any(ArrayList.class)
-			);
+			assertSendMultipartTextMessage(sms, expectedParts);
+
 			pendingIntentMock.verify(() -> PendingIntent.getBroadcast(
 				eq(parentMock),
 				eq(0),
-				argIntent.capture(),
-				eq(FLAG_ONE_SHOT | FLAG_IMMUTABLE)
+				broadcastIntentArg.capture(),
+				eq(expectedBroadcastFlags)
+			), times(4));
+			List<Intent> allIntents = broadcastIntentArg.getAllValues();
+			assertEquals(4, allIntents.size());
+			assertBroadcastIntents(sms, SENDING_REPORT, allIntents.get(0), allIntents.get(1));
+			assertBroadcastIntents(sms, DELIVERY_REPORT, allIntents.get(2), allIntents.get(3));
+		}
+	}
+
+	@Test
+	@Config(sdk = 30)
+	public void send_withPermissions_sendsMultipartTextMessage_RSmsSender() {
+		try (
+			MockedStatic<ContextCompat> contextCompatMock = mockStatic(ContextCompat.class);
+			MockedStatic<SmsManager> smsManagerStaticMock = mockStatic(SmsManager.class);
+			MockedStatic<PendingIntent> pendingIntentMock = mockStatic(PendingIntent.class)
+		) {
+			//> GIVEN
+			contextCompatMock.when(() -> ContextCompat.checkSelfPermission(eq(parentMock), eq(SEND_SMS))).thenReturn(PERMISSION_GRANTED);
+			int expectedBroadcastFlags = FLAG_ONE_SHOT | FLAG_IMMUTABLE;
+			mockGetBroadcast(pendingIntentMock, expectedBroadcastFlags);
+			smsManagerStaticMock.when(SmsManager::getDefault).thenReturn(smsManager);
+			Sms sms = new Sms("id-123", "+12234556543", "some content");
+			ArrayList<String> expectedParts = new ArrayList<>(Arrays.asList("some", "content"));
+			when(smsManager.divideMessage(eq(sms.getContent()))).thenReturn(expectedParts);
+
+			//> WHEN
+			smsSender.send(sms);
+
+			//> THEN
+			assertSendMultipartTextMessage(sms, expectedParts);
+
+			pendingIntentMock.verify(() -> PendingIntent.getBroadcast(
+				eq(parentMock),
+				eq(0),
+				broadcastIntentArg.capture(),
+				eq(expectedBroadcastFlags)
 			), times(4));
 
-			List<Intent> allIntents = argIntent.getAllValues();
-			Intent sendIntentTxtPart1 = allIntents.get(0);
-			assertEquals("medic.android.sms.SENDING_REPORT", sendIntentTxtPart1.getAction());
-			assertEquals("id-123", sendIntentTxtPart1.getStringExtra("id"));
-			assertEquals("+12234556543", sendIntentTxtPart1.getStringExtra("destination"));
-			assertEquals("some content", sendIntentTxtPart1.getStringExtra("content"));
-			assertEquals(0, sendIntentTxtPart1.getIntExtra("partIndex", -1));
-			assertEquals(2, sendIntentTxtPart1.getIntExtra("totalParts", -1));
+			List<Intent> allIntents = broadcastIntentArg.getAllValues();
+			assertEquals(4, allIntents.size());
+			assertBroadcastIntents(sms, SENDING_REPORT, allIntents.get(0), allIntents.get(1));
+			assertBroadcastIntents(sms, DELIVERY_REPORT, allIntents.get(2), allIntents.get(3));
+		}
+	}
 
-			Intent sendIntentTxtPart2 = allIntents.get(1);
-			assertEquals("medic.android.sms.SENDING_REPORT", sendIntentTxtPart2.getAction());
-			assertEquals("id-123", sendIntentTxtPart2.getStringExtra("id"));
-			assertEquals("+12234556543", sendIntentTxtPart2.getStringExtra("destination"));
-			assertEquals("some content", sendIntentTxtPart2.getStringExtra("content"));
-			assertEquals(1, sendIntentTxtPart2.getIntExtra("partIndex", -1));
-			assertEquals(2, sendIntentTxtPart2.getIntExtra("totalParts", -1));
+	@Test
+	@Config(sdk = 22)
+	public void send_withPermissions_sendsMultipartTextMessage_LSmsSender() {
+		try (
+			MockedStatic<ContextCompat> contextCompatMock = mockStatic(ContextCompat.class);
+			MockedStatic<SmsManager> smsManagerStaticMock = mockStatic(SmsManager.class);
+			MockedStatic<PendingIntent> pendingIntentMock = mockStatic(PendingIntent.class)
+		) {
+			//> GIVEN
+			contextCompatMock.when(() -> ContextCompat.checkSelfPermission(eq(parentMock), eq(SEND_SMS))).thenReturn(PERMISSION_GRANTED);
+			int expectedBroadcastFlags = FLAG_ONE_SHOT;
+			mockGetBroadcast(pendingIntentMock, expectedBroadcastFlags);
+			smsManagerStaticMock.when(SmsManager::getDefault).thenReturn(smsManager);
+			Sms sms = new Sms("id-123", "+12234556543", "some content");
+			ArrayList<String> expectedParts = new ArrayList<>(Arrays.asList("some", "content"));
+			when(smsManager.divideMessage(eq(sms.getContent()))).thenReturn(expectedParts);
 
-			Intent deliveryIntentTxtPart1 = allIntents.get(2);
-			assertEquals("medic.android.sms.DELIVERY_REPORT", deliveryIntentTxtPart1.getAction());
-			assertEquals("id-123", deliveryIntentTxtPart1.getStringExtra("id"));
-			assertEquals("+12234556543", deliveryIntentTxtPart1.getStringExtra("destination"));
-			assertEquals("some content", deliveryIntentTxtPart1.getStringExtra("content"));
-			assertEquals(0, deliveryIntentTxtPart1.getIntExtra("partIndex", -1));
-			assertEquals(2, deliveryIntentTxtPart1.getIntExtra("totalParts", -1));
+			//> WHEN
+			smsSender.send(sms);
 
-			Intent deliveryIntentTxtPart2 = allIntents.get(3);
-			assertEquals("medic.android.sms.DELIVERY_REPORT", deliveryIntentTxtPart2.getAction());
-			assertEquals("id-123", deliveryIntentTxtPart2.getStringExtra("id"));
-			assertEquals("+12234556543", deliveryIntentTxtPart2.getStringExtra("destination"));
-			assertEquals("some content", deliveryIntentTxtPart2.getStringExtra("content"));
-			assertEquals(1, deliveryIntentTxtPart2.getIntExtra("partIndex", -1));
-			assertEquals(2, deliveryIntentTxtPart2.getIntExtra("totalParts", -1));
+			//> THEN
+			assertSendMultipartTextMessage(sms, expectedParts);
+
+			pendingIntentMock.verify(() -> PendingIntent.getBroadcast(
+				eq(parentMock),
+				eq(0),
+				broadcastIntentArg.capture(),
+				eq(expectedBroadcastFlags)
+			), times(4));
+
+			List<Intent> allIntents = broadcastIntentArg.getAllValues();
+			assertEquals(4, allIntents.size());
+			assertBroadcastIntents(sms, SENDING_REPORT, allIntents.get(0), allIntents.get(1));
+			assertBroadcastIntents(sms, DELIVERY_REPORT, allIntents.get(2), allIntents.get(3));
 		}
 	}
 
@@ -135,55 +202,34 @@ public class SmsSenderTest {
 	public void resumeProcess_withResultOk_sendsMultipartTextMessage() {
 		try (
 			MockedStatic<ContextCompat> contextCompatMock = mockStatic(ContextCompat.class);
-			MockedStatic<SmsManager> smsManagerStaticMock = mockStatic(SmsManager.class);
-			MockedStatic<PendingIntent> pendingIntentMock = mockStatic(PendingIntent.class);
+			MockedStatic<PendingIntent> pendingIntentMock = mockStatic(PendingIntent.class)
 		) {
 			//> GIVEN
 			contextCompatMock.when(() -> ContextCompat.checkSelfPermission(any(), anyString())).thenReturn(PERMISSION_DENIED);
-
-			ArrayList<String> expectedParts = new ArrayList<>();
-			expectedParts.add("some content");
-			when(smsManager.divideMessage(any())).thenReturn(expectedParts);
-			smsManagerStaticMock.when(() -> SmsManager.getDefault()).thenReturn(smsManager);
-
-			SmsSender smsSender = new SmsSender(parentMock);
+			int expectedBroadcastFlags = FLAG_ONE_SHOT | FLAG_IMMUTABLE;
+			mockGetBroadcast(pendingIntentMock, expectedBroadcastFlags);
+			when(parentMock.getSystemService(android.telephony.SmsManager.class)).thenReturn(smsManager);
 			Sms sms = new Sms("id-123", "+12234556543", "some content");
-			smsSender.send(sms);
+			ArrayList<String> expectedParts = new ArrayList<>(Collections.singleton("some content"));
+			when(smsManager.divideMessage(sms.getContent())).thenReturn(expectedParts);
 
 			//> WHEN
-			smsSender.resumeProcess(RESULT_OK);
+			smsSender.send(sms);
+			smsSender.resumeProcess(Activity.RESULT_OK);
 
 			//> THEN
-			verify(smsManager).sendMultipartTextMessage(
-				eq("+12234556543"),
-				eq(null),
-				eq(expectedParts),
-				any(ArrayList.class),
-				any(ArrayList.class)
-			);
+			assertSendMultipartTextMessage(sms, expectedParts);
+
 			pendingIntentMock.verify(() -> PendingIntent.getBroadcast(
 				eq(parentMock),
 				eq(0),
-				argIntent.capture(),
-				eq(FLAG_ONE_SHOT | FLAG_IMMUTABLE)
+				broadcastIntentArg.capture(),
+				eq(expectedBroadcastFlags)
 			), times(2));
-
-			List<Intent> allIntents = argIntent.getAllValues();
-			Intent sendIntent = allIntents.get(0);
-			assertEquals("medic.android.sms.SENDING_REPORT", sendIntent.getAction());
-			assertEquals("id-123", sendIntent.getStringExtra("id"));
-			assertEquals("+12234556543", sendIntent.getStringExtra("destination"));
-			assertEquals("some content", sendIntent.getStringExtra("content"));
-			assertEquals(0, sendIntent.getIntExtra("partIndex", -1));
-			assertEquals(1, sendIntent.getIntExtra("totalParts", -1));
-
-			Intent deliveryIntent = allIntents.get(1);
-			assertEquals("medic.android.sms.DELIVERY_REPORT", deliveryIntent.getAction());
-			assertEquals("id-123", deliveryIntent.getStringExtra("id"));
-			assertEquals("+12234556543", deliveryIntent.getStringExtra("destination"));
-			assertEquals("some content", deliveryIntent.getStringExtra("content"));
-			assertEquals(0, deliveryIntent.getIntExtra("partIndex", -1));
-			assertEquals(1, deliveryIntent.getIntExtra("totalParts", -1));
+			List<Intent> allIntents = broadcastIntentArg.getAllValues();
+			assertEquals(2, allIntents.size());
+			assertBroadcastIntents(sms, SENDING_REPORT, allIntents.get(0));
+			assertBroadcastIntents(sms, DELIVERY_REPORT, allIntents.get(1));
 		}
 	}
 
@@ -191,17 +237,15 @@ public class SmsSenderTest {
 	public void resumeProcess_withBadResult_logsWarningAndDoesntSendSms() {
 		try (
 			MockedStatic<ContextCompat> contextCompatMock = mockStatic(ContextCompat.class);
-			MockedStatic<MedicLog> medicLogMock = mockStatic(MedicLog.class);
+			MockedStatic<MedicLog> medicLogMock = mockStatic(MedicLog.class)
 		) {
 			//> GIVEN
 			contextCompatMock.when(() -> ContextCompat.checkSelfPermission(any(), anyString())).thenReturn(PERMISSION_DENIED);
-
-			SmsSender smsSender = new SmsSender(parentMock);
 			Sms sms = new Sms("id-123", "+12234556543", "some content");
 			smsSender.send(sms);
 
 			//> WHEN
-			smsSender.resumeProcess(RESULT_CANCELED);
+			smsSender.resumeProcess(Activity.RESULT_CANCELED);
 
 			//> THEN
 			verify(smsManager, never()).sendMultipartTextMessage(any(), any(), any(), any(), any());
@@ -211,5 +255,42 @@ public class SmsSenderTest {
 				eq(sms.getId())
 			));
 		}
+	}
+
+	private void mockGetBroadcast(MockedStatic<PendingIntent> pendingIntentMock, int expectedBroadcastFlags) {
+		pendingIntentMock.when(() -> PendingIntent.getBroadcast(
+			eq(parentMock),
+			eq(0),
+			any(Intent.class),
+			eq(expectedBroadcastFlags)
+		)).thenReturn(mockPendingIntent);
+	}
+
+	private void assertSendMultipartTextMessage(Sms sms, ArrayList<String> expectedParts) {
+		verify(smsManager).sendMultipartTextMessage(
+			eq(sms.getDestination()),
+			isNull(),
+			eq(expectedParts),
+			sentIntentsArg.capture(),
+			deliveryIntentsArg.capture()
+		);
+		List<PendingIntent> expectedIntents = expectedParts.stream()
+			.map(ignored -> mockPendingIntent)
+			.collect(Collectors.toList());
+		assertEquals(expectedIntents, sentIntentsArg.getValue());
+		assertEquals(expectedIntents, deliveryIntentsArg.getValue());
+	}
+
+	private void assertBroadcastIntents(Sms sms, String expectedAction, Intent... deliveryIntents) {
+		int deliveryCount = deliveryIntents.length;
+		IntStream.range(0, deliveryCount).forEach(index -> {
+			Intent deliveryIntent = deliveryIntents[index];
+			assertEquals(expectedAction, deliveryIntent.getAction());
+			assertEquals(sms.getId(), deliveryIntent.getStringExtra("id"));
+			assertEquals(sms.getDestination(), deliveryIntent.getStringExtra("destination"));
+			assertEquals(sms.getContent(), deliveryIntent.getStringExtra("content"));
+			assertEquals(index, deliveryIntent.getIntExtra("partIndex", -1));
+			assertEquals(deliveryCount, deliveryIntent.getIntExtra("totalParts", -1));
+		});
 	}
 }

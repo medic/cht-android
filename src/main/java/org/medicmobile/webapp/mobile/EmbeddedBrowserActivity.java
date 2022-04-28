@@ -73,7 +73,7 @@ public class EmbeddedBrowserActivity extends Activity {
 		this.chtExternalAppHandler = new ChtExternalAppHandler(this);
 
 		try {
-			this.smsSender = new SmsSender(this);
+			this.smsSender = SmsSender.createInstance(this);
 		} catch(Exception ex) {
 			error(ex, "Failed to create SmsSender.");
 		}
