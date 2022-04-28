@@ -90,6 +90,7 @@ class SmsSender {
 	void resumeProcess(int resultCode) {
 		if (resultCode == RESULT_OK && this.sms != null) {
 			sendSmsMultipart(this.sms);
+			this.sms = null;
 			return;
 		}
 
