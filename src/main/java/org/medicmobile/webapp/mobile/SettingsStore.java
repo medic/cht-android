@@ -31,7 +31,7 @@ public abstract class SettingsStore {
 			return false;
 		}
 
-		return getAppUrl().equals(url.trim().replaceAll("/$", ""));
+		return getAppUrl().equals(AppUrlVerifier.clean(url));
 	}
 
 	public abstract boolean hasWebappSettings();

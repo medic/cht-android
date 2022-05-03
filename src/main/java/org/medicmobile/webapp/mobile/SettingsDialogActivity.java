@@ -19,6 +19,8 @@ import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
+import org.medicmobile.webapp.mobile.util.AsyncExecutor;
+
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -81,8 +83,8 @@ public class SettingsDialogActivity extends Activity {
 
 		String appUrl = text(R.id.txtAppUrl);
 
-		TaskRunner taskRunner = new TaskRunner();
-		taskRunner.executeAsync(new AppUrlVerificationTask(appUrl), (result) -> {
+		AsyncExecutor asyncExecutor = new AsyncExecutor();
+		asyncExecutor.executeAsync(new AppUrlVerifier(appUrl), (result) -> {
 			trace(
 				this,
 				"SettingsDialogActivity :: Executing verification callback, result isOkay=%s, appUrl=%s",
