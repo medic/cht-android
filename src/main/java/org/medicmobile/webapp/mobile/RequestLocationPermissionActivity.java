@@ -19,6 +19,8 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
 
+import java.util.Optional;
+
 /**
  * Shows a confirmation view that displays a "prominent" disclosure about how
  * the user geolocation data is used, asking to confirm whether to allow the app to
@@ -34,10 +36,20 @@ public class RequestLocationPermissionActivity extends FragmentActivity {
 
 	private final ActivityResultLauncher<String[]> requestPermissionLauncher =
 		registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), grantedMap -> {
-			boolean allGranted = grantedMap.size() > 0 && !grantedMap.containsValue(false);
+			boolean fineLocationGranted = Optional
+				.ofNullable(grantedMap.get(ACCESS_FINE_LOCATION))
+				.orElse(false);
+			boolean coarseLocationGranted = Optional
+				.ofNullable(grantedMap.get(ACCESS_COARSE_LOCATION))
+				.orElse(false);
 
-			if (allGranted) {
-				trace(this, "RequestLocationPermissionActivity :: User allowed location permission.");
+			if (fineLocationGranted || coarseLocationGranted) {
+				trace(
+					this,
+					"RequestLocationPermissionActivity :: User allowed at least one location permission. Fine:%s, Coarse:%s",
+					fineLocationGranted,
+					coarseLocationGranted
+				);
 				setResult(RESULT_OK);
 				finish();
 				return;
@@ -50,7 +62,7 @@ public class RequestLocationPermissionActivity extends FragmentActivity {
 				if (rationalFineLocation || rationalCoarseLocation) {
 					trace(
 						this,
-						"RequestLocationPermissionActivity :: User rejected location permission twice or has selected \"never ask again\"." +
+						"RequestLocationPermissionActivity :: User rejected all location permissions twice or has selected \"never ask again\"." +
 							" Sending user to the app's setting to manually grant the permission."
 					);
 					Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
@@ -70,8 +82,13 @@ public class RequestLocationPermissionActivity extends FragmentActivity {
 			boolean hasFineLocation = ContextCompat.checkSelfPermission(this, ACCESS_FINE_LOCATION) == PERMISSION_GRANTED;
 			boolean hasCoarseLocation = ContextCompat.checkSelfPermission(this, ACCESS_COARSE_LOCATION) == PERMISSION_GRANTED;
 
-			if (hasFineLocation && hasCoarseLocation) {
-				trace(this, "RequestLocationPermissionActivity :: User granted location permission from app's settings.");
+			if (hasFineLocation || hasCoarseLocation) {
+				trace(
+					this,
+					"RequestLocationPermissionActivity :: User granted at least one location permission from app's settings. Fine:%s, Coarse:%s",
+					hasFineLocation,
+					hasCoarseLocation
+				);
 				setResult(RESULT_OK);
 				finish();
 				return;
