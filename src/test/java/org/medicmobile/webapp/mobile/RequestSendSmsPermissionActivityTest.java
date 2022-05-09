@@ -1,19 +1,17 @@
 package org.medicmobile.webapp.mobile;
 
-import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
-import static android.Manifest.permission.ACCESS_FINE_LOCATION;
+import static android.Manifest.permission.SEND_SMS;
 import static android.app.Activity.RESULT_CANCELED;
 import static android.app.Activity.RESULT_OK;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mockStatic;
 import static org.robolectric.RuntimeEnvironment.getApplication;
 import static org.robolectric.Shadows.shadowOf;
 
-import android.app.Instrumentation.ActivityResult;
+import android.app.Instrumentation;
 import android.content.Intent;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -35,10 +33,9 @@ import org.robolectric.shadows.ShadowApplicationPackageManager;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk=28)
-public class RequestLocationPermissionActivityTest {
-
+public class RequestSendSmsPermissionActivityTest {
 	@Rule
-	public ActivityScenarioRule<RequestLocationPermissionActivity> scenarioRule = new ActivityScenarioRule<>(RequestLocationPermissionActivity.class);
+	public ActivityScenarioRule<RequestSendSmsPermissionActivity> scenarioRule = new ActivityScenarioRule<>(RequestSendSmsPermissionActivity.class);
 
 	private ShadowApplicationPackageManager packageManager;
 
@@ -50,31 +47,28 @@ public class RequestLocationPermissionActivityTest {
 	@Test
 	public void onClickAllow_withPermissionGranted_setResolveOk() {
 		try(MockedStatic<MedicLog> medicLogMock = mockStatic(MedicLog.class)) {
-			ActivityScenario<RequestLocationPermissionActivity> scenario = scenarioRule.getScenario();
+			ActivityScenario<RequestSendSmsPermissionActivity> scenario = scenarioRule.getScenario();
 
-			scenario.onActivity(requestLocationPermissionActivity -> {
+			scenario.onActivity(requestSendSmsPermissionActivity -> {
 				//> GIVEN
-				ShadowActivity shadowActivity = shadowOf(requestLocationPermissionActivity);
-				shadowActivity.grantPermissions(ACCESS_FINE_LOCATION, ACCESS_COARSE_LOCATION);
+				ShadowActivity shadowActivity = shadowOf(requestSendSmsPermissionActivity);
+				shadowActivity.grantPermissions(SEND_SMS);
 
 				//> WHEN
-				requestLocationPermissionActivity.onClickOk(null);
+				requestSendSmsPermissionActivity.onClickAllow(null);
 			});
 			scenario.moveToState(Lifecycle.State.DESTROYED);
 
 			//> THEN
-			ActivityResult result = scenario.getResult();
+			Instrumentation.ActivityResult result = scenario.getResult();
 			assertEquals(RESULT_OK, result.getResultCode());
-			Intent resultIntent = result.getResultData();
-			assertNull(resultIntent);
-
 			medicLogMock.verify(() -> MedicLog.trace(
-				any(RequestLocationPermissionActivity.class),
-				eq("RequestLocationPermissionActivity :: User agree with prominent disclosure message.")
+				any(RequestSendSmsPermissionActivity.class),
+				eq("RequestSendSmsPermissionActivity :: User agree with prominent disclosure message.")
 			));
 			medicLogMock.verify(() -> MedicLog.trace(
-				any(RequestLocationPermissionActivity.class),
-				eq("RequestLocationPermissionActivity :: User allowed location permission.")
+				any(RequestSendSmsPermissionActivity.class),
+				eq("RequestSendSmsPermissionActivity :: User allowed Send SMS permission.")
 			));
 		}
 	}
@@ -82,18 +76,17 @@ public class RequestLocationPermissionActivityTest {
 	@Test
 	public void onClickAllow_withPermissionDenied_setResolveCanceled() {
 		try(MockedStatic<MedicLog> medicLogMock = mockStatic(MedicLog.class)) {
-			ActivityScenario<RequestLocationPermissionActivity> scenario = scenarioRule.getScenario();
+			ActivityScenario<RequestSendSmsPermissionActivity> scenario = scenarioRule.getScenario();
 
-			scenario.onActivity(requestLocationPermissionActivity -> {
+			scenario.onActivity(requestSendSmsPermissionActivity -> {
 				Intents.init();
 
 				//> GIVEN
-				ShadowActivity shadowActivity = shadowOf(requestLocationPermissionActivity);
-				packageManager.setShouldShowRequestPermissionRationale(ACCESS_FINE_LOCATION, true);
-				packageManager.setShouldShowRequestPermissionRationale(ACCESS_COARSE_LOCATION, true);
+				ShadowActivity shadowActivity = shadowOf(requestSendSmsPermissionActivity);
+				packageManager.setShouldShowRequestPermissionRationale(SEND_SMS, true);
 
 				//> WHEN
-				requestLocationPermissionActivity.onClickOk(null);
+				requestSendSmsPermissionActivity.onClickAllow(null);
 				Intent permissionIntent = shadowActivity.peekNextStartedActivityForResult().intent;
 				shadowActivity.receiveResult(permissionIntent, RESULT_OK, null);
 
@@ -102,25 +95,21 @@ public class RequestLocationPermissionActivityTest {
 				Bundle extras = permissionIntent.getExtras();
 				assertNotNull(extras);
 				String[] permissions = extras.getStringArray("android.content.pm.extra.REQUEST_PERMISSIONS_NAMES");
-				assertEquals(2, permissions.length);
-				assertEquals(ACCESS_FINE_LOCATION, permissions[0]);
-				assertEquals(ACCESS_COARSE_LOCATION, permissions[1]);
+				assertEquals(1, permissions.length);
+				assertEquals(SEND_SMS, permissions[0]);
 
 				Intents.release();
 			});
 
-			ActivityResult result = scenario.getResult();
+			Instrumentation.ActivityResult result = scenario.getResult();
 			assertEquals(RESULT_CANCELED, result.getResultCode());
-			Intent resultIntent = result.getResultData();
-			assertNull(resultIntent);
-
 			medicLogMock.verify(() -> MedicLog.trace(
-				any(RequestLocationPermissionActivity.class),
-				eq("RequestLocationPermissionActivity :: User agree with prominent disclosure message.")
+				any(RequestSendSmsPermissionActivity.class),
+				eq("RequestSendSmsPermissionActivity :: User agree with prominent disclosure message.")
 			));
 			medicLogMock.verify(() -> MedicLog.trace(
-				any(RequestLocationPermissionActivity.class),
-				eq("RequestLocationPermissionActivity :: User rejected location permission.")
+				any(RequestSendSmsPermissionActivity.class),
+				eq("RequestSendSmsPermissionActivity :: User rejected Send SMS permission.")
 			));
 		}
 	}
@@ -128,24 +117,23 @@ public class RequestLocationPermissionActivityTest {
 	@Test
 	public void onClickAllow_withNeverAskAgainAndPermissionGranted_setResolveOk() {
 		try(MockedStatic<MedicLog> medicLogMock = mockStatic(MedicLog.class)) {
-			ActivityScenario<RequestLocationPermissionActivity> scenario = scenarioRule.getScenario();
+			ActivityScenario<RequestSendSmsPermissionActivity> scenario = scenarioRule.getScenario();
 
-			scenario.onActivity(requestLocationPermissionActivity -> {
+			scenario.onActivity(requestSendSmsPermissionActivity -> {
 				Intents.init();
 
 				//> GIVEN
-				String packageName = "package:" + requestLocationPermissionActivity.getPackageName();
-				ShadowActivity shadowActivity = shadowOf(requestLocationPermissionActivity);
+				String packageName = "package:" + requestSendSmsPermissionActivity.getPackageName();
+				ShadowActivity shadowActivity = shadowOf(requestSendSmsPermissionActivity);
 				// Setting "Never ask again" case.
-				packageManager.setShouldShowRequestPermissionRationale(ACCESS_FINE_LOCATION, false);
-				packageManager.setShouldShowRequestPermissionRationale(ACCESS_COARSE_LOCATION, false);
+				packageManager.setShouldShowRequestPermissionRationale(SEND_SMS, false);
 
 				//> WHEN
-				requestLocationPermissionActivity.onClickOk(null);
+				requestSendSmsPermissionActivity.onClickAllow(null);
 				Intent permissionIntent = shadowActivity.peekNextStartedActivityForResult().intent;
 				shadowActivity.receiveResult(permissionIntent, RESULT_OK, null);
 
-				shadowActivity.grantPermissions(ACCESS_FINE_LOCATION, ACCESS_COARSE_LOCATION);
+				shadowActivity.grantPermissions(SEND_SMS);
 				Intent settingsIntent = shadowActivity.peekNextStartedActivityForResult().intent;
 				shadowActivity.receiveResult(settingsIntent, RESULT_OK, null);
 
@@ -156,23 +144,20 @@ public class RequestLocationPermissionActivityTest {
 				Intents.release();
 			});
 
-			ActivityResult result = scenario.getResult();
+			Instrumentation.ActivityResult result = scenario.getResult();
 			assertEquals(RESULT_OK, result.getResultCode());
-			Intent resultIntent = result.getResultData();
-			assertNull(resultIntent);
-
 			medicLogMock.verify(() -> MedicLog.trace(
-				any(RequestLocationPermissionActivity.class),
-				eq("RequestLocationPermissionActivity :: User agree with prominent disclosure message.")
+				any(RequestSendSmsPermissionActivity.class),
+				eq("RequestSendSmsPermissionActivity :: User agree with prominent disclosure message.")
 			));
 			medicLogMock.verify(() -> MedicLog.trace(
-				any(RequestLocationPermissionActivity.class),
-				eq("RequestLocationPermissionActivity :: User rejected location permission twice or has selected \"never ask again\"." +
+				any(RequestSendSmsPermissionActivity.class),
+				eq("RequestSendSmsPermissionActivity :: User rejected Send SMS permission twice or has selected \"never ask again\"." +
 					" Sending user to the app's setting to manually grant the permission.")
 			));
 			medicLogMock.verify(() -> MedicLog.trace(
-				any(RequestLocationPermissionActivity.class),
-				eq("RequestLocationPermissionActivity :: User granted location permission from app's settings.")
+				any(RequestSendSmsPermissionActivity.class),
+				eq("RequestSendSmsPermissionActivity :: User granted Send SMS permission from app's settings.")
 			));
 		}
 	}
@@ -180,20 +165,19 @@ public class RequestLocationPermissionActivityTest {
 	@Test
 	public void onClickAllow_withNeverAskAgainAndPermissionDenied_setResolveCanceled() {
 		try(MockedStatic<MedicLog> medicLogMock = mockStatic(MedicLog.class)) {
-			ActivityScenario<RequestLocationPermissionActivity> scenario = scenarioRule.getScenario();
+			ActivityScenario<RequestSendSmsPermissionActivity> scenario = scenarioRule.getScenario();
 
-			scenario.onActivity(requestLocationPermissionActivity -> {
+			scenario.onActivity(requestSendSmsPermissionActivity -> {
 				Intents.init();
 
 				//> GIVEN
-				String packageName = "package:" + requestLocationPermissionActivity.getPackageName();
-				ShadowActivity shadowActivity = shadowOf(requestLocationPermissionActivity);
+				String packageName = "package:" + requestSendSmsPermissionActivity.getPackageName();
+				ShadowActivity shadowActivity = shadowOf(requestSendSmsPermissionActivity);
 				// Setting "Never ask again" case.
-				packageManager.setShouldShowRequestPermissionRationale(ACCESS_FINE_LOCATION, false);
-				packageManager.setShouldShowRequestPermissionRationale(ACCESS_COARSE_LOCATION, false);
+				packageManager.setShouldShowRequestPermissionRationale(SEND_SMS, false);
 
 				//> WHEN
-				requestLocationPermissionActivity.onClickOk(null);
+				requestSendSmsPermissionActivity.onClickAllow(null);
 				Intent permissionIntent = shadowActivity.peekNextStartedActivityForResult().intent;
 				shadowActivity.receiveResult(permissionIntent, RESULT_OK, null);
 
@@ -207,37 +191,33 @@ public class RequestLocationPermissionActivityTest {
 				Intents.release();
 			});
 
-			ActivityResult result = scenario.getResult();
+			Instrumentation.ActivityResult result = scenario.getResult();
 			assertEquals(RESULT_CANCELED, result.getResultCode());
-			Intent resultIntent = result.getResultData();
-			assertNull(resultIntent);
-
 			medicLogMock.verify(() -> MedicLog.trace(
-				any(RequestLocationPermissionActivity.class),
-				eq("RequestLocationPermissionActivity :: User agree with prominent disclosure message.")
+				any(RequestSendSmsPermissionActivity.class),
+				eq("RequestSendSmsPermissionActivity :: User agree with prominent disclosure message.")
 			));
 			medicLogMock.verify(() -> MedicLog.trace(
-				any(RequestLocationPermissionActivity.class),
-				eq("RequestLocationPermissionActivity :: User rejected location permission twice or has selected \"never ask again\"." +
+				any(RequestSendSmsPermissionActivity.class),
+				eq("RequestSendSmsPermissionActivity :: User rejected Send SMS permission twice or has selected \"never ask again\"." +
 					" Sending user to the app's setting to manually grant the permission.")
 			));
 			medicLogMock.verify(() -> MedicLog.trace(
-				any(RequestLocationPermissionActivity.class),
-				eq("RequestLocationPermissionActivity :: User didn't grant location permission from app's settings.")
+				any(RequestSendSmsPermissionActivity.class),
+				eq("RequestSendSmsPermissionActivity :: User didn't grant Send SMS permission from app's settings.")
 			));
 		}
 	}
 
-
 	@Test
 	public void onClickNegative_noIntentsStarted_setResolveCanceled() {
 		try(MockedStatic<MedicLog> medicLogMock = mockStatic(MedicLog.class)) {
-			ActivityScenario<RequestLocationPermissionActivity> scenario = scenarioRule.getScenario();
+			ActivityScenario<RequestSendSmsPermissionActivity> scenario = scenarioRule.getScenario();
 
-			scenario.onActivity(requestLocationPermissionActivity -> {
+			scenario.onActivity(requestSendSmsPermissionActivity -> {
 				Intents.init();
 				//> WHEN
-				requestLocationPermissionActivity.onClickNegative(null);
+				requestSendSmsPermissionActivity.onClickDeny(null);
 
 				//> THEN
 				assertEquals(0, Intents.getIntents().size());
@@ -246,14 +226,11 @@ public class RequestLocationPermissionActivityTest {
 			});
 			scenario.moveToState(Lifecycle.State.DESTROYED);
 
-			ActivityResult result = scenario.getResult();
+			Instrumentation.ActivityResult result = scenario.getResult();
 			assertEquals(RESULT_CANCELED, result.getResultCode());
-			Intent resultIntent = result.getResultData();
-			assertNull(resultIntent);
-
 			medicLogMock.verify(() -> MedicLog.trace(
-				any(RequestLocationPermissionActivity.class),
-				eq("RequestLocationPermissionActivity :: User disagree with prominent disclosure message.")
+				any(RequestSendSmsPermissionActivity.class),
+				eq("RequestSendSmsPermissionActivity :: User disagree with prominent disclosure message.")
 			));
 		}
 	}

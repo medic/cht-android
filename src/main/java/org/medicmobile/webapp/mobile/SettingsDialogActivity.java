@@ -1,6 +1,5 @@
 package org.medicmobile.webapp.mobile;
 
-import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static org.medicmobile.webapp.mobile.MedicLog.trace;
 import static org.medicmobile.webapp.mobile.SimpleJsonClient2.redactUrl;
 
@@ -20,46 +19,19 @@ import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
+import org.medicmobile.webapp.mobile.util.AsyncExecutor;
+
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import medic.android.ActivityBackgroundTask;
-
 public class SettingsDialogActivity extends Activity {
-
 	private static final int STATE_LIST = 1;
 	private static final int STATE_FORM = 2;
 	private SettingsStore settings;
 	private ServerRepo serverRepo;
 	private int state;
-
-	private static class AppUrlVerificationTask extends ActivityBackgroundTask<SettingsDialogActivity, String, Void, AppUrlVerification> {
-
-		private final AppUrlVerifier verifier = new AppUrlVerifier();
-
-		AppUrlVerificationTask(SettingsDialogActivity a) {
-			super(a);
-		}
-
-		protected AppUrlVerification doInBackground(String... appUrl) {
-			if(DEBUG && appUrl.length != 1) throw new IllegalArgumentException();
-			return verifier.verify(appUrl[0]);
-		}
-		protected void onPostExecute(AppUrlVerification result) {
-			SettingsDialogActivity ctx = getRequiredCtx("AppUrlVerificationTask.onPostExecute()");
-
-			if(result.isOk) {
-				ctx.saveSettings(new WebappSettings(result.appUrl));
-				ctx.serverRepo.save(result.appUrl);
-			} else {
-				ctx.showError(R.id.txtAppUrl, result.failure);
-				ctx.submitButton().setEnabled(true);
-				ctx.cancelButton().setEnabled(true);
-			}
-		}
-	}
 
 	@Override public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -111,7 +83,23 @@ public class SettingsDialogActivity extends Activity {
 
 		String appUrl = text(R.id.txtAppUrl);
 
-		new AppUrlVerificationTask(this).execute(appUrl);
+		AsyncExecutor asyncExecutor = new AsyncExecutor();
+		asyncExecutor.executeAsync(new AppUrlVerifier(appUrl), (result) -> {
+			trace(
+				this,
+				"SettingsDialogActivity :: Executing verification callback, result isOkay=%s, appUrl=%s",
+				result.isOk, result.appUrl
+			);
+
+			if (result.isOk) {
+				saveSettings(new WebappSettings(result.appUrl));
+				serverRepo.save(result.appUrl);
+				return;
+			}
+			showError(R.id.txtAppUrl, result.failure);
+			submitButton().setEnabled(true);
+			cancelButton().setEnabled(true);
+		});
 	}
 
 	public void cancelSettingsEdit(View view) {

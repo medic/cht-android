@@ -39,6 +39,12 @@
   <string name="storageRequestDenyButton">Deny</string>
   <string name="storageRequestIconDescription">My storage icon</string>
 
+  <string name="sendSmsRequestTitle">SMS access</string>
+  <string name="sendSmsRequestMessage">%s sends reports as SMS to analyze and improve health outcomes in your area. To permit SMS access select \"Allow\", and then grant SMS access in the next prompt.</string>
+  <string name="sendSmsRequestAllowButton">Allow</string>
+  <string name="sendSmsRequestDenyButton">Deny</string>
+  <string name="sendSmsRequestIconDescription">My SMS icon</string>
+
 	<string name="loadingIconDescription">Loading…</string>
 	<string name="upgradingTitle">Upgrading your app</string>
 	<string name="upgradingMessage">You\'re upgrading to the latest version. Please wait while your data is being migrated.</string>

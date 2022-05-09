@@ -1,48 +1,62 @@
 package org.medicmobile.webapp.mobile;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.annotation.Config;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 import static org.medicmobile.webapp.mobile.R.string.errAppUrl_apiNotReady;
 import static org.medicmobile.webapp.mobile.R.string.errAppUrl_appNotFound;
 import static org.medicmobile.webapp.mobile.R.string.errAppUrl_serverNotFound;
 import static org.medicmobile.webapp.mobile.R.string.errInvalidUrl;
-import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.medicmobile.webapp.mobile.AppUrlVerifier.AppUrlVerification;
+import org.mockito.Mock;
+import org.mockito.MockedStatic;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
+import org.mockito.quality.Strictness;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
+
+import java.io.IOException;
+import java.net.MalformedURLException;
 
 @RunWith(RobolectricTestRunner.class)
-@Config(sdk=28)
+@Config(sdk = 28)
 public class AppUrlVerifierTest {
+	@Rule
+	public MockitoRule rule = MockitoJUnit.rule().strictness(Strictness.STRICT_STUBS);
 
-	private AppUrlVerifier buildAppUrlVerifier(JSONObject jsonResponse) {
+	@Mock
+	private SimpleJsonClient2 mockJsonClient;
+
+	private void mockJsonClientGet(JSONObject jsonResponse) {
 		try {
-			SimpleJsonClient2 mockJsonClient = mock(SimpleJsonClient2.class);
 			when(mockJsonClient.get((String) any())).thenReturn(jsonResponse);
-			return new AppUrlVerifier(mockJsonClient);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	private AppUrlVerifier buildAppUrlVerifierWithException(Exception e) {
+	private void mockJsonClientGetException(Exception e) {
 		try {
-			SimpleJsonClient2 mockJsonClient = mock(SimpleJsonClient2.class);
 			when(mockJsonClient.get((String) any())).thenThrow(e);
-			return new AppUrlVerifier(mockJsonClient);
 		} catch (Exception exception) {
 			throw new RuntimeException(exception);
 		}
 	}
 
-	private AppUrlVerifier buildAppUrlVerifierOk() {
+	private void mockJsonClientGetOk() {
 		try {
-			return buildAppUrlVerifier(new JSONObject("{\"ready\":true,\"handler\":\"medic-api\"}"));
+			mockJsonClientGet(new JSONObject("{\"ready\":true,\"handler\":\"medic-api\"}"));
 		} catch (JSONException e) {
 			throw new RuntimeException(e);
 		}
@@ -50,95 +64,134 @@ public class AppUrlVerifierTest {
 
 	@Test
 	public void testCleanValidUrl() {
-		AppUrlVerifier verifier = buildAppUrlVerifierOk();
-		AppUrlVerification verification = verifier.verify("https://example.com/uri");
+		mockJsonClientGetOk();
+		AppUrlVerification verification = new AppUrlVerifier(mockJsonClient, "https://example.com/uri").call();
 		assertTrue(verification.isOk);
 		assertEquals("https://example.com/uri", verification.appUrl);
 	}
 
 	@Test
 	public void testLeadingSpacesUrl() {
-		AppUrlVerifier verifier = buildAppUrlVerifierOk();
-		AppUrlVerification verification = verifier.verify("  https://example.com/uri");
+		mockJsonClientGetOk();
+		AppUrlVerification verification = new AppUrlVerifier(mockJsonClient, "  https://example.com/uri").call();
 		assertTrue(verification.isOk);
 		assertEquals("https://example.com/uri", verification.appUrl);
 	}
 
 	@Test
 	public void testTrailingSpacesUrl() {
-		AppUrlVerifier verifier = buildAppUrlVerifierOk();
-		AppUrlVerification verification = verifier.verify("https://example.com/uri ");
+		mockJsonClientGetOk();
+		AppUrlVerification verification = new AppUrlVerifier(mockJsonClient, "https://example.com/uri ").call();
 		assertEquals("https://example.com/uri", verification.appUrl);
 	}
 
 	@Test
 	public void testTrailingBarsUrl() {
-		AppUrlVerifier verifier = buildAppUrlVerifierOk();
-		AppUrlVerification verification = verifier.verify("https://example.com/uri/");
+		mockJsonClientGetOk();
+		AppUrlVerification verification = new AppUrlVerifier(mockJsonClient, "https://example.com/uri/").call();
 		assertTrue(verification.isOk);
 		assertEquals("https://example.com/uri", verification.appUrl);
 	}
 
 	@Test
 	public void testOnlyLastTrailingBarIsCleaned() {
-		AppUrlVerifier verifier = buildAppUrlVerifierOk();
-		AppUrlVerification verification = verifier.verify("https://example.com/uri/to/here/");
+		mockJsonClientGetOk();
+		AppUrlVerification verification = new AppUrlVerifier(mockJsonClient, "https://example.com/uri/to/here/").call();
 		assertTrue(verification.isOk);
 		assertEquals("https://example.com/uri/to/here", verification.appUrl);
 	}
 
 	@Test
 	public void testTrailingBarsAndSpacesUrl() {
-		AppUrlVerifier verifier = buildAppUrlVerifierOk();
-		AppUrlVerification verification = verifier.verify("https://example.com/uri/ ");
+		mockJsonClientGetOk();
+		AppUrlVerification verification = new AppUrlVerifier(mockJsonClient, "https://example.com/uri/ ").call();
 		assertTrue(verification.isOk);
 		assertEquals("https://example.com/uri", verification.appUrl);
 	}
 
 	@Test
 	public void testAllMistakesUrl() {
-		AppUrlVerifier verifier = buildAppUrlVerifierOk();
-		AppUrlVerification verification = verifier.verify(" https://example.com/uri/res/ ");
+		mockJsonClientGetOk();
+		AppUrlVerification verification = new AppUrlVerifier(mockJsonClient, " https://example.com/uri/res/ ").call();
 		assertTrue(verification.isOk);
 		assertEquals("https://example.com/uri/res", verification.appUrl);
 	}
 
 	@Test
+	public void testNullUrl() {
+		try (MockedStatic<Utils> utilsMock = mockStatic(Utils.class)) {
+			utilsMock.when(Utils::isDebug).thenReturn(true);
+
+			assertThrows(
+				"AppUrlVerifier :: Cannot verify APP URL because it is not defined.",
+				RuntimeException.class,
+				() -> new AppUrlVerifier(mockJsonClient, null)
+			);
+		}
+	}
+
+	@Test
+	public void testEmptyUrl() {
+		try (MockedStatic<Utils> utilsMock = mockStatic(Utils.class)) {
+			utilsMock.when(Utils::isDebug).thenReturn(true);
+
+			assertThrows(
+				"AppUrlVerifier :: Cannot verify APP URL because it is not defined.",
+				RuntimeException.class,
+				() -> new AppUrlVerifier(mockJsonClient, "")
+			);
+		}
+	}
+
+	@Test
+	public void testBlankUrl() {
+		try (MockedStatic<Utils> utilsMock = mockStatic(Utils.class)) {
+			utilsMock.when(Utils::isDebug).thenReturn(true);
+
+			assertThrows(
+				"AppUrlVerifier :: Cannot verify APP URL because it is not defined.",
+				RuntimeException.class,
+				() -> new AppUrlVerifier(mockJsonClient, "   ")
+			);
+		}
+	}
+
+	@Test
 	public void testMalformed() {
-		AppUrlVerifier verifier = buildAppUrlVerifierWithException(new JSONException("NOT A JSON"));
-		AppUrlVerification verification = verifier.verify("https://example.com/without/json");
+		mockJsonClientGetException(new JSONException("NOT A JSON"));
+		AppUrlVerification verification = new AppUrlVerifier(mockJsonClient, "https://example.com/without/json").call();
 		assertFalse(verification.isOk);
 		assertEquals(errAppUrl_appNotFound, verification.failure);
 	}
 
 	@Test
 	public void testWrongJson() throws JSONException {
-		AppUrlVerifier verifier = buildAppUrlVerifier(new JSONObject("{\"data\":\"irrelevant\"}"));
-		AppUrlVerification verification = verifier.verify("https://example.com/setup/poll");
+		mockJsonClientGet(new JSONObject("{\"data\":\"irrelevant\"}"));
+		AppUrlVerification verification = new AppUrlVerifier(mockJsonClient, "https://example.com/setup/poll").call();
 		assertFalse(verification.isOk);
 		assertEquals(errAppUrl_appNotFound, verification.failure);
 	}
 
 	@Test
 	public void testApiNotReady() throws JSONException {
-		AppUrlVerifier verifier = buildAppUrlVerifier(new JSONObject("{\"ready\":false,\"handler\":\"medic-api\"}"));
-		AppUrlVerification verification = verifier.verify("https://example.com/setup/poll");
+		mockJsonClientGet(new JSONObject("{\"ready\":false,\"handler\":\"medic-api\"}"));
+		AppUrlVerification verification = new AppUrlVerifier(mockJsonClient, "https://example.com/setup/poll").call();
 		assertFalse(verification.isOk);
 		assertEquals(errAppUrl_apiNotReady, verification.failure);
 	}
 
 	@Test
 	public void testInvalidUrl() throws JSONException {
-		AppUrlVerifier verifier = buildAppUrlVerifierWithException(new MalformedURLException("Nop"));
-		AppUrlVerification verification = verifier.verify("\\|NOT a URL***");
+		mockJsonClientGetException(new MalformedURLException("Nop"));
+		AppUrlVerification verification = new AppUrlVerifier(mockJsonClient, "\\|NOT a URL***").call();
 		assertFalse(verification.isOk);
 		assertEquals(errInvalidUrl, verification.failure);
 	}
 
 	@Test
 	public void testServerNotFound() {
-		AppUrlVerifier verifier = buildAppUrlVerifierWithException(new IOException("Ups"));
-		AppUrlVerification verification = verifier.verify("https://example.com/setup/poll");
+		mockJsonClientGetException(new IOException("Ups"));
+		AppUrlVerification verification = new AppUrlVerifier(mockJsonClient, "https://example.com/setup/poll").call();
 		assertFalse(verification.isOk);
 		assertEquals(errAppUrl_serverNotFound, verification.failure);
 	}

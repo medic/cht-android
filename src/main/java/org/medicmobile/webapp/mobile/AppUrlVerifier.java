@@ -1,9 +1,5 @@
 package org.medicmobile.webapp.mobile;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import org.json.JSONException;
-import org.json.JSONObject;
 import static org.medicmobile.webapp.mobile.MedicLog.trace;
 import static org.medicmobile.webapp.mobile.R.string.errAppUrl_apiNotReady;
 import static org.medicmobile.webapp.mobile.R.string.errAppUrl_appNotFound;
@@ -11,23 +7,37 @@ import static org.medicmobile.webapp.mobile.R.string.errAppUrl_serverNotFound;
 import static org.medicmobile.webapp.mobile.R.string.errInvalidUrl;
 import static org.medicmobile.webapp.mobile.SimpleJsonClient2.redactUrl;
 
-public class AppUrlVerifier {
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.medicmobile.webapp.mobile.AppUrlVerifier.AppUrlVerification;
+
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.util.concurrent.Callable;
+
+public class AppUrlVerifier implements Callable<AppUrlVerification> {
 
 	private final SimpleJsonClient2 jsonClient;
+	private final String appUrl;
 
-	AppUrlVerifier(SimpleJsonClient2 jsonClient) {
+	AppUrlVerifier(SimpleJsonClient2 jsonClient, String appUrl) {
+		if (Utils.isDebug() && (appUrl == null || appUrl.trim().isEmpty())) {
+			throw new RuntimeException("AppUrlVerifier :: Cannot verify APP URL because it is not defined.");
+		}
+
 		this.jsonClient = jsonClient;
+		this.appUrl = appUrl;
 	}
 
-	public AppUrlVerifier() {
-		this(new SimpleJsonClient2());
+	public AppUrlVerifier(String appUrl) {
+		this(new SimpleJsonClient2(), appUrl);
 	}
 
 	/**
 	 * Verify the string passed is a valid CHT-Core URL.
 	 */
-	public AppUrlVerification verify(String appUrl) {
-		appUrl = clean(appUrl);
+	public AppUrlVerification call() {
+		String appUrl = clean(this.appUrl);
 
 		try {
 			JSONObject json = jsonClient.get(appUrl + "/setup/poll");
@@ -57,33 +67,33 @@ public class AppUrlVerifier {
 	 * Clean-up the URL passed, removing leading and trailing spaces, and trailing "/" char
 	 * that the user may input by mistake.
 	 */
-	protected String clean(String appUrl) {
+	public static String clean(String appUrl) {
 		appUrl = appUrl.trim();
 		if (appUrl.endsWith("/")) {
 			return appUrl.substring(0, appUrl.length()-1);
 		}
 		return appUrl;
 	}
-}
 
-@SuppressWarnings("PMD.ShortMethodName")
-class AppUrlVerification {
-	public final String appUrl;
-	public final boolean isOk;
-	public final int failure;
+	@SuppressWarnings("PMD.ShortMethodName")
+	public static class AppUrlVerification {
+		public final String appUrl;
+		public final boolean isOk;
+		public final int failure;
 
-	private AppUrlVerification(String appUrl, boolean isOk, int failure) {
-		this.appUrl = appUrl;
-		this.isOk = isOk;
-		this.failure = failure;
-	}
+		private AppUrlVerification(String appUrl, boolean isOk, int failure) {
+			this.appUrl = appUrl;
+			this.isOk = isOk;
+			this.failure = failure;
+		}
 
-//> FACTORIES
-	public static AppUrlVerification ok(String appUrl) {
-		return new AppUrlVerification(appUrl, true, 0);
-	}
+		//> FACTORIES
+		public static AppUrlVerification ok(String appUrl) {
+			return new AppUrlVerification(appUrl, true, 0);
+		}
 
-	public static AppUrlVerification failure(String appUrl, int failure) {
-		return new AppUrlVerification(appUrl, false, failure);
+		public static AppUrlVerification failure(String appUrl, int failure) {
+			return new AppUrlVerification(appUrl, false, failure);
+		}
 	}
 }
