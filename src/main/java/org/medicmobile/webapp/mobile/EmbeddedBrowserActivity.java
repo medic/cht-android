@@ -208,9 +208,6 @@ public class EmbeddedBrowserActivity extends Activity {
 				case ACCESS_SEND_SMS_PERMISSION:
 					this.smsSender.resumeProcess(resultCode);
 					return;
-				case ACCESS_SEND_SMS_PERMISSION:
-					this.smsSender.resumeProcess(resultCode);
-					return;
 				default:
 					trace(this, "onActivityResult() :: no handling for requestCode=%s", requestCode.name());
 			}
