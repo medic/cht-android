@@ -32,9 +32,9 @@
 ### Performance improvements
 
 These is the performance test result that compares CHT Android v0.8.0 with the new CHT Android v1.0.0.
-**Device:** Sony Xperia Z1
-**Android:** 5.1.1
-**CHT Core:** 3.15.0
+- **Device:** Sony Xperia Z1
+- **Android:** 5.1.1
+- **CHT Core:** 3.15.0
 
 | Test | APK: cht-android-v0.8.0-5-unbranded-xwalk-armeabi-v7a-release.apk  | APK: cht-android-v1.0.0-alpha.1-unbranded-armeabi-v7a-release.apk  | Percentage improvement |
 | ------------ | ------------ | ------------ | ------------ |
