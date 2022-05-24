@@ -9,10 +9,35 @@
 
 ## 1.0.0
 
+This release switches from Crosswalk to WebView ([#169](https://github.com/medic/cht-android/issues/169)) which brings great benefits, such as:
+- Newer version of Chrome that has better performance, better security, more features and fewer bugs.
+- Drop Crosswalk library that has been unsupported since 2016.
+- Better support for upcoming versions of CHT Core.
+- Smaller APK size. Before it was 746KB, now it is 381KB.
+
+### Upgrade steps
+
+Install CHT Android v1.0.0 in the phone, then upgrade [WebView](https://play.google.com/store/apps/details?id=com.google.android.webview) to the latest available version in PlayStore and enable automatic updates of this app by following the [Google Documentation](https://support.google.com/googleplay/answer/113412). This will ensure top performance when using CHT.
+
+### Performance improvements
+
+These is the performance test result that compares CHT Android v0.8.0 with the new CHT Android v1.0.0.
+**Device:** Sony Xperia Z1
+**Android:** 5.1.1
+**CHT Core:** 3.15.0
+
+| Test | v0.8.0 | v1.0.0 | Improvement |
+| ------------ | ------------ | ------------ | ------------ |
+| Initial load (fetching 1882 documents) | 0:03:14  | 0:01:35  | **204%** |
+| Refreshing after initial replication | 0:00:10  | 0:00:03  | **333%** |
+| Loading Contacts tab | 0:00:17  |  0:00:12 | **142%** |
+| Loading Reports tab | 0:00:23  | 0:00:21  | **109%** |
+| Loading a specific report (New Pregnancy) | 0:00:04  |  0:00:02 | **200%** |
+| Track opening a form (New Pregnancy) | 0:00:05  | 0:00:04  | **125%** |
+| Loading Tasks tab | 0:00:02  | 0:00:01  | **200%** |
+
 ### Changes
 
-- [breaking] Drop support for Android 4.4 [#169](https://github.com/medic/cht-android/issues/169).
-- [breaking] Remove Simprints integration [#230](https://github.com/medic/cht-android/issues/230).
 - [improvement] Check and handle when location permission is denied or granted [#189](https://github.com/medic/cht-android/issues/189).
 - [improvement] Request "Approximate" and "Precise" location since they are required in Android 12 [#207](https://github.com/medic/cht-android/issues/207).
 - [improvement] Replace deprecated ImagePicker [#159](https://github.com/medic/cht-android/issues/159).
@@ -29,22 +54,10 @@
 - [improvement] Migrate off of the unmaintained com.noveogroup.android:check plugin [#242](https://github.com/medic/cht-android/issues/242).
 - [improvement] PMD Processing errors for files that are not .java [#255](https://github.com/medic/cht-android/issues/255).
 
-### Performance improvements
+### Breaking changes
 
-These is the performance test result that compares CHT Android v0.8.0 with the new CHT Android v1.0.0.
-- **Device:** Sony Xperia Z1
-- **Android:** 5.1.1
-- **CHT Core:** 3.15.0
-
-| Test | APK: cht-android-v0.8.0-5-unbranded-xwalk-armeabi-v7a-release.apk  | APK: cht-android-v1.0.0-alpha.1-unbranded-armeabi-v7a-release.apk  | Percentage improvement |
-| ------------ | ------------ | ------------ | ------------ |
-| Initial load (fetching 1882 documents) | 0:03:14  | 0:01:35  | **51.03%** |
-| Refreshing after initial replication | 0:00:10  | 0:00:03  | **70%** |
-| Loading Contacts tab | 0:00:17  |  0:00:12 | **29.41%** |
-| Loading Reports tab | 0:00:23  | 0:00:21  | **8.70%** |
-| Loading a specific report (New Pregnancy) | 0:00:04  |  0:00:02 | **50%** |
-| Track opening a form (New Pregnancy) | 0:00:05  | 0:00:04  | **20%** |
-| Loading Tasks tab | 0:00:02  | 0:00:01  | **50%** |
+- [breaking] Drop support for Android 4.4 [#169](https://github.com/medic/cht-android/issues/169).
+- [breaking] Remove Simprints integration [#230](https://github.com/medic/cht-android/issues/230).
 
 ## 0.11.0
 
@@ -59,7 +72,7 @@ These is the performance test result that compares CHT Android v0.8.0 with the n
 
 - [improvement] Deduplicate and improve development docs [#214](https://github.com/medic/cht-android/issues/214).
   - [New `Android` section](https://docs.communityhealthtoolkit.org/core/guides/android/) added to the CHT Documentation site with the cht-android documentation that was previously split between the README and various other sections of the CHT Documentation.
-- [improvement] Fix Makefile targets for keystore management [#222](https://github.com/medic/cht-android/issues/222).  
+- [improvement] Fix Makefile targets for keystore management [#222](https://github.com/medic/cht-android/issues/222).
 - [improvement] Upgrade Gradle, plugins and test dependencies [#232](https://github.com/medic/cht-android/pull/232).
 
 ## 0.10.0
