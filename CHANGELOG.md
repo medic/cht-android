@@ -17,14 +17,14 @@ This release switches from Crosswalk to WebView ([#169](https://github.com/medic
 
 ### Upgrade steps
 
-Install CHT Android v1.0.0 in the phone, then upgrade [WebView](https://play.google.com/store/apps/details?id=com.google.android.webview) to the latest available version in PlayStore and enable automatic updates of this app by following the [Google Documentation](https://support.google.com/googleplay/answer/113412). This will ensure top performance when using CHT.
+Install CHT Android v1.0.0 in the phone, then upgrade [WebView](https://play.google.com/store/apps/details?id=com.google.android.webview) to the latest available version in Google Play Store and enable automatic updates of this app by following the [Google Documentation](https://support.google.com/googleplay/answer/113412). This will ensure top performance when using CHT.
 
 ### Performance improvements
 
-These is the performance test result that compares CHT Android v0.8.0 with the new CHT Android v1.0.0.
-**Device:** Sony Xperia Z1
-**Android:** 5.1.1
-**CHT Core:** 3.15.0
+This is the performance test result that compares CHT Android v0.8.0 with the new CHT Android v1.0.0.
+- **Device:** Sony Xperia Z1
+- **Android:** 5.1.1
+- **CHT Core:** 3.15.0
 
 | Test | v0.8.0 | v1.0.0 | Improvement |
 | ------------ | ------------ | ------------ | ------------ |
