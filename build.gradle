@@ -374,6 +374,11 @@ android {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.cht_rci'
     }
+
+    moh_mali_chw {
+      dimension = 'brand'
+      applicationId = 'org.medicmobile.webapp.mobile.moh_mali_chw'
+    }
     
   }
 
