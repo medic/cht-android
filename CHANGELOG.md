@@ -7,6 +7,45 @@
 
 # Release notes
 
+## 1.0.0
+
+### Changes
+
+- [breaking] Drop support for Android 4.4 [#169](https://github.com/medic/cht-android/issues/169).
+- [breaking] Remove Simprints integration [#230](https://github.com/medic/cht-android/issues/230).
+- [improvement] Check and handle when location permission is denied or granted [#189](https://github.com/medic/cht-android/issues/189).
+- [improvement] Request "Approximate" and "Precise" location since they are required in Android 12 [#207](https://github.com/medic/cht-android/issues/207).
+- [improvement] Replace deprecated ImagePicker [#159](https://github.com/medic/cht-android/issues/159).
+- [performance] Android app should navigate to root instead of the _rewrite path after webapp v3.5.x [#94](https://github.com/medic/cht-android/issues/94).
+- [feature] Make it clear when a training app is in use [#258](https://github.com/medic/cht-android/issues/258).
+- [bug] Border not showing red for production URL in dev app [#266](https://github.com/medic/cht-android/issues/266).
+- [bug] Prominent disclosure when "handling users' Files" [#148](https://github.com/medic/cht-android/issues/148).
+- [deprecation] Remove unbranded-test flavor [#257](https://github.com/medic/cht-android/issues/257).
+- [deprecation] Remove the old menu and lock pin screen [#253](https://github.com/medic/cht-android/issues/253).
+
+### Development changes
+
+- [improvement] Upgrade to Android 12 [#205](https://github.com/medic/cht-android/issues/205).
+- [improvement] Migrate off of the unmaintained com.noveogroup.android:check plugin [#242](https://github.com/medic/cht-android/issues/242).
+- [improvement] PMD Processing errors for files that are not .java [#255](https://github.com/medic/cht-android/issues/255).
+
+### Performance improvements
+
+These is the performance test result that compares CHT Android v0.8.0 with the new CHT Android v1.0.0.
+**Device:** Sony Xperia Z1
+**Android:** 5.1.1
+**CHT Core:** 3.15.0
+
+| Test | APK: cht-android-v0.8.0-5-unbranded-xwalk-armeabi-v7a-release.apk  | APK: cht-android-v1.0.0-alpha.1-unbranded-armeabi-v7a-release.apk  | Percentage improvement |
+| ------------ | ------------ | ------------ | ------------ |
+| Initial load (fetching 1882 documents) | 0:03:14  | 0:01:35  | **51.03%** |
+| Refreshing after initial replication | 0:00:10  | 0:00:03  | **70%** |
+| Loading Contacts tab | 0:00:17  |  0:00:12 | **29.41%** |
+| Loading Reports tab | 0:00:23  | 0:00:21  | **8.70%** |
+| Loading a specific report (New Pregnancy) | 0:00:04  |  0:00:02 | **50%** |
+| Track opening a form (New Pregnancy) | 0:00:05  | 0:00:04  | **20%** |
+| Loading Tasks tab | 0:00:02  | 0:00:01  | **50%** |
+
 ## 0.11.0
 
 ### Changes
