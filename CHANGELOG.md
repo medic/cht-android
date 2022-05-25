@@ -12,12 +12,16 @@
 This release switches from Crosswalk to WebView ([#169](https://github.com/medic/cht-android/issues/169)) which brings great benefits, such as:
 - Newer version of Chrome that has better performance, better security, more features and fewer bugs.
 - Drop Crosswalk library that has been unsupported since 2016.
-- Better support for upcoming versions of CHT Core.
-- Smaller APK size. Before it was 746KB, now it is 381KB.
+- Support for upcoming versions of CHT Core.
+- Smaller APK size. Before it was 27.3MB, now it is 381KB.
 
 ### Upgrade steps
 
-Install CHT Android v1.0.0 in the phone, then upgrade [WebView](https://play.google.com/store/apps/details?id=com.google.android.webview) to the latest available version in Google Play Store and enable automatic updates of this app by following the [Google Documentation](https://support.google.com/googleplay/answer/113412). This will ensure top performance when using CHT.
+First, [build and publish](https://docs.communityhealthtoolkit.org/core/guides/android/branding/) your cht-android brand using the `v1.0.0` tag.
+
+Then for each phone:
+1. Upgrade [WebView](https://play.google.com/store/apps/details?id=com.google.android.webview) to the latest available version in Google Play Store and enable automatic updates of this app by following the [Google Documentation](https://support.google.com/googleplay/answer/113412). This will ensure top performance when using CHT.
+2. Install your brand of cht-android 1.0.0.
 
 ### Performance improvements
 
@@ -28,36 +32,36 @@ This is the performance test result that compares CHT Android v0.8.0 with the ne
 
 | Test | v0.8.0 | v1.0.0 | Improvement |
 | ------------ | ------------ | ------------ | ------------ |
-| Initial load (fetching 1882 documents) | 0:03:14  | 0:01:35  | **204%** |
-| Refreshing after initial replication | 0:00:10  | 0:00:03  | **333%** |
-| Loading Contacts tab | 0:00:17  |  0:00:12 | **142%** |
-| Loading Reports tab | 0:00:23  | 0:00:21  | **109%** |
-| Loading a specific report (New Pregnancy) | 0:00:04  |  0:00:02 | **200%** |
-| Track opening a form (New Pregnancy) | 0:00:05  | 0:00:04  | **125%** |
-| Loading Tasks tab | 0:00:02  | 0:00:01  | **200%** |
-
-### Changes
-
-- [improvement] Check and handle when location permission is denied or granted [#189](https://github.com/medic/cht-android/issues/189).
-- [improvement] Request "Approximate" and "Precise" location since they are required in Android 12 [#207](https://github.com/medic/cht-android/issues/207).
-- [improvement] Replace deprecated ImagePicker [#159](https://github.com/medic/cht-android/issues/159).
-- [performance] Android app should navigate to root instead of the _rewrite path after webapp v3.5.x [#94](https://github.com/medic/cht-android/issues/94).
-- [feature] Make it clear when a training app is in use [#258](https://github.com/medic/cht-android/issues/258).
-- [bug] Border not showing red for production URL in dev app [#266](https://github.com/medic/cht-android/issues/266).
-- [bug] Prominent disclosure when "handling users' Files" [#148](https://github.com/medic/cht-android/issues/148).
-- [deprecation] Remove unbranded-test flavor [#257](https://github.com/medic/cht-android/issues/257).
-- [deprecation] Remove the old menu and lock pin screen [#253](https://github.com/medic/cht-android/issues/253).
-
-### Development changes
-
-- [improvement] Upgrade to Android 12 [#205](https://github.com/medic/cht-android/issues/205).
-- [improvement] Migrate off of the unmaintained com.noveogroup.android:check plugin [#242](https://github.com/medic/cht-android/issues/242).
-- [improvement] PMD Processing errors for files that are not .java [#255](https://github.com/medic/cht-android/issues/255).
+| Initial load (fetching 1882 documents) | 0:03:14  | 0:01:35  | **104%** |
+| Refreshing after initial replication | 0:00:10  | 0:00:03  | **233%** |
+| Loading Contacts tab | 0:00:17  |  0:00:12 | **42%** |
+| Loading Reports tab | 0:00:23  | 0:00:21  | **9%** |
+| Loading a specific report (New Pregnancy) | 0:00:04  |  0:00:02 | **100%** |
+| Track opening a form (New Pregnancy) | 0:00:05  | 0:00:04  | **25%** |
+| Loading Tasks tab | 0:00:02  | 0:00:01  | **100%** |
 
 ### Breaking changes
 
-- [breaking] Drop support for Android 4.4 [#169](https://github.com/medic/cht-android/issues/169).
-- [breaking] Remove Simprints integration [#230](https://github.com/medic/cht-android/issues/230).
+- [breaking] Drop support for Android 4.4 [#169](https://github.com/medic/cht-android/issues/169). Any devices still running Android 4.4 must be upgraded or replaced with newer devices prior to install. If in doubt, reach out on the [forum](https://forum.communityhealthtoolkit.org/) and we can guide you through the process.
+- [breaking] Remove Simprints integration [#230](https://github.com/medic/cht-android/issues/230). This feature had already regressed so it's unlikely you're using it.
+
+### Improvements
+
+- [improvement] Check and handle when location permission is denied or granted [#189](https://github.com/medic/cht-android/issues/189). CHT Android is now aligned with best practices when requesting location permissions in Android.
+- [improvement] Request "Approximate" and "Precise" location since they are required in Android 12 [#207](https://github.com/medic/cht-android/issues/207). Users with Android 12 or higher can grant approximate or precise location when using the app.
+- [improvement] Replace deprecated ImagePicker [#159](https://github.com/medic/cht-android/issues/159). CHT Android is now using a native way to upload images in the forms.
+- [performance] Android app should navigate to root instead of the _rewrite path after webapp v3.5.x [#94](https://github.com/medic/cht-android/issues/94). The navigation after setting up the app has been simplified improving the initial load performance.
+- [feature] Make it clear when a training app is in use [#258](https://github.com/medic/cht-android/issues/258). Add a distinctive border and message when using the training app by following the instructions in our [documentation](https://docs.communityhealthtoolkit.org/apps/guides/onboarding/#setting-up-a-training-app).
+- [bug] Border not showing red for production URL in dev app [#266](https://github.com/medic/cht-android/issues/266). A distinctive red border is displayed when using the Medic (unbranded) flavor app in Medic hosted deployments.
+- [bug] Prominent disclosure when "handling users' Files" [#148](https://github.com/medic/cht-android/issues/148). CHT Android is now aligned with best practices when requesting storage permissions in Android, users can now approve the storage permission request. 
+- [deprecation] Remove unbranded-test flavor [#257](https://github.com/medic/cht-android/issues/257). This test flavor was not in used anymore.
+- [deprecation] Remove the old menu and lock pin screen [#253](https://github.com/medic/cht-android/issues/253). These features weren't used anymore, the old menu was launched when pressing a hardware menu button that old phones used to have, manufactures removed this button 8+ years ago.
+
+### Development changes
+
+- [improvement] Upgrade to Android 12 [#205](https://github.com/medic/cht-android/issues/205). CHT Android is now up to date with the latest Android version.
+- [improvement] Migrate off of the unmaintained com.noveogroup.android:check plugin [#242](https://github.com/medic/cht-android/issues/242). The deprecated static check library was replaced with latest versions of Checkstyle, PMD and SpotBugs which ensures code quality.
+- [improvement] PMD Processing errors for files that are not .java [#255](https://github.com/medic/cht-android/issues/255). This improve the performance when running static checks in CHT Android.
 
 ## 0.11.0
 
