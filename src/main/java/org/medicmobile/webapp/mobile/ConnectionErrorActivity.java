@@ -53,7 +53,9 @@ public class ConnectionErrorActivity extends ClosableAppActivity {
 	// Retry connection
 	public void onClickRetry(View view) {
 		trace(this, "onClickRetry()");
-		sendBroadcast(new Intent("retryConnection"));
+		Intent intent = new Intent("retryConnection");
+		intent.setPackage(this.getPackageName());
+		sendBroadcast(intent);
 		showSpinnerLayout();
 	}
 
