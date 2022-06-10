@@ -7,6 +7,10 @@
 
 # Release notes
 
+## 1.1.0
+
+This release adds a border on the unbranded app to differentiate it from a production app since the unbrandeis dsometimes use for training purposes [#278](https://github.com/medic/cht-android/issues/278).
+
 ## 1.0.0
 
 This release switches from Crosswalk to WebView ([#169](https://github.com/medic/cht-android/issues/169)) which brings great benefits, such as:
