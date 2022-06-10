@@ -197,6 +197,7 @@ android {
       // for `unbranded` - it will use the defaults in
       // src/main
       dimension = 'brand'
+      buildConfigField "boolean", "IS_TRAINING_APP", 'true'
     }
 
     medicmobiledemo {
