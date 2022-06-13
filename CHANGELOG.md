@@ -9,7 +9,7 @@
 
 ## 1.1.0
 
-This release adds a border on the unbranded app to differentiate it from a production app since the unbrandeis dsometimes use for training purposes [#278](https://github.com/medic/cht-android/issues/278).
+This release adds a border on the unbranded app to differentiate it from a production app since the unbranded app is sometimes used for training purposes [#278](https://github.com/medic/cht-android/issues/278).
 
 ## 1.0.0
 
