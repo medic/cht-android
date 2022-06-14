@@ -84,19 +84,19 @@ public class EmbeddedBrowserActivity extends Activity {
 		this.requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.main);
 
-		// Add an alarming red border if using configurable (i.e. dev)
-		// app with a medic production server.
-		if (settings.allowsConfiguration() && appUrl != null && appUrl.contains("app.medicmobile.org")) {
-			View webviewContainer = findViewById(R.id.lytWebView);
-			webviewContainer.setPadding(10, 10, 10, 10);
-			webviewContainer.setBackgroundResource(R.drawable.warning_background);
-		}
-
 		// Add a noticeable border to easily identify a training app
 		if (BuildConfig.IS_TRAINING_APP) {
 			View webviewContainer = findViewById(R.id.lytWebView);
 			webviewContainer.setPadding(10, 10, 10, 10);
 			webviewContainer.setBackgroundResource(R.drawable.training_background);
+		}
+
+		// Add an alarming red border if using configurable (i.e. dev)
+		// app with a medic production server.
+		if (settings.allowsConfiguration() && appUrl != null && appUrl.contains("dev.medicmobile.org")) {
+			View webviewContainer = findViewById(R.id.lytWebView);
+			webviewContainer.setPadding(10, 10, 10, 10);
+			webviewContainer.setBackgroundResource(R.drawable.warning_background);
 		}
 
 		container = findViewById(R.id.wbvMain);
