@@ -142,6 +142,8 @@ public class UrlHandler extends WebViewClient {
 		trace(this, "onPageFinished() :: url: %s", url);
 		// Broadcast the event so if the connection error
 		// activity is listening it will close
-		this.parentActivity.sendBroadcast(new Intent("onPageFinished"));
+		Intent intent = new Intent("onPageFinished");
+		intent.setPackage(this.parentActivity.getPackageName());
+		this.parentActivity.sendBroadcast(intent);
 	}
 }

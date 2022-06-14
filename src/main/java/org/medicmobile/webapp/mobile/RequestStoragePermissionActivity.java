@@ -98,6 +98,7 @@ public class RequestStoragePermissionActivity extends FragmentActivity {
 		Intent requestIntent = getIntent();
 		String triggerClass = requestIntent == null ? null : requestIntent.getStringExtra(this.TRIGGER_CLASS);
 		Intent responseIntent = new Intent();
+		responseIntent.setPackage(this.getPackageName());
 		responseIntent.putExtra(this.TRIGGER_CLASS, triggerClass);
 		return responseIntent;
 	}
