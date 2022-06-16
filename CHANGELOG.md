@@ -13,7 +13,7 @@ This release adds a border on the unbranded app to differentiate it from a produ
 
 It also fixes two bugs:
 1. Users unable to install two different apps or two different flavors [#287](https://github.com/medic/cht-android/issues/287).
-2. A fix for an implicit internal intenr vulnerability [#282](https://github.com/medic/cht-android/issues/282).
+2. A fix for an implicit internal intent vulnerability [#282](https://github.com/medic/cht-android/issues/282).
 
 ## 1.0.0
 
