@@ -11,6 +11,10 @@
 
 This release adds a border on the unbranded app to differentiate it from a production app since the unbranded app is sometimes used for training purposes [#278](https://github.com/medic/cht-android/issues/278).
 
+It also fixes two bugs:
+1. Users unable to install two different apps or two different flavors [#287](https://github.com/medic/cht-android/issues/287).
+2. A fix for an implicit internal intenr vulnerability [#282](https://github.com/medic/cht-android/issues/282).
+
 ## 1.0.0
 
 This release switches from Crosswalk to WebView ([#169](https://github.com/medic/cht-android/issues/169)) which brings great benefits, such as:
