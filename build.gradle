@@ -212,7 +212,7 @@ android {
     medicmobilegamma_training {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.medicmobilegamma_training'
-      buildConfigField "boolean", "IS_TRAINING_APP", 'true'
+      buildConfigField "boolean", "IS_TRAINING_APP", 'false'
     }
 
     bracuganda {
