@@ -7,6 +7,12 @@
 
 # Release notes
 
+## 1.0.1
+
+This release fixes two bugs:
+1. Users unable to install two different apps or two different flavors [#287](https://github.com/medic/cht-android/issues/287).
+1. A fix for an implicit internal intent vulnerability [#282](https://github.com/medic/cht-android/issues/282).
+
 ## 1.0.0
 
 This release switches from Crosswalk to WebView ([#169](https://github.com/medic/cht-android/issues/169)) which brings great benefits, such as:
