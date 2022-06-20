@@ -115,7 +115,7 @@ android {
     buildConfigField "String", "TEST_USERNAME", "\"${System.env.ANDROID_TEST_USERNAME}\""
     buildConfigField "String", "TEST_PASSWORD", "\"${System.env.ANDROID_TEST_PASSWORD}\""
 
-    buildConfigField "boolean", "IS_TRAINING_APP", 'false'
+    buildConfigField "boolean", "IS_TRAINING_APP", 'true'
 
     if (System.env.ANDROID_TEST_URL) {
       buildConfigField "String", "SERVER_URL", "\"${System.env.ANDROID_TEST_URL}\""
