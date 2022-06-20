@@ -378,7 +378,8 @@ android {
     moh_mali_chw {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.moh_mali_chw'
-      
+    }
+
     moh_niger_chw {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.moh_niger_chw'
