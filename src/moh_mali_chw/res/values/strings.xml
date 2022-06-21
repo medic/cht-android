@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="app_name">DISC-Mali</string>
+  <string name="app_host">disc-mali.ml</string>
+</resources>
