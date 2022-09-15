@@ -7,7 +7,7 @@ jobs:
   skip_check:
 
     name: Skip Check
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     outputs:
       should_skip: ${{ steps.skip_check.outputs.should_skip }}
     steps:
@@ -21,7 +21,7 @@ jobs:
   build:
 
     name: Build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: skip_check
     if: ${{ needs.skip_check.outputs.should_skip != 'true' }}
     steps:
@@ -75,7 +75,7 @@ jobs:
   instrumentation-tests:
 
     name: Instrumentation tests
-    runs-on: macos-latest
+    runs-on: macos-12
     needs: skip_check
     if: ${{ needs.skip_check.outputs.should_skip != 'true' }}
     steps:
