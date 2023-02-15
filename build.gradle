@@ -345,6 +345,11 @@ android {
       dimension = 'brand'
       applicationId = "org.medicmobile.webapp.mobile.icm_ph_chc"
     }
+	
+    icm_flourish {
+      dimension = 'brand'
+      applicationId = "org.medicmobile.webapp.mobile.icm_flourish"
+    }
 
     vhtapp_uganda {
       dimension = 'brand'
