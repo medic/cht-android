@@ -13,7 +13,7 @@ env:
 jobs:
   build:
     name: Build
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
     steps:
 
     - name: Checkout
@@ -71,6 +71,11 @@ jobs:
       with:
         lane: build
         options: '{ "flavor": "medicmobilegamma" }'
+    - name: Assemble gamma training
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: build
+        options: '{ "flavor": "medicmobilegamma_training" }'
     # demo app is disabled for now
     #- name: Assemble demo
     #  uses: maierj/fastlane-action@v1.4.0
@@ -192,11 +197,6 @@ jobs:
       with:
         lane: build
         options: '{ "flavor": "trippleeighty" }'
-    - name: Assemble unbranded_test
-      uses: maierj/fastlane-action@v1.4.0
-      with:
-        lane: build
-        options: '{ "flavor": "unbranded_test" }'
     - name: Assemble vhw_burundi
       uses: maierj/fastlane-action@v1.4.0
       with:
@@ -279,6 +279,58 @@ jobs:
         ANDROID_KEYSTORE_PATH: cht_rci.keystore
         ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_CHT_RCI }}
         ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_CHT_RCI }}
+
+    - name: Unpack secrets moh_mali_chw
+      env:
+        ANDROID_SECRETS_KEY: ${{ secrets.ANDROID_SECRETS_KEY_MOH_MALI_CHW }}
+        ANDROID_SECRETS_IV: ${{ secrets.ANDROID_SECRETS_IV_MOH_MALI_CHW }}
+      run: make org=moh_mali_chw keydec
+
+    - name: Assemble moh_mali_chw
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: build
+        options: '{ "flavor": "moh_mali_chw" }'
+      env:
+        ANDROID_KEYSTORE_PATH: moh_mali_chw.keystore
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_MOH_MALI_CHW }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_MOH_MALI_CHW }}
+
+    - name: Bundle moh_mali_chw
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: bundle
+        options: '{ "flavor": "moh_mali_chw" }'
+      env:
+        ANDROID_KEYSTORE_PATH: moh_mali_chw.keystore
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_MOH_MALI_CHW }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_MOH_MALI_CHW }}
+
+    - name: Unpack secrets moh_niger_chw
+      env:
+        ANDROID_SECRETS_KEY: ${{ secrets.ANDROID_SECRETS_KEY_MOH_NIGER_CHW }}
+        ANDROID_SECRETS_IV: ${{ secrets.ANDROID_SECRETS_IV_MOH_NIGER_CHW }}
+      run: make org=moh_niger_chw keydec
+
+    - name: Assemble moh_niger_chw
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: build
+        options: '{ "flavor": "moh_niger_chw" }'
+      env:
+        ANDROID_KEYSTORE_PATH: moh_niger_chw.keystore
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_MOH_NIGER_CHW }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_MOH_NIGER_CHW }}
+
+    - name: Bundle moh_niger_chw
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: bundle
+        options: '{ "flavor": "moh_niger_chw" }'
+      env:
+        ANDROID_KEYSTORE_PATH: moh_niger_chw.keystore
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_MOH_NIGER_CHW }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_MOH_NIGER_CHW }}
 
     - name: GitHub release
       uses: softprops/action-gh-release@v1

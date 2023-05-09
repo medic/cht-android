@@ -59,7 +59,7 @@ public class MedicAndroidJavascript {
 		this.parent = parent;
 		this.mrdt = parent.getMrdtSupport();
 		this.smsSender = parent.getSmsSender();
-		this.chtExternalAppHandler = parent.getChtExternalAppLauncherActivity();
+		this.chtExternalAppHandler = parent.getChtExternalAppHandler();
 	}
 
 	public void setAlert(Alert soundAlert) {
@@ -179,7 +179,7 @@ public class MedicAndroidJavascript {
 	public void sms_send(String id, String destination, String content) throws Exception {
 		try {
 			// TODO we may need to do this on a background thread to avoid the browser UI from blocking while the SMS is being sent.  Check.
-			smsSender.send(id, destination, content);
+			smsSender.send(new SmsSender.Sms(id, destination, content));
 		} catch(Exception ex) {
 			logException(ex);
 			throw ex;

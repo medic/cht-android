@@ -9,26 +9,24 @@ import static org.medicmobile.webapp.mobile.Utils.createUseragentFrom;
 import static org.medicmobile.webapp.mobile.Utils.startAppActivityChain;
 
 public class StartupActivity extends Activity {
+
 	@Override public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		trace(this, "onCreate()");
-
 		configureAndStartNextActivity();
-
-		if(LockScreen.isCodeSet(this)) {
-			LockScreen.showFrom(this);
-		}
 	}
 
 	private void configureAndStartNextActivity() {
 		configureHttpUseragent();
 
-		if(hasEnoughFreeSpace()) startAppActivityChain(this);
-		else {
-			Intent i = new Intent(this, FreeSpaceWarningActivity.class);
-			startActivity(i);
-			finish();
+		if (hasEnoughFreeSpace()) {
+			startAppActivityChain(this);
+			return;
 		}
+
+		Intent intent = new Intent(this, FreeSpaceWarningActivity.class);
+		startActivity(intent);
+		finish();
 	}
 
 	private boolean hasEnoughFreeSpace() {

@@ -2,8 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="org.medicmobile.webapp.mobile">
-  <!-- When upgrading targetSdkVersion, check that the app menu still
-      works on newer devices. -->
+
   <uses-sdk tools:ignore="OldTargetApi"/>
 
   <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
@@ -20,22 +19,26 @@
   <uses-permission android:name="com.android.launcher.permission.INSTALL_SHORTCUT"/>
   <uses-permission android:name="com.android.launcher.permission.UNINSTALL_SHORTCUT"/>
 
-  <!-- READ_EXTERNAL_STORAGE required if users want to include photos from their phone  -->
+  <!-- READ_EXTERNAL_STORAGE is required if users want to include photos from their phone  -->
   <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+
+  <!-- SEND_SMS is required if users want to send reports as SMS.To able the feature add the following line:
+  <uses-permission android:name="android.permission.SEND_SMS"/>
+  -->
 
   <application android:label="@string/app_name"
       android:icon="@mipmap/ic_launcher"
       android:allowBackup="false"
+      android:fullBackupContent="@xml/backup_rules_sdk_30_and_lower"
+      android:dataExtractionRules="@xml/backup_rules"
       android:largeHeap="true"
-      tools:ignore="GoogleAppIndexingWarning,LockedOrientationActivity,Instantiatable">
+      tools:ignore="LockedOrientationActivity,UnusedAttribute">
     <activity android:name="StartupActivity" android:exported="true">
       <intent-filter>
         <action android:name="android.intent.action.MAIN"/>
         <category android:name="android.intent.category.LAUNCHER" />
       </intent-filter>
     </activity>
-    <activity android:name="LockScreen"
-        android:screenOrientation="portrait"/>
     <activity android:name="EmbeddedBrowserActivity"
         android:screenOrientation="portrait"
         android:configChanges="orientation|screenSize"/>
@@ -47,7 +50,11 @@
         android:screenOrientation="portrait"/>
     <activity android:name="SettingsDialogActivity"
         android:screenOrientation="portrait"/>
-    <activity android:name="RequestPermissionActivity"
+    <activity android:name="RequestLocationPermissionActivity"
+        android:screenOrientation="portrait"/>
+    <activity android:name="RequestStoragePermissionActivity"
+        android:screenOrientation="portrait"/>
+    <activity android:name="RequestSendSmsPermissionActivity"
         android:screenOrientation="portrait"/>
     <activity android:name="AppUrlIntentActivity"
         android:launchMode="singleInstance"
@@ -63,6 +70,17 @@
       android:screenOrientation="portrait"
       android:configChanges="orientation|screenSize"
       android:launchMode="singleTop"/>
+
+    <provider
+      android:name="androidx.core.content.FileProvider"
+      android:authorities="${applicationId}.fileprovider"
+      android:exported="false"
+      android:grantUriPermissions="true">
+      <meta-data
+        android:name="android.support.FILE_PROVIDER_PATHS"
+        android:resource="@xml/file_paths">
+      </meta-data>
+    </provider>
   </application>
 
   <queries>

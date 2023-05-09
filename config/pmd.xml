@@ -11,7 +11,7 @@
     <exclude name="AvoidDuplicateLiterals"/>
     <exclude name="AvoidDuplicateLiterals"/>
     <exclude name="AvoidFieldNameMatchingMethodName"/>
-    <exclude name="MissingBreakInSwitch"/>
+    <exclude name="ImplicitSwitchFallThrough"/>
     <exclude name="ConstructorCallsOverridableMethod"/>
     <exclude name="NullAssignment"/>
     <exclude name="DataflowAnomalyAnalysis"/>
