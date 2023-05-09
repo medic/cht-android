@@ -54,6 +54,12 @@ jobs:
         ANDROID_SECRETS_IV: ${{ secrets.ANDROID_SECRETS_IV_CHIS_NE }}
       run: make org=chis_ne keydec
 
+    - name: Unpack secrets cht_rci
+      env:
+        ANDROID_SECRETS_KEY: ${{ secrets.ANDROID_SECRETS_KEY_CHT_RCI }}
+        ANDROID_SECRETS_IV: ${{ secrets.ANDROID_SECRETS_IV_CHT_RCI }}
+      run: make org=cht_rci keydec
+
     - name: Assemble unbranded
       uses: maierj/fastlane-action@v1.4.0
       with:
@@ -234,6 +240,17 @@ jobs:
         ANDROID_KEYSTORE_PATH: chis_ne.keystore
         ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_CHIS_NE }}
         ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_CHIS_NE }}
+
+    - name: Assemble cht_rci
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: build
+        options: '{ "flavor": "cht_rci" }'
+      env:
+        ANDROID_KEYSTORE_PATH: cht_rci.keystore
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_CHT_RCI }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_CHT_RCI }}
+
     - name: Bundle alerte_niger
       uses: maierj/fastlane-action@v1.4.0
       with:
@@ -252,6 +269,16 @@ jobs:
         ANDROID_KEYSTORE_PATH: chis_ne.keystore
         ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_CHIS_NE }}
         ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_CHIS_NE }}
+
+    - name: Bundle cht_rci
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: bundle
+        options: '{ "flavor": "cht_rci" }'
+      env:
+        ANDROID_KEYSTORE_PATH: cht_rci.keystore
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_CHT_RCI }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_CHT_RCI }}
 
     - name: GitHub release
       uses: softprops/action-gh-release@v1
