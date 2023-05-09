@@ -1,6 +1,23 @@
 package org.medicmobile.webapp.mobile;
 
-import android.annotation.SuppressLint;
+import static android.Manifest.permission.SEND_SMS;
+import static android.app.Activity.RESULT_OK;
+import static android.app.PendingIntent.FLAG_IMMUTABLE;
+import static android.app.PendingIntent.FLAG_ONE_SHOT;
+import static android.app.PendingIntent.getBroadcast;
+import static android.content.pm.PackageManager.PERMISSION_GRANTED;
+import static android.telephony.SmsManager.RESULT_ERROR_GENERIC_FAILURE;
+import static android.telephony.SmsManager.RESULT_ERROR_NO_SERVICE;
+import static android.telephony.SmsManager.RESULT_ERROR_NULL_PDU;
+import static android.telephony.SmsManager.RESULT_ERROR_RADIO_OFF;
+import static org.medicmobile.webapp.mobile.EmbeddedBrowserActivity.RequestCode;
+import static org.medicmobile.webapp.mobile.JavascriptUtils.safeFormat;
+import static org.medicmobile.webapp.mobile.MedicLog.log;
+import static org.medicmobile.webapp.mobile.MedicLog.trace;
+import static org.medicmobile.webapp.mobile.MedicLog.warn;
+import static java.lang.Integer.toHexString;
+
+import android.annotation.TargetApi;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -10,17 +27,11 @@ import android.os.Build;
 import android.telephony.SmsManager;
 import android.telephony.SmsMessage;
 
-import java.util.ArrayList;
+import androidx.core.content.ContextCompat;
 
-import static java.lang.Integer.toHexString;
-import static org.medicmobile.webapp.mobile.JavascriptUtils.safeFormat;
-import static org.medicmobile.webapp.mobile.MedicLog.log;
-import static org.medicmobile.webapp.mobile.MedicLog.warn;
-import static android.app.Activity.RESULT_OK;
-import static android.telephony.SmsManager.RESULT_ERROR_GENERIC_FAILURE;
-import static android.telephony.SmsManager.RESULT_ERROR_NO_SERVICE;
-import static android.telephony.SmsManager.RESULT_ERROR_NULL_PDU;
-import static android.telephony.SmsManager.RESULT_ERROR_RADIO_OFF;
+import java.util.ArrayList;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 class SmsSender {
 	private static final int UNUSED_REQUEST_CODE = 0;
@@ -30,11 +41,10 @@ class SmsSender {
 	private static final String DELIVERY_REPORT = "medic.android.sms.DELIVERY_REPORT";
 
 	private final EmbeddedBrowserActivity parent;
-	private final SmsManager smsManager;
+	private Sms sms;
 
-	SmsSender(EmbeddedBrowserActivity parent) {
+	protected SmsSender(EmbeddedBrowserActivity parent) {
 		this.parent = parent;
-		this.smsManager = SmsManager.getDefault();
 
 		parent.registerReceiver(new BroadcastReceiver() {
 			@Override public void onReceive(Context ctx, Intent intent) {
@@ -59,16 +69,80 @@ class SmsSender {
 		}, createIntentFilter());
 	}
 
-	void send(String id, String destination, String content) {
-		ArrayList<String> parts = smsManager.divideMessage(content);
-		smsManager.sendMultipartTextMessage(destination,
-				DEFAULT_SMSC,
-				parts,
-				intentsFor(SENDING_REPORT, id, destination, content, parts),
-				intentsFor(DELIVERY_REPORT, id, destination, content, parts));
+	public static SmsSender createInstance(EmbeddedBrowserActivity parent) {
+		if(Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+			return new LSmsSender(parent);
+		} else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+			return new RSmsSender(parent);
+		}
+		return new SmsSender(parent);
+	}
+
+	void send(Sms sms) {
+		if (!checkPermissions()) {
+			this.sms = sms;
+			return;
+		}
+
+		sendSmsMultipart(sms);
+	}
+
+	void resumeProcess(int resultCode) {
+		if (resultCode == RESULT_OK && this.sms != null) {
+			sendSmsMultipart(this.sms);
+			this.sms = null;
+			return;
+		}
+
+		trace(this.parent, "SmsSender :: Cannot send sms without Send SMS permission. Sms ID=%s", this.sms.getId());
+	}
+
+	@TargetApi(31)
+	protected SmsManager getManager() {
+		return parent.getSystemService(android.telephony.SmsManager.class);
+	}
+
+	@TargetApi(23)
+	protected int getBroadcastFlags() {
+		return FLAG_ONE_SHOT | FLAG_IMMUTABLE;
+	}
+
+	/**
+	 * @see <a href="https://developer.android.com/reference/android/telephony/SmsMessage#createFromPdu(byte[])">createFromPdu(byte[])</a>
+	 */
+	@TargetApi(23)
+	protected SmsMessage createFromPdu(Intent intent) {
+		byte[] pdu = intent.getByteArrayExtra("pdu");
+		String format = intent.getStringExtra("format");
+		return SmsMessage.createFromPdu(pdu, format);
 	}
 
 //> PRIVATE HELPERS
+
+	private void sendSmsMultipart(Sms sms) {
+		SmsManager smsManager = getManager();
+		ArrayList<String> parts = smsManager.divideMessage(sms.getContent());
+
+		smsManager.sendMultipartTextMessage(
+			sms.getDestination(),
+			DEFAULT_SMSC,
+			parts,
+			createIntentsFromSmsParts(SENDING_REPORT, sms, parts),
+			createIntentsFromSmsParts(DELIVERY_REPORT, sms, parts)
+		);
+	}
+
+	private boolean checkPermissions() {
+		if (ContextCompat.checkSelfPermission(this.parent, SEND_SMS) == PERMISSION_GRANTED) {
+			return true;
+		}
+
+		trace(this, "SmsSender :: Requesting permissions.");
+		Intent intent = new Intent(this.parent, RequestSendSmsPermissionActivity.class);
+		this.parent.startActivityForResult(intent, RequestCode.ACCESS_SEND_SMS_PERMISSION.getCode());
+		return false;
+	}
+
 	private void reportStatus(Intent intent, String status) {
 		reportStatus(intent, status, null);
 	}
@@ -95,23 +169,20 @@ class SmsSender {
 		return String.format("[id:%s to %s (part %s) content:%s]", id, destination, part, content);
 	}
 
-	private ArrayList<PendingIntent> intentsFor(String intentType, String id, String destination, String content, ArrayList<String> parts) {
+	private ArrayList<PendingIntent> createIntentsFromSmsParts(String intentType, Sms sms, ArrayList<String> parts) {
 		int totalParts = parts.size();
-		ArrayList<PendingIntent> intents = new ArrayList<>(totalParts);
 
-		for(int partIndex=0; partIndex<totalParts; ++partIndex) {
-			intents.add(intentFor(intentType, id, destination, content, partIndex, totalParts));
-		}
-
-		return intents;
+		return IntStream
+			.range(0, totalParts)
+			.mapToObj(index -> intentFor(intentType, sms, index, totalParts))
+			.collect(Collectors.toCollection(ArrayList::new));
 	}
 
-	@SuppressLint("UnspecifiedImmutableFlag")
-	private PendingIntent intentFor(String intentType, String id, String destination, String content, int partIndex, int totalParts) {
+	private PendingIntent intentFor(String intentType, Sms sms, int partIndex, int totalParts) {
 		Intent intent = new Intent(intentType);
-		intent.putExtra("id", id);
-		intent.putExtra("destination", destination);
-		intent.putExtra("content", content);
+		intent.putExtra("id", sms.getId());
+		intent.putExtra("destination", sms.getDestination());
+		intent.putExtra("content", sms.getContent());
 		intent.putExtra("partIndex", partIndex);
 		intent.putExtra("totalParts", totalParts);
 
@@ -120,24 +191,10 @@ class SmsSender {
 		// collisions.  There is a small chance of collisions if two
 		// SMS are in-flight at the same time and are given the same id.
 
-		return PendingIntent.getBroadcast(parent, UNUSED_REQUEST_CODE, intent, PendingIntent.FLAG_ONE_SHOT);
+		return getBroadcast(parent, UNUSED_REQUEST_CODE, intent, getBroadcastFlags());
 	}
 
 //> STATIC HELPERS
-	/**
-	 * @see https://developer.android.com/reference/android/telephony/SmsMessage.html#createFromPdu%28byte[],%20java.lang.String%29
-	 */
-	@SuppressLint("ObsoleteSdkInt")
-	private  static SmsMessage createFromPdu(Intent intent) {
-		byte[] pdu = intent.getByteArrayExtra("pdu");
-		if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-			String format = intent.getStringExtra("format");
-			return SmsMessage.createFromPdu(pdu, format);
-		} else {
-			return SmsMessage.createFromPdu(pdu);
-		}
-	}
-
 	private static IntentFilter createIntentFilter() {
 		IntentFilter filter = new IntentFilter();
 
@@ -151,7 +208,7 @@ class SmsSender {
 	class DeliveryReportHandler {
 		/**
 		 * Mask for differentiating GSM and CDMA message statuses.
-		 * @see https://developer.android.com/reference/android/telephony/SmsMessage.html#getStatus%28%29
+		 * @see <a href="https://developer.android.com/reference/android/telephony/SmsMessage#getStatus()>getStatus()</a>
 		 */
 		private static final int GSM_STATUS_MASK = 0xFF;
 
@@ -174,12 +231,12 @@ class SmsSender {
 	//> INTERNAL METHODS
 		/**
 		 * Decode the status value as per ETSI TS 123 040 V13.1.0 (2016-04) 9.2.3.15 (TP-Status (TP-ST)).
-		 * @see http://www.etsi.org/deliver/etsi_ts/123000_123099/123040/13.01.00_60/ts_123040v130100p.pdf
+		 * @see <a href="http://www.etsi.org/deliver/etsi_ts/123000_123099/123040/13.01.00_60/ts_123040v130100p.pdf">ETSI TS</a>
 		 */
 		@SuppressWarnings("PMD.EmptyIfStmt")
 		private void handleGsmDelivery(Intent intent, int status) {
 			// Detail of the failure.  Must be set for FAILED messages.
-			String fDetail = null;
+			String fDetail;
 
 			if(status < 0x20) {
 				//> Short message transaction completed
@@ -279,6 +336,55 @@ class SmsSender {
 			} else {
 				return "generic; no errorCode supplied";
 			}
+		}
+	}
+
+	static class RSmsSender extends SmsSender {
+
+		RSmsSender(EmbeddedBrowserActivity parent) {
+			super(parent);
+		}
+
+		protected SmsManager getManager(){
+			return SmsManager.getDefault();
+		}
+	}
+
+	static class LSmsSender extends RSmsSender {
+		LSmsSender(EmbeddedBrowserActivity parent) {
+			super(parent);
+		}
+
+		protected int getBroadcastFlags() {
+			return FLAG_ONE_SHOT;
+		}
+
+		protected SmsMessage createFromPdu(Intent intent) {
+			return SmsMessage.createFromPdu(intent.getByteArrayExtra("pdu"));
+		}
+	}
+
+	static class Sms {
+		private final String id;
+		private final String destination;
+		private final String content;
+
+		public Sms(String id, String destination, String content) {
+			this.id = id;
+			this.destination = destination;
+			this.content = content;
+		}
+
+		public String getId() {
+			return id;
+		}
+
+		public String getDestination() {
+			return destination;
+		}
+
+		public String getContent() {
+			return content;
 		}
 	}
 }

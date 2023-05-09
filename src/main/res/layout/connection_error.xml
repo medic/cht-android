@@ -45,9 +45,7 @@
 
             <Button
                 android:id="@+id/connErrorMoreInfo"
-                style="@style/Widget.AppCompat.Button.Borderless.Blue"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                style="@style/borderlessButton"
                 android:onClick="onClickMoreInfo"
                 android:text="@string/btnMoreInfo"
                 android:textAllCaps="true" />
@@ -59,9 +57,7 @@
 
             <Button
                 android:id="@+id/connErrorRetry"
-                style="@style/Widget.AppCompat.Button.Borderless.Blue"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                style="@style/borderlessButton"
                 android:onClick="onClickRetry"
                 android:text="@string/btnRetry"
                 android:textAllCaps="true" />

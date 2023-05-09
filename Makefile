@@ -64,9 +64,6 @@ bundle-all: check-env
 uninstall-all:
 	${GRADLE} uninstallAll
 
-url-tester:
-	DISABLE_APP_URL_VALIDATION=true ${GRADLE} ${GRADLE_OPTS} install${flavor}Debug
-
 uninstall:
 	adb uninstall org.medicmobile.webapp.mobile
 
@@ -97,7 +94,7 @@ test-ui-gamma:
 	${GRADLE} connectedMedicmobilegammaDebugAndroidTest -Pabi=${abi} --stacktrace
 
 test-ui-url:
-	DISABLE_APP_URL_VALIDATION=true ${GRADLE} connectedUnbrandedDebugAndroidTest \
+	${GRADLE} connectedUnbrandedDebugAndroidTest \
 		-Pabi=${abi} --stacktrace -Pandroid.testInstrumentationRunnerArguments.class=\
 	org.medicmobile.webapp.mobile.LastUrlTest
 

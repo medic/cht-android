@@ -7,13 +7,13 @@ import java.util.*;
 import java.util.regex.*;
 
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
-import static org.medicmobile.webapp.mobile.BuildConfig.DISABLE_APP_URL_VALIDATION;
 import static org.medicmobile.webapp.mobile.BuildConfig.TTL_LAST_URL;
 import static org.medicmobile.webapp.mobile.SimpleJsonClient2.redactUrl;
 import static org.medicmobile.webapp.mobile.MedicLog.trace;
 
 @SuppressWarnings("PMD.ShortMethodName")
 public abstract class SettingsStore {
+
 	private final SharedPreferences prefs;
 
 	SettingsStore(SharedPreferences prefs) {
@@ -22,17 +22,16 @@ public abstract class SettingsStore {
 
 	public abstract String getAppUrl();
 
-	public String getRootUrl() {
-		String appUrl = getAppUrl();
-		return appUrl + (DISABLE_APP_URL_VALIDATION ? "" : "/medic/_design/medic/_rewrite/");
-	}
-
 	public String getUrlToLoad(Uri url) {
-		return url != null ? url.toString() : getRootUrl();
+		return url != null ? url.toString() : getAppUrl();
 	}
 
 	public boolean isRootUrl(String url) {
-		return getRootUrl().equals(url);
+		if (url == null) {
+			return false;
+		}
+
+		return getAppUrl().equals(AppUrlVerifier.clean(url));
 	}
 
 	public abstract boolean hasWebappSettings();
@@ -41,10 +40,6 @@ public abstract class SettingsStore {
 
 	public abstract void update(SharedPreferences.Editor ed, WebappSettings s);
 
-	String getUnlockCode() {
-		return get("unlock-code");
-	}
-
 	void updateWith(WebappSettings s) throws SettingsException {
 		s.validate();
 
@@ -52,41 +47,13 @@ public abstract class SettingsStore {
 
 		update(ed, s);
 
-		if(!ed.commit()) throw new SettingsException(
-				"Failed to save to SharedPreferences.");
-	}
-
-	void updateWithUnlockCode(String unlockCode) throws SettingsException {
-		SharedPreferences.Editor ed = prefs.edit();
-
-		ed.putString("unlock-code", unlockCode);
-
-		if(!ed.commit()) throw new SettingsException(
-				"Failed to save 'unlock-code' to SharedPreferences.");
+		if (!ed.commit()) {
+			throw new SettingsException("Failed to save to SharedPreferences.");
+		}
 	}
 
 	String get(String key) {
 		return prefs.getString(key, null);
-	}
-
-	/**
-	 * Returns true if the user has denied to provide its geolocation data.
-	 * The rejection is taken from the first view with the "prominent" disclosure
-	 * about the location data, not from the native dialog displayed by Android.
-	 */
-	boolean hasUserDeniedGeolocation() {
-		return prefs.getBoolean("denied-geolocation", false);
-	}
-
-	/**
-	 * @see #hasUserDeniedGeolocation()
-	 */
-	void setUserDeniedGeolocation() throws SettingsException {
-		SharedPreferences.Editor ed = prefs.edit();
-		ed.putBoolean("denied-geolocation", true);
-		if (!ed.commit()) {
-			throw new SettingsException("Failed to save 'denied-geolocation' to SharedPreferences.");
-		}
 	}
 
 	/**
@@ -111,8 +78,9 @@ public abstract class SettingsStore {
 		SharedPreferences.Editor ed = prefs.edit();
 		ed.putString("last-url", lastUrl);
 		ed.putLong("last-url-time-ms", System.currentTimeMillis());
-		if(!ed.commit()) throw new SettingsException(
-				"Failed to save 'last-url' to SharedPreferences.");
+		if (!ed.commit()) {
+			throw new SettingsException("Failed to save 'last-url' to SharedPreferences.");
+		}
 	}
 
 	static SettingsStore in(Context ctx) {
@@ -134,6 +102,7 @@ public abstract class SettingsStore {
 
 @SuppressWarnings("PMD.CallSuperInConstructor")
 class BrandedSettingsStore extends SettingsStore {
+
 	private final String apiUrl;
 
 	BrandedSettingsStore(SharedPreferences prefs, String apiUrl) {
@@ -142,7 +111,9 @@ class BrandedSettingsStore extends SettingsStore {
 	}
 
 	public String getAppUrl() { return apiUrl; }
+
 	public boolean hasWebappSettings() { return true; }
+
 	public boolean allowsConfiguration() { return false; }
 
 	public void update(SharedPreferences.Editor ed, WebappSettings s) { /* nothing to save */ }
@@ -150,6 +121,7 @@ class BrandedSettingsStore extends SettingsStore {
 
 @SuppressWarnings("PMD.CallSuperInConstructor")
 class UnbrandedSettingsStore extends SettingsStore {
+
 	UnbrandedSettingsStore(SharedPreferences prefs) {
 		super(prefs);
 	}
@@ -175,8 +147,8 @@ class UnbrandedSettingsStore extends SettingsStore {
 }
 
 class WebappSettings {
-	public static final Pattern URL_PATTERN = Pattern.compile(
-			"http[s]?://([^/:]*)(:\\d*)?(.*)");
+
+	public static final Pattern URL_PATTERN = Pattern.compile("http[s]?://([^/:]*)(:\\d*)?(.*)");
 
 	public final String appUrl;
 
@@ -188,15 +160,13 @@ class WebappSettings {
 	public void validate() throws IllegalSettingsException {
 		List<IllegalSetting> errors = new LinkedList<>();
 
-		if(!isSet(appUrl)) {
-			errors.add(new IllegalSetting(R.id.txtAppUrl,
-					R.string.errRequired));
-		} else if(!URL_PATTERN.matcher(appUrl).matches()) {
-			errors.add(new IllegalSetting(R.id.txtAppUrl,
-					R.string.errInvalidUrl));
+		if (!isSet(appUrl)) {
+			errors.add(new IllegalSetting(R.id.txtAppUrl, R.string.errRequired));
+		} else if (!URL_PATTERN.matcher(appUrl).matches()) {
+			errors.add(new IllegalSetting(R.id.txtAppUrl, R.string.errInvalidUrl));
 		}
 
-		if(!errors.isEmpty()) {
+		if (!errors.isEmpty()) {
 			throw new IllegalSettingsException(errors);
 		}
 	}
@@ -211,6 +181,7 @@ class WebappSettings {
 }
 
 class IllegalSetting {
+
 	public final int componentId;
 	public final int errorStringId;
 
@@ -223,12 +194,14 @@ class IllegalSetting {
 class SettingsException extends Exception {
 	// See: https://pmd.github.io/pmd-6.36.0/pmd_rules_java_errorprone.html#missingserialversionuid
 	public static final long serialVersionUID = -1008287132276329302L;
+
 	public SettingsException(String message) {
 		super(message);
 	}
 }
 
 class IllegalSettingsException extends SettingsException {
+
 	public final List<IllegalSetting> errors;
 
 	public IllegalSettingsException(List<IllegalSetting> errors) {
@@ -237,12 +210,14 @@ class IllegalSettingsException extends SettingsException {
 	}
 
 	private static String createMessage(List<IllegalSetting> errors) {
-		if(DEBUG) {
+		if (DEBUG) {
 			StringBuilder bob = new StringBuilder();
-			for(IllegalSetting e : errors) {
-				if(bob.length() > 0) bob.append("; ");
-				bob.append(String.format(
-						"component[%s]: error[%s]", e.componentId, e.errorStringId));
+			for (IllegalSetting e : errors) {
+				if (bob.length() > 0) {
+					bob.append("; ");
+				}
+
+				bob.append(String.format("component[%s]: error[%s]", e.componentId, e.errorStringId));
 			}
 			return bob.toString();
 		}
