@@ -385,7 +385,11 @@ android {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.moh_niger_chw'
     }
-    
+
+    echis_kenya {
+      dimension = 'brand'
+      applicationId = 'org.medicmobile.webapp.mobile.echis_kenya'
+    }
   }
 
   splits {
