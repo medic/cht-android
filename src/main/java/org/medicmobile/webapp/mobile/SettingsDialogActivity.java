@@ -198,11 +198,7 @@ public class SettingsDialogActivity extends Activity {
 		}
 
 		public void onItemClick(AdapterView<?> parent, final View view, int position, long id) {
-			if(position == 0) {
-				displayCustomServerForm();
-			} else {
-				saveSettings(new WebappSettings(servers.get(position).url));
-			}
+			saveSettings(new WebappSettings(servers.get(position).url));
 		}
 	}
 }
@@ -231,9 +227,6 @@ class ServerRepo {
 
 	List<ServerMetadata> getServers() {
 		List servers = new LinkedList<ServerMetadata>();
-
-		// TODO: selective remove custom
-		servers.add(new ServerMetadata("Custom"));
 
 		for(Map.Entry<String, String> entry : instanceMap.entrySet()) {
 			ServerMetadata serverData = new ServerMetadata(entry.getValue(), entry.getKey());
@@ -264,8 +257,8 @@ class ServerRepo {
 					String tagName = xmlParser.getName();
 					if (tagName.equals("instance")) {
 						String name = xmlParser.getAttributeValue(null, "name");
-						String value = xmlParser.nextText();
-						result.put(name, value);
+						String url = xmlParser.nextText();
+						result.put(url, name);
 					}
 				}
 				eventType = xmlParser.next();
