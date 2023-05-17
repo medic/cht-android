@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 	<string name="app_name">CHIS - Kenya Ministry of Health</string>
-	<string name="app_host">echis.health.go.ke</string>
 </resources>
