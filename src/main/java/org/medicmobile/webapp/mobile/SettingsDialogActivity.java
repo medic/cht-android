@@ -229,7 +229,7 @@ class ServerRepo {
 		prefs = ctx.getSharedPreferences(
 				"ServerRepo",
 				Context.MODE_PRIVATE);
-		
+
 		// TODO: bug can't remove a url without clearing cache
 		prefs.edit().clear().commit();
 
