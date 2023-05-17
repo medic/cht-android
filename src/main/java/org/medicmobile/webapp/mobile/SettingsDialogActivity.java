@@ -256,7 +256,7 @@ class ServerRepo {
 
 		try {
 			Resources resources = context.getResources();
-			XmlResourceParser xmlParser = resources.getXml(R.xml.instanceMap);
+			XmlResourceParser xmlParser = resources.getXml(R.xml.instances);
 
 			int eventType = xmlParser.getEventType();
 			while (eventType != XmlPullParser.END_DOCUMENT) {
