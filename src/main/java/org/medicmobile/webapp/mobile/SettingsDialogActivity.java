@@ -3,7 +3,6 @@ package org.medicmobile.webapp.mobile;
 import static org.medicmobile.webapp.mobile.MedicLog.trace;
 import static org.medicmobile.webapp.mobile.SimpleJsonClient2.redactUrl;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -62,18 +61,6 @@ public class SettingsDialogActivity extends Activity {
 		list.setOnItemClickListener(new ServerClickListener(servers));
 	}
 
-	private void displayCustomServerForm() {
-		state = STATE_FORM;
-
-		setContentView(R.layout.custom_server_form);
-
-		if(!this.settings.hasWebappSettings()) {
-			cancelButton().setVisibility(View.GONE);
-		}
-
-		text(R.id.txtAppUrl, settings.getAppUrl());
-	}
-
 //> EVENT HANDLERS
 	public void verifyAndSave(View view) {
 		trace(this, "verifyAndSave()");
@@ -93,7 +80,7 @@ public class SettingsDialogActivity extends Activity {
 
 			if (result.isOk) {
 				saveSettings(new WebappSettings(result.appUrl));
-				serverRepo.save(result.appUrl);
+				serverRepo.save(null, result.appUrl);
 				return;
 			}
 			showError(R.id.txtAppUrl, result.failure);
@@ -156,11 +143,6 @@ public class SettingsDialogActivity extends Activity {
 		return field.getText().toString();
 	}
 
-	private void text(int componentId, String value) {
-		EditText field = (EditText) findViewById(componentId);
-		field.setText(value);
-	}
-
 	private void showError(IllegalSetting error) {
 		showError(error.componentId, error.errorStringId);
 	}
@@ -191,11 +173,7 @@ public class SettingsDialogActivity extends Activity {
 		}
 
 		public void onItemClick(AdapterView<?> parent, final View view, int position, long id) {
-			if(position == 0) {
-				displayCustomServerForm();
-			} else {
-				saveSettings(new WebappSettings(servers.get(position).url));
-			}
+			saveSettings(new WebappSettings(servers.get(position).url));
 		}
 	}
 }
@@ -222,15 +200,24 @@ class ServerRepo {
 		prefs = ctx.getSharedPreferences(
 				"ServerRepo",
 				Context.MODE_PRIVATE);
-		save("https://gamma.dev.medicmobile.org");
-		save("https://gamma-cht.dev.medicmobile.org");
-		save("https://medic.github.io/atp");
+		save("Garissa", "https://garissa-echis.health.go.ke");
+		save("Isiolo", "https://isiolo-echis.health.go.ke");
+		save("Kakamega", "https://kakamega-echis.health.go.ke");
+		save("Kilifi", "https://kilifi-echis.health.go.ke");
+		save("Kisumu", "https://kisumu-echis.health.go.ke");
+		save("Kitui", "https://kitui-echis.health.go.ke");
+		save("Machakos", "https://echis.health.go.ke");
+		save("Migori", "https://migori-echis.health.go.ke");
+		save("Nairobi", "https://nairobi-echis.health.go.ke");
+		save("Nakuru", "https://nakuru-echis.health.go.ke");
+		save("Nyeri", "https://nyeri-echis.health.go.ke");
+		save("Turkana", "https://turkana-echis.health.go.ke");
+		save("Uasin Gishu", "https://uasin-gishu-echis.health.go.ke");
+		save("Vihiga", "https://vihiga-echis.health.go.ke");
 	}
 
 	List<ServerMetadata> getServers() {
 		List servers = new LinkedList<ServerMetadata>();
-
-		servers.add(new ServerMetadata("Custom"));
 
 		for(Map.Entry<String, ?> e : prefs.getAll().entrySet()) {
 			servers.add(new ServerMetadata(
@@ -241,39 +228,9 @@ class ServerRepo {
 		return servers;
 	}
 
-	void save(String url) {
+	void save(String name, String url) {
 		SharedPreferences.Editor ed = prefs.edit();
-		ed.putString(url, friendly(url));
+		ed.putString(url, name);
 		ed.apply();
-	}
-
-	@SuppressLint("DefaultLocale")
-	private static String friendly(String url) {
-		int slashes = url.indexOf("//");
-
-		if(slashes != -1) {
-			url = url.substring(slashes + 2);
-		}
-
-		if(url.endsWith(".medicmobile.org")) {
-			url = url.substring(0, url.length() - ".medicmobile.org".length());
-		}
-
-		if(url.endsWith(".medicmobile.org/")) {
-			url = url.substring(0, url.length() - ".medicmobile.org/".length());
-		}
-
-		if(url.startsWith("192.168.")) {
-			return url.substring("192.168.".length());
-		} else {
-			String[] parts = url.split("\\.");
-			StringBuilder stringBuilder = new StringBuilder();
-			for(String p : parts) {
-				stringBuilder.append(" ");
-				stringBuilder.append(p.substring(0, 1).toUpperCase());
-				stringBuilder.append(p.substring(1));
-			}
-			return stringBuilder.toString().substring(1);
-		}
 	}
 }
