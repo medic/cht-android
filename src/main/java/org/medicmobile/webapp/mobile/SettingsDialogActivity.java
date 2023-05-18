@@ -184,7 +184,7 @@ class ServerRepo {
 		save("Nakuru", "https://nakuru.echis.go.ke");
 		save("Nyeri", "https://nyeri.echis.go.ke");
 		save("Turkana", "https://turkana.echis.go.ke");
-		save("Uasin Gishu", "https://uasin-gishu.echis.go.ke");
+		save("Uasin Gishu", "https://uasingishu.echis.go.ke");
 		save("Vihiga", "https://vihiga.echis.go.ke");
 	}
 
