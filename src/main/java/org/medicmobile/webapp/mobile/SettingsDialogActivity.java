@@ -62,38 +62,6 @@ public class SettingsDialogActivity extends Activity {
 	}
 
 //> EVENT HANDLERS
-	public void verifyAndSave(View view) {
-		trace(this, "verifyAndSave()");
-
-		submitButton().setEnabled(false);
-		cancelButton().setEnabled(false);
-
-		String appUrl = text(R.id.txtAppUrl);
-
-		AsyncExecutor asyncExecutor = new AsyncExecutor();
-		asyncExecutor.executeAsync(new AppUrlVerifier(appUrl), (result) -> {
-			trace(
-				this,
-				"SettingsDialogActivity :: Executing verification callback, result isOkay=%s, appUrl=%s",
-				result.isOk, result.appUrl
-			);
-
-			if (result.isOk) {
-				saveSettings(new WebappSettings(result.appUrl));
-				serverRepo.save(null, result.appUrl);
-				return;
-			}
-			showError(R.id.txtAppUrl, result.failure);
-			submitButton().setEnabled(true);
-			cancelButton().setEnabled(true);
-		});
-	}
-
-	public void cancelSettingsEdit(View view) {
-		trace(this, "cancelSettingsEdit()");
-		backToWebview();
-	}
-
 	@Override public void onBackPressed() {
 		switch(state) {
 			case STATE_LIST:
