@@ -4,6 +4,7 @@
 
 	<string name="scheme">https</string>
 	<string name="app_host"/>
+	<string name="intent_host">medicmobile.org</string>
 
 	<string name="txtAppUrl">CHT server URL</string>
 	<string name="errAppUrl_serverNotFound">Unable to contact server</string>
