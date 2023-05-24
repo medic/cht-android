@@ -7,7 +7,8 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
+import android.content.res.Resources;
+import android.content.res.XmlResourceParser;
 import android.os.Bundle;
 import android.util.ArrayMap;
 import android.view.View;
@@ -21,10 +22,16 @@ import android.widget.TextView;
 
 import org.medicmobile.webapp.mobile.util.AsyncExecutor;
 
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 public class SettingsDialogActivity extends Activity {
 	private static final int STATE_LIST = 1;
@@ -93,7 +100,7 @@ public class SettingsDialogActivity extends Activity {
 
 			if (result.isOk) {
 				saveSettings(new WebappSettings(result.appUrl));
-				serverRepo.save(result.appUrl);
+				serverRepo.save(null, result.appUrl);
 				return;
 			}
 			showError(R.id.txtAppUrl, result.failure);
@@ -191,11 +198,7 @@ public class SettingsDialogActivity extends Activity {
 		}
 
 		public void onItemClick(AdapterView<?> parent, final View view, int position, long id) {
-			if(position == 0) {
-				displayCustomServerForm();
-			} else {
-				saveSettings(new WebappSettings(servers.get(position).url));
-			}
+			saveSettings(new WebappSettings(servers.get(position).url));
 		}
 	}
 }
@@ -216,35 +219,56 @@ class ServerMetadata {
 }
 
 class ServerRepo {
-	private final SharedPreferences prefs;
+	private SortedMap<String, String> instanceMap;
 
 	ServerRepo(Context ctx) {
-		prefs = ctx.getSharedPreferences(
-				"ServerRepo",
-				Context.MODE_PRIVATE);
-		save("https://gamma.dev.medicmobile.org");
-		save("https://gamma-cht.dev.medicmobile.org");
-		save("https://medic.github.io/atp");
+		instanceMap = parseInstanceXML(ctx);
 	}
 
 	List<ServerMetadata> getServers() {
 		List servers = new LinkedList<ServerMetadata>();
 
-		servers.add(new ServerMetadata("Custom"));
-
-		for(Map.Entry<String, ?> e : prefs.getAll().entrySet()) {
-			servers.add(new ServerMetadata(
-					e.getValue().toString(),
-					e.getKey()));
+		for(Map.Entry<String, String> entry : instanceMap.entrySet()) {
+			ServerMetadata serverData = new ServerMetadata(entry.getValue(), entry.getKey());
+			servers.add(serverData);
 		}
 
 		return servers;
 	}
 
-	void save(String url) {
-		SharedPreferences.Editor ed = prefs.edit();
-		ed.putString(url, friendly(url));
-		ed.apply();
+	void save(String name, String url) {
+		if (name == null) {
+			name = friendly(url);
+		}
+
+		instanceMap.put(url, name);
+	}
+
+	private static SortedMap<String, String> parseInstanceXML(Context context) {
+		SortedMap<String, String> result = new TreeMap<>();
+
+		try {
+			Resources resources = context.getResources();
+			XmlResourceParser xmlParser = resources.getXml(R.xml.instances);
+
+			int eventType = xmlParser.getEventType();
+			while (eventType != XmlPullParser.END_DOCUMENT) {
+				if (eventType == XmlPullParser.START_TAG) {
+					String tagName = xmlParser.getName();
+					if (tagName.equals("instance")) {
+						String name = xmlParser.getAttributeValue(null, "name");
+						String url = xmlParser.nextText();
+						result.put(url, name);
+					}
+				}
+				eventType = xmlParser.next();
+			}
+		} catch (XmlPullParserException | IOException e) {
+			// TODO: don't catch?
+			e.printStackTrace();
+		}
+
+		return result;
 	}
 
 	@SuppressLint("DefaultLocale")
