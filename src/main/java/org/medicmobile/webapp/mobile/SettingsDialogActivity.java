@@ -19,8 +19,6 @@ import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -159,10 +157,6 @@ class ServerMetadata {
 		this.name = name;
 		this.url = url;
 	}
-
-	public String getName() {
-		return name;
-	}
 }
 
 class ServerRepo {
@@ -196,8 +190,6 @@ class ServerRepo {
 					e.getValue().toString(),
 					e.getKey()));
 		}
-
-		Collections.sort(servers, Comparator.comparing(ServerMetadata::getName));
 
 		return servers;
 	}
