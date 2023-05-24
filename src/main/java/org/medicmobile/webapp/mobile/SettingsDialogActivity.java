@@ -8,8 +8,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.Resources;
-import android.content.res.XmlResourceParser;
 import android.os.Bundle;
 import android.util.ArrayMap;
 import android.view.View;
@@ -23,12 +21,7 @@ import android.widget.TextView;
 
 import org.medicmobile.webapp.mobile.util.AsyncExecutor;
 
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserException;
-
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -100,7 +93,7 @@ public class SettingsDialogActivity extends Activity {
 
 			if (result.isOk) {
 				saveSettings(new WebappSettings(result.appUrl));
-				serverRepo.save(null, result.appUrl);
+				serverRepo.save(result.appUrl);
 				return;
 			}
 			showError(R.id.txtAppUrl, result.failure);
@@ -229,67 +222,29 @@ class ServerRepo {
 		prefs = ctx.getSharedPreferences(
 				"ServerRepo",
 				Context.MODE_PRIVATE);
-		
-		// TODO: bug can't remove a url without clearing cache
-		prefs.edit().clear().commit();
-
-		Map<String, String> instances = parseInstanceXML(ctx);
-		for (Map.Entry<String, String> entry : instances.entrySet()) {
-			String instanceName = entry.getKey();
-			String instanceUrl = entry.getValue();
-
-			save(instanceName, instanceUrl);
-		}
+		save("https://gamma.dev.medicmobile.org");
+		save("https://gamma-cht.dev.medicmobile.org");
+		save("https://medic.github.io/atp");
 	}
 
 	List<ServerMetadata> getServers() {
 		List servers = new LinkedList<ServerMetadata>();
 
-		// TODO: selective remove custom
 		servers.add(new ServerMetadata("Custom"));
 
 		for(Map.Entry<String, ?> e : prefs.getAll().entrySet()) {
-			ServerMetadata serverData = new ServerMetadata(e.getKey(), e.getValue().toString());
-			servers.add(serverData);
+			servers.add(new ServerMetadata(
+					e.getValue().toString(),
+					e.getKey()));
 		}
 
 		return servers;
 	}
 
-	void save(String name, String url) {
-		if (name == null) {
-			name = friendly(url);
-		}
-
+	void save(String url) {
 		SharedPreferences.Editor ed = prefs.edit();
-		ed.putString(name, url);
+		ed.putString(url, friendly(url));
 		ed.apply();
-	}
-
-	private static Map<String, String> parseInstanceXML(Context context) {
-		Map<String, String> instances = new HashMap<>();
-
-		try {
-			Resources resources = context.getResources();
-			XmlResourceParser xmlParser = resources.getXml(R.xml.instances);
-
-			int eventType = xmlParser.getEventType();
-			while (eventType != XmlPullParser.END_DOCUMENT) {
-				if (eventType == XmlPullParser.START_TAG) {
-					String tagName = xmlParser.getName();
-					if (tagName.equals("instance")) {
-						String name = xmlParser.getAttributeValue(null, "name");
-						String value = xmlParser.nextText();
-						instances.put(name, value);
-					}
-				}
-				eventType = xmlParser.next();
-			}
-		} catch (XmlPullParserException | IOException e) {
-			e.printStackTrace();
-		}
-
-		return instances;
 	}
 
 	@SuppressLint("DefaultLocale")
