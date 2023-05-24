@@ -15,11 +15,9 @@ import static org.medicmobile.webapp.mobile.MedicLog.trace;
 public abstract class SettingsStore {
 
 	private final SharedPreferences prefs;
-	private final Boolean allowCustomHosts;
 
-	SettingsStore(SharedPreferences prefs, Boolean allowCustomHosts) {
+	SettingsStore(SharedPreferences prefs) {
 		this.prefs = prefs;
-		this.allowCustomHosts = allowCustomHosts;
 	}
 
 	public abstract String getAppUrl();
@@ -35,8 +33,6 @@ public abstract class SettingsStore {
 
 		return getAppUrl().equals(AppUrlVerifier.clean(url));
 	}
-
-	public boolean allowCustomHosts() { return this.allowCustomHosts; }
 
 	public abstract boolean hasWebappSettings();
 
@@ -95,13 +91,12 @@ public abstract class SettingsStore {
 				Context.MODE_PRIVATE);
 
 		String appHost = ctx.getResources().getString(R.string.app_host);
-		Boolean allowCustomHosts = ctx.getResources().getBoolean(R.bool.allowCustomHosts);
 		String scheme = ctx.getResources().getString(R.string.scheme);
 		if(appHost.length() > 0) {
 			return new BrandedSettingsStore(prefs, scheme + "://" + appHost);
 		}
 
-		return new UnbrandedSettingsStore(prefs, allowCustomHosts);
+		return new UnbrandedSettingsStore(prefs);
 	}
 }
 
@@ -111,7 +106,7 @@ class BrandedSettingsStore extends SettingsStore {
 	private final String apiUrl;
 
 	BrandedSettingsStore(SharedPreferences prefs, String apiUrl) {
-		super(prefs, false);
+		super(prefs);
 		this.apiUrl = apiUrl;
 	}
 
@@ -127,8 +122,8 @@ class BrandedSettingsStore extends SettingsStore {
 @SuppressWarnings("PMD.CallSuperInConstructor")
 class UnbrandedSettingsStore extends SettingsStore {
 
-	UnbrandedSettingsStore(SharedPreferences prefs, Boolean allowCustomHosts) {
-		super(prefs, allowCustomHosts);
+	UnbrandedSettingsStore(SharedPreferences prefs) {
+		super(prefs);
 	}
 
 //> ACCESSORS

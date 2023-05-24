@@ -32,7 +32,7 @@ public class SettingsStoreTest {
 		sharedPreferences = mock(SharedPreferences.class);
 
 		MockSettings mockSettings = withSettings()
-			.useConstructor(sharedPreferences, true)
+			.useConstructor(sharedPreferences)
 			.defaultAnswer(CALLS_REAL_METHODS);
 
 		settingsStore = mock(SettingsStore.class, mockSettings);

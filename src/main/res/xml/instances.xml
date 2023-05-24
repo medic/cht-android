@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<instances xmlns:android="http://schemas.android.com/apk/res/android">
-  <instance>https://gamma.dev.medicmobile.org</instance>
-  <instance>https://gamma-cht.dev.medicmobile.org</instance>
-  <instance>https://medic.github.io/atp</instance>
-</instances>
