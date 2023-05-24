@@ -7,6 +7,7 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.content.res.XmlResourceParser;
 import android.os.Bundle;
@@ -27,11 +28,10 @@ import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedMap;
-import java.util.TreeMap;
 
 public class SettingsDialogActivity extends Activity {
 	private static final int STATE_LIST = 1;
@@ -223,10 +223,23 @@ class ServerMetadata {
 }
 
 class ServerRepo {
-	private SortedMap<String, String> instanceMap;
+	private final SharedPreferences prefs;
 
 	ServerRepo(Context ctx) {
-		instanceMap = parseInstanceXML(ctx);
+		prefs = ctx.getSharedPreferences(
+				"ServerRepo",
+				Context.MODE_PRIVATE);
+
+		// TODO: bug can't remove a url without clearing cache
+		prefs.edit().clear().commit();
+
+		Map<String, String> instances = parseInstanceXML(ctx);
+		for (Map.Entry<String, String> entry : instances.entrySet()) {
+			String instanceName = entry.getKey();
+			String instanceUrl = entry.getValue();
+
+			save(instanceName, instanceUrl);
+		}
 	}
 
 	List<ServerMetadata> getServers() {
@@ -235,8 +248,8 @@ class ServerRepo {
 		// TODO: selective remove custom
 		servers.add(new ServerMetadata("Custom"));
 
-		for(Map.Entry<String, String> entry : instanceMap.entrySet()) {
-			ServerMetadata serverData = new ServerMetadata(entry.getValue(), entry.getKey());
+		for(Map.Entry<String, ?> e : prefs.getAll().entrySet()) {
+			ServerMetadata serverData = new ServerMetadata(e.getKey(), e.getValue().toString());
 			servers.add(serverData);
 		}
 
@@ -248,15 +261,17 @@ class ServerRepo {
 			name = friendly(url);
 		}
 
-		instanceMap.put(url, name);
+		SharedPreferences.Editor ed = prefs.edit();
+		ed.putString(name, url);
+		ed.apply();
 	}
 
-	private static SortedMap<String, String> parseInstanceXML(Context context) {
-		SortedMap<String, String> result = new TreeMap<>();
+	private static Map<String, String> parseInstanceXML(Context context) {
+		Map<String, String> instances = new HashMap<>();
 
 		try {
 			Resources resources = context.getResources();
-			XmlResourceParser xmlParser = resources.getXml(R.xml.instanceMap);
+			XmlResourceParser xmlParser = resources.getXml(R.xml.instances);
 
 			int eventType = xmlParser.getEventType();
 			while (eventType != XmlPullParser.END_DOCUMENT) {
@@ -265,17 +280,16 @@ class ServerRepo {
 					if (tagName.equals("instance")) {
 						String name = xmlParser.getAttributeValue(null, "name");
 						String value = xmlParser.nextText();
-						result.put(name, value);
+						instances.put(name, value);
 					}
 				}
 				eventType = xmlParser.next();
 			}
 		} catch (XmlPullParserException | IOException e) {
-			// TODO: don't catch?
 			e.printStackTrace();
 		}
 
-		return result;
+		return instances;
 	}
 
 	@SuppressLint("DefaultLocale")
