@@ -237,16 +237,22 @@ class ServerRepo {
 
 	ServerRepo(Context ctx) {
 		prefs = ctx.getSharedPreferences(
-			"ServerRepo",
-			Context.MODE_PRIVATE);
-
-		Map<String, String> instances = parseInstanceXML(ctx);
-		for (Map.Entry<String, String> entry : instances.entrySet()) {
-			String instanceName = entry.getKey();
-			String instanceUrl = entry.getValue();
-
-			save(instanceName, instanceUrl);
-		}
+				"ServerRepo",
+				Context.MODE_PRIVATE);
+		save("Garissa", "https://garissa.echis.go.ke");
+		save("Isiolo", "https://isiolo.echis.go.ke");
+		save("Kakamega", "https://kakamega.echis.go.ke");
+		save("Kilifi", "https://kilifi.echis.go.ke");
+		save("Kisumu", "https://kisumu.echis.go.ke");
+		save("Kitui", "https://kitui.echis.go.ke");
+		save("Machakos", "https://machakos.echis.go.ke");
+		save("Migori", "https://migori.echis.go.ke");
+		save("Nairobi", "https://nairobi.echis.go.ke");
+		save("Nakuru", "https://nakuru.echis.go.ke");
+		save("Nyeri", "https://nyeri.echis.go.ke");
+		save("Turkana", "https://turkana.echis.go.ke");
+		save("Uasin Gishu", "https://uasingishu.echis.go.ke");
+		save("Vihiga", "https://vihiga.echis.go.ke");
 	}
 
 	List<ServerMetadata> getServers() {
