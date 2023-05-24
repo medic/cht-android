@@ -3,16 +3,10 @@ package org.medicmobile.webapp.mobile;
 import static org.medicmobile.webapp.mobile.MedicLog.trace;
 import static org.medicmobile.webapp.mobile.SimpleJsonClient2.redactUrl;
 
-import android.annotation.SuppressLint;
-
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-
-import android.content.res.Resources;
-import android.content.res.XmlResourceParser;
-
 import android.os.Bundle;
 import android.util.ArrayMap;
 import android.view.View;
@@ -24,16 +18,9 @@ import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
-import org.medicmobile.webapp.mobile.util.AsyncExecutor;
-
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserException;
-
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -74,51 +61,7 @@ public class SettingsDialogActivity extends Activity {
 		list.setOnItemClickListener(new ServerClickListener(servers));
 	}
 
-	private void displayCustomServerForm() {
-		state = STATE_FORM;
-
-		setContentView(R.layout.custom_server_form);
-
-		if(!this.settings.hasWebappSettings()) {
-			cancelButton().setVisibility(View.GONE);
-		}
-
-		text(R.id.txtAppUrl, settings.getAppUrl());
-	}
-
 //> EVENT HANDLERS
-	public void verifyAndSave(View view) {
-		trace(this, "verifyAndSave()");
-
-		submitButton().setEnabled(false);
-		cancelButton().setEnabled(false);
-
-		String appUrl = text(R.id.txtAppUrl);
-
-		AsyncExecutor asyncExecutor = new AsyncExecutor();
-		asyncExecutor.executeAsync(new AppUrlVerifier(appUrl), (result) -> {
-			trace(
-				this,
-				"SettingsDialogActivity :: Executing verification callback, result isOkay=%s, appUrl=%s",
-				result.isOk, result.appUrl
-			);
-
-			if (result.isOk) {
-				saveSettings(new WebappSettings(result.appUrl));
-				serverRepo.save(null, result.appUrl);
-				return;
-			}
-			showError(R.id.txtAppUrl, result.failure);
-			submitButton().setEnabled(true);
-			cancelButton().setEnabled(true);
-		});
-	}
-
-	public void cancelSettingsEdit(View view) {
-		trace(this, "cancelSettingsEdit()");
-		backToWebview();
-	}
-
 	@Override public void onBackPressed() {
 		switch(state) {
 			case STATE_LIST:
@@ -168,11 +111,6 @@ public class SettingsDialogActivity extends Activity {
 		return field.getText().toString();
 	}
 
-	private void text(int componentId, String value) {
-		EditText field = (EditText) findViewById(componentId);
-		field.setText(value);
-	}
-	
 	private void showError(IllegalSetting error) {
 		showError(error.componentId, error.errorStringId);
 	}
@@ -203,12 +141,7 @@ public class SettingsDialogActivity extends Activity {
 		}
 
 		public void onItemClick(AdapterView<?> parent, final View view, int position, long id) {
-			// TODO: && custom
-			if(position == 0) {
-				displayCustomServerForm();
-			} else {
-				saveSettings(new WebappSettings(servers.get(position).url));
-			}
+			saveSettings(new WebappSettings(servers.get(position).url));
 		}
 	}
 }
@@ -251,7 +184,7 @@ class ServerRepo {
 		save("Nakuru", "https://nakuru.echis.go.ke");
 		save("Nyeri", "https://nyeri.echis.go.ke");
 		save("Turkana", "https://turkana.echis.go.ke");
-		save("Uasin Gishu", "https://uasingishu.echis.go.ke");
+		save("Uasin Gishu", "https://uasin-gishu.echis.go.ke");
 		save("Vihiga", "https://vihiga.echis.go.ke");
 	}
 
@@ -260,8 +193,8 @@ class ServerRepo {
 
 		for(Map.Entry<String, ?> e : prefs.getAll().entrySet()) {
 			servers.add(new ServerMetadata(
-				e.getValue().toString(),
-				e.getKey()));
+					e.getValue().toString(),
+					e.getKey()));
 		}
 
 		Collections.sort(servers, Comparator.comparing(ServerMetadata::getName));
@@ -270,70 +203,8 @@ class ServerRepo {
 	}
 
 	void save(String name, String url) {
-		if (name == null) {
-			name = friendly(url);
-		}
-		
 		SharedPreferences.Editor ed = prefs.edit();
 		ed.putString(url, name);
 		ed.apply();
-	}
-
-	private static Map<String, String> parseInstanceXML(Context context) {
-		HashMap<String, String> result = new HashMap<>();
-
-		try {
-			Resources resources = context.getResources();
-			XmlResourceParser xmlParser = resources.getXml(R.xml.instances);
-
-			int eventType = xmlParser.getEventType();
-			while (eventType != XmlPullParser.END_DOCUMENT) {
-				if (eventType == XmlPullParser.START_TAG) {
-					String tagName = xmlParser.getName();
-					if (tagName.equals("instance")) {
-						String name = xmlParser.getAttributeValue(null, "name");
-						String url = xmlParser.nextText();
-						result.put(url, name);
-					}
-				}
-				eventType = xmlParser.next();
-			}
-		} catch (XmlPullParserException | IOException e) {
-			// TODO: don't catch?
-			e.printStackTrace();
-		}
-
-		return result;
-	}
-
-
-	@SuppressLint("DefaultLocale")
-	private static String friendly(String url) {
-		int slashes = url.indexOf("//");
-
-		if(slashes != -1) {
-			url = url.substring(slashes + 2);
-		}
-
-		if(url.endsWith(".medicmobile.org")) {
-			url = url.substring(0, url.length() - ".medicmobile.org".length());
-		}
-
-		if(url.endsWith(".medicmobile.org/")) {
-			url = url.substring(0, url.length() - ".medicmobile.org/".length());
-		}
-
-		if(url.startsWith("192.168.")) {
-			return url.substring("192.168.".length());
-		} else {
-			String[] parts = url.split("\\.");
-			StringBuilder stringBuilder = new StringBuilder();
-			for(String p : parts) {
-				stringBuilder.append(" ");
-				stringBuilder.append(p.substring(0, 1).toUpperCase());
-				stringBuilder.append(p.substring(1));
-			}
-			return stringBuilder.toString().substring(1);
-		}
 	}
 }
