@@ -2,4 +2,5 @@
 <resources>
 	<string name="app_name">eCHIS Kenya</string>
 	<bool name="allowCustomHosts">False</bool>
+	<string name="intent_host">*-echis.health.go.ke</string>
 </resources>
