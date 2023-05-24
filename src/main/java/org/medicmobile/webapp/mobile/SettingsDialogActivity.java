@@ -172,7 +172,7 @@ public class SettingsDialogActivity extends Activity {
 		EditText field = (EditText) findViewById(componentId);
 		field.setText(value);
 	}
-
+	
 	private void showError(IllegalSetting error) {
 		showError(error.componentId, error.errorStringId);
 	}
@@ -267,7 +267,7 @@ class ServerRepo {
 		if (name == null) {
 			name = friendly(url);
 		}
-
+		
 		SharedPreferences.Editor ed = prefs.edit();
 		ed.putString(url, name);
 		ed.apply();
