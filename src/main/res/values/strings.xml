@@ -4,7 +4,6 @@
 
 	<string name="scheme">https</string>
 	<string name="app_host"/>
-  <bool name="allowCustomHosts">True</bool>
 	<string name="intent_host">medicmobile.org</string>
 
 	<string name="txtAppUrl">CHT server URL</string>
