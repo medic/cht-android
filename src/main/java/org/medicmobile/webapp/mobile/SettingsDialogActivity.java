@@ -18,6 +18,8 @@ import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
+import org.medicmobile.webapp.mobile.util.AsyncExecutor;
+
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
