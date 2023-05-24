@@ -63,7 +63,7 @@ public class SettingsDialogActivity extends Activity {
 
 		ListView list = (ListView) findViewById(R.id.lstServers);
 
-		List<ServerMetadata> servers = serverRepo.getServers(this.settings.allowCustomHosts());
+		List<ServerMetadata> servers = serverRepo.getServers();
 
 		list.setAdapter(new SimpleAdapter(this,
 				adapt(servers),
@@ -203,7 +203,8 @@ public class SettingsDialogActivity extends Activity {
 		}
 
 		public void onItemClick(AdapterView<?> parent, final View view, int position, long id) {
-			if (settings.allowCustomHosts() && position == 0) {
+			// TODO: && custom
+			if(position == 0) {
 				displayCustomServerForm();
 			} else {
 				saveSettings(new WebappSettings(servers.get(position).url));
@@ -241,14 +242,14 @@ class ServerRepo {
 
 		Map<String, String> instances = parseInstanceXML(ctx);
 		for (Map.Entry<String, String> entry : instances.entrySet()) {
-			String instanceName = entry.getValue();
-			String instanceUrl = entry.getKey();
+			String instanceName = entry.getKey();
+			String instanceUrl = entry.getValue();
 
 			save(instanceName, instanceUrl);
 		}
 	}
 
-	List<ServerMetadata> getServers(Boolean allowCustomHosts) {
+	List<ServerMetadata> getServers() {
 		List servers = new LinkedList<ServerMetadata>();
 
 		for(Map.Entry<String, ?> e : prefs.getAll().entrySet()) {
@@ -258,10 +259,6 @@ class ServerRepo {
 		}
 
 		Collections.sort(servers, Comparator.comparing(ServerMetadata::getName));
-
-		if (allowCustomHosts) {
-			servers.add(0, new ServerMetadata("Custom"));
-		}
 
 		return servers;
 	}
@@ -277,9 +274,9 @@ class ServerRepo {
 	}
 
 	private static Map<String, String> parseInstanceXML(Context context) {
-		try {
-			HashMap<String, String> result = new HashMap<>();
+		HashMap<String, String> result = new HashMap<>();
 
+		try {
 			Resources resources = context.getResources();
 			XmlResourceParser xmlParser = resources.getXml(R.xml.instances);
 
@@ -295,12 +292,12 @@ class ServerRepo {
 				}
 				eventType = xmlParser.next();
 			}
-
-			return result;
 		} catch (XmlPullParserException | IOException e) {
+			// TODO: don't catch?
 			e.printStackTrace();
-			return new HashMap<>();
 		}
+
+		return result;
 	}
 
 
