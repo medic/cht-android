@@ -87,7 +87,7 @@ public abstract class SettingsStore {
 		trace(SettingsStore.class, "Loading settings for context %s...", ctx);
 
 		SharedPreferences prefs = ctx.getSharedPreferences(
-				SettingsStore.class.getName(),
+				"foo",
 				Context.MODE_PRIVATE);
 
 		String appHost = ctx.getResources().getString(R.string.app_host);
