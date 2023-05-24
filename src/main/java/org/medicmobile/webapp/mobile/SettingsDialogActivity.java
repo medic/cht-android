@@ -172,20 +172,20 @@ class ServerRepo {
 		prefs = ctx.getSharedPreferences(
 				"ServerRepo",
 				Context.MODE_PRIVATE);
-		save("Garissa", "https://garissa.echis.go.ke");
-		save("Isiolo", "https://isiolo.echis.go.ke");
-		save("Kakamega", "https://kakamega.echis.go.ke");
-		save("Kilifi", "https://kilifi.echis.go.ke");
-		save("Kisumu", "https://kisumu.echis.go.ke");
-		save("Kitui", "https://kitui.echis.go.ke");
-		save("Machakos", "https://machakos.health.go.ke");
-		save("Migori", "https://migori.echis.go.ke");
-		save("Nairobi", "https://nairobi.echis.go.ke");
-		save("Nakuru", "https://nakuru.echis.go.ke");
-		save("Nyeri", "https://nyeri.echis.go.ke");
-		save("Turkana", "https://turkana.echis.go.ke");
-		save("Uasin Gishu", "https://uasin-gishu.echis.go.ke");
-		save("Vihiga", "https://vihiga.echis.go.ke");
+		save("Garissa", "https://garissa-echis.health.go.ke");
+		save("Isiolo", "https://isiolo-echis.health.go.ke");
+		save("Kakamega", "https://kakamega-echis.health.go.ke");
+		save("Kilifi", "https://kilifi-echis.health.go.ke");
+		save("Kisumu", "https://kisumu-echis.health.go.ke");
+		save("Kitui", "https://kitui-echis.health.go.ke");
+		save("Machakos", "https://echis.health.go.ke");
+		save("Migori", "https://migori-echis.health.go.ke");
+		save("Nairobi", "https://nairobi-echis.health.go.ke");
+		save("Nakuru", "https://nakuru-echis.health.go.ke");
+		save("Nyeri", "https://nyeri-echis.health.go.ke");
+		save("Turkana", "https://turkana-echis.health.go.ke");
+		save("Uasin Gishu", "https://uasin-gishu-echis.health.go.ke");
+		save("Vihiga", "https://vihiga-echis.health.go.ke");
 	}
 
 	List<ServerMetadata> getServers() {
