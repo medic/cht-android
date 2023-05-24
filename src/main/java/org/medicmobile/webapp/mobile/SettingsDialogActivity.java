@@ -178,7 +178,7 @@ class ServerRepo {
 		save("Kilifi", "https://kilifi.echis.go.ke");
 		save("Kisumu", "https://kisumu.echis.go.ke");
 		save("Kitui", "https://kitui.echis.go.ke");
-		save("Machakos", "https://machakos.echis.go.ke");
+		save("Machakos", "https://machakos.health.go.ke");
 		save("Migori", "https://migori.echis.go.ke");
 		save("Nairobi", "https://nairobi.echis.go.ke");
 		save("Nakuru", "https://nakuru.echis.go.ke");
