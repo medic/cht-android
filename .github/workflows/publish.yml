@@ -332,29 +332,29 @@ jobs:
         ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_MOH_NIGER_CHW }}
         ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_MOH_NIGER_CHW }}
 
-    - name: Unpack secrets moh_kenya_echis
+    - name: Unpack secrets echis_kenya
       env:
         ANDROID_SECRETS_KEY: ${{ secrets.ANDROID_SECRETS_KEY_ECHIS_KENYA }}
         ANDROID_SECRETS_IV: ${{ secrets.ANDROID_SECRETS_IV_ECHIS_KENYA }}
-      run: make org=moh_kenya_echis keydec
+      run: make org=echis_kenya keydec
 
-    - name: Assemble moh_kenya_echis
+    - name: Assemble echis_kenya
       uses: maierj/fastlane-action@v1.4.0
       with:
         lane: build
-        options: '{ "flavor": "moh_kenya_echis" }'
+        options: '{ "flavor": "echis_kenya" }'
       env:
-        ANDROID_KEYSTORE_PATH: moh_kenya_echis.keystore
+        ANDROID_KEYSTORE_PATH: echis_kenya.keystore
         ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_ECHIS_KENYA }}
         ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_ECHIS_KENYA }}
 
-    - name: Bundle moh_kenya_echis
+    - name: Bundle echis_kenya
       uses: maierj/fastlane-action@v1.4.0
       with:
         lane: bundle
-        options: '{ "flavor": "moh_kenya_echis" }'
+        options: '{ "flavor": "echis_kenya" }'
       env:
-        ANDROID_KEYSTORE_PATH: moh_kenya_echis.keystore
+        ANDROID_KEYSTORE_PATH: echis_kenya.keystore
         ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_ECHIS_KENYA }}
         ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_ECHIS_KENYA }}
 
