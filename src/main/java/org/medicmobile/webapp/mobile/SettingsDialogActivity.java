@@ -283,17 +283,14 @@ class ServerRepo {
 			Resources resources = context.getResources();
 			XmlResourceParser xmlParser = resources.getXml(R.xml.instances);
 
-			int eventType = xmlParser.getEventType();
-			while (eventType != XmlPullParser.END_DOCUMENT) {
-				if (eventType == XmlPullParser.START_TAG) {
-					String tagName = xmlParser.getName();
-					if (tagName.equals("instance")) {
-						String name = xmlParser.getAttributeValue(null, "name");
-						String url = xmlParser.nextText();
-						result.put(url, name);
-					}
+			while (xmlParser.next() != XmlPullParser.END_TAG) {
+				if (xmlParser.getEventType() != XmlPullParser.START_TAG
+					|| !"instance".equals(xmlParser.getName())) {
+					continue;
 				}
-				eventType = xmlParser.next();
+				String name = xmlParser.getAttributeValue(null, "name");
+				String url = xmlParser.nextText();
+				result.put(url, name);
 			}
 
 			return result;
