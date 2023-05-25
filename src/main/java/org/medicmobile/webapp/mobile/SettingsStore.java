@@ -15,11 +15,9 @@ import static org.medicmobile.webapp.mobile.MedicLog.trace;
 public abstract class SettingsStore {
 
 	private final SharedPreferences prefs;
-	private final Boolean allowCustomHosts;
 
-	SettingsStore(SharedPreferences prefs, Boolean allowCustomHosts) {
+	SettingsStore(SharedPreferences prefs) {
 		this.prefs = prefs;
-		this.allowCustomHosts = allowCustomHosts;
 	}
 
 	public abstract String getAppUrl();
@@ -36,7 +34,7 @@ public abstract class SettingsStore {
 		return getAppUrl().equals(AppUrlVerifier.clean(url));
 	}
 
-	public boolean allowCustomHosts() { return this.allowCustomHosts; }
+	public boolean allowCustomHosts() { return false; }
 
 	public abstract boolean hasWebappSettings();
 
@@ -95,12 +93,12 @@ public abstract class SettingsStore {
 				Context.MODE_PRIVATE);
 
 		String appHost = ctx.getResources().getString(R.string.app_host);
-		Boolean allowCustomHosts = ctx.getResources().getBoolean(R.bool.allowCustomHosts);
 		String scheme = ctx.getResources().getString(R.string.scheme);
 		if(appHost.length() > 0) {
 			return new BrandedSettingsStore(prefs, scheme + "://" + appHost);
 		}
 
+		Boolean allowCustomHosts = ctx.getResources().getBoolean(R.bool.allowCustomHosts);
 		return new UnbrandedSettingsStore(prefs, allowCustomHosts);
 	}
 }
@@ -111,7 +109,7 @@ class BrandedSettingsStore extends SettingsStore {
 	private final String apiUrl;
 
 	BrandedSettingsStore(SharedPreferences prefs, String apiUrl) {
-		super(prefs, false);
+		super(prefs);
 		this.apiUrl = apiUrl;
 	}
 
@@ -126,15 +124,20 @@ class BrandedSettingsStore extends SettingsStore {
 
 @SuppressWarnings("PMD.CallSuperInConstructor")
 class UnbrandedSettingsStore extends SettingsStore {
+	private final Boolean allowCustomHosts;
 
 	UnbrandedSettingsStore(SharedPreferences prefs, Boolean allowCustomHosts) {
-		super(prefs, allowCustomHosts);
+		super(prefs);
+
+		this.allowCustomHosts = allowCustomHosts;
 	}
 
 //> ACCESSORS
 	public String getAppUrl() { return get("app-url"); }
 
 	public boolean allowsConfiguration() { return true; }
+
+	public boolean allowCustomHosts() { return this.allowCustomHosts; }
 
 	public boolean hasWebappSettings() {
 		WebappSettings s = new WebappSettings(getAppUrl());

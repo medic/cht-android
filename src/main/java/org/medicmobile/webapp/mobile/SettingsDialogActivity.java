@@ -1,6 +1,7 @@
 package org.medicmobile.webapp.mobile;
 
 import static org.medicmobile.webapp.mobile.MedicLog.trace;
+import static org.medicmobile.webapp.mobile.MedicLog.error;
 import static org.medicmobile.webapp.mobile.SimpleJsonClient2.redactUrl;
 
 import android.annotation.SuppressLint;
@@ -225,19 +226,18 @@ class ServerMetadata {
 		this.name = name;
 		this.url = url;
 	}
-
-	public String getName() {
-		return name;
-	}
 }
 
 class ServerRepo {
 	private final SharedPreferences prefs;
+	private final SettingsStore settingsStore;
 
-	ServerRepo(Context ctx) {
+	ServerRepo(Context ctx, SettingsStore) {
 		prefs = ctx.getSharedPreferences(
 			"ServerRepo",
 			Context.MODE_PRIVATE);
+
+		this.settingsStore = settingsStore;
 
 		Map<String, String> instances = parseInstanceXML(ctx);
 		for (Map.Entry<String, String> entry : instances.entrySet()) {
@@ -248,7 +248,7 @@ class ServerRepo {
 		}
 	}
 
-	List<ServerMetadata> getServers(Boolean allowCustomHosts) {
+	List<ServerMetadata> getServers() {
 		List servers = new LinkedList<ServerMetadata>();
 
 		for(Map.Entry<String, ?> e : prefs.getAll().entrySet()) {
@@ -257,20 +257,20 @@ class ServerRepo {
 				e.getKey()));
 		}
 
-		Collections.sort(servers, Comparator.comparing(ServerMetadata::getName));
+		Collections.sort(servers, Comparator.<ServerMetadata, String>comparing(server -> server.name));
 
-		if (allowCustomHosts) {
+		if (this.settingsStore.allowCustomHosts()) {
 			servers.add(0, new ServerMetadata("Custom"));
 		}
 
 		return servers;
 	}
 
-	void save(String name, String url) {
-		if (name == null) {
-			name = friendly(url);
-		}
+	void save(String url) {
+		save(friendly(url), url);
+	}
 
+	void save(String name, String url) {
 		SharedPreferences.Editor ed = prefs.edit();
 		ed.putString(url, name);
 		ed.apply();
@@ -295,7 +295,7 @@ class ServerRepo {
 
 			return result;
 		} catch (XmlPullParserException | IOException e) {
-			e.printStackTrace();
+			error(e, "Failed to load instances data from xml.");
 			return Collections.emptyMap();
 		}
 	}
