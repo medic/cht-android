@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<instances xmlns:android="http://schemas.android.com/apk/res/android">https://
+<instances xmlns:android="http://schemas.android.com/apk/res/android">
   <instance name="Baringo">https://baringo-echis.health.go.ke</instance>
   <instance name="Bomet">https://bomet-echis.health.go.ke</instance>
   <instance name="Bungoma">https://bungoma-echis.health.go.ke</instance>
