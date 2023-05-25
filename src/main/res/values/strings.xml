@@ -4,7 +4,6 @@
 
 	<string name="scheme">https</string>
 	<string name="app_host"/>
-	<string name="intent_host"/>
   <bool name="allowCustomHosts">True</bool>
 
 	<string name="txtAppUrl">CHT server URL</string>

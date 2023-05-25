@@ -64,7 +64,6 @@
         <category android:name="android.intent.category.DEFAULT" />
         <category android:name="android.intent.category.BROWSABLE" />
         <data android:scheme="@string/scheme" android:host="@string/app_host" android:pathPattern=".*"/>
-        <data android:scheme="@string/scheme" android:host="@string/intent_host" android:pathPattern=".*"/>
       </intent-filter>
     </activity>
     <activity android:name="UpgradingActivity"

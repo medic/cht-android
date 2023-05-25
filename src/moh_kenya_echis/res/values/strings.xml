@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 	<string name="app_name">eCHIS Kenya</string>
-	<string name="intent_host">*-echis.health.go.ke</string>
 	<bool name="allowCustomHosts">False</bool>
 </resources>
