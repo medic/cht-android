@@ -299,7 +299,7 @@ class ServerRepo {
 			return result;
 		} catch (XmlPullParserException | IOException e) {
 			e.printStackTrace();
-			return new HashMap<>();
+			return Collections.emptyMap();
 		}
 	}
 
