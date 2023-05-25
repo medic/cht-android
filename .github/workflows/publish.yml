@@ -359,8 +359,6 @@ jobs:
         ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_MOH_NIGER_CHW }}
         ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_MOH_NIGER_CHW }}
 
-
-
     - name: GitHub release
       uses: softprops/action-gh-release@v1
       if: startsWith(github.ref, 'refs/tags/')
