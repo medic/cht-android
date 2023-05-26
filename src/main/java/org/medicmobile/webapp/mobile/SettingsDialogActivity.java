@@ -51,7 +51,7 @@ public class SettingsDialogActivity extends Activity {
 		trace(this, "onCreate()");
 
 		this.settings = SettingsStore.in(this);
-		this.serverRepo = new ServerRepo(this);
+		this.serverRepo = new ServerRepo(this, this.settings);
 
 		displayServerSelectList();
 	}
@@ -64,7 +64,7 @@ public class SettingsDialogActivity extends Activity {
 
 		ListView list = (ListView) findViewById(R.id.lstServers);
 
-		List<ServerMetadata> servers = serverRepo.getServers(this.settings.allowCustomHosts());
+		List<ServerMetadata> servers = serverRepo.getServers();
 
 		list.setAdapter(new SimpleAdapter(this,
 				adapt(servers),
@@ -106,7 +106,7 @@ public class SettingsDialogActivity extends Activity {
 
 			if (result.isOk) {
 				saveSettings(new WebappSettings(result.appUrl));
-				serverRepo.save(null, result.appUrl);
+				serverRepo.save(result.appUrl);
 				return;
 			}
 			showError(R.id.txtAppUrl, result.failure);
@@ -232,7 +232,7 @@ class ServerRepo {
 	private final SharedPreferences prefs;
 	private final SettingsStore settingsStore;
 
-	ServerRepo(Context ctx, SettingsStore) {
+	ServerRepo(Context ctx, SettingsStore settingsStore) {
 		prefs = ctx.getSharedPreferences(
 			"ServerRepo",
 			Context.MODE_PRIVATE);
@@ -290,6 +290,9 @@ class ServerRepo {
 				}
 				String name = xmlParser.getAttributeValue(null, "name");
 				String url = xmlParser.nextText();
+				if (name == null) {
+					name = friendly(url);
+				}
 				result.put(url, name);
 			}
 
