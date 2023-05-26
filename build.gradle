@@ -385,6 +385,12 @@ android {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.moh_niger_chw'
     }
+
+    moh_mali_chw_training_2 {
+      dimension = 'brand'
+      applicationId = 'org.medicmobile.webapp.mobile.moh_mali_chw_training_2'
+      buildConfigField "boolean", "IS_TRAINING_APP", 'true'
+    }
     
   }
 
