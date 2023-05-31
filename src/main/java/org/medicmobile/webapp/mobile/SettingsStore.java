@@ -34,6 +34,8 @@ public abstract class SettingsStore {
 		return getAppUrl().equals(AppUrlVerifier.clean(url));
 	}
 
+	public boolean allowCustomHosts() { return false; }
+
 	public abstract boolean hasWebappSettings();
 
 	public abstract boolean allowsConfiguration();
@@ -96,7 +98,8 @@ public abstract class SettingsStore {
 			return new BrandedSettingsStore(prefs, scheme + "://" + appHost);
 		}
 
-		return new UnbrandedSettingsStore(prefs);
+		Boolean allowCustomHosts = ctx.getResources().getBoolean(R.bool.allowCustomHosts);
+		return new UnbrandedSettingsStore(prefs, allowCustomHosts);
 	}
 }
 
@@ -121,15 +124,20 @@ class BrandedSettingsStore extends SettingsStore {
 
 @SuppressWarnings("PMD.CallSuperInConstructor")
 class UnbrandedSettingsStore extends SettingsStore {
+	private final Boolean allowCustomHosts;
 
-	UnbrandedSettingsStore(SharedPreferences prefs) {
+	UnbrandedSettingsStore(SharedPreferences prefs, Boolean allowCustomHosts) {
 		super(prefs);
+
+		this.allowCustomHosts = allowCustomHosts;
 	}
 
 //> ACCESSORS
 	public String getAppUrl() { return get("app-url"); }
 
 	public boolean allowsConfiguration() { return true; }
+
+	public boolean allowCustomHosts() { return this.allowCustomHosts; }
 
 	public boolean hasWebappSettings() {
 		WebappSettings s = new WebappSettings(getAppUrl());

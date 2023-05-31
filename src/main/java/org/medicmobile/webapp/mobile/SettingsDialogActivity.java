@@ -1,13 +1,19 @@
 package org.medicmobile.webapp.mobile;
 
 import static org.medicmobile.webapp.mobile.MedicLog.trace;
+import static org.medicmobile.webapp.mobile.MedicLog.error;
 import static org.medicmobile.webapp.mobile.SimpleJsonClient2.redactUrl;
 
 import android.annotation.SuppressLint;
+
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+
+import android.content.res.Resources;
+import android.content.res.XmlResourceParser;
+
 import android.os.Bundle;
 import android.util.ArrayMap;
 import android.view.View;
@@ -21,7 +27,14 @@ import android.widget.TextView;
 
 import org.medicmobile.webapp.mobile.util.AsyncExecutor;
 
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
+
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -38,7 +51,7 @@ public class SettingsDialogActivity extends Activity {
 		trace(this, "onCreate()");
 
 		this.settings = SettingsStore.in(this);
-		this.serverRepo = new ServerRepo(this);
+		this.serverRepo = new ServerRepo(this, this.settings);
 
 		displayServerSelectList();
 	}
@@ -191,7 +204,7 @@ public class SettingsDialogActivity extends Activity {
 		}
 
 		public void onItemClick(AdapterView<?> parent, final View view, int position, long id) {
-			if(position == 0) {
+			if (settings.allowCustomHosts() && position == 0) {
 				displayCustomServerForm();
 			} else {
 				saveSettings(new WebappSettings(servers.get(position).url));
@@ -217,35 +230,79 @@ class ServerMetadata {
 
 class ServerRepo {
 	private final SharedPreferences prefs;
+	private final SettingsStore settingsStore;
 
-	ServerRepo(Context ctx) {
+	ServerRepo(Context ctx, SettingsStore settingsStore) {
 		prefs = ctx.getSharedPreferences(
-				"ServerRepo",
-				Context.MODE_PRIVATE);
-		save("https://gamma.dev.medicmobile.org");
-		save("https://gamma-cht.dev.medicmobile.org");
-		save("https://medic.github.io/atp");
+			"ServerRepo",
+			Context.MODE_PRIVATE);
+
+		this.settingsStore = settingsStore;
+
+		Map<String, String> instances = parseInstanceXML(ctx);
+		for (Map.Entry<String, String> entry : instances.entrySet()) {
+			String instanceName = entry.getValue();
+			String instanceUrl = entry.getKey();
+
+			save(instanceName, instanceUrl);
+		}
 	}
 
 	List<ServerMetadata> getServers() {
 		List servers = new LinkedList<ServerMetadata>();
 
-		servers.add(new ServerMetadata("Custom"));
-
 		for(Map.Entry<String, ?> e : prefs.getAll().entrySet()) {
 			servers.add(new ServerMetadata(
-					e.getValue().toString(),
-					e.getKey()));
+				e.getValue().toString(),
+				e.getKey()));
+		}
+
+		Collections.sort(servers, Comparator.<ServerMetadata, String>comparing(server -> server.name));
+
+		if (this.settingsStore.allowCustomHosts()) {
+			servers.add(0, new ServerMetadata("Custom"));
 		}
 
 		return servers;
 	}
 
 	void save(String url) {
+		save(friendly(url), url);
+	}
+
+	void save(String name, String url) {
 		SharedPreferences.Editor ed = prefs.edit();
-		ed.putString(url, friendly(url));
+		ed.putString(url, name);
 		ed.apply();
 	}
+
+	private static Map<String, String> parseInstanceXML(Context context) {
+		try {
+			HashMap<String, String> result = new HashMap<>();
+
+			Resources resources = context.getResources();
+			XmlResourceParser xmlParser = resources.getXml(R.xml.instances);
+
+			while (xmlParser.next() != XmlPullParser.END_TAG) {
+				if (xmlParser.getEventType() != XmlPullParser.START_TAG
+					|| !"instance".equals(xmlParser.getName())) {
+					continue;
+				}
+				String name = xmlParser.getAttributeValue(null, "name");
+				String url = xmlParser.nextText();
+				if (name == null) {
+					name = friendly(url);
+				}
+				result.put(url, name);
+			}
+
+			return result;
+		} catch (XmlPullParserException | IOException e) {
+			error(e, "Failed to load instances data from xml.");
+			return Collections.emptyMap();
+		}
+	}
+
 
 	@SuppressLint("DefaultLocale")
 	private static String friendly(String url) {
