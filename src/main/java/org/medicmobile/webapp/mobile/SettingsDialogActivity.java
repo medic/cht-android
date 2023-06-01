@@ -5,41 +5,39 @@ import static org.medicmobile.webapp.mobile.MedicLog.error;
 import static org.medicmobile.webapp.mobile.SimpleJsonClient2.redactUrl;
 
 import android.annotation.SuppressLint;
-
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-
 import android.content.res.Resources;
 import android.content.res.XmlResourceParser;
-
 import android.os.Bundle;
-import android.util.ArrayMap;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
-import org.medicmobile.webapp.mobile.util.AsyncExecutor;
+import androidx.fragment.app.FragmentActivity;
 
+import org.medicmobile.webapp.mobile.adapters.FilterableListAdapter;
+import org.medicmobile.webapp.mobile.dialogs.ConfirmServerSelectionDialog;
+import org.medicmobile.webapp.mobile.listeners.TextChangedListener;
+import org.medicmobile.webapp.mobile.util.AsyncExecutor;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
-public class SettingsDialogActivity extends Activity {
+public class SettingsDialogActivity extends FragmentActivity {
 	private static final int STATE_LIST = 1;
 	private static final int STATE_FORM = 2;
 	private SettingsStore settings;
@@ -62,17 +60,20 @@ public class SettingsDialogActivity extends Activity {
 
 		setContentView(R.layout.server_select_list);
 
-		ListView list = (ListView) findViewById(R.id.lstServers);
+		ListView list = findViewById(R.id.lstServers);
 
 		List<ServerMetadata> servers = serverRepo.getServers();
-
-		list.setAdapter(new SimpleAdapter(this,
-				adapt(servers),
-				R.layout.server_list_item,
-				new String[] { "name", "url" },
-				new int[] { R.id.txtName, R.id.txtUrl }));
-
+		ServerMetadataAdapter adapter = ServerMetadataAdapter.createInstance(this, servers);
+		list.setAdapter(adapter);
 		list.setOnItemClickListener(new ServerClickListener(servers));
+
+		TextView seachBox = findViewById(R.id.instanceSearchBox);
+		seachBox.addTextChangedListener(new TextChangedListener() {
+			@Override
+			public void onTextChanged(CharSequence s, int start, int before, int count) {
+				adapter.getFilter().filter(s.toString());
+			}
+		});
 	}
 
 	private void displayCustomServerForm() {
@@ -183,18 +184,6 @@ public class SettingsDialogActivity extends Activity {
 		field.setError(getString(stringId));
 	}
 
-	@SuppressWarnings("PMD.UseConcurrentHashMap")
-	private List<Map<String, ?>> adapt(List<ServerMetadata> servers) {
-		List adapted = new ArrayList(servers.size());
-		for(ServerMetadata md : servers) {
-			Map<String, String> m = new ArrayMap(2);
-			m.put("name", md.name);
-			m.put("url", md.url);
-			adapted.add(m);
-		}
-		return adapted;
-	}
-
 //> INNER CLASSES
 	class ServerClickListener implements OnItemClickListener {
 		private final List<ServerMetadata> servers;
@@ -207,8 +196,40 @@ public class SettingsDialogActivity extends Activity {
 			if (settings.allowCustomHosts() && position == 0) {
 				displayCustomServerForm();
 			} else {
-				saveSettings(new WebappSettings(servers.get(position).url));
+				new ConfirmServerSelectionDialog(
+					servers.get(position).name,
+					() -> saveSettings(new WebappSettings(servers.get(position).url))
+				).show(getSupportFragmentManager());
 			}
+		}
+	}
+
+	static class ServerMetadataAdapter extends FilterableListAdapter {
+		private ServerMetadataAdapter(Context context, List<Map<String, ?>> data) {
+			super(
+				context,
+				data,
+				R.layout.server_list_item,
+				new String[]{ "name", "url" },
+				new int[]{ R.id.txtName, R.id.txtUrl },
+				"name", "url"
+			);
+		}
+
+		static ServerMetadataAdapter createInstance(Context context, List<ServerMetadata> servers) {
+			return new ServerMetadataAdapter(context, adapt(servers));
+		}
+
+		private static List<Map<String, ?>> adapt(List<ServerMetadata> servers) {
+			return servers
+				.stream()
+				.map(server -> {
+					Map<String, String> serverProperties = new HashMap<>();
+					serverProperties.put("name", server.name);
+					serverProperties.put("url", server.url);
+					return serverProperties;
+				})
+				.collect(Collectors.toList());
 		}
 	}
 }
