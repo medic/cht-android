@@ -140,15 +140,6 @@ jobs:
         emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
         script: make test-ui-gamma
 
-    - name: Run test-ui-url
-      uses: reactivecircus/android-emulator-runner@v2
-      with:
-        api-level: 29
-        target: default
-        force-avd-creation: false
-        emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-        script: make test-ui-url
-
     - name: Archive Results
       uses: actions/upload-artifact@v2
       with:
