@@ -7,6 +7,8 @@
   <bool name="allowCustomHosts">True</bool>
 
 	<string name="txtAppUrl">CHT server URL</string>
+	<string name="instancesSearch">Search Instances</string>
+	<string name="proceedToServer">Login to %s?</string>
 	<string name="errAppUrl_serverNotFound">Unable to contact server</string>
 	<string name="errAppUrl_appNotFound">URL is not a valid CHT server instance</string>
 	<string name="errAppUrl_apiNotReady">CHT server is not ready, please try again soon</string>
