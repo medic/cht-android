@@ -28,7 +28,7 @@
         <data android:scheme="https" android:host="vihiga-echis.health.go.ke" android:pathPattern=".*"/>
         <data android:scheme="https" android:host="kitui-echis.health.go.ke" android:pathPattern=".*"/>
         <data android:scheme="https" android:host="uasingishu-echis.health.go.ke" android:pathPattern=".*"/>
-  
+
         <data android:scheme="https" android:host="baringo.echis.go.ke" android:pathPattern=".*"/>
         <data android:scheme="https" android:host="bomet.echis.go.ke" android:pathPattern=".*"/>
         <data android:scheme="https" android:host="bungoma.echis.go.ke" android:pathPattern=".*"/>
