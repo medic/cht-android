@@ -184,6 +184,23 @@ public class SettingsDialogActivityTest {
 		onView(withText(SERVER_ONE)).check(matches(isDisplayed()));
 		onView(withText(SERVER_TWO)).check(matches(isDisplayed()));
 		onView(withText(SERVER_THREE)).check(matches(isDisplayed()));
+
+		textFilter.perform(replaceText("gamma"), closeSoftKeyboard());
+
+		onView(withId(R.id.lstServers)).check(matches(isDisplayed()));
+		onView(withText("Custom")).check(doesNotExist());
+		onView(withText(SERVER_ONE)).check(doesNotExist());
+		onView(withText(SERVER_TWO)).check(matches(isDisplayed()));
+		onView(withText(SERVER_THREE)).check(matches(isDisplayed()));
+
+		onData(anything())
+			.inAdapterView(withId(R.id.lstServers))
+			.atPosition(0)
+			.perform(click());
+
+		onView(withText("Login to Gamma Dev?"))
+			.inRoot(isDialog())
+			.check(matches(isDisplayed()));
 	}
 
 	private String getLanguage(String code) {

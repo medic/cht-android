@@ -65,7 +65,7 @@ public class SettingsDialogActivity extends FragmentActivity {
 		List<ServerMetadata> servers = serverRepo.getServers();
 		ServerMetadataAdapter adapter = ServerMetadataAdapter.createInstance(this, servers);
 		list.setAdapter(adapter);
-		list.setOnItemClickListener(new ServerClickListener(servers));
+		list.setOnItemClickListener(new ServerClickListener(adapter));
 
 		TextView seachBox = findViewById(R.id.instanceSearchBox);
 		seachBox.addTextChangedListener(new TextChangedListener() {
@@ -186,19 +186,20 @@ public class SettingsDialogActivity extends FragmentActivity {
 
 //> INNER CLASSES
 	class ServerClickListener implements OnItemClickListener {
-		private final List<ServerMetadata> servers;
+		private final ServerMetadataAdapter serverMetadataAdapter;
 
-		public ServerClickListener(List<ServerMetadata> servers) {
-			this.servers = servers;
+		public ServerClickListener(ServerMetadataAdapter serverMetadataAdapter) {
+			this.serverMetadataAdapter = serverMetadataAdapter;
 		}
 
 		public void onItemClick(AdapterView<?> parent, final View view, int position, long id) {
-			if (settings.allowCustomHosts() && position == 0) {
+			ServerMetadata server = serverMetadataAdapter.getServerMetadata(position);
+			if (server.url == null) {
 				displayCustomServerForm();
 			} else {
 				new ConfirmServerSelectionDialog(
-					servers.get(position).name,
-					() -> saveSettings(new WebappSettings(servers.get(position).url))
+					server.name,
+					() -> saveSettings(new WebappSettings(server.url))
 				).show(getSupportFragmentManager());
 			}
 		}
@@ -218,6 +219,12 @@ public class SettingsDialogActivity extends FragmentActivity {
 
 		static ServerMetadataAdapter createInstance(Context context, List<ServerMetadata> servers) {
 			return new ServerMetadataAdapter(context, adapt(servers));
+		}
+
+		@SuppressWarnings("unchecked")
+		ServerMetadata getServerMetadata(int position) {
+			Map<String, String> dataMap = (Map<String, String>) this.getItem(position);
+			return new ServerMetadata(dataMap.get("name"), dataMap.get("url"));
 		}
 
 		private static List<Map<String, ?>> adapt(List<ServerMetadata> servers) {
