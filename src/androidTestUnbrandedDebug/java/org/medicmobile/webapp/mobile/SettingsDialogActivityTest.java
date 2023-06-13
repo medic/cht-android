@@ -160,7 +160,7 @@ public class SettingsDialogActivityTest {
 	}
 
 	@Test
-	public void testFilterServers() {
+	public void testFilterServers() throws InterruptedException {
 		onView(withId(R.id.lstServers)).check(matches(isDisplayed()));
 		onView(withText("Custom")).check(matches(isDisplayed()));
 		onView(withText(SERVER_ONE)).check(matches(isDisplayed()));
@@ -170,6 +170,7 @@ public class SettingsDialogActivityTest {
 		ViewInteraction textFilter = onView(withId(R.id.instanceSearchBox));
 		textFilter.check(matches(withHint("Search Instances")));
 		textFilter.perform(replaceText("github"), closeSoftKeyboard());
+		Thread.sleep(500);
 
 		onView(withId(R.id.lstServers)).check(matches(isDisplayed()));
 		onView(withText("Custom")).check(doesNotExist());
@@ -178,12 +179,31 @@ public class SettingsDialogActivityTest {
 		onView(withText(SERVER_THREE)).check(doesNotExist());
 
 		textFilter.perform(replaceText(""), closeSoftKeyboard());
+		Thread.sleep(500);
 
 		onView(withId(R.id.lstServers)).check(matches(isDisplayed()));
 		onView(withText("Custom")).check(matches(isDisplayed()));
 		onView(withText(SERVER_ONE)).check(matches(isDisplayed()));
 		onView(withText(SERVER_TWO)).check(matches(isDisplayed()));
 		onView(withText(SERVER_THREE)).check(matches(isDisplayed()));
+
+		textFilter.perform(replaceText("gamma"), closeSoftKeyboard());
+		Thread.sleep(500);
+
+		onView(withId(R.id.lstServers)).check(matches(isDisplayed()));
+		onView(withText("Custom")).check(doesNotExist());
+		onView(withText(SERVER_ONE)).check(doesNotExist());
+		onView(withText(SERVER_TWO)).check(matches(isDisplayed()));
+		onView(withText(SERVER_THREE)).check(matches(isDisplayed()));
+
+		onData(anything())
+			.inAdapterView(withId(R.id.lstServers))
+			.atPosition(0)
+			.perform(click());
+
+		onView(withText("Login to Gamma Dev?"))
+			.inRoot(isDialog())
+			.check(matches(isDisplayed()));
 	}
 
 	private String getLanguage(String code) {
