@@ -42,7 +42,7 @@ public abstract class SettingsStore {
 
 	public abstract void update(SharedPreferences.Editor ed, WebappSettings s);
 
-	void updateWith(WebappSettings s) throws SettingsException {
+	public void updateWith(WebappSettings s) throws SettingsException {
 		s.validate();
 
 		SharedPreferences.Editor ed = prefs.edit();
@@ -101,6 +101,85 @@ public abstract class SettingsStore {
 		Boolean allowCustomHosts = ctx.getResources().getBoolean(R.bool.allowCustomHosts);
 		return new UnbrandedSettingsStore(prefs, allowCustomHosts);
 	}
+
+	public static class WebappSettings {
+
+		public static final Pattern URL_PATTERN = Pattern.compile("http[s]?://([^/:]*)(:\\d*)?(.*)");
+
+		public final String appUrl;
+
+		public WebappSettings(String appUrl) {
+			trace(this, "WebappSettings() :: appUrl: %s", redactUrl(appUrl));
+			this.appUrl = appUrl;
+		}
+
+		public void validate() throws IllegalSettingsException {
+			List<IllegalSetting> errors = new LinkedList<>();
+
+			if (!isSet(appUrl)) {
+				errors.add(new IllegalSetting(R.id.txtAppUrl, R.string.errRequired));
+			} else if (!URL_PATTERN.matcher(appUrl).matches()) {
+				errors.add(new IllegalSetting(R.id.txtAppUrl, R.string.errInvalidUrl));
+			}
+
+			if (!errors.isEmpty()) {
+				throw new IllegalSettingsException(errors);
+			}
+		}
+
+		public void update(SharedPreferences.Editor ed, WebappSettings s) {
+			ed.putString("app-url", s.appUrl);
+		}
+
+		private boolean isSet(String val) {
+			return val != null && val.length() > 0;
+		}
+	}
+
+	public static class IllegalSetting {
+
+		public final int componentId;
+		public final int errorStringId;
+
+		public IllegalSetting(int componentId, int errorStringId) {
+			this.componentId = componentId;
+			this.errorStringId = errorStringId;
+		}
+	}
+
+	public static class SettingsException extends Exception {
+		// See: https://pmd.github.io/pmd-6.36.0/pmd_rules_java_errorprone.html#missingserialversionuid
+		public static final long serialVersionUID = -1008287132276329302L;
+
+		public SettingsException(String message) {
+			super(message);
+		}
+	}
+
+	public static class IllegalSettingsException extends SettingsException {
+
+		public final List<IllegalSetting> errors;
+
+		public IllegalSettingsException(List<IllegalSetting> errors) {
+			super(createMessage(errors));
+			this.errors = errors;
+		}
+
+		private static String createMessage(List<IllegalSetting> errors) {
+			if (DEBUG) {
+				StringBuilder bob = new StringBuilder();
+				for (IllegalSetting e : errors) {
+					if (bob.length() > 0) {
+						bob.append("; ");
+					}
+
+					bob.append(String.format("component[%s]: error[%s]", e.componentId, e.errorStringId));
+				}
+				return bob.toString();
+			}
+			return null;
+		}
+	}
 }
 
 @SuppressWarnings("PMD.CallSuperInConstructor")
@@ -151,84 +230,5 @@ class UnbrandedSettingsStore extends SettingsStore {
 
 	public void update(SharedPreferences.Editor ed, WebappSettings s) {
 		ed.putString("app-url", s.appUrl);
-	}
-}
-
-class WebappSettings {
-
-	public static final Pattern URL_PATTERN = Pattern.compile("http[s]?://([^/:]*)(:\\d*)?(.*)");
-
-	public final String appUrl;
-
-	public WebappSettings(String appUrl) {
-		trace(this, "WebappSettings() :: appUrl: %s", redactUrl(appUrl));
-		this.appUrl = appUrl;
-	}
-
-	public void validate() throws IllegalSettingsException {
-		List<IllegalSetting> errors = new LinkedList<>();
-
-		if (!isSet(appUrl)) {
-			errors.add(new IllegalSetting(R.id.txtAppUrl, R.string.errRequired));
-		} else if (!URL_PATTERN.matcher(appUrl).matches()) {
-			errors.add(new IllegalSetting(R.id.txtAppUrl, R.string.errInvalidUrl));
-		}
-
-		if (!errors.isEmpty()) {
-			throw new IllegalSettingsException(errors);
-		}
-	}
-
-	public void update(SharedPreferences.Editor ed, WebappSettings s) {
-		ed.putString("app-url", s.appUrl);
-	}
-
-	private boolean isSet(String val) {
-		return val != null && val.length() > 0;
-	}
-}
-
-class IllegalSetting {
-
-	public final int componentId;
-	public final int errorStringId;
-
-	public IllegalSetting(int componentId, int errorStringId) {
-		this.componentId = componentId;
-		this.errorStringId = errorStringId;
-	}
-}
-
-class SettingsException extends Exception {
-	// See: https://pmd.github.io/pmd-6.36.0/pmd_rules_java_errorprone.html#missingserialversionuid
-	public static final long serialVersionUID = -1008287132276329302L;
-
-	public SettingsException(String message) {
-		super(message);
-	}
-}
-
-class IllegalSettingsException extends SettingsException {
-
-	public final List<IllegalSetting> errors;
-
-	public IllegalSettingsException(List<IllegalSetting> errors) {
-		super(createMessage(errors));
-		this.errors = errors;
-	}
-
-	private static String createMessage(List<IllegalSetting> errors) {
-		if (DEBUG) {
-			StringBuilder bob = new StringBuilder();
-			for (IllegalSetting e : errors) {
-				if (bob.length() > 0) {
-					bob.append("; ");
-				}
-
-				bob.append(String.format("component[%s]: error[%s]", e.componentId, e.errorStringId));
-			}
-			return bob.toString();
-		}
-		return null;
 	}
 }

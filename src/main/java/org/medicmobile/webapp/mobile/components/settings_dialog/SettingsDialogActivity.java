@@ -1,7 +1,7 @@
-package org.medicmobile.webapp.mobile;
+package org.medicmobile.webapp.mobile.components.settings_dialog;
 
-import static org.medicmobile.webapp.mobile.MedicLog.trace;
 import static org.medicmobile.webapp.mobile.MedicLog.error;
+import static org.medicmobile.webapp.mobile.MedicLog.trace;
 import static org.medicmobile.webapp.mobile.SimpleJsonClient2.redactUrl;
 
 import android.annotation.SuppressLint;
@@ -21,6 +21,14 @@ import android.widget.TextView;
 
 import androidx.fragment.app.FragmentActivity;
 
+import org.medicmobile.webapp.mobile.AppUrlVerifier;
+import org.medicmobile.webapp.mobile.EmbeddedBrowserActivity;
+import org.medicmobile.webapp.mobile.R;
+import org.medicmobile.webapp.mobile.SettingsStore;
+import org.medicmobile.webapp.mobile.SettingsStore.IllegalSettingsException;
+import org.medicmobile.webapp.mobile.SettingsStore.IllegalSetting;
+import org.medicmobile.webapp.mobile.SettingsStore.SettingsException;
+import org.medicmobile.webapp.mobile.SettingsStore.WebappSettings;
 import org.medicmobile.webapp.mobile.adapters.FilterableListAdapter;
 import org.medicmobile.webapp.mobile.dialogs.ConfirmServerSelectionDialog;
 import org.medicmobile.webapp.mobile.listeners.TextChangedListener;
