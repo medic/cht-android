@@ -37,10 +37,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import javax.inject.Inject;
+
+import dagger.hilt.android.AndroidEntryPoint;
+
+@AndroidEntryPoint
 public class SettingsDialogActivity extends FragmentActivity {
 	private static final int STATE_LIST = 1;
 	private static final int STATE_FORM = 2;
-	private SettingsStore settings;
+
+	@Inject
+	SettingsStore settings;
 	private ServerRepo serverRepo;
 	private int state;
 
@@ -48,7 +55,6 @@ public class SettingsDialogActivity extends FragmentActivity {
 		super.onCreate(savedInstanceState);
 		trace(this, "onCreate()");
 
-		this.settings = SettingsStore.in(this);
 		this.serverRepo = new ServerRepo(this, this.settings);
 
 		displayServerSelectList();

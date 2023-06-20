@@ -85,7 +85,7 @@ public abstract class SettingsStore {
 		}
 	}
 
-	static SettingsStore in(Context ctx) {
+	public static SettingsStore in(Context ctx) {
 		trace(SettingsStore.class, "Loading settings for context %s...", ctx);
 
 		SharedPreferences prefs = ctx.getSharedPreferences(
