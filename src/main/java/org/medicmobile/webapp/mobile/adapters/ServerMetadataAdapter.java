@@ -16,14 +16,20 @@ public class ServerMetadataAdapter extends FilterableListAdapter {
 			context,
 			data,
 			R.layout.server_list_item,
-			new String[]{"name", "url"},
-			new int[]{R.id.txtName, R.id.txtUrl},
+			new String[]{ "name", "url" },
+			new int[]{ R.id.txtName, R.id.txtUrl },
 			"name", "url"
 		);
 	}
 
 	public static ServerMetadataAdapter createInstance(Context context, List<ServerMetadata> servers) {
 		return new ServerMetadataAdapter(context, adapt(servers));
+	}
+
+	@SuppressWarnings("unchecked")
+	public ServerMetadata getServerMetadata(int position) {
+		Map<String, String> dataMap = (Map<String, String>) this.getItem(position);
+		return new ServerMetadata(dataMap.get("name"), dataMap.get("url"));
 	}
 
 	private static List<Map<String, ?>> adapt(List<ServerMetadata> servers) {

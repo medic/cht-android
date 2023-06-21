@@ -11,7 +11,7 @@ public class ServerMetadata {
 		this(name, null);
 	}
 
-	ServerMetadata(String name, String url) {
+	public ServerMetadata(String name, String url) {
 		trace(this, "ServerMetadata() :: name: %s, url: %s", name, redactUrl(url));
 		this.name = name;
 		this.url = url;
