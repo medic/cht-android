@@ -1,15 +1,8 @@
 package org.medicmobile.webapp.mobile.components.settings_dialog;
 
-import static org.medicmobile.webapp.mobile.MedicLog.error;
 import static org.medicmobile.webapp.mobile.MedicLog.trace;
-import static org.medicmobile.webapp.mobile.SimpleJsonClient2.redactUrl;
 
-import android.annotation.SuppressLint;
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.res.Resources;
-import android.content.res.XmlResourceParser;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
@@ -25,25 +18,16 @@ import org.medicmobile.webapp.mobile.AppUrlVerifier;
 import org.medicmobile.webapp.mobile.EmbeddedBrowserActivity;
 import org.medicmobile.webapp.mobile.R;
 import org.medicmobile.webapp.mobile.SettingsStore;
-import org.medicmobile.webapp.mobile.SettingsStore.IllegalSettingsException;
 import org.medicmobile.webapp.mobile.SettingsStore.IllegalSetting;
+import org.medicmobile.webapp.mobile.SettingsStore.IllegalSettingsException;
 import org.medicmobile.webapp.mobile.SettingsStore.SettingsException;
 import org.medicmobile.webapp.mobile.SettingsStore.WebappSettings;
-import org.medicmobile.webapp.mobile.adapters.FilterableListAdapter;
+import org.medicmobile.webapp.mobile.adapters.ServerMetadataAdapter;
 import org.medicmobile.webapp.mobile.dialogs.ConfirmServerSelectionDialog;
 import org.medicmobile.webapp.mobile.listeners.TextChangedListener;
 import org.medicmobile.webapp.mobile.util.AsyncExecutor;
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserException;
 
-import java.io.IOException;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
@@ -56,15 +40,15 @@ public class SettingsDialogActivity extends FragmentActivity {
 
 	@Inject
 	SettingsStore settings;
-	private ServerRepo serverRepo;
+
+	@Inject
+	ServerRepo serverRepo;
+
 	private int state;
 
 	@Override public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		trace(this, "onCreate()");
-
-		this.serverRepo = new ServerRepo(this, this.settings);
-
 		displayServerSelectList();
 	}
 
