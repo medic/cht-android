@@ -40,6 +40,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
+import org.medicmobile.webapp.mobile.components.settings_dialog.SettingsDialogActivity;
 
 import java.util.Locale;
 @LargeTest
