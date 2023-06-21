@@ -1,15 +1,24 @@
 package org.medicmobile.webapp.mobile;
 
-import android.content.*;
-import android.net.Uri;
-
-import java.util.*;
-import java.util.regex.*;
-
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static org.medicmobile.webapp.mobile.BuildConfig.TTL_LAST_URL;
-import static org.medicmobile.webapp.mobile.SimpleJsonClient2.redactUrl;
 import static org.medicmobile.webapp.mobile.MedicLog.trace;
+import static org.medicmobile.webapp.mobile.SimpleJsonClient2.redactUrl;
+
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.net.Uri;
+
+import java.util.LinkedList;
+import java.util.List;
+import java.util.regex.Pattern;
+
+import dagger.Module;
+import dagger.Provides;
+import dagger.hilt.InstallIn;
+import dagger.hilt.android.components.ActivityComponent;
+import dagger.hilt.android.qualifiers.ActivityContext;
+import dagger.hilt.android.scopes.ActivityScoped;
 
 @SuppressWarnings("PMD.ShortMethodName")
 public abstract class SettingsStore {
@@ -100,6 +109,16 @@ public abstract class SettingsStore {
 
 		Boolean allowCustomHosts = ctx.getResources().getBoolean(R.bool.allowCustomHosts);
 		return new UnbrandedSettingsStore(prefs, allowCustomHosts);
+	}
+
+	@Module
+	@InstallIn(ActivityComponent.class)
+	public static class SettingsStoreModule {
+		@Provides
+		@ActivityScoped
+		public static SettingsStore provideSettingsStore(@ActivityContext Context ctx) {
+			return SettingsStore.in(ctx);
+		}
 	}
 
 	public static class WebappSettings {
