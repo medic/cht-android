@@ -359,10 +359,10 @@ jobs:
         ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_MOH_MALI_CHW_TRAINING }}
 
     - name: Unpack secrets moh_mali_chw_training_three
-        env:
-          ANDROID_SECRETS_KEY: ${{ secrets.ANDROID_SECRETS_KEY_MOH_MALI_CHW_TRAINING_THREE }}
-          ANDROID_SECRETS_IV: ${{ secrets.ANDROID_SECRETS_IV_MOH_MALI_CHW_TRAINING_THREE }}
-        run: make org=moh_mali_chw_training_three keydec
+      env:
+        ANDROID_SECRETS_KEY: ${{ secrets.ANDROID_SECRETS_KEY_MOH_MALI_CHW_TRAINING_THREE }}
+        ANDROID_SECRETS_IV: ${{ secrets.ANDROID_SECRETS_IV_MOH_MALI_CHW_TRAINING_THREE }}
+      run: make org=moh_mali_chw_training_three keydec
 
     - name: Assemble moh_mali_chw_training_three
       uses: maierj/fastlane-action@v1.4.0
