@@ -30,13 +30,6 @@ public class RequestStoragePermissionActivity extends FragmentActivity {
 		registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
 			Intent responseIntent = createResponseIntent();
 
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-				trace(this, "RequestStoragePermissionActivity :: READ_EXTERNAL_STORAGE permission is ignored in Android 13+.");
-				setResult(RESULT_OK, responseIntent);
-				finish();
-				return;
-			}
-
 			if (isGranted) {
 				trace(this, "RequestStoragePermissionActivity :: User allowed storage permission.");
 				setResult(RESULT_OK, responseIntent);
@@ -80,6 +73,13 @@ public class RequestStoragePermissionActivity extends FragmentActivity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+			trace(this, "RequestStoragePermissionActivity :: READ_EXTERNAL_STORAGE permission is ignored in Android 13+.");
+			setResult(RESULT_OK, createResponseIntent());
+			finish();
+			return;
+		}
 
 		this.requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.request_storage_permission);

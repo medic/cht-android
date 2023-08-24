@@ -14,7 +14,6 @@ import static org.medicmobile.webapp.mobile.MedicLog.warn;
 import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Environment;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient.FileChooserParams;
@@ -83,7 +82,7 @@ public class FilePickerHandler {
 	}
 
 	private boolean checkPermissions() {
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU || ContextCompat.checkSelfPermission(this.context, READ_EXTERNAL_STORAGE) == PERMISSION_GRANTED) {
+		if (ContextCompat.checkSelfPermission(this.context, READ_EXTERNAL_STORAGE) == PERMISSION_GRANTED) {
 			return true;
 		}
 
