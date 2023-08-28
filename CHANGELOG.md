@@ -7,11 +7,17 @@
 
 # Release notes
 
+## 1.1.0
+
+This release includes the following work:
+1. Update target API to latest, which supports Android 13 ([#324](https://github.com/medic/cht-android/issues/324)).
+2. Improve server selection usability when choosing an instance from the Settings Dialog ([#314](https://github.com/medic/cht-android/issues/314))
+
 ## 1.0.1
 
 This release fixes two bugs:
 1. Users unable to install two different apps or two different flavors [#287](https://github.com/medic/cht-android/issues/287).
-1. A fix for an implicit internal intent vulnerability [#282](https://github.com/medic/cht-android/issues/282).
+2. A fix for an implicit internal intent vulnerability [#282](https://github.com/medic/cht-android/issues/282).
 
 ## 1.0.0
 
