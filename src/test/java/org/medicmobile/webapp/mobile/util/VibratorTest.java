@@ -21,6 +21,7 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
 @RunWith(RobolectricTestRunner.class)
+@Config(sdk = 31) // ToDo: Remove when upgrading robolectric
 public class VibratorTest {
 	@Rule
 	public MockitoRule rule = MockitoJUnit.rule().strictness(Strictness.STRICT_STUBS);

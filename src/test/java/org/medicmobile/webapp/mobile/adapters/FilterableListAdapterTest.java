@@ -9,6 +9,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -17,6 +18,7 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 @RunWith(RobolectricTestRunner.class)
+@Config(sdk = 31) // ToDo: Remove when upgrading robolectric
 public class FilterableListAdapterTest {
 	private static final List<Map<String, ?>> SERVER_DATA = List.of(
 		Map.of("name", "first server name", "url", "https://my.first.server")

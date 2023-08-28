@@ -46,6 +46,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 @RunWith(RobolectricTestRunner.class)
+@Config(sdk = 31) // ToDo: Remove when upgrading robolectric
 public class SmsSenderTest {
 	@Rule
 	public MockitoRule rule = MockitoJUnit.rule().strictness(Strictness.STRICT_STUBS);
