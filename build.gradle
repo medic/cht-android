@@ -95,7 +95,7 @@ def getVersionName = {
 }
 
 android {
-  compileSdkVersion 31
+  compileSdkVersion 33
   buildToolsVersion '30.0.3'
   packagingOptions {
     exclude 'META-INF/LICENSE'
@@ -104,7 +104,7 @@ android {
 
   defaultConfig {
     //noinspection OldTargetApi
-    targetSdkVersion 31
+    targetSdkVersion 33
     minSdkVersion 21 // Android 5.0
     versionCode getVersionCode()
     versionName getVersionName()
@@ -385,7 +385,17 @@ android {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.moh_niger_chw'
     }
-    
+
+    moh_kenya_echis {
+      dimension = 'brand'
+      applicationId = 'org.medicmobile.webapp.mobile.moh_kenya_echis'
+    }
+
+    moh_mali_chw_training_three {
+      dimension = 'brand'
+      applicationId = 'org.medicmobile.webapp.mobile.moh_mali_chw_training_three'
+      buildConfigField "boolean", "IS_TRAINING_APP", 'true'
+    }
     cht_rci_test {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.cht_rci_test'
@@ -422,6 +432,7 @@ dependencies {
   testImplementation 'androidx.test.espresso:espresso-intents:3.5.0-alpha05'
   testImplementation 'androidx.test.ext:junit:1.1.3'
   androidTestImplementation 'androidx.test.espresso:espresso-web:3.5.0-alpha05'
+  androidTestImplementation 'androidx.test.ext:junit:1.1.3'
   androidTestImplementation 'androidx.test:runner:1.4.0'
   androidTestImplementation 'androidx.test:rules:1.4.0'
   androidTestImplementation 'androidx.test:core:1.4.0'
