@@ -390,6 +390,12 @@ android {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.moh_kenya_echis'
     }
+
+    moh_mali_chw_training_three {
+      dimension = 'brand'
+      applicationId = 'org.medicmobile.webapp.mobile.moh_mali_chw_training_three'
+      buildConfigField "boolean", "IS_TRAINING_APP", 'true'
+    }
   }
 
   splits {
