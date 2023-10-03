@@ -351,6 +351,11 @@ android {
       applicationId = "org.medicmobile.webapp.mobile.vhtapp_uganda"
     }
 
+    vhtapp_dev {
+      dimension = 'brand'
+      applicationId = "org.medicmobile.webapp.mobile.vhtapp_dev"
+    }
+
     itech_aurum {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.itech_aurum'
