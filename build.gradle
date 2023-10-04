@@ -390,6 +390,11 @@ android {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.moh_kenya_echis'
     }
+
+    digital_payments {
+      dimension = 'brand'
+      applicationId = 'org.medicmobile.webapp.mobile.digital_payments'
+    }
   }
 
   splits {
