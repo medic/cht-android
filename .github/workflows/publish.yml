@@ -212,6 +212,15 @@ jobs:
       with:
         lane: build
         options: '{ "flavor": "vhtapp_uganda" }'
+    - name: Bundle vhtapp_uganda
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: bundle
+        options: '{ "flavor": "vhtapp_uganda" }'
+      env:
+        ANDROID_KEYSTORE_PATH: vhtapp_uganda.keystore
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_VHTAPP_UGANDA }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_VHTAPP_UGANDA }}
     - name: Assemble itech_aurum
       uses: maierj/fastlane-action@v1.4.0
       with:
