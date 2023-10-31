@@ -15,6 +15,7 @@ public class Alert {
 	}
 
 	public void trigger() {
+		// Hello world
 		vibrator.vibrate(1500L);
 		mediaPlayer.start();
 	}
