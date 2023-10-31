@@ -98,7 +98,7 @@ public class SettingsDialogActivityTest {
 			.inRoot(isDialog())
 			.perform(click());
 
-		Thread.sleep(14000);	//TODO: use better ways to handle delays
+		Thread.sleep(28000);	//TODO: use better ways to handle delays
 
 		ViewInteraction webView = onView(
 				allOf(withId(R.id.wbvMain),
