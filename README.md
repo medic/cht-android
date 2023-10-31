@@ -5,7 +5,7 @@ The cht-android application is a thin Android wrapper to load the [CHT Core Fram
 
 The repository contains “flavored” configurations, where each “flavor” or “brand” is an app. This allows the application to be hardcoded to a specific CHT deployment and have a partner specific logo and display name. The app also provides some deeper integration with other android apps and native phone functions that are otherwise unavailable to webapps.
 
-
+ 
 ## Release notes
 
 Checkout the release notes in the [Changelog](CHANGELOG.md) page, our you can see the full release history with the installable files for sideloading [here](https://github.com/medic/cht-android/releases).
