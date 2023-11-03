@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<string name="app_name">PRTP</string>
+
+	<string name="scheme" translatable="false">https</string>
+	<string name="app_host" translatable="false">gandaki.app.medicmobile.org</string>
+  <bool name="allowCustomHosts">True</bool>
+
+	<string name="txtAppUrl">CHT server URL</string>
+	<string name="instancesSearch">Search Instances</string>
+	<string name="proceedToServer">Login to %s?</string>
+	<string name="errAppUrl_serverNotFound">Unable to contact server</string>
+	<string name="errAppUrl_appNotFound">URL is not a valid CHT server instance</string>
+	<string name="errAppUrl_apiNotReady">CHT server is not ready, please try again soon</string>
+
+	<string name="errRequired">required</string>
+	<string name="errInvalidUrl">Must be a valid URL</string>
+
+	<string name="btnOk">OK</string>
+	<string name="btnSave">Save</string>
+	<string name="btnCancel">Cancel</string>
+	<string name="btnContinue">Continue</string>
+	<string name="btnMoreInfo">More info</string>
+	<string name="btnRetry">Retry</string>
+	<string name="btnQuit">Quit</string>
+
+	<string name="txtFreeSpaceWarning">Space is running low on this device. Application may not be able to start, or may perform strangely.</string>
+	<string name="txtFreeSpaceCurrent">Current space:\n%d MB</string>
+	<string name="txtFreeSpaceRecommended">Recommended space:\n%d MB</string>
+
+	<string name="promptChooseFile">Choose file</string>
+
+	<string name="locRequestTitle">Location access</string>
+	<string name="locRequestMessage">%s collects location data to analyze and improve health outcomes in your area. To permit location access select \"Turn on\", and then confirm the next prompt.</string>
+	<string name="locRequestOkButton">Turn on</string>
+	<string name="locRequestDenyButton">No thanks</string>
+	<string name="locRequestIconDescription">My location icon</string>
+
+  <string name="storageRequestTitle">Storage access</string>
+  <string name="storageRequestMessage">%s uploads files into reports to analyze and improve health outcomes in your area. To permit storage access select \"Allow\", and then grant storage access in the next prompt.</string>
+  <string name="storageRequestAllowButton">Allow</string>
+  <string name="storageRequestDenyButton">Deny</string>
+  <string name="storageRequestIconDescription">My storage icon</string>
+
+  <string name="sendSmsRequestTitle">SMS access</string>
+  <string name="sendSmsRequestMessage">%s sends reports as SMS to analyze and improve health outcomes in your area. To permit SMS access select \"Allow\", and then grant SMS access in the next prompt.</string>
+  <string name="sendSmsRequestAllowButton">Allow</string>
+  <string name="sendSmsRequestDenyButton">Deny</string>
+  <string name="sendSmsRequestIconDescription">My SMS icon</string>
+
+	<string name="loadingIconDescription">Loading…</string>
+	<string name="upgradingTitle">Upgrading your app</string>
+	<string name="upgradingMessage">You\'re upgrading to the latest version. Please wait while your data is being migrated.</string>
+
+    <string name="connErrorTitle">No Internet Connection</string>
+	<string name="connErrorMessage">You don\'t seem to be connected to the Internet. Please check your connection and try again.</string>
+
+	<string name="waitMigration">Please wait until the migration process is finished</string>
+  <string name="usingTrainingApp">Use only during training</string>
+</resources>
