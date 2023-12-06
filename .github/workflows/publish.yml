@@ -359,6 +359,32 @@ jobs:
         ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_MOH_NIGER_CHW }}
         ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_MOH_NIGER_CHW }}
 
+    - name: Unpack secrets moh_togo_uat
+      env:
+        ANDROID_SECRETS_KEY: ${{ secrets.ANDROID_SECRETS_KEY_MOH_TOGO_UAT }}
+        ANDROID_SECRETS_IV: ${{ secrets.ANDROID_SECRETS_IV_MOH_TOGO_UAT }}
+      run: make org=moh_togo_uat keydec
+
+    - name: Assemble moh_togo_uat
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: build
+        options: '{ "flavor": "moh_togo_uat" }'
+      env:
+        ANDROID_KEYSTORE_PATH: moh_togo_uat.keystore
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_MOH_TOGO_UAT }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_MOH_TOGO_UAT }}
+
+    - name: Bundle moh_togo_uat
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: bundle
+        options: '{ "flavor": "moh_togo_uat" }'
+      env:
+        ANDROID_KEYSTORE_PATH: moh_togo_uat.keystore
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_MOH_TOGO_UAT }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_MOH_TOGO_UAT }}
+
     - name: GitHub release
       uses: softprops/action-gh-release@v1
       if: startsWith(github.ref, 'refs/tags/')
