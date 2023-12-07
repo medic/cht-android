@@ -392,6 +392,32 @@ jobs:
         ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_MOH_NIGER_CHW }}
         ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_MOH_NIGER_CHW }}
 
+    - name: Unpack secrets digital payments
+      env:
+        ANDROID_SECRETS_KEY: ${{ secrets.ANDROID_SECRETS_KEY_DIGITAL_PAYMENTS }}
+        ANDROID_SECRETS_IV: ${{ secrets.ANDROID_SECRETS_IV_DIGITAL_PAYMENTS }}
+      run: make org=digital_payments keydec
+
+    - name: Assemble digital payments
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: build
+        options: '{ "flavor": "digital_payments" }'
+      env:
+        ANDROID_KEYSTORE_PATH: digital_payments.keystore
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_DIGITAL_PAYMENTS }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_DIGITAL_PAYMENTS }}
+
+    - name: Bundle digital payments
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: bundle
+        options: '{ "flavor": "digital_payments" }'
+      env:
+        ANDROID_KEYSTORE_PATH: digital_payments.keystore
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_DIGITAL_PAYMENTS }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_DIGITAL_PAYMENTS }}
+
     - name: GitHub release
       uses: softprops/action-gh-release@v1
       if: startsWith(github.ref, 'refs/tags/')
