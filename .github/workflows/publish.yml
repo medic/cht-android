@@ -223,7 +223,7 @@ jobs:
         lane: build
         options: '{ "flavor": "itech_malawi" }'
 
-    - name: Unpack secrets cares_malawi_kch
+    - name: Unpack secrets for cares_malawi_kch
       env:
         ANDROID_SECRETS_KEY: ${{ secrets.ANDROID_SECRETS_KEY_CARES_MALAWI_KCH }}
         ANDROID_SECRETS_IV: ${{ secrets.ANDROID_SECRETS_IV_CARES_MALAWI_KCH }}
