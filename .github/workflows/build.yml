@@ -37,20 +37,20 @@ jobs:
         distribution: 'adopt'
         java-version: '11'
 
-    #- name: Test Bash Keystores scripts
-    #  run: make test-bash-keystore
+    - name: Test Bash Keystores scripts
+      run: make test-bash-keystore
 
-    #- name: Test
-    #  run: make test
+    - name: Test
+      run: make test
 
     - name: Set up Ruby
-      # if: ${{ env.ANDROID_SECRETS_KEY }}
+      if: ${{ env.ANDROID_SECRETS_KEY }}
       uses: ruby/setup-ruby@v1
       with:
         ruby-version: 2.7
 
     - name: Set up Fastlane
-      # if: ${{ env.ANDROID_SECRETS_KEY }}
+      if: ${{ env.ANDROID_SECRETS_KEY }}
       run: gem install fastlane --no-document --quiet
 
     - name: Unpack secrets
@@ -61,7 +61,7 @@ jobs:
       run: make org=medic keydec
 
     - name: Assemble unbranded
-      # if: ${{ env.ANDROID_SECRETS_KEY }}
+      if: ${{ env.ANDROID_SECRETS_KEY }}
       uses: maierj/fastlane-action@v1.4.0
       env:
         ANDROID_KEYSTORE_PATH: ${{ secrets.ANDROID_KEYSTORE_PATH }}
@@ -72,78 +72,78 @@ jobs:
         lane: build
         options: '{ "flavor": "unbranded" }'
 
-  #instrumentation-tests:
+  instrumentation-tests:
 
-#    name: Instrumentation tests
-#    runs-on: macos-12
-#    needs: skip_check
-#    if: ${{ needs.skip_check.outputs.should_skip != 'true' }}
-#    steps:
-#
-#    - name: Checkout
-#      uses: actions/checkout@v2
-#      with:
-#        submodules: true
-#
-#    - name: Set up Java 11
-#      uses: actions/setup-java@v2
-#      with:
-#        distribution: 'adopt'
-#        java-version: '11'
-#
-#    - name: Gradle cache
-#      uses: actions/cache@v2
-#      with:
-#        path: |
-#          ~/.gradle/caches
-#          ~/.gradle/wrapper
-#        key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*') }}-${{ hashFiles('**/gradle/wrapper/gradle-wrapper.properties') }}-${{ hashFiles('**/buildSrc/**/*.kt') }}
-#
-#    - name: AVD cache
-#      uses: actions/cache@v2
-#      id: avd-cache
-#      with:
-#        path: |
-#          ~/.android/avd/*
-#          ~/.android/adb*
-#        key: avd-29-default
-#
-#    - name: Create AVD and generate snapshot for caching
-#      if: steps.avd-cache.outputs.cache-hit != 'true'
-#      uses: reactivecircus/android-emulator-runner@v2
-#      with:
-#        api-level: 29
-#        target: default
-#        force-avd-creation: false
-#        emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-#        disable-animations: false
-#        script: echo "Generated AVD snapshot for caching."
-#
-#    - name: Test Bash Keystores scripts on MacOS
-#      run: make test-bash-keystore
-#
-#    - name: Run test-ui on unbranded
-#      uses: reactivecircus/android-emulator-runner@v2
-#      with:
-#        api-level: 29
-#        target: default
-#        force-avd-creation: false
-#        emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-#        script: make test-ui
-#
-#    - name: Run test-ui on gamma
-#      uses: reactivecircus/android-emulator-runner@v2
-#      with:
-#        api-level: 29
-#        target: default
-#        force-avd-creation: false
-#        emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-#        script: make test-ui-gamma
-#
-#    - name: Archive Results
-#      uses: actions/upload-artifact@v2
-#      with:
-#        name: Test Report
-#        path: |
-#          build/reports/
-#      if: ${{ failure() }}
+    name: Instrumentation tests
+    runs-on: macos-12
+    needs: skip_check
+    if: ${{ needs.skip_check.outputs.should_skip != 'true' }}
+    steps:
+
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        submodules: true
+
+    - name: Set up Java 11
+      uses: actions/setup-java@v2
+      with:
+        distribution: 'adopt'
+        java-version: '11'
+
+    - name: Gradle cache
+      uses: actions/cache@v2
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*') }}-${{ hashFiles('**/gradle/wrapper/gradle-wrapper.properties') }}-${{ hashFiles('**/buildSrc/**/*.kt') }}
+
+    - name: AVD cache
+      uses: actions/cache@v2
+      id: avd-cache
+      with:
+        path: |
+          ~/.android/avd/*
+          ~/.android/adb*
+        key: avd-29-default
+
+    - name: Create AVD and generate snapshot for caching
+      if: steps.avd-cache.outputs.cache-hit != 'true'
+      uses: reactivecircus/android-emulator-runner@v2
+      with:
+        api-level: 29
+        target: default
+        force-avd-creation: false
+        emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+        disable-animations: false
+        script: echo "Generated AVD snapshot for caching."
+
+    - name: Test Bash Keystores scripts on MacOS
+      run: make test-bash-keystore
+
+    - name: Run test-ui on unbranded
+      uses: reactivecircus/android-emulator-runner@v2
+      with:
+        api-level: 29
+        target: default
+        force-avd-creation: false
+        emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+        script: make test-ui
+
+    - name: Run test-ui on gamma
+      uses: reactivecircus/android-emulator-runner@v2
+      with:
+        api-level: 29
+        target: default
+        force-avd-creation: false
+        emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+        script: make test-ui-gamma
+
+    - name: Archive Results
+      uses: actions/upload-artifact@v2
+      with:
+        name: Test Report
+        path: |
+          build/reports/
+      if: ${{ failure() }}
