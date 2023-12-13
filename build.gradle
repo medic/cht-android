@@ -400,6 +400,12 @@ android {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.moh_kenya_echis'
     }
+
+    moh_togo_uat {
+      dimension = 'brand'
+      applicationId = 'org.medicmobile.webapp.mobile.moh_togo_uat'
+    }
+
   }
 
   splits {
