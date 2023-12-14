@@ -361,16 +361,6 @@ android {
       applicationId = 'org.medicmobile.webapp.mobile.itech_malawi'
     }
 
-    cares_malawi_kch {
-      dimension = 'brand'
-      applicationId = 'org.medicmobile.webapp.mobile.cares_malawi_kch'
-    }
-
-    cares_malawi_mpc {
-      dimension = 'brand'
-      applicationId = 'org.medicmobile.webapp.mobile.cares_malawi_mpc'
-    }
-
     alerte_niger {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.alerte_niger'
@@ -401,11 +391,10 @@ android {
       applicationId = 'org.medicmobile.webapp.mobile.moh_kenya_echis'
     }
 
-    moh_togo_uat {
+    chv_neo {
       dimension = 'brand'
-      applicationId = 'org.medicmobile.webapp.mobile.moh_togo_uat'
+      applicationId = 'org.medicmobile.webapp.mobile.chv_neo'
     }
-
   }
 
   splits {
