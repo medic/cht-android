@@ -75,7 +75,7 @@ jobs:
   instrumentation-tests:
 
     name: Instrumentation tests
-    runs-on: macos-12
+    runs-on: ubuntu-22.04
     needs: skip_check
     if: ${{ needs.skip_check.outputs.should_skip != 'true' }}
     steps:
