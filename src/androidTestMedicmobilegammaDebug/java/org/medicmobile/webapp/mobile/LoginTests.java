@@ -46,7 +46,7 @@ import java.util.Locale;
 @RunWith(AndroidJUnit4.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class LoginTests {
-// Trigger run
+
 	private static final String ERROR_INCORRECT = "Incorrect user name or password. Please try again.";
 
 	@Rule
