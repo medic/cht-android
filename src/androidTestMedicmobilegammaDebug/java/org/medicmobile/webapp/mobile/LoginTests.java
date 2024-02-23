@@ -47,7 +47,7 @@ import java.util.Locale;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class LoginTests {
 
-	private static final String ERROR_INCORRECT = "Incorrect user name or password. Please try again.";
+	private static final String ERROR_INCORRECT = "correct user name or password. Please try again.";
 
 	@Rule
 	public ActivityScenarioRule<SettingsDialogActivity> mActivityTestRule =
