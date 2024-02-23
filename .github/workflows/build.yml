@@ -149,8 +149,8 @@ jobs:
           api-level: 33
           arch: x86_64
           target: default
-  #        force-avd-creation: false
-  #        emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          force-avd-creation: false
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           script: make test-ui
 
       - name: Run test-ui on gamma
@@ -159,8 +159,8 @@ jobs:
           api-level: 33
           arch: x86_64
           target: default
-  #        force-avd-creation: false
-  #        emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          force-avd-creation: false
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           script: make test-ui-gamma
 
       - name: Archive Results
