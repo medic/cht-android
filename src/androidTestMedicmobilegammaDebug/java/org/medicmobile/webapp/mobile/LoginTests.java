@@ -92,7 +92,7 @@ public class LoginTests {
 				.withElement(findElement(Locator.ID, "password"))
 				.perform(clearElement())
 				.perform(DriverAtoms.webKeys("fake_password"))
-				.withElement(findElement(Locator.ID, "thisDoesNotExist"))
+				.withElement(findElement(Locator.ID, "login"))
 				.perform(webClick());
 		Thread.sleep(4000);//TODO: use better ways to handle delays - takes longer with emulators
 		onWebView()
