@@ -95,8 +95,7 @@ def getVersionName = {
 }
 
 android {
-  compileSdkVersion 33
-  buildToolsVersion '30.0.3'
+  compileSdk 34
   packagingOptions {
     exclude 'META-INF/LICENSE'
     exclude 'META-INF/NOTICE'
@@ -104,7 +103,7 @@ android {
 
   defaultConfig {
     //noinspection OldTargetApi
-    targetSdkVersion 33
+    targetSdkVersion 34
     minSdkVersion 21 // Android 5.0
     versionCode getVersionCode()
     versionName getVersionName()
@@ -425,7 +424,7 @@ android {
 
 dependencies {
   implementation fileTree(dir: 'libs', include: ['*.jar'])
-  implementation 'androidx.core:core:1.7.0'
+  implementation 'androidx.core:core:1.12.0'
   implementation 'androidx.activity:activity:1.4.0'
   implementation 'androidx.fragment:fragment:1.4.1'
   compileOnly 'com.github.spotbugs:spotbugs-annotations:4.5.3'

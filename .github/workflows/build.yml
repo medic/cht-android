@@ -112,13 +112,13 @@ jobs:
         path: |
           ~/.android/avd/*
           ~/.android/adb*
-        key: avd-33-default
+        key: avd-34-default
 
     - name: Create AVD and generate snapshot for caching
       if: steps.avd-cache.outputs.cache-hit != 'true'
       uses: reactivecircus/android-emulator-runner@v2
       with:
-        api-level: 33
+        api-level: 34
         arch: x86_64
         target: default
         force-avd-creation: false
@@ -132,7 +132,7 @@ jobs:
     - name: Run test-ui on unbranded
       uses: reactivecircus/android-emulator-runner@v2
       with:
-        api-level: 33
+        api-level: 34
         arch: x86_64
         target: default
         force-avd-creation: false
@@ -142,7 +142,7 @@ jobs:
     - name: Run test-ui on gamma
       uses: reactivecircus/android-emulator-runner@v2
       with:
-        api-level: 33
+        api-level: 34
         arch: x86_64
         target: default
         force-avd-creation: false
