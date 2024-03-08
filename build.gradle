@@ -34,6 +34,7 @@ task checkstyle(type: Checkstyle) {
   source 'src'
   classpath = files()
   ignoreFailures = false
+  exclude 'test/bash/bats/**'
 }
 
 task pmd(type: Pmd) {
@@ -43,10 +44,10 @@ task pmd(type: Pmd) {
   source 'src'
   exclude '**/**.png'
   exclude '**/**.mp3'
-  exclude '**/**.bats'
+  exclude 'test/bash/bats/**'
   dependencies {
-    pmd 'net.sourceforge.pmd:pmd-java:6.44.0'
-    pmd 'net.sourceforge.pmd:pmd-xml:6.44.0'
+    pmd 'net.sourceforge.pmd:pmd-java:6.55.0'
+    pmd 'net.sourceforge.pmd:pmd-xml:6.55.0'
   }
 }
 
