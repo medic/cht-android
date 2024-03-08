@@ -19,7 +19,7 @@
   <uses-permission android:name="com.android.launcher.permission.UNINSTALL_SHORTCUT"/>
 
   <!-- READ_EXTERNAL_STORAGE is required if users want to include photos from their phone  -->
-  <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+  <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32"/>
 
   <!-- SEND_SMS is required if users want to send reports as SMS.To able the feature add the following line:
   <uses-permission android:name="android.permission.SEND_SMS"/>
@@ -40,21 +40,28 @@
     </activity>
     <activity android:name="EmbeddedBrowserActivity"
         android:screenOrientation="portrait"
-        android:configChanges="orientation|screenSize"/>
+        android:configChanges="orientation|screenSize"
+        tools:ignore="DiscouragedApi"/>
     <activity android:name="ConnectionErrorActivity"
         android:screenOrientation="portrait"
         android:configChanges="orientation|screenSize"
-        android:launchMode="singleTop"/>
+        android:launchMode="singleTop"
+        tools:ignore="DiscouragedApi"/>
     <activity android:name="FreeSpaceWarningActivity"
-        android:screenOrientation="portrait"/>
+        android:screenOrientation="portrait"
+        tools:ignore="DiscouragedApi"/>
     <activity android:name="SettingsDialogActivity"
-        android:screenOrientation="portrait"/>
+        android:screenOrientation="portrait"
+        tools:ignore="DiscouragedApi"/>
     <activity android:name="RequestLocationPermissionActivity"
-        android:screenOrientation="portrait"/>
+        android:screenOrientation="portrait"
+        tools:ignore="DiscouragedApi"/>
     <activity android:name="RequestStoragePermissionActivity"
-        android:screenOrientation="portrait"/>
+        android:screenOrientation="portrait"
+       tools:ignore="DiscouragedApi"/>
     <activity android:name="RequestSendSmsPermissionActivity"
-        android:screenOrientation="portrait"/>
+        android:screenOrientation="portrait"
+       tools:ignore="DiscouragedApi"/>
     <activity android:name="AppUrlIntentActivity"
         android:launchMode="singleInstance"
         android:exported="true">
@@ -68,7 +75,8 @@
     <activity android:name="UpgradingActivity"
       android:screenOrientation="portrait"
       android:configChanges="orientation|screenSize"
-      android:launchMode="singleTop"/>
+      android:launchMode="singleTop"
+      tools:ignore="DiscouragedApi"/>
 
     <provider
       android:name="androidx.core.content.FileProvider"

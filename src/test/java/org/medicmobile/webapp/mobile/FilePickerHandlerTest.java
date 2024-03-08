@@ -47,14 +47,12 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.RobolectricTestRunner;
-import org.robolectric.annotation.Config;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 
 @RunWith(RobolectricTestRunner.class)
-@Config(sdk=28)
 public class FilePickerHandlerTest {
 	@Mock
 	Activity contextMock;

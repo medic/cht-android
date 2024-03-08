@@ -14,10 +14,6 @@ project.afterEvaluate {
     group = 'Reporting'
     description = "Generate Jacoco coverage report for the ${variantName} build."
 
-    reports {
-      html.enabled(true)
-    }
-
     def excludes = [
       '**/R.class',
       '**/R$*.class',
