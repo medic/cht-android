@@ -6,7 +6,7 @@ buildscript {
     google()
   }
   dependencies {
-    classpath 'com.android.tools.build:gradle:7.1.3'
+    classpath 'com.android.tools.build:gradle:8.3.0'
     classpath 'com.github.spotbugs.snom:spotbugs-gradle-plugin:5.0.5'
   }
 }
@@ -97,8 +97,9 @@ def getVersionName = {
 android {
   compileSdk 34
   packagingOptions {
-    exclude 'META-INF/LICENSE'
-    exclude 'META-INF/NOTICE'
+    resources {
+      excludes += ['META-INF/LICENSE', 'META-INF/NOTICE']
+    }
   }
 
   defaultConfig {
@@ -163,24 +164,6 @@ android {
     }
   }
 
-  lintOptions {
-    lintConfig = new File('config/lint.xml')
-
-    disable 'UnusedResources' // linter can't handle static imports, so just skip this test
-    disable 'MissingTranslation'
-    disable 'StringFormatCount'
-
-    warningsAsErrors true
-
-    xmlReport false
-
-    if (System.env.CI == 'true') {
-      abortOnError true
-      htmlReport false
-      textReport true
-      textOutput 'stdout'
-    }
-  }
 
   testOptions {
     unitTests {
@@ -419,6 +402,12 @@ android {
       )
       universalApk false
     }
+  }
+  namespace 'org.medicmobile.webapp.mobile'
+  lint {
+    disable 'UnusedResources', 'MissingTranslation', 'StringFormatCount'
+    warningsAsErrors true
+    xmlReport false
   }
 }
 
