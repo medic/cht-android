@@ -3,7 +3,27 @@
 		android:id="@+id/lytWebView"
 		android:layout_width="fill_parent"
 		android:layout_height="fill_parent">
-	<WebView android:id="@+id/wbvMain"
-			android:layout_width="fill_parent"
-			android:layout_height="fill_parent"/>
+  <WebView
+		android:id="@+id/wbvMain"
+		android:layout_width="fill_parent"
+		android:layout_height="fill_parent"
+		android:layout_above="@+id/download_button" />
+
+	<Button
+		android:id="@+id/download_button"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_alignParentBottom="true"
+		android:layout_centerInParent="true"
+		android:layout_toRightOf="@id/upload_button"
+		android:layout_marginBottom="0dp"
+		android:text="Download data" />
+
+	<Button
+		android:id="@+id/upload_button"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_centerInParent="true"
+		android:layout_alignParentBottom="true"
+		android:text="Upload data" />
 </LinearLayout>

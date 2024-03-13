@@ -1,9 +1,14 @@
 package org.medicmobile.webapp.mobile;
 
+import static android.os.Environment.DIRECTORY_DOCUMENTS;
+import static android.os.Environment.getExternalStorageDirectory;
+import static android.os.Environment.getExternalStoragePublicDirectory;
+
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.app.ActivityManager.MemoryInfo;
 import android.app.DatePickerDialog;
+import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.net.ConnectivityManager;
 import android.net.NetworkCapabilities;
@@ -11,15 +16,22 @@ import android.net.NetworkInfo;
 import android.net.TrafficStats;
 import android.net.Uri;
 import android.os.Process;
+import android.util.Log;
+import android.webkit.JavascriptInterface;
 import android.widget.DatePicker;
 import android.os.Build;
 import android.os.Environment;
 import android.os.StatFs;
+import android.widget.Toast;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.Reader;
@@ -28,10 +40,15 @@ import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Objects;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -40,6 +57,7 @@ import static java.util.Calendar.MONTH;
 import static java.util.Calendar.YEAR;
 import static java.util.Locale.UK;
 import static org.medicmobile.webapp.mobile.MedicLog.log;
+import static org.medicmobile.webapp.mobile.MedicLog.warn;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
@@ -74,7 +92,7 @@ public class MedicAndroidJavascript {
 		this.connectivityManager = connectivityManager;
 	}
 
-//> JavascriptInterface METHODS
+	//> JavascriptInterface METHODS
 	@android.webkit.JavascriptInterface
 	public String getAppVersion() {
 		try {
@@ -86,6 +104,114 @@ public class MedicAndroidJavascript {
 		}
 	}
 
+	@JavascriptInterface
+	public void toastResult(String result){
+		Toast.makeText(parent, result, Toast.LENGTH_LONG).show();
+	}
+	@JavascriptInterface
+	public void saveDocs(String docs, String username) throws IOException{
+		JSONArray newDocs = new JSONArray();
+		try {
+			docs = docs.replaceAll("\\\\/", "/");
+			JSONObject docs_obj = new JSONObject(docs);
+			JSONArray docs_list = docs_obj.getJSONArray("rows");
+			for (int i = 0; i < docs_list.length(); i++) {
+				docs_list.getJSONObject(i).remove("key");
+				docs_list.getJSONObject(i).remove("value");
+				docs_list.getJSONObject(i).getJSONObject("doc").remove("_rev");
+				if(docs_list.getJSONObject(i).has("_rev")){
+					docs_list.getJSONObject(i).remove("_rev");
+				}
+				if(docs_list.getJSONObject(i).getJSONObject("doc").has("doc")){
+					docs_list.remove(i);
+				}
+				if (docs_list.getJSONObject(i).getString("id").startsWith("form")|| docs_list.getJSONObject(i).getString("id").equals("settings") || docs_list.getJSONObject(i).getString("id").startsWith("service") ||docs_list.getJSONObject(i).getString("id").equals("resources") || docs_list.getJSONObject(i).getString("id").equals("branding") || docs_list.getJSONObject(i).getString("id").startsWith("_design") || docs_list.getJSONObject(i).getJSONObject("doc").has("type") && (docs_list.getJSONObject(i).getJSONObject("doc").get("type").toString().equals("translations") || docs_list.getJSONObject(i).getJSONObject("doc").get("type").toString().equals("target"))) {
+					Log.d("Translations: ", "found");
+				}else{
+					if(docs_list.getJSONObject(i).getJSONObject("doc").has("_attachments")){
+						String contentType = docs_list.getJSONObject(i).getJSONObject("doc").getJSONObject("_attachments").getJSONObject("content").getString("content_type");
+						String digest = docs_list.getJSONObject(i).getJSONObject("doc").getJSONObject("_attachments").getJSONObject("content").getString("digest");
+						docs_list.getJSONObject(i).getJSONObject("doc").getJSONObject("_attachments").getJSONObject("content").remove("content_type");
+						docs_list.getJSONObject(i).getJSONObject("doc").getJSONObject("_attachments").getJSONObject("content").remove("digest");
+						contentType = "application/xml";
+						digest= digest.replace("\\\\/","/");
+						docs_list.getJSONObject(i).getJSONObject("doc").getJSONObject("_attachments").getJSONObject("content").put("content_type", contentType);
+						docs_list.getJSONObject(i).getJSONObject("doc").getJSONObject("_attachments").getJSONObject("content").put("revpos", 1);
+						docs_list.getJSONObject(i).getJSONObject("doc").getJSONObject("_attachments").getJSONObject("content").put("digest", digest);
+
+						Log.d("application / content", docs_list.getJSONObject(i).getJSONObject("doc").getJSONObject("_attachments").getJSONObject("content").getString("content_type").toString());
+					}
+					Iterator<String> keys = docs_list.getJSONObject(i).getJSONObject("doc").keys();
+					while(keys.hasNext()) {
+						String key = keys.next();
+						docs_list.getJSONObject(i).put(key,docs_list.getJSONObject(i).getJSONObject("doc").get(key));
+					}
+					docs_list.getJSONObject(i).remove("doc");
+
+					if (docs_list.getJSONObject(i).has("id")){
+						docs_list.getJSONObject(i).remove("id");
+					}
+					newDocs.put(docs_list.getJSONObject(i));
+				}
+
+			}
+		} catch (JSONException e) {
+			Log.d("Error json type", "json file");
+			e.printStackTrace();
+		}
+		if (newDocs != null && newDocs.length() > 0 ){
+			docs= "{\"docs\":"+newDocs.toString()+"}";
+		}
+		File file = null;
+		DateFormat df = new SimpleDateFormat("yyyyMMddhhmmss");
+		Log.d("storage", String.valueOf(Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())));
+		Log.d("version", String.valueOf(Build.VERSION.SDK_INT));
+		File cht_data = new File(this.parent.getExternalFilesDir("Documents")+"/cht_data/");
+		if (!cht_data.exists()){
+			cht_data.mkdirs();
+		}
+		if (android.os.Build.VERSION.SDK_INT >= 26) {
+			file = new File(this.parent.getExternalFilesDir("Documents")+"/cht_data/", username+"_"+ LocalDateTime.now()
+					.truncatedTo(ChronoUnit.SECONDS)
+					.toString()
+					.replace("-","")
+					.replace(":","")+ ".txt");
+		}
+		else {
+			file = new File(this.parent.getExternalFilesDir("Documents")+"/cht_data/", username+"_"+LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS)
+					.toString()
+					.replace("-","")
+					.replace(":","")+ ".txt");
+		}
+		Log.d("file", file.toString());
+		if(!file.getParentFile().exists()){
+			Log.d("Creating parent", file.getParent().toString());
+			file.getParentFile().mkdirs();
+		}
+		if(!file.exists()){
+			try {
+				file.createNewFile();
+			}catch (Exception e){
+				e.printStackTrace();
+			}
+		}
+		Log.d("file exists", String.valueOf(file.exists()));
+		try {
+			FileWriter fileWriter = new FileWriter(file);
+			BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+			bufferedWriter.write(docs);
+			bufferedWriter.close();
+			toastResult("Download Completed");
+		} catch (FileNotFoundException e){
+			toastResult("Could not find the file");
+			e.printStackTrace();
+		} catch (IOException e) {
+			toastResult("Could not write the file to storage");
+			e.printStackTrace();
+		}
+
+
+	}
 	@android.webkit.JavascriptInterface
 	public void playAlert() {
 		try {
@@ -302,8 +428,25 @@ public class MedicAndroidJavascript {
 			return jsonError("Problem fetching device info: ", ex);
 		}
 	}
-
-//> PRIVATE HELPER METHODS
+	public JSONObject parseJSON(JSONObject json)
+	{
+		Iterator<String> iter = json.keys();
+		while (iter.hasNext())
+		{
+			String key = iter.next();
+			if (key.equals("-xmlns:i") ||
+					key.equals("-i:nil") ||
+					key.equals("-xmlns:d4p1") ||
+					key.equals("-i:type") ||
+					key.equals("#text")) // I want to delete items with those ID strings
+			{
+				json.remove(key);
+			}
+			//Object value = json.get(key);
+		}
+		return json;
+	}
+	//> PRIVATE HELPER METHODS
 	private void datePicker(String targetElement, Calendar initialDate) {
 		// Remove single-quotes from the `targetElement` CSS selecter, as
 		// we'll be using these to enclose the entire string in JS.  We
@@ -337,8 +480,8 @@ public class MedicAndroidJavascript {
 
 	private static HashMap getCPUInfo() throws IOException {
 		try(
-			Reader fileReader = new InputStreamReader(new FileInputStream("/proc/cpuinfo"), StandardCharsets.UTF_8);
-			BufferedReader bufferedReader = new BufferedReader(fileReader);
+				Reader fileReader = new InputStreamReader(new FileInputStream("/proc/cpuinfo"), StandardCharsets.UTF_8);
+				BufferedReader bufferedReader = new BufferedReader(fileReader);
 		) {
 			String line;
 			HashMap output = new HashMap();
@@ -376,7 +519,7 @@ public class MedicAndroidJavascript {
 		parent.errorToJsConsole("Exception thrown in JavascriptInterface function: %s", stacktrace);
 	}
 
-//> STATIC HELPERS
+	//> STATIC HELPERS
 	private static String jsonError(String message, Exception ex) {
 		return jsonError(message + ex.getClass() + ": " + ex.getMessage());
 	}
