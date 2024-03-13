@@ -21,6 +21,7 @@ import android.view.View.OnTouchListener;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.medicmobile.webapp.mobile.components.settings_dialog.SettingsDialogActivity;
 import org.mockito.ArgumentCaptor;
 import org.mockito.MockSettings;
 import org.mockito.MockedStatic;

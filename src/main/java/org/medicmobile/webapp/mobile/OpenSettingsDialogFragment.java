@@ -11,6 +11,8 @@ import android.view.View.OnTouchListener;
 
 import androidx.annotation.Nullable;
 
+import org.medicmobile.webapp.mobile.components.settings_dialog.SettingsDialogActivity;
+
 import java.time.Clock;
 
 @SuppressLint("ValidFragment")

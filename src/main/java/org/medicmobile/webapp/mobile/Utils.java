@@ -11,6 +11,7 @@ import android.net.Uri;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.medicmobile.webapp.mobile.components.settings_dialog.SettingsDialogActivity;
 
 import java.io.File;
 import java.util.Optional;

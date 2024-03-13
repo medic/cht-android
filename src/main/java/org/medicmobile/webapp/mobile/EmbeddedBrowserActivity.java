@@ -34,6 +34,8 @@ import android.widget.Toast;
 
 import androidx.core.content.ContextCompat;
 
+import org.medicmobile.webapp.mobile.SettingsStore.SettingsException;
+
 import java.util.Arrays;
 import java.util.Optional;
 
