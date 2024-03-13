@@ -36,7 +36,7 @@ public class ConnectionErrorActivity extends ClosableAppActivity {
 		BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
 			@Override public void onReceive(Context context, Intent intent) {
 				if ("onPageFinished".equals(intent.getAction()) && isSpinning()) {
-					unregisterReceiver(this);
+					context.unregisterReceiver(this);
 					finish();
 				}
 			}
