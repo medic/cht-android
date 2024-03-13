@@ -168,6 +168,28 @@ android {
     }
   }
 
+  buildFeatures {
+    buildConfig true
+  }
+
+  lint {
+    lintConfig = new File('config/lint.xml')
+
+    disable 'UnusedResources' // linter can't handle static imports, so just skip this test
+    disable 'MissingTranslation'
+    disable 'StringFormatCount'
+
+    warningsAsErrors true
+
+    xmlReport false
+
+    if (System.env.CI == 'true') {
+      abortOnError true
+      htmlReport false
+      textReport true
+      textOutput 'stdout'
+    }
+  }
 
   testOptions {
     unitTests {
@@ -177,6 +199,7 @@ android {
 
   flavorDimensions 'brand'
 
+  namespace 'org.medicmobile.webapp.mobile'
   productFlavors {
     unbranded {
       // we will not create project-specific src directories
@@ -406,15 +429,6 @@ android {
       )
       universalApk false
     }
-  }
-  namespace 'org.medicmobile.webapp.mobile'
-  lint {
-    disable 'UnusedResources', 'MissingTranslation', 'StringFormatCount'
-    warningsAsErrors true
-    xmlReport false
-  }
-  buildFeatures {
-    buildConfig true
   }
 }
 
