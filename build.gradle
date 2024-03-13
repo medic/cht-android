@@ -187,7 +187,6 @@ android {
       abortOnError true
       htmlReport false
       textReport true
-      textOutput 'stdout'
     }
   }
 
