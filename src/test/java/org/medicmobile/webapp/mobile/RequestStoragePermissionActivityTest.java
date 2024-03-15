@@ -21,10 +21,8 @@ import android.provider.Settings;
 import androidx.lifecycle.Lifecycle;
 import androidx.test.core.app.ActivityScenario;
 import androidx.test.espresso.intent.Intents;
-import androidx.test.ext.junit.rules.ActivityScenarioRule;
 
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.MockedStatic;
@@ -34,12 +32,8 @@ import org.robolectric.shadows.ShadowActivity;
 import org.robolectric.shadows.ShadowApplicationPackageManager;
 
 @RunWith(RobolectricTestRunner.class)
-@Config(sdk=28)
+@Config(sdk=32) // READ_EXTERNAL_STORAGE permission is ignored in Android 13+
 public class RequestStoragePermissionActivityTest {
-
-	@Rule
-	public ActivityScenarioRule<RequestStoragePermissionActivity> scenarioRule = new ActivityScenarioRule<>(RequestStoragePermissionActivity.class);
-
 	private ShadowApplicationPackageManager packageManager;
 
 	@Before
@@ -49,9 +43,10 @@ public class RequestStoragePermissionActivityTest {
 
 	@Test
 	public void onClickAllow_withPermissionGranted_setResolveOk() {
-		try(MockedStatic<MedicLog> medicLogMock = mockStatic(MedicLog.class)) {
-			ActivityScenario<RequestStoragePermissionActivity> scenario = scenarioRule.getScenario();
-
+		try(
+			MockedStatic<MedicLog> medicLogMock = mockStatic(MedicLog.class);
+			ActivityScenario<RequestStoragePermissionActivity> scenario = ActivityScenario.launchActivityForResult(RequestStoragePermissionActivity.class)
+		) {
 			scenario.onActivity(requestStoragePermissionActivity -> {
 				//> GIVEN
 				requestStoragePermissionActivity.getIntent().putExtra(TRIGGER_CLASS, "a.trigger.class");
@@ -83,9 +78,10 @@ public class RequestStoragePermissionActivityTest {
 
 	@Test
 	public void onClickAllow_withoutExtras_setTriggerClassNull() {
-		try(MockedStatic<MedicLog> medicLogMock = mockStatic(MedicLog.class)) {
-			ActivityScenario<RequestStoragePermissionActivity> scenario = scenarioRule.getScenario();
-
+		try(
+			MockedStatic<MedicLog> medicLogMock = mockStatic(MedicLog.class);
+			ActivityScenario<RequestStoragePermissionActivity> scenario = ActivityScenario.launchActivityForResult(RequestStoragePermissionActivity.class)
+		) {
 			scenario.onActivity(requestStoragePermissionActivity -> {
 				//> GIVEN
 				ShadowActivity shadowActivity = shadowOf(requestStoragePermissionActivity);
@@ -116,9 +112,10 @@ public class RequestStoragePermissionActivityTest {
 
 	@Test
 	public void onClickAllow_withPermissionDenied_setResolveCanceled() {
-		try(MockedStatic<MedicLog> medicLogMock = mockStatic(MedicLog.class)) {
-			ActivityScenario<RequestStoragePermissionActivity> scenario = scenarioRule.getScenario();
-
+		try(
+			MockedStatic<MedicLog> medicLogMock = mockStatic(MedicLog.class);
+			ActivityScenario<RequestStoragePermissionActivity> scenario = ActivityScenario.launchActivityForResult(RequestStoragePermissionActivity.class)
+		) {
 			scenario.onActivity(requestStoragePermissionActivity -> {
 				Intents.init();
 
@@ -162,9 +159,10 @@ public class RequestStoragePermissionActivityTest {
 
 	@Test
 	public void onClickAllow_withNeverAskAgainAndPermissionGranted_setResolveOk() {
-		try(MockedStatic<MedicLog> medicLogMock = mockStatic(MedicLog.class)) {
-			ActivityScenario<RequestStoragePermissionActivity> scenario = scenarioRule.getScenario();
-
+		try(
+			MockedStatic<MedicLog> medicLogMock = mockStatic(MedicLog.class);
+			ActivityScenario<RequestStoragePermissionActivity> scenario = ActivityScenario.launchActivityForResult(RequestStoragePermissionActivity.class)
+		) {
 			scenario.onActivity(requestStoragePermissionActivity -> {
 				Intents.init();
 
@@ -215,9 +213,10 @@ public class RequestStoragePermissionActivityTest {
 
 	@Test
 	public void onClickAllow_withNeverAskAgainAndPermissionDenied_setResolveCanceled() {
-		try(MockedStatic<MedicLog> medicLogMock = mockStatic(MedicLog.class)) {
-			ActivityScenario<RequestStoragePermissionActivity> scenario = scenarioRule.getScenario();
-
+		try(
+			MockedStatic<MedicLog> medicLogMock = mockStatic(MedicLog.class);
+			ActivityScenario<RequestStoragePermissionActivity> scenario = ActivityScenario.launchActivityForResult(RequestStoragePermissionActivity.class)
+		) {
 			scenario.onActivity(requestStoragePermissionActivity -> {
 				Intents.init();
 
@@ -267,9 +266,10 @@ public class RequestStoragePermissionActivityTest {
 
 	@Test
 	public void onClickNegative_noIntentsStarted_setResolveCanceled() {
-		try(MockedStatic<MedicLog> medicLogMock = mockStatic(MedicLog.class)) {
-			ActivityScenario<RequestStoragePermissionActivity> scenario = scenarioRule.getScenario();
-
+		try(
+			MockedStatic<MedicLog> medicLogMock = mockStatic(MedicLog.class);
+			ActivityScenario<RequestStoragePermissionActivity> scenario = ActivityScenario.launchActivityForResult(RequestStoragePermissionActivity.class)
+		) {
 			scenario.onActivity(requestStoragePermissionActivity -> {
 				Intents.init();
 				//> WHEN

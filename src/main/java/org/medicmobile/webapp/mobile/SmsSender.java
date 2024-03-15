@@ -46,27 +46,32 @@ class SmsSender {
 	protected SmsSender(EmbeddedBrowserActivity parent) {
 		this.parent = parent;
 
-		parent.registerReceiver(new BroadcastReceiver() {
-			@Override public void onReceive(Context ctx, Intent intent) {
-				log(this, "onReceive() :: %s", intent.getAction());
+		ContextCompat.registerReceiver(
+			parent.getApplicationContext(),
+			new BroadcastReceiver() {
+				@Override public void onReceive(Context ctx, Intent intent) {
+					log(this, "onReceive() :: %s", intent.getAction());
 
-				try {
-					switch(intent.getAction()) {
-						case SENDING_REPORT:
-							new SendingReportHandler().handle(intent, getResultCode());
-							break;
-						case DELIVERY_REPORT:
-							new DeliveryReportHandler().handle(intent);
-							break;
-						default:
-							throw new IllegalStateException("Unexpected intent: " + intent);
-					}
-				} catch(Exception ex) {
-					warn(ex, "BroadcastReceiver threw exception '%s' when processing intent: %s",
+					try {
+						switch(intent.getAction()) {
+							case SENDING_REPORT:
+								new SendingReportHandler().handle(intent, getResultCode());
+								break;
+							case DELIVERY_REPORT:
+								new DeliveryReportHandler().handle(intent);
+								break;
+							default:
+								throw new IllegalStateException("Unexpected intent: " + intent);
+						}
+					} catch(Exception ex) {
+						warn(ex, "BroadcastReceiver threw exception '%s' when processing intent: %s",
 							ex.getClass(), ex.getMessage());
+					}
 				}
-			}
-		}, createIntentFilter());
+			},
+			createIntentFilter(),
+			ContextCompat.RECEIVER_EXPORTED
+		);
 	}
 
 	public static SmsSender createInstance(EmbeddedBrowserActivity parent) {

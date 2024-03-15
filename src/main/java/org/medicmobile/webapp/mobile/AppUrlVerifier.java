@@ -15,7 +15,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.concurrent.Callable;
 
-public class AppUrlVerifier implements Callable<AppUrlVerification> {
+public final class AppUrlVerifier implements Callable<AppUrlVerification> {
 
 	private final SimpleJsonClient2 jsonClient;
 	private final String appUrl;
