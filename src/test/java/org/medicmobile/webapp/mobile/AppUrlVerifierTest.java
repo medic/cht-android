@@ -24,13 +24,11 @@ import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 import org.mockito.quality.Strictness;
 import org.robolectric.RobolectricTestRunner;
-import org.robolectric.annotation.Config;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
 
 @RunWith(RobolectricTestRunner.class)
-@Config(sdk = 28)
 public class AppUrlVerifierTest {
 	@Rule
 	public MockitoRule rule = MockitoJUnit.rule().strictness(Strictness.STRICT_STUBS);

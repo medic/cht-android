@@ -1,18 +1,9 @@
 package org.medicmobile.webapp.mobile;
 
-import android.app.Activity;
-
 import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
 import static android.app.Activity.RESULT_CANCELED;
 import static android.app.Activity.RESULT_OK;
 import static android.content.pm.PackageManager.PERMISSION_DENIED;
-
-import android.content.ActivityNotFoundException;
-import android.content.Intent;
-import android.net.Uri;
-import android.os.Bundle;
-import androidx.core.content.ContextCompat;
-
 import static org.junit.Assert.assertEquals;
 import static org.medicmobile.webapp.mobile.EmbeddedBrowserActivity.RequestCode;
 import static org.mockito.ArgumentMatchers.any;
@@ -27,6 +18,14 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import android.app.Activity;
+import android.content.ActivityNotFoundException;
+import android.content.Intent;
+import android.net.Uri;
+import android.os.Bundle;
+
+import androidx.core.content.ContextCompat;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -35,10 +34,8 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.RobolectricTestRunner;
-import org.robolectric.annotation.Config;
 
 @RunWith(RobolectricTestRunner.class)
-@Config(sdk=28)
 public class ChtExternalAppHandlerTest {
 	@Mock
 	Activity contextMock;

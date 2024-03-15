@@ -6,18 +6,17 @@ import static org.junit.Assert.assertTrue;
 
 import android.net.Uri;
 
-import org.junit.*;
+import org.junit.Rule;
+import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.junit.runner.*;
-import org.robolectric.*;
-import org.robolectric.annotation.*;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Optional;
 
 @RunWith(RobolectricTestRunner.class)
-@Config(sdk=28)
 public class UtilsTest {
 
 	@Rule

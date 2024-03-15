@@ -395,7 +395,12 @@ public class EmbeddedBrowserActivity extends Activity {
 				}
 			}
 		};
-		registerReceiver(broadcastReceiver, new IntentFilter("retryConnection"));
+		ContextCompat.registerReceiver(
+			getApplicationContext(),
+			broadcastReceiver,
+			new IntentFilter("retryConnection"),
+			ContextCompat.RECEIVER_NOT_EXPORTED
+		);
 	}
 
 //> ENUMS

@@ -25,7 +25,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.MockSettings;
 import org.mockito.MockedStatic;
 import org.robolectric.RobolectricTestRunner;
-import org.robolectric.annotation.Config;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -33,7 +32,6 @@ import java.time.ZoneOffset;
 import java.util.stream.IntStream;
 
 @RunWith(RobolectricTestRunner.class)
-@Config(sdk=28)
 public class OpenSettingsDialogFragmentTest {
 
 	private OpenSettingsDialogFragment openSettingsDialogFragment;

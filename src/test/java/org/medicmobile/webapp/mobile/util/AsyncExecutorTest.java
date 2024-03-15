@@ -20,7 +20,6 @@ import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 import org.mockito.quality.Strictness;
 import org.robolectric.RobolectricTestRunner;
-import org.robolectric.annotation.Config;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -28,7 +27,6 @@ import java.util.concurrent.Future;
 import java.util.function.Consumer;
 
 @RunWith(RobolectricTestRunner.class)
-@Config(sdk = 31) // ToDo: Remove when upgrading robolectric
 public class AsyncExecutorTest {
 	@Rule
 	public MockitoRule rule = MockitoJUnit.rule().strictness(Strictness.STRICT_STUBS);
