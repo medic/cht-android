@@ -1,6 +1,8 @@
 /.gradle/
 /build/
 /*.log
+/node_modules
+/allure-results
 
 /local.properties
 
