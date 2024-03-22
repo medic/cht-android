@@ -446,10 +446,20 @@ dependencies {
   testImplementation 'androidx.test.espresso:espresso-core:3.5.1'
   testImplementation 'androidx.test.espresso:espresso-intents:3.5.1'
   testImplementation 'androidx.test.ext:junit:1.1.5'
+  testImplementation 'com.github.appium:java-client:9.2.0'
+  testImplementation 'org.seleniumhq.selenium:selenium-java:4.17.0'
   androidTestImplementation 'androidx.test.espresso:espresso-web:3.5.1'
   androidTestImplementation 'androidx.test.ext:junit:1.1.5'
   androidTestImplementation 'androidx.test:runner:1.5.2'
   androidTestImplementation 'androidx.test:rules:1.5.0'
   androidTestImplementation 'androidx.test:core:1.5.0'
   androidTestImplementation 'org.hamcrest:hamcrest-library:2.2'
+}
+
+dependencies.constraints {
+  add("testImplementation", "com.google.guava:guava") {
+    attributes {
+      attribute(TargetJvmEnvironment.TARGET_JVM_ENVIRONMENT_ATTRIBUTE, objects.named(TargetJvmEnvironment, TargetJvmEnvironment.STANDARD_JVM))
+    }
+  }
 }
