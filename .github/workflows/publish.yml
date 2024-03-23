@@ -31,7 +31,7 @@ jobs:
     - name: Set up Ruby
       uses: ruby/setup-ruby@v1
       with:
-        ruby-version: 2.7
+        ruby-version: 2.6
 
     - name: Set up Fastlane
       run: gem install fastlane --no-document --quiet
@@ -222,39 +222,6 @@ jobs:
       with:
         lane: build
         options: '{ "flavor": "itech_malawi" }'
-
-    - name: Unpack secrets cares_malawi_kch
-      env:
-        ANDROID_SECRETS_KEY: ${{ secrets.ANDROID_SECRETS_KEY_CARES_MALAWI_KCH }}
-        ANDROID_SECRETS_IV: ${{ secrets.ANDROID_SECRETS_IV_CARES_MALAWI_KCH }}
-      run: make org=cares_malawi_kch keydec
-
-    - name: Assemble cares_malawi_kch
-      uses: maierj/fastlane-action@v1.4.0
-      with:
-        lane: build
-        options: '{ "flavor": "cares_malawi_kch" }'
-      env:
-        ANDROID_KEYSTORE_PATH: cares_malawi_kch.keystore
-        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_CARES_MALAWI_KCH }}
-        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_CARES_MALAWI_KCH }}
-
-    - name: Unpack secrets cares_malawi_mpc
-      env:
-        ANDROID_SECRETS_KEY: ${{ secrets.ANDROID_SECRETS_KEY_CARES_MALAWI_MPC }}
-        ANDROID_SECRETS_IV: ${{ secrets.ANDROID_SECRETS_IV_CARES_MALAWI_MPC }}
-      run: make org=cares_malawi_mpc keydec
-
-    - name: Assemble cares_malawi_mpc
-      uses: maierj/fastlane-action@v1.4.0
-      with:
-        lane: build
-        options: '{ "flavor": "cares_malawi_mpc" }'
-      env:
-        ANDROID_KEYSTORE_PATH: cares_malawi_mpc.keystore
-        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_CARES_MALAWI_MPC }}
-        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_CARES_MALAWI_MPC }}
-
     - name: Assemble alerte_niger
       uses: maierj/fastlane-action@v1.4.0
       with:
@@ -392,32 +359,6 @@ jobs:
         ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_MOH_NIGER_CHW }}
         ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_MOH_NIGER_CHW }}
 
-    - name: Unpack secrets moh_togo_uat
-      env:
-        ANDROID_SECRETS_KEY: ${{ secrets.ANDROID_SECRETS_KEY_MOH_TOGO_UAT }}
-        ANDROID_SECRETS_IV: ${{ secrets.ANDROID_SECRETS_IV_MOH_TOGO_UAT }}
-      run: make org=moh_togo_uat keydec
-
-    - name: Assemble moh_togo_uat
-      uses: maierj/fastlane-action@v1.4.0
-      with:
-        lane: build
-        options: '{ "flavor": "moh_togo_uat" }'
-      env:
-        ANDROID_KEYSTORE_PATH: moh_togo_uat.keystore
-        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_MOH_TOGO_UAT }}
-        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_MOH_TOGO_UAT }}
-
-    - name: Bundle moh_togo_uat
-      uses: maierj/fastlane-action@v1.4.0
-      with:
-        lane: bundle
-        options: '{ "flavor": "moh_togo_uat" }'
-      env:
-        ANDROID_KEYSTORE_PATH: moh_togo_uat.keystore
-        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_MOH_TOGO_UAT }}
-        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_MOH_TOGO_UAT }}
-
     - name: GitHub release
       uses: softprops/action-gh-release@v1
       if: startsWith(github.ref, 'refs/tags/')
@@ -428,3 +369,29 @@ jobs:
           build/outputs/bundle/**/*-release.aab
       env:
         GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+
+    - name: Unpack secrets chv_neo
+      env:
+        ANDROID_SECRETS_KEY: ${{ secrets.ANDROID_SECRETS_KEY_CHV_NEO }}
+        ANDROID_SECRETS_IV: ${{ secrets.ANDROID_SECRETS_IV_CHV_NEO }}
+      run: make org=chv_neo keydec
+  
+    - name: Assemble chv_neo
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: build
+        options: '{ "flavor": "chv_neo" }'
+      env:
+        ANDROID_KEYSTORE_PATH: chv_neo.keystore
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_CHV_NEO }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_CHV_NEO }}
+  
+    - name: Bundle chv_neo
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: bundle
+        options: '{ "flavor": "chv_neo" }'
+      env:
+        ANDROID_KEYSTORE_PATH: chv_neo.keystore
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_CHV_NEO }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_CHV_NEO }}
