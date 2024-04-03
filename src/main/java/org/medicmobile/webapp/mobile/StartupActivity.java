@@ -2,6 +2,7 @@ package org.medicmobile.webapp.mobile;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 
 import static org.medicmobile.webapp.mobile.MedicLog.trace;
@@ -10,10 +11,12 @@ import static org.medicmobile.webapp.mobile.Utils.startAppActivityChain;
 
 public class StartupActivity extends Activity {
 
-	@Override public void onCreate(Bundle savedInstanceState) {
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		trace(this, "onCreate()");
 		configureAndStartNextActivity();
+		startDomainVerificationActivity();
 	}
 
 	private void configureAndStartNextActivity() {
@@ -27,6 +30,14 @@ public class StartupActivity extends Activity {
 		Intent intent = new Intent(this, FreeSpaceWarningActivity.class);
 		startActivity(intent);
 		finish();
+	}
+
+	private void startDomainVerificationActivity() {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+			Intent intent = new Intent(this, DomainVerificationActivity.class);
+			startActivity(intent);
+			finish();
+		}
 	}
 
 	private boolean hasEnoughFreeSpace() {

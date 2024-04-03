@@ -5,4 +5,10 @@
 	<string name="locRequestOkButton">चालू करो</string>
 	<string name="locRequestDenyButton">जी नहीं, धन्यवाद</string>
 	<string name="locRequestIconDescription">मेरा स्थान आइकन</string>
+
+  <string name="domainAppAssociationTitle">डोमेन को ऐप के साथ संबद्ध करें</string>
+  <string name="domainAppAssociationMessage">बेहतर अनुभव के लिए, हम इस ऐप को संबंधित डोमेन के साथ संबद्ध करने की अनुशंसा करते हैं। इससे यह सुनिश्चित होगा कि लिंक सीधे ऐप में खुलेंगे।\nक्या आप इस ऐप को आवश्यक डोमेन के साथ जोड़ना चाहेंगे?</string>
+  <string name="domainAppAssociationIconDescription">डोमेन चिह्न</string>
+  <string name="domainAppAssociationRequestOkButton">हाँ</string>
+  <string name="domainAppAssociationRequestDenyButton">नहीं</string>
 </resources>

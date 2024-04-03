@@ -5,4 +5,10 @@
 	<string name="locRequestOkButton">Ablihan</string>
 	<string name="locRequestDenyButton">Dili lang, salamat</string>
 	<string name="locRequestIconDescription">Ang icon sa akong lokasyon</string>
+
+  <string name="domainAppAssociationTitle">I-asosiyo ang Domain sa App</string>
+  <string name="domainAppAssociationMessage">Alang sa labi pang maayong kasinatian, girekomemdar namo nga i-asosiyo kining app sa mga relevante nga domain. Kini masiguro nga ang mga link muabli sirectly sa app.\nGusto ba nimong i-asosiyo kining app sa gikinahanglan nga mga domain?</string>
+  <string name="domainAppAssociationIconDescription">Ikonikong Domain</string>
+  <string name="domainAppAssociationRequestOkButton">Oo</string>
+  <string name="domainAppAssociationRequestDenyButton">Dili</string>
 </resources>

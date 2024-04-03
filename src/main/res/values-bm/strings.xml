@@ -5,4 +5,10 @@
 	<string name="locRequestOkButton">Awɔ</string>
 	<string name="locRequestDenyButton">Ayi man sɔn</string>
 	<string name="locRequestIconDescription">Icône de mon emplacement</string>	<!-- leave it in fr, not relevant -->
+
+  <string name="domainAppAssociationTitle">Asosiyɛti Domɛn ni Ap</string>
+  <string name="domainAppAssociationMessage">Kɔnsɔn bɛ taali ɲuman ka ɛ saayaɲɔgɔn ladu ni domɛnnuw ye. O tɛ bɛ a to lonkuruw bɛ fere kɛ baara ra mɔgɔ musomɔgɔya ra. Ee bɛ fɛ ka ɛ saayaɲɔgɔn ladu ni domɛnnuw hɛɛrɛhɛrɛninw ye wa?</string>
+  <string name="domainAppAssociationIconDescription">Domɛn Ayikon</string>
+  <string name="domainAppAssociationRequestOkButton">Ɔwan</string>
+  <string name="domainAppAssociationRequestDenyButton">Ꝋ꙲ </string>
 </resources>
