@@ -62,6 +62,9 @@
     <activity android:name="RequestSendSmsPermissionActivity"
         android:screenOrientation="portrait"
        tools:ignore="DiscouragedApi"/>
+    <activity android:name="DomainVerificationActivity"
+      android:screenOrientation="portrait"
+      tools:ignore="DiscouragedApi" />
     <activity android:name="AppUrlIntentActivity"
         android:launchMode="singleInstance"
         android:exported="true">

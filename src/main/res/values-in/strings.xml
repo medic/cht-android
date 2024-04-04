@@ -5,4 +5,10 @@
 	<string name="locRequestOkButton">Nyalakan</string>
 	<string name="locRequestDenyButton">Tidak, terima kasih</string>
 	<string name="locRequestIconDescription">Ikon lokasiku</string>
+
+  <string name="domainAppAssociationTitle">Asosiasikan Domain dengan Aplikasi</string>
+  <string name="domainAppAssociationMessage">Untuk pengalaman yang lebih baik, kami merekomendasikan untuk mengasosiasikan aplikasi ini dengan domain-domain yang relevan. Hal ini akan memastikan bahwa tautan-tautan dibuka langsung di dalam aplikasi.\nApakah Anda ingin mengasosiasikan aplikasi ini dengan domain-domain yang diperlukan?</string>
+  <string name="domainAppAssociationIconDescription">Icon Domain</string>
+  <string name="domainAppAssociationRequestOkButton">Ya</string>
+  <string name="domainAppAssociationRequestDenyButton">Tidak</string>
 </resources>
