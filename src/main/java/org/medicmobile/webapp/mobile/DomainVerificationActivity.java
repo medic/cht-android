@@ -40,8 +40,7 @@ public class DomainVerificationActivity extends Activity {
 
 				Map<String, Integer> hostToStateMap = userState.getHostToStateMap();
 
-				for (String key : hostToStateMap.keySet()) {
-					Integer stateValue = hostToStateMap.get(key);
+				for (String stateValue : hostToStateMap.values()) {
 
 					if (stateValue != DomainVerificationUserState.DOMAIN_STATE_VERIFIED && stateValue != DomainVerificationUserState.DOMAIN_STATE_SELECTED) {
 						return false;
