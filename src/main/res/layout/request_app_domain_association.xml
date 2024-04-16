@@ -45,7 +45,8 @@
       style="@style/borderlessButton"
       android:onClick="onClickNegative"
       android:text="@string/domainAppAssociationRequestDenyButton"
-      tools:ignore="OnClick" />
+      tools:ignore="OnClick"
+      android:layout_marginTop="10dp"/>
 
     <View
       android:layout_width="0dp"
@@ -54,10 +55,14 @@
 
     <Button
       android:id="@+id/domainAppAssociationOkButton"
-      style="@style/borderlessButton"
+      style="@style/standardButton"
+      android:layout_width="137dp"
+      android:background="@android:color/holo_blue_dark"
       android:onClick="onClickOk"
       android:text="@string/domainAppAssociationRequestOkButton"
+      android:textColor="#ffffff"
       tools:ignore="OnClick" />
+
   </LinearLayout>
 
 </RelativeLayout>

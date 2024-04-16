@@ -6,9 +6,9 @@
 	<string name="locRequestDenyButton">Hindi na, Salamat na lang</string>
 	<string name="locRequestIconDescription">Ang icon ng lokasyon ko</string>
 
-  <string name="domainAppAssociationTitle">Iugnay ang Domain sa App</string>
-  <string name="domainAppAssociationMessage">Para sa mas magandang karanasan, inirerekomenda namin na iugnay ang aplikasyong ito sa mga naaangkop na domain. Ito ay magtitiyak na ang mga link ay magbubukas nang direkta sa loob ng aplikasyon.\nNais mo bang iugnay ang aplikasyong ito sa mga kinakailangang domain?</string>
+  <string name="domainAppAssociationTitle">I-link ang domain sa %s?</string>
+  <string name="domainAppAssociationMessage">Tinitiyak nito na magbubukas ang lahat ng link sa iyong app para sa mas magandang karanasan.</string>
   <string name="domainAppAssociationIconDescription">Icon ng Domain</string>
-  <string name="domainAppAssociationRequestOkButton">Oo</string>
-  <string name="domainAppAssociationRequestDenyButton">Hindi</string>
+  <string name="domainAppAssociationRequestOkButton">Oo, i-link ang domain</string>
+  <string name="domainAppAssociationRequestDenyButton">Huwag i-link</string>
 </resources>

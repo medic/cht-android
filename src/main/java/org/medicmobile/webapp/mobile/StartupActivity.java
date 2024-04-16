@@ -1,9 +1,11 @@
 package org.medicmobile.webapp.mobile;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 
 import static org.medicmobile.webapp.mobile.MedicLog.trace;
 import static org.medicmobile.webapp.mobile.Utils.createUseragentFrom;
@@ -32,7 +34,9 @@ public class StartupActivity extends Activity {
 	}
 
 	private void startDomainVerificationActivity() {
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+		Context context = getApplicationContext();
+
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !Utils.checkIfDomainsAreVerified(context)) {
 			Intent intent = new Intent(this, DomainVerificationActivity.class);
 			startActivity(intent);
 			finish();

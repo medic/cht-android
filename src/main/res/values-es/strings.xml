@@ -29,9 +29,9 @@
 
 	<string name="waitMigration">Por favor espere a que el proceso de migración haya finalizado</string>
 
-  <string name="domainAppAssociationTitle">Asociar Dominio con la Aplicación</string>
-  <string name="domainAppAssociationMessage">Para una mejor experiencia, recomendamos asociar esta aplicación con los dominios relevantes. Esto garantizará que los enlaces se abran directamente en la aplicación.\n¿Le gustaría asociar esta aplicación con los dominios necesarios?</string>
-  <string name="domainAppAssociationIconDescription">Icono de Dominio</string>
-  <string name="domainAppAssociationRequestOkButton">Sí</string>
-  <string name="domainAppAssociationRequestDenyButton">No</string>
+  <string name="domainAppAssociationTitle">¿Vincular dominio con %s?</string>
+  <string name="domainAppAssociationMessage">Esto garantiza que todos los enlaces se abrirán en su aplicación para mejor experiencia</string>
+  <string name="domainAppAssociationIconDescription">Icono del dominio</string>
+  <string name="domainAppAssociationRequestOkButton">Sí, vincule dominio</string>
+  <string name="domainAppAssociationRequestDenyButton">No vincular</string>
 </resources>

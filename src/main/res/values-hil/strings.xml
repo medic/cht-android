@@ -5,10 +5,4 @@
 	<string name="locRequestOkButton">Buksan</string>
 	<string name="locRequestDenyButton">Indi na, Salamat nalang</string>
 	<string name="locRequestIconDescription">Ang icon sang lokasyon ko</string>
-
-  <string name="domainAppAssociationTitle">Ikapareho ang Domain sa App</string>
-  <string name="domainAppAssociationMessage">Para sa mas maayo nga eksperyensya, ginarekomendar namon nga ikapareho ang app ini sa mga nabaton nga mga dominyo. Ini magasiguro nga ang mga link magabukas diretso sa sulod sang app.\nGusto mo bala nga ikapareho ang app ini sa kinahanglanon nga mga dominyo?</string>
-  <string name="domainAppAssociationIconDescription">Icon sang Dominyo</string>
-  <string name="domainAppAssociationRequestOkButton">Oo</string>
-  <string name="domainAppAssociationRequestDenyButton">Indi</string>
 </resources>

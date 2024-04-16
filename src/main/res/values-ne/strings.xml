@@ -6,9 +6,9 @@
 	<string name="locRequestDenyButton">हुँदैन, धन्यबाद</string>
 	<string name="locRequestIconDescription">मेरो स्थान आइकन</string>
 
-  <string name="domainAppAssociationTitle">एप्लिकेशन साथ डोमेन संबद्ध गर्नुहोस्</string>
-  <string name="domainAppAssociationMessage">राम्रो अनुभवको लागि, हामी यस एप्लिकेशनलाई सम्बन्धित डोमेनहरूसँग जोड्न अनुरोध गर्छौं। यसले यो पक्षमा तत्त्वाधिकारी अनुसार खोल्नु हुनेछ। के तपाईं यस एप्लिकेशनलाई आवश्यक डोमेनहरूसँग जोड्न चाहनुहुन्छ?</string>
-  <string name="domainAppAssociationIconDescription">डोमेन आइकन</string>
-  <string name="domainAppAssociationRequestOkButton">हुन्छ</string>
+  <string name="domainAppAssociationTitle">%s डोमेन लिंक गर्नुहुन्छ?</string>
+  <string name="domainAppAssociationMessage">यसले राम्रो अनुभवको लागि तपाइँको एपमा सबै लिङ्कहरू खुल्ने सुनिश्चित गर्दछ।</string>
+  <string name="domainAppAssociationIconDescription">डोमेन चिन्ह</string>
+  <string name="domainAppAssociationRequestOkButton">हुन्छ, डोमेन लिङ्क गर्नुहोस्</string>
   <string name="domainAppAssociationRequestDenyButton">हुदैन</string>
 </resources>
