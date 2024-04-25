@@ -29,4 +29,10 @@
 
 	<string name="waitMigration">Veuillez attendre que la migration de données termine</string>
   <string name="usingTrainingApp">Utiliser uniquement pendant la formation</string>
+
+  <string name="domainAppAssociationTitle">Associer le domaine à %s ?</string>
+  <string name="domainAppAssociationMessage">Cela garantit que tous les liens s\'ouvriront dans votre application pour une meilleure expérience.</string>
+  <string name="domainAppAssociationIconDescription">Icône de domaine</string>
+  <string name="domainAppAssociationRequestOkButton">Oui, lier le domaine</string>
+  <string name="domainAppAssociationRequestDenyButton">Non, ne pas lier</string>
 </resources>

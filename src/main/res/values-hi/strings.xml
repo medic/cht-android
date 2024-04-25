@@ -5,4 +5,10 @@
 	<string name="locRequestOkButton">चालू करो</string>
 	<string name="locRequestDenyButton">जी नहीं, धन्यवाद</string>
 	<string name="locRequestIconDescription">मेरा स्थान आइकन</string>
+
+  <string name="domainAppAssociationTitle">डोमेन को %s से लिंक करें?</string>
+  <string name="domainAppAssociationMessage">यह सुनिश्चित करता है कि आपके ऐप में सभी लिंक खुलेंगे एक बेहतर अनुभव के लिए</string>
+  <string name="domainAppAssociationIconDescription">डोमेन का चिह्न</string>
+  <string name="domainAppAssociationRequestOkButton">हां, डोमेन लिंक करें</string>
+  <string name="domainAppAssociationRequestDenyButton">लिंक न करें</string>
 </resources>
