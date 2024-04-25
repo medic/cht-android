@@ -125,22 +125,28 @@ final class Utils {
 	}
 
 	static boolean checkIfDomainsAreVerified(Context context) {
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-			DomainVerificationManager manager =
-				context.getSystemService(DomainVerificationManager.class);
-			try {
-				DomainVerificationUserState userState =
-					manager.getDomainVerificationUserState(context.getPackageName());
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+			return true;
+		}
 
-				Map<String, Integer> hostToStateMap = userState.getHostToStateMap();
+		DomainVerificationManager manager =
+			context.getSystemService(DomainVerificationManager.class);
+		try {
+			DomainVerificationUserState userState =
+				manager.getDomainVerificationUserState(context.getPackageName());
 
-				for (Integer stateValue : hostToStateMap.values()) {
-					if (stateValue != DomainVerificationUserState.DOMAIN_STATE_VERIFIED && stateValue != DomainVerificationUserState.DOMAIN_STATE_SELECTED) {
-						return false;
-					}
-				}
-			} catch (PackageManager.NameNotFoundException e) {
-				warn(e, "Error while getting package name");
+			return areAllDomainsVerifiedOrSelected(userState.getHostToStateMap());
+		} catch (PackageManager.NameNotFoundException e) {
+			warn(e, "Error while getting package name");
+		}
+		return true;
+	}
+
+	private static boolean areAllDomainsVerifiedOrSelected(Map<String, Integer> hostToStateMap) {
+		for (int stateValue : hostToStateMap.values()) {
+			if (stateValue != DomainVerificationUserState.DOMAIN_STATE_VERIFIED &&
+				stateValue != DomainVerificationUserState.DOMAIN_STATE_SELECTED) {
+				return false;
 			}
 		}
 		return true;

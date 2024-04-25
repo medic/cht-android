@@ -26,6 +26,7 @@ public class DomainVerificationActivity extends Activity {
 		field.setText(String.format(title, appName));
 	}
 
+	@SuppressLint("unused")
 	public void onClickOk(View view) {
 		trace(this, "DomainVerificationActivity :: User agreed with prominent disclosure message.");
 		@SuppressLint("InlinedApi") Intent intent = new Intent(Settings.ACTION_APP_OPEN_BY_DEFAULT_SETTINGS, Uri.parse("package:" + this.getPackageName()));
@@ -33,6 +34,7 @@ public class DomainVerificationActivity extends Activity {
 		finish();
 	}
 
+	@SuppressLint("unused")
 	public void onClickNegative(View view) {
 		trace(this, "DomainVerificationActivity :: User disagreed with prominent disclosure message.");
 		finish();
