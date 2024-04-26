@@ -1,68 +1,55 @@
 package org.medicmobile.webapp.mobile;
 
+import static org.medicmobile.webapp.mobile.MedicLog.trace;
+import static org.medicmobile.webapp.mobile.MedicLog.error;
+import static org.medicmobile.webapp.mobile.SimpleJsonClient2.redactUrl;
+
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
+import android.content.res.XmlResourceParser;
 import android.os.Bundle;
-import android.util.ArrayMap;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.SimpleAdapter;
 import android.widget.TextView;
-import android.widget.AdapterView.OnItemClickListener;
 
-import java.util.ArrayList;
+import androidx.fragment.app.FragmentActivity;
+
+import org.medicmobile.webapp.mobile.adapters.FilterableListAdapter;
+import org.medicmobile.webapp.mobile.dialogs.ConfirmServerSelectionDialog;
+import org.medicmobile.webapp.mobile.listeners.TextChangedListener;
+import org.medicmobile.webapp.mobile.util.AsyncExecutor;
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
+
+import java.io.IOException;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
-import medic.android.ActivityBackgroundTask;
-
-import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
-import static org.medicmobile.webapp.mobile.SimpleJsonClient2.redactUrl;
-import static org.medicmobile.webapp.mobile.MedicLog.trace;
-
-public class SettingsDialogActivity extends LockableActivity {
+public class SettingsDialogActivity extends FragmentActivity {
 	private static final int STATE_LIST = 1;
 	private static final int STATE_FORM = 2;
-
 	private SettingsStore settings;
 	private ServerRepo serverRepo;
 	private int state;
 
-	private static class AppUrlVerificationTask extends ActivityBackgroundTask<SettingsDialogActivity, String, Void, AppUrlVerification> {
-		AppUrlVerificationTask(SettingsDialogActivity a) {
-			super(a);
-		}
-
-		protected AppUrlVerification doInBackground(String... appUrl) {
-			if(DEBUG && appUrl.length != 1) throw new IllegalArgumentException();
-			return new AppUrlVerifier().verify(appUrl[0]);
-		}
-		protected void onPostExecute(AppUrlVerification result) {
-			SettingsDialogActivity ctx = getRequiredCtx("AppUrlVerificationTask.onPostExecute()");
-
-			if(result.isOk) {
-				ctx.saveSettings(new WebappSettings(result.appUrl));
-				ctx.serverRepo.save(result.appUrl);
-			} else {
-				ctx.showError(R.id.txtAppUrl, result.failure);
-				ctx.submitButton().setEnabled(true);
-				ctx.cancelButton().setEnabled(true);
-			}
-		}
-	}
-
 	@Override public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		if(DEBUG) trace(this, "Starting...");
+		trace(this, "onCreate()");
 
 		this.settings = SettingsStore.in(this);
-		this.serverRepo = new ServerRepo(this);
+		this.serverRepo = new ServerRepo(this, this.settings);
 
 		displayServerSelectList();
 	}
@@ -73,17 +60,20 @@ public class SettingsDialogActivity extends LockableActivity {
 
 		setContentView(R.layout.server_select_list);
 
-		ListView list = (ListView) findViewById(R.id.lstServers);
+		ListView list = findViewById(R.id.lstServers);
 
 		List<ServerMetadata> servers = serverRepo.getServers();
+		ServerMetadataAdapter adapter = ServerMetadataAdapter.createInstance(this, servers);
+		list.setAdapter(adapter);
+		list.setOnItemClickListener(new ServerClickListener(adapter));
 
-		list.setAdapter(new SimpleAdapter(this,
-				adapt(servers),
-				R.layout.server_list_item,
-				new String[] { "name", "url" },
-				new int[] { R.id.txtName, R.id.txtUrl }));
-
-		list.setOnItemClickListener(new ServerClickListener(servers));
+		TextView seachBox = findViewById(R.id.instanceSearchBox);
+		seachBox.addTextChangedListener(new TextChangedListener() {
+			@Override
+			public void onTextChanged(CharSequence s, int start, int before, int count) {
+				adapter.getFilter().filter(s.toString());
+			}
+		});
 	}
 
 	private void displayCustomServerForm() {
@@ -100,18 +90,34 @@ public class SettingsDialogActivity extends LockableActivity {
 
 //> EVENT HANDLERS
 	public void verifyAndSave(View view) {
-		if(DEBUG) trace(this, "verifyAndSave");
+		trace(this, "verifyAndSave()");
 
 		submitButton().setEnabled(false);
 		cancelButton().setEnabled(false);
 
 		String appUrl = text(R.id.txtAppUrl);
 
-		new AppUrlVerificationTask(this).execute(appUrl);
+		AsyncExecutor asyncExecutor = new AsyncExecutor();
+		asyncExecutor.executeAsync(new AppUrlVerifier(appUrl), (result) -> {
+			trace(
+				this,
+				"SettingsDialogActivity :: Executing verification callback, result isOkay=%s, appUrl=%s",
+				result.isOk, result.appUrl
+			);
+
+			if (result.isOk) {
+				saveSettings(new WebappSettings(result.appUrl));
+				serverRepo.save(result.appUrl);
+				return;
+			}
+			showError(R.id.txtAppUrl, result.failure);
+			submitButton().setEnabled(true);
+			cancelButton().setEnabled(true);
+		});
 	}
 
 	public void cancelSettingsEdit(View view) {
-		if(DEBUG) trace(this, "cancelSettingsEdit");
+		trace(this, "cancelSettingsEdit()");
 		backToWebview();
 	}
 
@@ -139,14 +145,14 @@ public class SettingsDialogActivity extends LockableActivity {
 	private void saveSettings(WebappSettings s) {
 		try {
 			settings.updateWith(s);
-			MmPromptForPermissionsActivity.startPermissionsRequestChainFrom(this);
+			this.backToWebview();
 		} catch(IllegalSettingsException ex) {
-			if(DEBUG) trace(ex, "Tried to save illegal setting.");
+			trace(ex, "Tried to save illegal setting.");
 			for(IllegalSetting error : ex.errors) {
 				showError(error);
 			}
 		} catch(SettingsException ex) {
-			if(DEBUG) trace(ex, "Problem savung settings.");
+			trace(ex, "Problem saving settings.");
 			submitButton().setError(ex.getMessage());
 		}
 	}
@@ -178,32 +184,59 @@ public class SettingsDialogActivity extends LockableActivity {
 		field.setError(getString(stringId));
 	}
 
-	@SuppressWarnings("PMD.UseConcurrentHashMap")
-	private List<Map<String, ?>> adapt(List<ServerMetadata> servers) {
-		List adapted = new ArrayList(servers.size());
-		for(ServerMetadata md : servers) {
-			Map<String, String> m = new ArrayMap(2);
-			m.put("name", md.name);
-			m.put("url", md.url);
-			adapted.add(m);
-		}
-		return adapted;
-	}
-
 //> INNER CLASSES
 	class ServerClickListener implements OnItemClickListener {
-		private final List<ServerMetadata> servers;
+		private final ServerMetadataAdapter serverMetadataAdapter;
 
-		public ServerClickListener(List<ServerMetadata> servers) {
-			this.servers = servers;
+		public ServerClickListener(ServerMetadataAdapter serverMetadataAdapter) {
+			this.serverMetadataAdapter = serverMetadataAdapter;
 		}
 
 		public void onItemClick(AdapterView<?> parent, final View view, int position, long id) {
-			if(position == 0) {
+			ServerMetadata server = serverMetadataAdapter.getServerMetadata(position);
+			if (server.url == null) {
 				displayCustomServerForm();
 			} else {
-				saveSettings(new WebappSettings(servers.get(position).url));
+				new ConfirmServerSelectionDialog(
+					server.name,
+					() -> saveSettings(new WebappSettings(server.url))
+				).show(getSupportFragmentManager());
 			}
+		}
+	}
+
+	static class ServerMetadataAdapter extends FilterableListAdapter {
+		private ServerMetadataAdapter(Context context, List<Map<String, ?>> data) {
+			super(
+				context,
+				data,
+				R.layout.server_list_item,
+				new String[]{ "name", "url" },
+				new int[]{ R.id.txtName, R.id.txtUrl },
+				"name", "url"
+			);
+		}
+
+		static ServerMetadataAdapter createInstance(Context context, List<ServerMetadata> servers) {
+			return new ServerMetadataAdapter(context, adapt(servers));
+		}
+
+		@SuppressWarnings("unchecked")
+		ServerMetadata getServerMetadata(int position) {
+			Map<String, String> dataMap = (Map<String, String>) this.getItem(position);
+			return new ServerMetadata(dataMap.get("name"), dataMap.get("url"));
+		}
+
+		private static List<Map<String, ?>> adapt(List<ServerMetadata> servers) {
+			return servers
+				.stream()
+				.map(server -> {
+					Map<String, String> serverProperties = new HashMap<>();
+					serverProperties.put("name", server.name);
+					serverProperties.put("url", server.url);
+					return serverProperties;
+				})
+				.collect(Collectors.toList());
 		}
 	}
 }
@@ -217,67 +250,115 @@ class ServerMetadata {
 	}
 
 	ServerMetadata(String name, String url) {
-		if(DEBUG) trace(this, "constructor :: name:%s, url:%s", name, redactUrl(url));
+		trace(this, "ServerMetadata() :: name: %s, url: %s", name, redactUrl(url));
 		this.name = name;
 		this.url = url;
 	}
 }
 
-class ServerRepo {
+final class ServerRepo {
 	private final SharedPreferences prefs;
+	private final SettingsStore settingsStore;
 
-	ServerRepo(Context ctx) {
+	ServerRepo(Context ctx, SettingsStore settingsStore) {
 		prefs = ctx.getSharedPreferences(
-				"ServerRepo",
-				Context.MODE_PRIVATE);
-		save("https://gamma.dev.medicmobile.org");
-		save("https://gamma-cht.dev.medicmobile.org");
-		save("https://medic.github.io/atp");
+			"ServerRepo",
+			Context.MODE_PRIVATE);
+
+		this.settingsStore = settingsStore;
+
+		Map<String, String> instances = parseInstanceXML(ctx);
+		for (Map.Entry<String, String> entry : instances.entrySet()) {
+			String instanceName = entry.getValue();
+			String instanceUrl = entry.getKey();
+
+			save(instanceName, instanceUrl);
+		}
 	}
 
 	List<ServerMetadata> getServers() {
 		List servers = new LinkedList<ServerMetadata>();
 
-		servers.add(new ServerMetadata("Custom"));
-
 		for(Map.Entry<String, ?> e : prefs.getAll().entrySet()) {
 			servers.add(new ServerMetadata(
-					e.getValue().toString(),
-					e.getKey()));
+				e.getValue().toString(),
+				e.getKey()));
+		}
+
+		Collections.sort(servers, Comparator.<ServerMetadata, String>comparing(server -> server.name));
+
+		if (this.settingsStore.allowCustomHosts()) {
+			servers.add(0, new ServerMetadata("Custom"));
 		}
 
 		return servers;
 	}
 
 	void save(String url) {
+		save(friendly(url), url);
+	}
+
+	void save(String name, String url) {
 		SharedPreferences.Editor ed = prefs.edit();
-		ed.putString(url, friendly(url));
+		ed.putString(url, name);
 		ed.apply();
 	}
+
+	private static Map<String, String> parseInstanceXML(Context context) {
+		try {
+			HashMap<String, String> result = new HashMap<>();
+
+			Resources resources = context.getResources();
+			XmlResourceParser xmlParser = resources.getXml(R.xml.instances);
+
+			while (xmlParser.next() != XmlPullParser.END_TAG) {
+				if (xmlParser.getEventType() != XmlPullParser.START_TAG
+					|| !"instance".equals(xmlParser.getName())) {
+					continue;
+				}
+				String name = xmlParser.getAttributeValue(null, "name");
+				String url = xmlParser.nextText();
+				if (name == null) {
+					name = friendly(url);
+				}
+				result.put(url, name);
+			}
+
+			return result;
+		} catch (XmlPullParserException | IOException e) {
+			error(e, "Failed to load instances data from xml.");
+			return Collections.emptyMap();
+		}
+	}
+
 
 	@SuppressLint("DefaultLocale")
 	private static String friendly(String url) {
 		int slashes = url.indexOf("//");
+
 		if(slashes != -1) {
 			url = url.substring(slashes + 2);
 		}
+
 		if(url.endsWith(".medicmobile.org")) {
 			url = url.substring(0, url.length() - ".medicmobile.org".length());
 		}
+
 		if(url.endsWith(".medicmobile.org/")) {
 			url = url.substring(0, url.length() - ".medicmobile.org/".length());
 		}
+
 		if(url.startsWith("192.168.")) {
 			return url.substring("192.168.".length());
 		} else {
 			String[] parts = url.split("\\.");
-			url = "";
+			StringBuilder stringBuilder = new StringBuilder();
 			for(String p : parts) {
-				url += " ";
-				url += p.substring(0, 1).toUpperCase();
-				url += p.substring(1);
+				stringBuilder.append(" ");
+				stringBuilder.append(p.substring(0, 1).toUpperCase());
+				stringBuilder.append(p.substring(1));
 			}
-			return url.substring(1);
+			return stringBuilder.toString().substring(1);
 		}
 	}
 }

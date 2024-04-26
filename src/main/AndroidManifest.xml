@@ -1,14 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    package="org.medicmobile.webapp.mobile">
-  <!-- When upgrading targetSdkVersion, check that the app menu still
-      works on newer devices. -->
+    xmlns:tools="http://schemas.android.com/tools">
+
   <uses-sdk tools:ignore="OldTargetApi"/>
 
   <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
   <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
-  <!-- uses-feature indicates to Adnroid 5+ that we want to use hardware to get the location.
+  <!-- uses-feature indicates to Android 5+ that we want to use hardware to get the location.
        see: https://developer.android.com/guide/topics/location/strategies#Permission -->
   <uses-feature android:name="android.hardware.location" android:required="false"/>
   <uses-feature android:name="android.hardware.location.gps" android:required="false"/>
@@ -20,32 +18,87 @@
   <uses-permission android:name="com.android.launcher.permission.INSTALL_SHORTCUT"/>
   <uses-permission android:name="com.android.launcher.permission.UNINSTALL_SHORTCUT"/>
 
-  <!-- READ_EXTERNAL_STORAGE required if users want to include photos from their phone;
-       WRITE_EXTERNAL_STORAGE required for taking new photos, and our resizing code.
-       WRITE implies READ. -->
-  <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+  <!-- READ_EXTERNAL_STORAGE is required if users want to include photos from their phone  -->
+  <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32"/>
+
+  <!-- SEND_SMS is required if users want to send reports as SMS.To able the feature add the following line:
+  <uses-permission android:name="android.permission.SEND_SMS"/>
+  -->
 
   <application android:label="@string/app_name"
       android:icon="@mipmap/ic_launcher"
       android:allowBackup="false"
+      android:fullBackupContent="@xml/backup_rules_sdk_30_and_lower"
+      android:dataExtractionRules="@xml/backup_rules"
       android:largeHeap="true"
-      tools:ignore="GoogleAppIndexingWarning">
-    <activity android:name="StartupActivity">
+      tools:ignore="LockedOrientationActivity,UnusedAttribute">
+    <activity android:name="StartupActivity" android:exported="true">
       <intent-filter>
         <action android:name="android.intent.action.MAIN"/>
         <category android:name="android.intent.category.LAUNCHER" />
       </intent-filter>
     </activity>
-    <activity android:name="LockScreen"
-        android:screenOrientation="portrait"/>
     <activity android:name="EmbeddedBrowserActivity"
         android:screenOrientation="portrait"
-        android:configChanges="orientation|screenSize"/>
+        android:configChanges="orientation|screenSize"
+        tools:ignore="DiscouragedApi"/>
+    <activity android:name="ConnectionErrorActivity"
+        android:screenOrientation="portrait"
+        android:configChanges="orientation|screenSize"
+        android:launchMode="singleTop"
+        tools:ignore="DiscouragedApi"/>
     <activity android:name="FreeSpaceWarningActivity"
-        android:screenOrientation="portrait"/>
-    <activity android:name="MmPromptForPermissionsActivity"
-        android:screenOrientation="portrait"/>
+        android:screenOrientation="portrait"
+        tools:ignore="DiscouragedApi"/>
     <activity android:name="SettingsDialogActivity"
-        android:screenOrientation="portrait"/>
+        android:screenOrientation="portrait"
+        tools:ignore="DiscouragedApi"/>
+    <activity android:name="RequestLocationPermissionActivity"
+        android:screenOrientation="portrait"
+        tools:ignore="DiscouragedApi"/>
+    <activity android:name="RequestStoragePermissionActivity"
+        android:screenOrientation="portrait"
+       tools:ignore="DiscouragedApi"/>
+    <activity android:name="RequestSendSmsPermissionActivity"
+        android:screenOrientation="portrait"
+       tools:ignore="DiscouragedApi"/>
+    <activity android:name="DomainVerificationActivity"
+      android:screenOrientation="portrait"
+      tools:ignore="DiscouragedApi" />
+    <activity android:name="AppUrlIntentActivity"
+        android:launchMode="singleInstance"
+        android:exported="true">
+      <intent-filter android:autoVerify="true">
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <data android:scheme="@string/scheme" android:host="@string/app_host" android:pathPattern=".*"/>
+      </intent-filter>
+    </activity>
+    <activity android:name="UpgradingActivity"
+      android:screenOrientation="portrait"
+      android:configChanges="orientation|screenSize"
+      android:launchMode="singleTop"
+      tools:ignore="DiscouragedApi"/>
+
+    <provider
+      android:name="androidx.core.content.FileProvider"
+      android:authorities="${applicationId}.fileprovider"
+      android:exported="false"
+      android:grantUriPermissions="true">
+      <meta-data
+        android:name="android.support.FILE_PROVIDER_PATHS"
+        android:resource="@xml/file_paths">
+      </meta-data>
+    </provider>
   </application>
+
+  <queries>
+    <intent>
+      <action android:name="android.media.action.IMAGE_CAPTURE" />
+    </intent>
+    <intent>
+      <action android:name="medic.mrdt.verify" />
+    </intent>
+  </queries>
 </manifest>

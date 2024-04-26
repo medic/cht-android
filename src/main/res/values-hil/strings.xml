@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<string name="locRequestTitle">Access sa Lokasyon</string>
+	<string name="locRequestMessage">Ginakolekta sang %s ang data sang lokasyon para analisaron kag i-improve ang mga resulta sang ikaayung lawas sa inyo nga lugar. Para hatagan sang pag access sa lokasyon pilion lang ang \"Buksan\", kag kumpirmahin ang masunod nga prompt.</string>
+	<string name="locRequestOkButton">Buksan</string>
+	<string name="locRequestDenyButton">Indi na, Salamat nalang</string>
+	<string name="locRequestIconDescription">Ang icon sang lokasyon ko</string>
+</resources>

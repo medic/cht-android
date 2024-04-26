@@ -1,33 +1,43 @@
 package org.medicmobile.webapp.mobile;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 
-import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static org.medicmobile.webapp.mobile.MedicLog.trace;
 import static org.medicmobile.webapp.mobile.Utils.createUseragentFrom;
 import static org.medicmobile.webapp.mobile.Utils.startAppActivityChain;
 
 public class StartupActivity extends Activity {
+
 	@Override public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		if(DEBUG) trace(this, "Starting...");
-
+		trace(this, "onCreate()");
 		configureAndStartNextActivity();
-
-		if(LockScreen.isCodeSet(this)) {
-			LockScreen.showFrom(this);
-		}
+		startDomainVerificationActivity();
 	}
 
 	private void configureAndStartNextActivity() {
 		configureHttpUseragent();
 
-		if(hasEnoughFreeSpace()) startAppActivityChain(this);
-		else {
-			Intent i = new Intent(this, FreeSpaceWarningActivity.class);
-			startActivity(i);
+		if (hasEnoughFreeSpace()) {
+			startAppActivityChain(this);
+			return;
+		}
+
+		Intent intent = new Intent(this, FreeSpaceWarningActivity.class);
+		startActivity(intent);
+		finish();
+	}
+
+	private void startDomainVerificationActivity() {
+		Context context = getApplicationContext();
+
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !Utils.checkIfDomainsAreVerified(context)) {
+			Intent intent = new Intent(this, DomainVerificationActivity.class);
+			startActivity(intent);
 			finish();
 		}
 	}

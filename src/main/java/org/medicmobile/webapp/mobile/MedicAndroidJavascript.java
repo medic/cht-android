@@ -4,13 +4,12 @@ import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.app.ActivityManager.MemoryInfo;
 import android.app.DatePickerDialog;
-import android.location.Criteria;
-import android.location.Location;
-import android.location.LocationManager;
+import android.content.pm.PackageInfo;
 import android.net.ConnectivityManager;
 import android.net.NetworkCapabilities;
 import android.net.NetworkInfo;
 import android.net.TrafficStats;
+import android.net.Uri;
 import android.os.Process;
 import android.widget.DatePicker;
 import android.os.Build;
@@ -19,10 +18,13 @@ import android.os.StatFs;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.io.Reader;
 import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -39,32 +41,29 @@ import static java.util.Calendar.YEAR;
 import static java.util.Locale.UK;
 import static org.medicmobile.webapp.mobile.MedicLog.log;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 public class MedicAndroidJavascript {
 	private static final String DATE_FORMAT = "yyyy-MM-dd";
 
 	private final EmbeddedBrowserActivity parent;
-	private final SimprintsSupport simprints;
 	private final MrdtSupport mrdt;
 	private final SmsSender smsSender;
+	private final ChtExternalAppHandler chtExternalAppHandler;
 
-	private LocationManager locationManager;
 	private ActivityManager activityManager;
 	private ConnectivityManager connectivityManager;
 	private Alert soundAlert;
 
 	public MedicAndroidJavascript(EmbeddedBrowserActivity parent) {
 		this.parent = parent;
-		this.simprints = parent.getSimprintsSupport();
 		this.mrdt = parent.getMrdtSupport();
 		this.smsSender = parent.getSmsSender();
+		this.chtExternalAppHandler = parent.getChtExternalAppHandler();
 	}
 
 	public void setAlert(Alert soundAlert) {
 		this.soundAlert = soundAlert;
-	}
-
-	public void setLocationManager(LocationManager locationManager) {
-		this.locationManager = locationManager;
 	}
 
 	public void setActivityManager(ActivityManager activityManager) {
@@ -76,7 +75,6 @@ public class MedicAndroidJavascript {
 	}
 
 //> JavascriptInterface METHODS
-	@org.xwalk.core.JavascriptInterface
 	@android.webkit.JavascriptInterface
 	public String getAppVersion() {
 		try {
@@ -88,7 +86,6 @@ public class MedicAndroidJavascript {
 		}
 	}
 
-	@org.xwalk.core.JavascriptInterface
 	@android.webkit.JavascriptInterface
 	public void playAlert() {
 		try {
@@ -98,7 +95,6 @@ public class MedicAndroidJavascript {
 		}
 	}
 
-	@org.xwalk.core.JavascriptInterface
 	@android.webkit.JavascriptInterface
 	public String getDataUsage() {
 		try {
@@ -122,35 +118,11 @@ public class MedicAndroidJavascript {
 				.put("tx", tx);
 	}
 
-	@Deprecated
-	@org.xwalk.core.JavascriptInterface
 	@android.webkit.JavascriptInterface
-	@SuppressLint("MissingPermission") // handled by catch(Exception)
-	/**
-	 * @deprecated Location should be fetched directly from the browser.
-	 * @see https://github.com/medic/medic-webapp/issues/3781
-	 */
-	public String getLocation() {
-		try {
-			if(locationManager == null) return jsonError("LocationManager not set.  Cannot retrieve location.");
-
-			String provider = locationManager.getBestProvider(new Criteria(), true);
-			if(provider == null) return jsonError("No location provider available.");
-
-			Location loc = locationManager.getLastKnownLocation(provider);
-
-			if(loc == null) return jsonError("Provider '" + provider + "' did not provide a location.");
-
-			return new JSONObject()
-					.put("lat", loc.getLatitude())
-					.put("long", loc.getLongitude())
-					.toString();
-		} catch(Exception ex) {
-			return jsonError("Problem fetching location: ", ex);
-		}
+	public boolean getLocationPermissions() {
+		return this.parent.getLocationPermissions();
 	}
 
-	@org.xwalk.core.JavascriptInterface
 	@android.webkit.JavascriptInterface
 	public void datePicker(final String targetElement) {
 		try {
@@ -160,7 +132,6 @@ public class MedicAndroidJavascript {
 		}
 	}
 
-	@org.xwalk.core.JavascriptInterface
 	@android.webkit.JavascriptInterface
 	public void datePicker(final String targetElement, String initialDate) {
 		try {
@@ -175,7 +146,6 @@ public class MedicAndroidJavascript {
 		}
 	}
 
-	@org.xwalk.core.JavascriptInterface
 	@android.webkit.JavascriptInterface
 	public boolean mrdt_available() {
 		try {
@@ -186,7 +156,6 @@ public class MedicAndroidJavascript {
 		}
 	}
 
-	@org.xwalk.core.JavascriptInterface
 	@android.webkit.JavascriptInterface
 	public void mrdt_verify() {
 		try {
@@ -196,42 +165,6 @@ public class MedicAndroidJavascript {
 		}
 	}
 
-	/**
-	 * @return {@code true} iff an app is available to handle supported simprints {@code Intent}s
-	 */
-	@org.xwalk.core.JavascriptInterface
-	@android.webkit.JavascriptInterface
-	public boolean simprints_available() {
-		try {
-			return simprints.isAppInstalled();
-		} catch(Exception ex) {
-			logException(ex);
-			return false;
-		}
-	}
-
-	@org.xwalk.core.JavascriptInterface
-	@android.webkit.JavascriptInterface
-	public void simprints_ident(int targetInputId) {
-		try {
-			simprints.startIdent(targetInputId);
-		} catch(Exception ex) {
-			logException(ex);
-		}
-	}
-
-	@org.xwalk.core.JavascriptInterface
-	@android.webkit.JavascriptInterface
-	public void simprints_reg(int targetInputId) {
-		try {
-			simprints.startReg(targetInputId);
-		} catch(Exception ex) {
-			logException(ex);
-		}
-	}
-
-
-	@org.xwalk.core.JavascriptInterface
 	@android.webkit.JavascriptInterface
 	public boolean sms_available() {
 		return smsSender != null;
@@ -242,19 +175,43 @@ public class MedicAndroidJavascript {
 	 * @param destination the recipient phone number for this message
 	 * @param content the text content of the SMS to be sent
 	 */
-	@org.xwalk.core.JavascriptInterface
 	@android.webkit.JavascriptInterface
 	public void sms_send(String id, String destination, String content) throws Exception {
 		try {
 			// TODO we may need to do this on a background thread to avoid the browser UI from blocking while the SMS is being sent.  Check.
-			smsSender.send(id, destination, content);
+			smsSender.send(new SmsSender.Sms(id, destination, content));
 		} catch(Exception ex) {
 			logException(ex);
 			throw ex;
 		}
 	}
 
-	@org.xwalk.core.JavascriptInterface
+	@android.webkit.JavascriptInterface
+	public void launchExternalApp(String action, String category, String type, String extras, String uri, String packageName, String flags) {
+		try {
+			JSONObject parsedExtras = extras == null ? null : new JSONObject(extras);
+			Uri parsedUri = uri == null ? null : Uri.parse(uri);
+			Integer parsedFlags = flags == null ? null : Integer.parseInt(flags);
+
+			ChtExternalApp chtExternalApp = new ChtExternalApp
+					.Builder()
+					.setAction(action)
+					.setCategory(category)
+					.setType(type)
+					.setExtras(parsedExtras)
+					.setUri(parsedUri)
+					.setPackageName(packageName)
+					.setFlags(parsedFlags)
+					.build();
+			this.chtExternalAppHandler.startIntent(chtExternalApp);
+
+		} catch (Exception ex) {
+			logException(ex);
+		}
+	}
+
+	@SuppressLint("ObsoleteSdkInt")
+	@SuppressFBWarnings("REC_CATCH_EXCEPTION")
 	@android.webkit.JavascriptInterface
 	public String getDeviceInfo() {
 		try {
@@ -266,11 +223,15 @@ public class MedicAndroidJavascript {
 				return jsonError("ConnectivityManager not set. Cannot retrieve network info.");
 			}
 
-			String versionName = parent.getPackageManager()
-					.getPackageInfo(parent.getPackageName(), 0)
-					.versionName;
+			PackageInfo packageInfo = parent
+					.getPackageManager()
+					.getPackageInfo(parent.getPackageName(), 0);
+			long versionCode = Build.VERSION.SDK_INT < Build.VERSION_CODES.P ? (long)packageInfo.versionCode : packageInfo.getLongVersionCode();
+
 			JSONObject appObject = new JSONObject();
-			appObject.put("version", versionName);
+			appObject.put("version", packageInfo.versionName);
+			appObject.put("packageName", packageInfo.packageName);
+			appObject.put("versionCode", versionCode);
 
 			String androidVersion = Build.VERSION.RELEASE;
 			int osApiLevel = Build.VERSION.SDK_INT;
@@ -336,7 +297,8 @@ public class MedicAndroidJavascript {
 					.put("ram", ramObject)
 					.put("network", networkObject)
 					.toString();
-		} catch(Exception ex) {
+		} catch (Exception ex) {
+			logException(ex);
 			return jsonError("Problem fetching device info: ", ex);
 		}
 	}
@@ -374,32 +336,35 @@ public class MedicAndroidJavascript {
 	}
 
 	private static HashMap getCPUInfo() throws IOException {
-		BufferedReader bufferedReader = new BufferedReader(new FileReader("/proc/cpuinfo"));
-		String line;
-		HashMap output = new HashMap();
-		while ((line = bufferedReader.readLine()) != null) {
-			String[] data = line.split(":");
-			if (data.length > 1) {
-				String key = data[0].trim();
-				if (key.equals("model name")) {
-					output.put(key, data[1].trim());
-					break;
+		try(
+			Reader fileReader = new InputStreamReader(new FileInputStream("/proc/cpuinfo"), StandardCharsets.UTF_8);
+			BufferedReader bufferedReader = new BufferedReader(fileReader);
+		) {
+			String line;
+			HashMap output = new HashMap();
+			while ((line = bufferedReader.readLine()) != null) {
+				String[] data = line.split(":");
+				if (data.length > 1) {
+					String key = data[0].trim();
+					if (key.equals("model name")) {
+						output.put(key, data[1].trim());
+						break;
+					}
 				}
 			}
+
+			int cores = Runtime.getRuntime().availableProcessors();
+			output.put("cores", cores);
+
+			String arch = System.getProperty("os.arch");
+			output.put("arch", arch);
+
+			return output;
 		}
-		bufferedReader.close();
-
-		int cores = Runtime.getRuntime().availableProcessors();
-		output.put("cores", cores);
-
-		String arch = System.getProperty("os.arch");
-		output.put("arch", arch);
-
-		return output;
 	}
 
 	private void logException(Exception ex) {
-		log(ex, "Execption thrown in JavascriptInterface function.");
+		log(ex, "Exception thrown in JavascriptInterface function.");
 
 		StringWriter sw = new StringWriter();
 		PrintWriter pw = new PrintWriter(sw);
@@ -408,7 +373,7 @@ public class MedicAndroidJavascript {
 				.replace("\n", "; ")
 				.replace("\t", " ");
 
-		parent.errorToJsConsole("Execption thrown in JavascriptInterface function: %s", stacktrace);
+		parent.errorToJsConsole("Exception thrown in JavascriptInterface function: %s", stacktrace);
 	}
 
 //> STATIC HELPERS

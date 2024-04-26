@@ -3,15 +3,21 @@
 /*.log
 
 /local.properties
-/gradle.properties
 
 # IntelliJ IDEA files
 /.idea/
 *.iml
 
-secrets.tar.gz
-medic-official.keystore
+secrets*.tar.gz
+*.keystore
+*_private_key.pepk
 playstore-secret.json
+pepk.jar
 
 fastlane/*
 !fastlane/Fastfile
+
+.DS_Store
+.classpath
+.project
+.settings

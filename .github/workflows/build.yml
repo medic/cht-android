@@ -1,0 +1,158 @@
+name: Build and test
+
+on: [push, pull_request]
+
+jobs:
+
+  skip_check:
+
+    name: Skip Check
+    runs-on: ubuntu-22.04
+    outputs:
+      should_skip: ${{ steps.skip_check.outputs.should_skip }}
+    steps:
+      - id: skip_check
+        uses: fkirc/skip-duplicate-actions@master
+        with:
+          concurrent_skipping: 'same_content_newer'
+          paths_ignore: '["**.md"]'
+
+
+  build:
+
+    name: Build
+    runs-on: ubuntu-22.04
+    needs: skip_check
+    if: ${{ needs.skip_check.outputs.should_skip != 'true' }}
+    steps:
+
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        submodules: true
+
+    - name: Set up Java 17
+      uses: actions/setup-java@v2
+      with:
+        distribution: 'adopt'
+        java-version: '17'
+
+    - name: Test Bash Keystores scripts
+      run: make test-bash-keystore
+
+    - name: Test
+      run: make test
+
+    - name: Set up Ruby
+      if: ${{ env.ANDROID_SECRETS_KEY }}
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: 2.7
+
+    - name: Set up Fastlane
+      if: ${{ env.ANDROID_SECRETS_KEY }}
+      run: gem install fastlane --no-document --quiet
+
+    - name: Unpack secrets
+      if: ${{ env.ANDROID_SECRETS_KEY }}
+      env:
+        ANDROID_SECRETS_KEY: ${{ secrets.ANDROID_SECRETS_KEY }}
+        ANDROID_SECRETS_IV: ${{ secrets.ANDROID_SECRETS_IV }}
+      run: make org=medic keydec
+
+    - name: Assemble unbranded
+      if: ${{ env.ANDROID_SECRETS_KEY }}
+      uses: maierj/fastlane-action@v1.4.0
+      env:
+        ANDROID_KEYSTORE_PATH: ${{ secrets.ANDROID_KEYSTORE_PATH }}
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+        ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+      with:
+        lane: build
+        options: '{ "flavor": "unbranded" }'
+
+  instrumentation-tests:
+
+    name: Instrumentation tests
+    runs-on: ubuntu-22.04
+    needs: skip_check
+    if: ${{ needs.skip_check.outputs.should_skip != 'true' }}
+    steps:
+
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        submodules: true
+
+    - name: Set up Java 17
+      uses: actions/setup-java@v2
+      with:
+        distribution: 'adopt'
+        java-version: '17'
+
+    - name: Enable KVM
+      run: |
+        echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+        sudo udevadm control --reload-rules
+        sudo udevadm trigger --name-match=kvm
+
+    - name: Gradle cache
+      uses: actions/cache@v2
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*') }}-${{ hashFiles('**/gradle/wrapper/gradle-wrapper.properties') }}-${{ hashFiles('**/buildSrc/**/*.kt') }}
+
+    - name: AVD cache
+      uses: actions/cache@v2
+      id: avd-cache
+      with:
+        path: |
+          ~/.android/avd/*
+          ~/.android/adb*
+        key: avd-34-default
+
+    - name: Create AVD and generate snapshot for caching
+      if: steps.avd-cache.outputs.cache-hit != 'true'
+      uses: reactivecircus/android-emulator-runner@v2
+      with:
+        api-level: 34
+        arch: x86_64
+        target: default
+        force-avd-creation: false
+        emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+        disable-animations: false
+        script: echo "Generated AVD snapshot for caching."
+
+    - name: Test Bash Keystores scripts on MacOS
+      run: make test-bash-keystore
+
+    - name: Run test-ui on unbranded
+      uses: reactivecircus/android-emulator-runner@v2
+      with:
+        api-level: 34
+        arch: x86_64
+        target: default
+        force-avd-creation: false
+        emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+        script: make test-ui
+
+    - name: Run test-ui on gamma
+      uses: reactivecircus/android-emulator-runner@v2
+      with:
+        api-level: 34
+        arch: x86_64
+        target: default
+        force-avd-creation: false
+        emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+        script: make test-ui-gamma
+
+    - name: Archive Results
+      uses: actions/upload-artifact@v2
+      with:
+        name: Test Report
+        path: |
+          build/reports/
+      if: ${{ failure() }}

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+  <string name="errInvalidUrl">L\'adresse n\'est pas valide</string>
+
+	<string name="btnSave">Enregistrer</string>
+	<string name="btnCancel">Annuler</string>
+	<string name="btnContinue">Continuer</string>
+	<string name="btnMoreInfo">Plus d\'information</string>
+	<string name="btnRetry">Réessayer</string>
+	<string name="btnQuit">Quitter</string>
+
+  <string name="errAppUrl_serverNotFound">Impossible de contacter le serveur</string>
+  <string name="errAppUrl_appNotFound">L\'URL n\'est pas un serveur CHT valide</string>
+  <string name="errAppUrl_apiNotReady">Le serveur CHT n\'est pas prêt, veuillez réessayer bientôt</string>
+
+	<string name="locRequestTitle">Accès à la position</string>
+	<string name="locRequestMessage">%s collecte votre position pour analyser et améliorer les services de santé dans votre région. Pour permettre l\'accès aux données de position, sélectionnez \"Activer\" et confirmez à l\'écran qui suivra.</string>
+	<string name="locRequestOkButton">Activer</string>
+	<string name="locRequestDenyButton">Non merci</string>
+	<string name="locRequestIconDescription">Icône de mon emplacement</string>
+
+	<string name="loadingIconDescription">Chargement en cours…</string>
+	<string name="upgradingTitle">Mise à jour de votre application</string>
+	<string name="upgradingMessage">Vous passez à la nouvelle version. Veuillez patienter pendant la preparation de vos données.</string>
+
+	<string name="connErrorTitle">Aucune connexion Internet</string>
+	<string name="connErrorMessage">Vous n\'êtes pas bien connecté à internet. Veuillez vérifier votre connexion et réessayer.</string>
+
+	<string name="waitMigration">Veuillez attendre que la migration de données termine</string>
+  <string name="usingTrainingApp">Utiliser uniquement pendant la formation</string>
+
+  <string name="domainAppAssociationTitle">Associer le domaine à %s ?</string>
+  <string name="domainAppAssociationMessage">Cela garantit que tous les liens s\'ouvriront dans votre application pour une meilleure expérience.</string>
+  <string name="domainAppAssociationIconDescription">Icône de domaine</string>
+  <string name="domainAppAssociationRequestOkButton">Oui, lier le domaine</string>
+  <string name="domainAppAssociationRequestDenyButton">Non, ne pas lier</string>
+</resources>

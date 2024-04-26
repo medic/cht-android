@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+	<string name="locRequestTitle">स्थान पहुँच</string>
+	<string name="locRequestMessage" tools:ignore="StringFormatInvalid">यो अनुप्रयोगले विश्लेषण गर्दछ र तपाईंको क्षेत्रमा स्वास्थ्य परिणामहरू सुधार गर्न स्थान डाटा संकलन गर्दछ। स्थान पहुँचलाई अनुमति दिन "खोल्नुहोस्" चयन गर्नुहोस्, र त्यसपछि अर्को प्रॉम्प्ट पुष्टि गर्नुहोस्।</string>
+	<string name="locRequestOkButton">खोल्नुहोस्</string>
+	<string name="locRequestDenyButton">हुँदैन, धन्यबाद</string>
+	<string name="locRequestIconDescription">मेरो स्थान आइकन</string>
+
+  <string name="domainAppAssociationTitle">%s डोमेन लिंक गर्नुहुन्छ?</string>
+  <string name="domainAppAssociationMessage">यसले राम्रो अनुभवको लागि तपाइँको एपमा सबै लिङ्कहरू खुल्ने सुनिश्चित गर्दछ।</string>
+  <string name="domainAppAssociationIconDescription">डोमेन चिन्ह</string>
+  <string name="domainAppAssociationRequestOkButton">हुन्छ, डोमेन लिङ्क गर्नुहोस्</string>
+  <string name="domainAppAssociationRequestDenyButton">हुदैन</string>
+</resources>

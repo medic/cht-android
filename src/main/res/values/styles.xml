@@ -10,4 +10,22 @@
 		<item name="android:paddingLeft">32dp</item>
 		<item name="android:paddingRight">32dp</item>
 	</style>
+
+	<style name="borderlessButton">
+		<item name="android:textColor">#0073cd</item>
+		<item name="android:textAllCaps">false</item>
+		<item name="android:background">@android:color/transparent</item>
+		<item name="android:layout_width">wrap_content</item>
+		<item name="android:layout_height">wrap_content</item>
+	</style>
+
+	<style name="standardButton">
+		<item name="android:textColor">#000000</item>
+		<item name="android:layout_margin">10dp</item>
+		<item name="android:layout_width">wrap_content</item>
+		<item name="android:layout_height">wrap_content</item>
+		<item name="android:background">@drawable/standard_button</item>
+		<item name="android:minHeight">40dp</item>
+		<item name="android:minWidth">80dp</item>
+	</style>
 </resources>

@@ -1,62 +1,66 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-	<string name="app_name">Medic Mobile</string>
+	<string name="app_name">CHT Android</string>
 
-	<string name="fixed_app_url"/>
+	<string name="scheme">https</string>
+	<string name="app_host"/>
+  <bool name="allowCustomHosts">True</bool>
 
-	<string name="txtAppUrl">Webapp URL</string>
-	<string name="errAppUrl_serverNotFound">unable to contact server</string>
-	<string name="errAppUrl_appNotFound">URL is not a medic-webapp instance</string>
-	<string name="errAppUrl_apiNotReady">medic-webapp is not ready, please try again soon</string>
+	<string name="txtAppUrl">CHT server URL</string>
+	<string name="instancesSearch">Search Instances</string>
+	<string name="proceedToServer">Login to %s?</string>
+	<string name="errAppUrl_serverNotFound">Unable to contact server</string>
+	<string name="errAppUrl_appNotFound">URL is not a valid CHT server instance</string>
+	<string name="errAppUrl_apiNotReady">CHT server is not ready, please try again soon</string>
 
 	<string name="errRequired">required</string>
-	<string name="errInvalidUrl">must be a valid URL</string>
+	<string name="errInvalidUrl">Must be a valid URL</string>
 
 	<string name="btnOk">OK</string>
 	<string name="btnSave">Save</string>
 	<string name="btnCancel">Cancel</string>
 	<string name="btnContinue">Continue</string>
+	<string name="btnMoreInfo">More info</string>
+	<string name="btnRetry">Retry</string>
 	<string name="btnQuit">Quit</string>
 
-	<string name="mnuGotoTestPages">Android Test Pages</string>
-	<string name="mnuSetUnlockCode">Set/change unlock code</string>
-	<string name="mnuSettings">Settings</string>
-	<string name="mnuLogout">Logout</string>
-	<string name="mnuHardRefresh">Home</string>
-
-	<string name="txtUnlockPrompt">Enter code to unlock…</string>
-	<string name="txtOldCodePrompt">Enter old code…</string>
-	<string name="txtNewCodePrompt">Enter new code…</string>
-	<string name="txtNewCodeConfirmPrompt">Confirm code…</string>
-	<string name="tstUnlock_failed">Failed to save unlock code"Welcome back!"</string>
-	<string name="tstUnlock_success">Welcome back!</string>
-	<string name="tstUnlock_oldAccepted">Old code accepted</string>
-	<string name="tstUnlock_newAccepted">New code accepted, please confirm…</string>
-	<string name="tstUnlock_codeChanged">New code successfully set</string>
-	<string name="tstUnlock_codeRejected">Try again</string>
-	<string name="tstUnlock_confirmFailed">Code does not match - try again</string>
-
-	<string name="txtFreeSpaceWarning">Space is running low on this device.  Medic Mobile may not be able to start, or may perform strangely.</string>
-	<string name="txtFreeSpaceCurrent">Current space:\n%s MB</string>
-	<string name="txtFreeSpaceRecommended">Recommended space:\n%s MB</string>
+	<string name="txtFreeSpaceWarning">Space is running low on this device. Application may not be able to start, or may perform strangely.</string>
+	<string name="txtFreeSpaceCurrent">Current space:\n%d MB</string>
+	<string name="txtFreeSpaceRecommended">Recommended space:\n%d MB</string>
 
 	<string name="promptChooseFile">Choose file</string>
-	<string name="promptChooseImage">Choose image</string>
 
-	<string name="spnCompressingImage">Compressing image…</string>
+	<string name="locRequestTitle">Location access</string>
+	<string name="locRequestMessage">%s collects location data to analyze and improve health outcomes in your area. To permit location access select \"Turn on\", and then confirm the next prompt.</string>
+	<string name="locRequestOkButton">Turn on</string>
+	<string name="locRequestDenyButton">No thanks</string>
+	<string name="locRequestIconDescription">My location icon</string>
 
-	<string name="txtPermissionsPrompt_location">
-		<![CDATA[
-		<b>Warning: <i>%1$s</i> does not currently have permission to check current location.</b><br>
-		<br>This permission is required so that %1$s can correctly log report locations.
-		]]>
-	</string>
+  <string name="storageRequestTitle">Storage access</string>
+  <string name="storageRequestMessage">%s uploads files into reports to analyze and improve health outcomes in your area. To permit storage access select \"Allow\", and then grant storage access in the next prompt.</string>
+  <string name="storageRequestAllowButton">Allow</string>
+  <string name="storageRequestDenyButton">Deny</string>
+  <string name="storageRequestIconDescription">My storage icon</string>
 
-	<string name="txtDemandPermissions">
-		<![CDATA[
-		<b>Warning: <i>%1$s</i> does not currently have all required permissions.</b><br>
-		<br>%1$s will <b>not</b> work without the required permissions.<br>
-		<br>Please enable all permissions.
-		]]>
-	</string>
+  <string name="sendSmsRequestTitle">SMS access</string>
+  <string name="sendSmsRequestMessage">%s sends reports as SMS to analyze and improve health outcomes in your area. To permit SMS access select \"Allow\", and then grant SMS access in the next prompt.</string>
+  <string name="sendSmsRequestAllowButton">Allow</string>
+  <string name="sendSmsRequestDenyButton">Deny</string>
+  <string name="sendSmsRequestIconDescription">My SMS icon</string>
+
+	<string name="loadingIconDescription">Loading…</string>
+	<string name="upgradingTitle">Upgrading your app</string>
+	<string name="upgradingMessage">You\'re upgrading to the latest version. Please wait while your data is being migrated.</string>
+
+    <string name="connErrorTitle">No Internet Connection</string>
+	<string name="connErrorMessage">You don\'t seem to be connected to the Internet. Please check your connection and try again.</string>
+
+	<string name="waitMigration">Please wait until the migration process is finished</string>
+  <string name="usingTrainingApp">Use only during training</string>
+
+  <string name="domainAppAssociationTitle">Link domain with %s?</string>
+  <string name="domainAppAssociationMessage">This ensures all links will open in your app for a better experience.</string>
+  <string name="domainAppAssociationIconDescription">Domain Icon</string>
+  <string name="domainAppAssociationRequestOkButton">Yes, link domain</string>
+  <string name="domainAppAssociationRequestDenyButton">Don\'t link</string>
 </resources>

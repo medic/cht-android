@@ -12,7 +12,6 @@ import java.io.UnsupportedEncodingException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 
 import org.json.JSONException;
@@ -20,6 +19,8 @@ import org.json.JSONObject;
 
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static org.medicmobile.webapp.mobile.BuildConfig.LOG_TAG;
+
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
  * <p>New and improved - SimpleJsonClient2 is SimpleJsonClient, but using <code>
@@ -33,7 +34,7 @@ public class SimpleJsonClient2 {
 	private static final Pattern AUTH_URL = Pattern.compile("(.+)://(.*):(.*)@(.*)");
 
 //> PUBLIC METHODS
-	public JSONObject get(String url) throws MalformedURLException, JSONException, IOException {
+	public JSONObject get(String url) throws JSONException, IOException {
 		if(DEBUG) traceMethod("get", "url", redactUrl(url));
 		return get(new URL(url));
 	}
@@ -159,6 +160,7 @@ public class SimpleJsonClient2 {
 		Log.d(LOG_TAG, "SimpleJsonClient2." + methodName + "() :: " + message);
 	}
 
+	@SuppressFBWarnings(value = "UPM_UNCALLED_PRIVATE_METHOD", justification = "Only called in Debug flavor")
 	private static void log(Exception ex, String message, Object... extras) {
 		Log.i(LOG_TAG, String.format(message, extras), ex);
 	}

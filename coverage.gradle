@@ -1,0 +1,43 @@
+apply plugin: 'jacoco'
+
+tasks.withType(Test) {
+  jacoco.includeNoLocationClasses = true
+  jacoco.excludes = ['jdk.internal.*']
+}
+
+project.afterEvaluate {
+  def variantName = 'unbrandedDebug'
+  def testType = "${variantName}UnitTest"
+  def testTaskName = "test${testType.capitalize()}"
+
+  tasks.create(name: "make${testType.capitalize()}CoverageReport", type: JacocoReport, dependsOn: testTaskName) {
+    group = 'Reporting'
+    description = "Generate Jacoco coverage report for the ${variantName} build."
+
+    def excludes = [
+      '**/R.class',
+      '**/R$*.class',
+      '**/BuildConfig.*',
+      '**/Manifest*.*',
+      '**/*Test*.*',
+      'android/**/*.*',
+      'androidx/**/*.*',
+      '**/*_Factory.*',
+      '**/*_Provide*Factory*.*',
+      '**/*_ViewBinding*.*',
+      '**/AutoValue_*.*',
+      '**/R2.class',
+      '**/R2$*.class',
+      '**/*Directions$*',
+      '**/*Directions.*',
+      '**/*Binding.*'
+    ]
+
+    classDirectories.from = files(fileTree(
+      dir: layout.buildDirectory.dir("intermediates/javac/${variantName}/compile${variantName.capitalize()}JavaWithJavac/classes"),
+      excludes: excludes
+    ))
+    sourceDirectories.from = file("${project.projectDir}/src/main/java")
+    executionData.from = layout.buildDirectory.file("outputs/unit_test_code_coverage/${testType}/${testTaskName}.exec")
+  }
+}

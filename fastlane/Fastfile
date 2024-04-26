@@ -5,13 +5,53 @@
 default_platform(:android)
 
 platform :android do
-  desc "Build and deploy on Google Play"
+  lane :build do |options|
+    gradle(task: "assemble#{options[:flavor]}Release")
+  end
+
+  lane :bundle do |options|
+    gradle(task: "bundle#{options[:flavor]}Release")
+  end
+
   lane :deploy do |options|
-    gradleTaskName = "assemble#{options[:flavor]}Release"
-    version = ENV['TRAVIS_TAG'].empty? ? 'SNAPSHOT' : ENV['TRAVIS_TAG']
+    version = ENV['RELEASE_VERSION'].empty? ? 'SNAPSHOT' : ENV['RELEASE_VERSION']
     package_name = options[:flavor] == 'unbranded' ? "org.medicmobile.webapp.mobile" : "org.medicmobile.webapp.mobile.#{options[:flavor]}"
 
-    gradle(task: gradleTaskName)
+    supply(
+      package_name: package_name,
+      track: "alpha",
+      json_key: "playstore-secret.json",
+      apk_paths: [
+        "build/outputs/apk/#{options[:flavor]}/release/cht-android-#{version}-#{options[:flavor]}-arm64-v8a-release.apk",
+        # Support for older versions of Android:
+        "build/outputs/apk/#{options[:flavor]}/release/cht-android-#{version}-#{options[:flavor]}-armeabi-v7a-release.apk",
+      ],
+      skip_upload_aab: true,
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
+      validate_only: false,
+      timeout: 3600,
+    )
+  end
 
+  lane :deploy_bundle do |options|
+    version = ENV['RELEASE_VERSION'].empty? ? 'SNAPSHOT' : ENV['RELEASE_VERSION']
+    package_name = options[:flavor] == 'unbranded' ? "org.medicmobile.webapp.mobile" : "org.medicmobile.webapp.mobile.#{options[:flavor]}"
+
+    supply(
+      package_name: package_name,
+      track: "alpha",
+      json_key: "playstore-secret.json",
+      aab_paths: [
+        "build/outputs/bundle/#{options[:flavor]}Release/cht-android-#{version}-#{options[:flavor]}-release.aab",
+      ],
+      skip_upload_apk: true,
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
+      validate_only: false,
+      timeout: 3600,
+    )
   end
 end

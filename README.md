@@ -1,43 +1,27 @@
-Medic Mobile Android App
-========================
+CHT Android App
+===============
 
-<a href="https://travis-ci.org/medic/medic-android"><img src="https://travis-ci.org/medic/medic-android.svg"/></a>
+The cht-android application is a thin Android wrapper to load the [CHT Core Framework](https://github.com/medic/cht-core/) web application in a Webview native container.
 
-# Installation
+The repository contains “flavored” configurations, where each “flavor” or “brand” is an app. This allows the application to be hardcoded to a specific CHT deployment and have a partner specific logo and display name. The app also provides some deeper integration with other android apps and native phone functions that are otherwise unavailable to webapps.
 
-1. Install Android SDK
-2. Clone the repo
-3. Plug in your phone. Check it's detected with `adb devices`
-4. Execute: `make` (will also push app unto phone)
 
-## Connecting to the server locally
-Refer to https://github.com/medic/medic#testing-locally-with-devices.
+## Release notes
 
-# Branding
+Checkout the release notes in the [Changelog](CHANGELOG.md) page, our you can see the full release history with the installable files for sideloading [here](https://github.com/medic/cht-android/releases).
 
-## Building branded apps
 
-To build and deploy APKs for all configured brands:
+## Development
 
-	make branded
+Development guides are available in the "Android" section of the [Community Health Toolkit Docs Site](https://docs.communityhealthtoolkit.org/core/guides/android/). You will find instructions of how to setup your development environment, build and test new features, creates new branded apps, release, publish... and so on.
 
-## Adding new brands
-
-To add a new brand:
-
-1. add `productFlavors { <new_brand> { ... } }` in `build.gradle`
-1. add icons, strings etc. in `src/<new_brand>`
-1. to enable automated deployments, add the `new_brand` to `.travis.yml`
-
-# Publishing
-
-Create a git tag starting with `v`, e.g. `v1.2.3` and push the tag to GitHub. 
-
-Creating this tag will trigger a Travis CI to build, sign, and properly version the build. The release-ready APKs are available for side-loading from [GitHub Releases](https://github.com/medic/medic-android/releases) and are uploaded to the Google Play Console in the "alpha" channel. To release to the public, click "Release to Production" or "Release to Beta" via the Google Play Console for each flavor.
+## Settings page
+To open the app's Settings page, tap 5 times with one finger on the screen and then swipe right with two fingers, make sure to do this sequence fast. Once opened, you can change the URL of the CHT server and click "Save" to save the changes and close the Settings page.
 
 ## Copyright
 
-Copyright 2013-2018 Medic Mobile, Inc. <hello@medicmobile.org>
+Copyright 2013-2022 Medic Mobile, Inc. <hello@medic.org>.
+
 
 ## License
 

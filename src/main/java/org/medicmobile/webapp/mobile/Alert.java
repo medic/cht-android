@@ -2,19 +2,20 @@ package org.medicmobile.webapp.mobile;
 
 import android.content.Context;
 import android.media.MediaPlayer;
-import android.os.Vibrator;
+
+import org.medicmobile.webapp.mobile.util.Vibrator;
 
 public class Alert {
-	private final MediaPlayer m;
-	private final Vibrator v;
+	private final MediaPlayer mediaPlayer;
+	private final Vibrator vibrator;
 
-	public Alert(Context ctx) {
-		m = MediaPlayer.create(ctx, R.raw.sound_alert);
-		v = (Vibrator) ctx.getSystemService(Context.VIBRATOR_SERVICE);
+	public Alert(Context context) {
+		mediaPlayer = MediaPlayer.create(context, R.raw.sound_alert);
+		vibrator = Vibrator.createInstance(context);
 	}
 
 	public void trigger() {
-		if(v != null) v.vibrate(1500L);
-		m.start();
+		vibrator.vibrate(1500L);
+		mediaPlayer.start();
 	}
 }

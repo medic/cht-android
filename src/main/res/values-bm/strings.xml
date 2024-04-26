@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<string name="locRequestTitle">I bɛ yɔrɔ min na</string>
+	<string name="locRequestMessage">%s b\'a fɛ ka dɔn aw bɛ yɔrɔ min na walasa ka aw dɛmɛ kɛnɛya sabatili baraw la. I bolo da Awɔ kan ɲɛfɛ.</string>
+	<string name="locRequestOkButton">Awɔ</string>
+	<string name="locRequestDenyButton">Ayi man sɔn</string>
+	<string name="locRequestIconDescription">Icône de mon emplacement</string>	<!-- leave it in fr, not relevant -->
+</resources>
