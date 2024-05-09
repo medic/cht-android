@@ -106,13 +106,16 @@ android {
     }
   }
 
+  base {
+    archivesName = "${project.name}-${getVersionName()}"
+  }
+
   defaultConfig {
     //noinspection OldTargetApi
     targetSdkVersion 34
     minSdkVersion 21 // Android 5.0
     versionCode getVersionCode()
     versionName getVersionName()
-    archivesBaseName = "${project.name}-${versionName}"
     //For espresso tests
     testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     // Test user credentials
