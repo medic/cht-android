@@ -433,16 +433,16 @@ android {
 
 dependencies {
   implementation fileTree(dir: 'libs', include: ['*.jar'])
-  implementation platform('org.jetbrains.kotlin:kotlin-bom:1.9.23')
+  implementation platform('org.jetbrains.kotlin:kotlin-bom:1.9.24')
   implementation 'androidx.core:core:1.13.1'
   implementation 'androidx.activity:activity:1.9.0'
   implementation 'androidx.fragment:fragment:1.7.0'
-  compileOnly 'com.github.spotbugs:spotbugs-annotations:4.8.3'
+  compileOnly 'com.github.spotbugs:spotbugs-annotations:4.8.5'
   coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4'
   testImplementation 'junit:junit:4.13.2'
   testImplementation 'org.mockito:mockito-inline:5.2.0'
   testImplementation 'com.google.android:android-test:4.1.1.4'
-  testImplementation 'org.robolectric:robolectric:4.11.1'
+  testImplementation 'org.robolectric:robolectric:4.12.1'
   testImplementation 'androidx.test.espresso:espresso-core:3.5.1'
   testImplementation 'androidx.test.espresso:espresso-intents:3.5.1'
   testImplementation 'androidx.test.ext:junit:1.1.5'
