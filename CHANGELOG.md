@@ -9,9 +9,14 @@
 
 ## 1.3.0
 
-* Add sonar configuration ([#352](https://github.com/medic/cht-android/pull/352))
+### Improvements
+
 * Add autoverify=true to AndroidManifest.xml file ([#353](https://github.com/medic/cht-android/pull/353))
 * Add prominent disclosure on startup requesting user to link app and domain ([#353](https://github.com/medic/cht-android/pull/354))
+
+### Technical Improvements
+
+* Add sonar configuration ([#352](https://github.com/medic/cht-android/pull/352))
 
 ## 1.2.0
 
