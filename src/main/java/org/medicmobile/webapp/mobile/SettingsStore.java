@@ -1,8 +1,11 @@
 package org.medicmobile.webapp.mobile;
 
+import static android.util.Config.DEBUG;
+
 import android.content.*;
 import android.net.Uri;
 
+import java.io.Serializable;
 import java.util.*;
 import java.util.regex.*;
 
@@ -209,7 +212,7 @@ class SettingsException extends Exception {
 }
 
 class IllegalSettingsException extends SettingsException {
-
+	public static final long serialVersionUID = -6920159047512297868L;
 	public final List<IllegalSetting> errors;
 
 	public IllegalSettingsException(List<IllegalSetting> errors) {

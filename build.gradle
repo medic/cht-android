@@ -46,8 +46,10 @@ task pmd(type: Pmd) {
   exclude '**/**.mp3'
   exclude 'test/bash/bats/**'
   dependencies {
-    pmd 'net.sourceforge.pmd:pmd-java:6.55.0'
-    pmd 'net.sourceforge.pmd:pmd-xml:6.55.0'
+    pmd 'net.sourceforge.pmd:pmd-cli:7.1.0'
+    pmd 'net.sourceforge.pmd:pmd-ant:7.1.0'
+    pmd 'net.sourceforge.pmd:pmd-java:7.1.0'
+    pmd 'net.sourceforge.pmd:pmd-xml:7.1.0'
   }
 }
 
