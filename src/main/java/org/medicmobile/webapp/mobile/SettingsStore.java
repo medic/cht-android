@@ -1,11 +1,8 @@
 package org.medicmobile.webapp.mobile;
 
-import static android.util.Config.DEBUG;
-
 import android.content.*;
 import android.net.Uri;
 
-import java.io.Serializable;
 import java.util.*;
 import java.util.regex.*;
 
