@@ -200,7 +200,7 @@ class IllegalSetting {
 }
 
 class SettingsException extends Exception {
-	// See: https://pmd.github.io/pmd-6.36.0/pmd_rules_java_errorprone.html#missingserialversionuid
+	// See: https://docs.pmd-code.org/pmd-doc-7.1.0/pmd_rules_java_errorprone.html#missingserialversionuid
 	public static final long serialVersionUID = -1008287132276329302L;
 
 	public SettingsException(String message) {
@@ -209,6 +209,7 @@ class SettingsException extends Exception {
 }
 
 class IllegalSettingsException extends SettingsException {
+	// See: https://docs.pmd-code.org/pmd-doc-7.1.0/pmd_rules_java_errorprone.html#missingserialversionuid
 	public static final long serialVersionUID = -6920159047512297868L;
 	public final List<IllegalSetting> errors;
 
