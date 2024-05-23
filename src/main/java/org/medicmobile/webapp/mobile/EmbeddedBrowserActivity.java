@@ -21,8 +21,10 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.webkit.ConsoleMessage;
 import android.webkit.GeolocationPermissions;
@@ -33,6 +35,9 @@ import android.webkit.WebView;
 import android.widget.Toast;
 
 import androidx.core.content.ContextCompat;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 import java.util.Arrays;
 import java.util.Optional;
@@ -100,6 +105,23 @@ public class EmbeddedBrowserActivity extends Activity {
 		}
 
 		container = findViewById(R.id.wbvMain);
+
+		// TODO: replace `UPSIDE_DOWN_CAKE` with `VANILLA_ICE_CREAM` when SDK 35 comes out of preview
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+			// https://developer.android.com/about/versions/15/behavior-changes-15#window-insets
+			ViewCompat.setOnApplyWindowInsetsListener(container, (v, windowInsets) -> {
+				Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars());
+				ViewGroup.MarginLayoutParams mlp = (ViewGroup.MarginLayoutParams) v.getLayoutParams();
+				mlp.topMargin = insets.top;
+				mlp.rightMargin = insets.right;
+				mlp.bottomMargin = insets.bottom;
+				mlp.leftMargin = insets.left;
+				v.setLayoutParams(mlp);
+
+				return WindowInsetsCompat.CONSUMED;
+			});
+		}
+
 		getFragmentManager()
 			.beginTransaction()
 			.add(new OpenSettingsDialogFragment(container), OpenSettingsDialogFragment.class.getName())
