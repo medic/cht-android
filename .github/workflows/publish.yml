@@ -442,7 +442,7 @@ jobs:
       env:
         ANDROID_KEYSTORE_PATH: lumbini_ne.keystore
         ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_LUMBINI_NE }}
-        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_MOH_LUMBINI_NE }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_LUMBINI_NE }}
 
     - name: GitHub release
       uses: softprops/action-gh-release@v1
