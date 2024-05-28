@@ -1,36 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-		xmlns:tools="http://schemas.android.com/tools"
-		android:layout_width="fill_parent"
-		android:layout_height="fill_parent"
-		android:paddingLeft="16dp"
-		android:paddingRight="16dp"
-		android:orientation="vertical">
-	<EditText android:id="@+id/txtAppUrl"
-			android:hint="@string/txtAppUrl"
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:inputType="textUri"
-			android:autofillHints=""
-			android:padding="32dp"/>
-	<!-- OnClick is ignored because lint generates error
+  xmlns:tools="http://schemas.android.com/tools"
+  android:id="@+id/customServerFormLayout"
+  android:layout_width="fill_parent"
+  android:layout_height="fill_parent"
+  android:orientation="vertical"
+  android:paddingLeft="16dp"
+  android:paddingRight="16dp">
+
+  <EditText
+    android:id="@+id/txtAppUrl"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:autofillHints=""
+    android:hint="@string/txtAppUrl"
+    android:inputType="textUri"
+    android:padding="32dp" />
+  <!-- OnClick is ignored because lint generates error
 	     incorrectly.  Test with future build tool versions
 	     to see if this exception can be removed -->
-	<Button android:id="@+id/btnCancelSettings"
-			style="@style/standardButton"
-			android:layout_toStartOf="@+id/btnSaveSettings"
-			android:layout_alignParentBottom="true"
-			android:onClick="cancelSettingsEdit"
-			android:text="@string/btnCancel"
-			tools:ignore="OnClick" />
-	<!-- OnClick is ignored because lint generates error
+  <Button
+    android:id="@+id/btnCancelSettings"
+    style="@style/standardButton"
+    android:layout_alignParentBottom="true"
+    android:layout_toStartOf="@+id/btnSaveSettings"
+    android:onClick="cancelSettingsEdit"
+    android:text="@string/btnCancel"
+    tools:ignore="OnClick" />
+  <!-- OnClick is ignored because lint generates error
 	     incorrectly.  Test with future build tool versions
 	     to see if this exception can be removed -->
-	<Button android:id="@+id/btnSaveSettings"
-			style="@style/standardButton"
-			android:layout_alignParentEnd="true"
-			android:layout_alignParentBottom="true"
-			android:onClick="verifyAndSave"
-			android:text="@string/btnSave"
-			tools:ignore="OnClick" />
+  <Button
+    android:id="@+id/btnSaveSettings"
+    style="@style/standardButton"
+    android:layout_alignParentEnd="true"
+    android:layout_alignParentBottom="true"
+    android:onClick="verifyAndSave"
+    android:text="@string/btnSave"
+    tools:ignore="OnClick" />
 </RelativeLayout>

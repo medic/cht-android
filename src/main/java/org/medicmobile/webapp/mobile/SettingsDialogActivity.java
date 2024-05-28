@@ -65,12 +65,12 @@ public class SettingsDialogActivity extends FragmentActivity {
 
 		setContentView(R.layout.server_select_list);
 
-		ListView list = findViewById(R.id.lstServers);
-
 		// TODO: replace `UPSIDE_DOWN_CAKE` with `VANILLA_ICE_CREAM` when SDK 35 comes out of preview
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+			trace(this, "***************");
 			// https://developer.android.com/about/versions/15/behavior-changes-15#window-insets
-			ViewCompat.setOnApplyWindowInsetsListener(list, (v, windowInsets) -> {
+			View layout = findViewById(R.id.serverSelectListLayout);
+			ViewCompat.setOnApplyWindowInsetsListener(layout, (v, windowInsets) -> {
 				Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars());
 				ViewGroup.MarginLayoutParams mlp = (ViewGroup.MarginLayoutParams) v.getLayoutParams();
 				mlp.topMargin = insets.top;
@@ -85,6 +85,7 @@ public class SettingsDialogActivity extends FragmentActivity {
 
 		List<ServerMetadata> servers = serverRepo.getServers();
 		ServerMetadataAdapter adapter = ServerMetadataAdapter.createInstance(this, servers);
+		ListView list = findViewById(R.id.lstServers);
 		list.setAdapter(adapter);
 		list.setOnItemClickListener(new ServerClickListener(adapter));
 
@@ -101,6 +102,24 @@ public class SettingsDialogActivity extends FragmentActivity {
 		state = STATE_FORM;
 
 		setContentView(R.layout.custom_server_form);
+
+		// TODO: replace `UPSIDE_DOWN_CAKE` with `VANILLA_ICE_CREAM` when SDK 35 comes out of preview
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+			trace(this, "ddddddddddddd");
+			// https://developer.android.com/about/versions/15/behavior-changes-15#window-insets
+			View layout = findViewById(R.id.customServerFormLayout);
+			ViewCompat.setOnApplyWindowInsetsListener(layout, (v, windowInsets) -> {
+				Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars());
+				ViewGroup.MarginLayoutParams mlp = (ViewGroup.MarginLayoutParams) v.getLayoutParams();
+				mlp.topMargin = insets.top;
+				mlp.rightMargin = insets.right;
+				mlp.bottomMargin = insets.bottom;
+				mlp.leftMargin = insets.left;
+				v.setLayoutParams(mlp);
+
+				return WindowInsetsCompat.CONSUMED;
+			});
+		}
 
 		if(!this.settings.hasWebappSettings()) {
 			cancelButton().setVisibility(View.GONE);

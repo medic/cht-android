@@ -109,7 +109,7 @@ public class EmbeddedBrowserActivity extends Activity {
 		// TODO: replace `UPSIDE_DOWN_CAKE` with `VANILLA_ICE_CREAM` when SDK 35 comes out of preview
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
 			// https://developer.android.com/about/versions/15/behavior-changes-15#window-insets
-			ViewCompat.setOnApplyWindowInsetsListener(container, (v, windowInsets) -> {
+			ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.lytWebView), (v, windowInsets) -> {
 				Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars());
 				ViewGroup.MarginLayoutParams mlp = (ViewGroup.MarginLayoutParams) v.getLayoutParams();
 				mlp.topMargin = insets.top;
