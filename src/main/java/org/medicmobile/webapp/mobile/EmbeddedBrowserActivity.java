@@ -124,7 +124,7 @@ public class EmbeddedBrowserActivity extends Activity {
 
 		getFragmentManager()
 			.beginTransaction()
-			.add(new OpenSettingsDialogFragment(container), OpenSettingsDialogFragment.class.getName())
+			.add(new OpenSettingsDialogFragment(), OpenSettingsDialogFragment.class.getName())
 			.commit();
 
 		configureUserAgent();

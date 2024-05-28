@@ -1,5 +1,7 @@
 package org.medicmobile.webapp.mobile;
 
+import static org.medicmobile.webapp.mobile.MedicLog.trace;
+
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Fragment;
@@ -16,7 +18,7 @@ import java.time.Clock;
 @SuppressLint("ValidFragment")
 public class OpenSettingsDialogFragment extends Fragment {
 
-	private final View view;
+	private View view;
 	private int fingerTapCount = 0;
 	private long lastTimeTap = 0;
 	private GestureHandler swipeGesture;
@@ -32,14 +34,11 @@ public class OpenSettingsDialogFragment extends Fragment {
 		}
 	};
 
-	public OpenSettingsDialogFragment(View view) {
-		this.view = view;
-	}
-
 	@Override
-	public void onCreate(@Nullable Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		view.setOnTouchListener(onTouchListener);
+	public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+		super.onViewCreated(view, savedInstanceState);
+		this.view = view.findViewById(R.id.wbvMain);
+		this.view.setOnTouchListener(onTouchListener);
 	}
 
 	private void countTaps(MotionEvent event) {
