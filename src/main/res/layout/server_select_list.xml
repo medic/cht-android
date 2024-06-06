@@ -3,6 +3,7 @@
   android:id="@+id/serverSelectListLayout"
   android:layout_width="fill_parent"
   android:layout_height="fill_parent"
+  android:fitsSystemWindows="true"
   android:orientation="vertical">
 
   <EditText

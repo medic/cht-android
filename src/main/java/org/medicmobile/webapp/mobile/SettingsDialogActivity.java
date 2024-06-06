@@ -67,20 +67,9 @@ public class SettingsDialogActivity extends FragmentActivity {
 
 		// TODO: replace `UPSIDE_DOWN_CAKE` with `VANILLA_ICE_CREAM` when SDK 35 comes out of preview
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-			trace(this, "***************");
-			// https://developer.android.com/about/versions/15/behavior-changes-15#window-insets
-			View layout = findViewById(R.id.serverSelectListLayout);
-			ViewCompat.setOnApplyWindowInsetsListener(layout, (v, windowInsets) -> {
-				Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars());
-				ViewGroup.MarginLayoutParams mlp = (ViewGroup.MarginLayoutParams) v.getLayoutParams();
-				mlp.topMargin = insets.top;
-				mlp.rightMargin = insets.right;
-				mlp.bottomMargin = insets.bottom;
-				mlp.leftMargin = insets.left;
-				v.setLayoutParams(mlp);
-
-				return WindowInsetsCompat.CONSUMED;
-			});
+			View view = findViewById(R.id.serverSelectListLayout);
+			ViewCompat.requestApplyInsets(view.getRootView());
+//			((View) view.getParent()).requestApplyInsets();
 		}
 
 		List<ServerMetadata> servers = serverRepo.getServers();
@@ -105,20 +94,8 @@ public class SettingsDialogActivity extends FragmentActivity {
 
 		// TODO: replace `UPSIDE_DOWN_CAKE` with `VANILLA_ICE_CREAM` when SDK 35 comes out of preview
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-			trace(this, "ddddddddddddd");
-			// https://developer.android.com/about/versions/15/behavior-changes-15#window-insets
-			View layout = findViewById(R.id.customServerFormLayout);
-			ViewCompat.setOnApplyWindowInsetsListener(layout, (v, windowInsets) -> {
-				Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars());
-				ViewGroup.MarginLayoutParams mlp = (ViewGroup.MarginLayoutParams) v.getLayoutParams();
-				mlp.topMargin = insets.top;
-				mlp.rightMargin = insets.right;
-				mlp.bottomMargin = insets.bottom;
-				mlp.leftMargin = insets.left;
-				v.setLayoutParams(mlp);
-
-				return WindowInsetsCompat.CONSUMED;
-			});
+			View view = findViewById(R.id.customServerFormLayout);
+			ViewCompat.requestApplyInsets(view.getRootView());
 		}
 
 		if(!this.settings.hasWebappSettings()) {
