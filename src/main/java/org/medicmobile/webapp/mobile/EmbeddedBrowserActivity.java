@@ -21,8 +21,10 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.webkit.ConsoleMessage;
 import android.webkit.GeolocationPermissions;
@@ -33,6 +35,9 @@ import android.webkit.WebView;
 import android.widget.Toast;
 
 import androidx.core.content.ContextCompat;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 import java.util.Arrays;
 import java.util.Optional;
@@ -83,26 +88,31 @@ public class EmbeddedBrowserActivity extends Activity {
 
 		this.requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.main);
+		View webviewContainer = findViewById(R.id.lytWebView);
+		// TODO: replace `UPSIDE_DOWN_CAKE` with `VANILLA_ICE_CREAM` when SDK 35 comes out of preview
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+			ViewCompat.requestApplyInsets(webviewContainer.getRootView());
+//			((View) webviewContainer.getParent()).requestApplyInsets();
+		}
 
 		// Add an alarming red border if using configurable (i.e. dev)
 		// app with a medic production server.
 		if (settings.allowsConfiguration() && appUrl != null && appUrl.contains("app.medicmobile.org")) {
-			View webviewContainer = findViewById(R.id.lytWebView);
 			webviewContainer.setPadding(10, 10, 10, 10);
 			webviewContainer.setBackgroundResource(R.drawable.warning_background);
 		}
 
 		// Add a noticeable border to easily identify a training app
 		if (BuildConfig.IS_TRAINING_APP) {
-			View webviewContainer = findViewById(R.id.lytWebView);
 			webviewContainer.setPadding(10, 10, 10, 10);
 			webviewContainer.setBackgroundResource(R.drawable.training_background);
 		}
 
 		container = findViewById(R.id.wbvMain);
+
 		getFragmentManager()
 			.beginTransaction()
-			.add(new OpenSettingsDialogFragment(container), OpenSettingsDialogFragment.class.getName())
+			.add(new OpenSettingsDialogFragment(), OpenSettingsDialogFragment.class.getName())
 			.commit();
 
 		configureUserAgent();

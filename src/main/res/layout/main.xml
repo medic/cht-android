@@ -2,7 +2,8 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 		android:id="@+id/lytWebView"
 		android:layout_width="fill_parent"
-		android:layout_height="fill_parent">
+		android:layout_height="fill_parent"
+    android:fitsSystemWindows="true">
 	<WebView android:id="@+id/wbvMain"
 			android:layout_width="fill_parent"
 			android:layout_height="fill_parent"/>
