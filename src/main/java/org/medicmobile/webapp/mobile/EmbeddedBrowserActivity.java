@@ -88,39 +88,27 @@ public class EmbeddedBrowserActivity extends Activity {
 
 		this.requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.main);
+		View webviewContainer = findViewById(R.id.lytWebView);
+		// TODO: replace `UPSIDE_DOWN_CAKE` with `VANILLA_ICE_CREAM` when SDK 35 comes out of preview
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+			ViewCompat.requestApplyInsets(webviewContainer.getRootView());
+//			((View) webviewContainer.getParent()).requestApplyInsets();
+		}
 
 		// Add an alarming red border if using configurable (i.e. dev)
 		// app with a medic production server.
 		if (settings.allowsConfiguration() && appUrl != null && appUrl.contains("app.medicmobile.org")) {
-			View webviewContainer = findViewById(R.id.lytWebView);
 			webviewContainer.setPadding(10, 10, 10, 10);
 			webviewContainer.setBackgroundResource(R.drawable.warning_background);
 		}
 
 		// Add a noticeable border to easily identify a training app
 		if (BuildConfig.IS_TRAINING_APP) {
-			View webviewContainer = findViewById(R.id.lytWebView);
 			webviewContainer.setPadding(10, 10, 10, 10);
 			webviewContainer.setBackgroundResource(R.drawable.training_background);
 		}
 
 		container = findViewById(R.id.wbvMain);
-
-		// TODO: replace `UPSIDE_DOWN_CAKE` with `VANILLA_ICE_CREAM` when SDK 35 comes out of preview
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-			// https://developer.android.com/about/versions/15/behavior-changes-15#window-insets
-			ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.lytWebView), (v, windowInsets) -> {
-				Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars());
-				ViewGroup.MarginLayoutParams mlp = (ViewGroup.MarginLayoutParams) v.getLayoutParams();
-				mlp.topMargin = insets.top;
-				mlp.rightMargin = insets.right;
-				mlp.bottomMargin = insets.bottom;
-				mlp.leftMargin = insets.left;
-				v.setLayoutParams(mlp);
-
-				return WindowInsetsCompat.CONSUMED;
-			});
-		}
 
 		getFragmentManager()
 			.beginTransaction()
