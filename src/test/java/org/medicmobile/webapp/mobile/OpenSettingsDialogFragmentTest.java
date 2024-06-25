@@ -49,11 +49,12 @@ public class OpenSettingsDialogFragmentTest {
 		doNothing().when(view).setOnTouchListener(argsOnTouch.capture());
 
 		MockSettings fragmentSettings = withSettings()
-			.useConstructor(view)
+			.useConstructor()
 			.defaultAnswer(CALLS_REAL_METHODS);
 
 		openSettingsDialogFragment = mock(OpenSettingsDialogFragment.class, fragmentSettings);
 		when(openSettingsDialogFragment.getActivity()).thenReturn(activity);
+		when(openSettingsDialogFragment.getActivity().findViewById(R.id.wbvMain)).thenReturn(view);
 		argsStartActivity = ArgumentCaptor.forClass(Intent.class);
 		doNothing().when(openSettingsDialogFragment).startActivity(argsStartActivity.capture());
 
