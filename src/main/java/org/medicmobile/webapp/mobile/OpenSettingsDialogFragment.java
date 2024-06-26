@@ -20,9 +20,6 @@ public class OpenSettingsDialogFragment extends Fragment {
 	private GestureHandler swipeGesture;
 	private static final int TIME_BETWEEN_TAPS = 500;
 
-	public OpenSettingsDialogFragment() {
-	}
-
 	private final OnTouchListener onTouchListener = new OnTouchListener() {
 		@SuppressLint("ClickableViewAccessibility")
 		@Override
