@@ -9,7 +9,7 @@ buildscript {
     google()
   }
   dependencies {
-    classpath 'com.android.tools.build:gradle:8.3.0'
+    classpath 'com.android.tools.build:gradle:8.4.0'
     classpath 'com.github.spotbugs.snom:spotbugs-gradle-plugin:6.0.8'
   }
 }
@@ -46,8 +46,10 @@ task pmd(type: Pmd) {
   exclude '**/**.mp3'
   exclude 'test/bash/bats/**'
   dependencies {
-    pmd 'net.sourceforge.pmd:pmd-java:6.55.0'
-    pmd 'net.sourceforge.pmd:pmd-xml:6.55.0'
+    pmd 'net.sourceforge.pmd:pmd-cli:7.1.0'
+    pmd 'net.sourceforge.pmd:pmd-ant:7.1.0'
+    pmd 'net.sourceforge.pmd:pmd-java:7.1.0'
+    pmd 'net.sourceforge.pmd:pmd-xml:7.1.0'
   }
 }
 
@@ -106,13 +108,16 @@ android {
     }
   }
 
+  base {
+    archivesName = "${project.name}-${getVersionName()}"
+  }
+
   defaultConfig {
     //noinspection OldTargetApi
     targetSdkVersion 34
     minSdkVersion 21 // Android 5.0
     versionCode getVersionCode()
     versionName getVersionName()
-    archivesBaseName = "${project.name}-${versionName}"
     //For espresso tests
     testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     // Test user credentials
@@ -414,6 +419,11 @@ android {
       applicationId = 'org.medicmobile.webapp.mobile.moh_togo_uat'
     }
 
+    lumbini_ne {
+      dimension = 'brand'
+      applicationId = 'org.medicmobile.webapp.mobile.lumbini_ne'
+    }
+
     gandaki_ne {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.gandaki_ne'
@@ -437,16 +447,16 @@ android {
 
 dependencies {
   implementation fileTree(dir: 'libs', include: ['*.jar'])
-  implementation platform('org.jetbrains.kotlin:kotlin-bom:1.9.23')
-  implementation 'androidx.core:core:1.12.0'
-  implementation 'androidx.activity:activity:1.8.2'
-  implementation 'androidx.fragment:fragment:1.6.2'
-  compileOnly 'com.github.spotbugs:spotbugs-annotations:4.8.3'
+  implementation platform('org.jetbrains.kotlin:kotlin-bom:1.9.24')
+  implementation 'androidx.core:core:1.13.1'
+  implementation 'androidx.activity:activity:1.9.0'
+  implementation 'androidx.fragment:fragment:1.7.1'
+  compileOnly 'com.github.spotbugs:spotbugs-annotations:4.8.5'
   coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4'
   testImplementation 'junit:junit:4.13.2'
   testImplementation 'org.mockito:mockito-inline:5.2.0'
   testImplementation 'com.google.android:android-test:4.1.1.4'
-  testImplementation 'org.robolectric:robolectric:4.11.1'
+  testImplementation 'org.robolectric:robolectric:4.12.1'
   testImplementation 'androidx.test.espresso:espresso-core:3.5.1'
   testImplementation 'androidx.test.espresso:espresso-intents:3.5.1'
   testImplementation 'androidx.test.ext:junit:1.1.5'
