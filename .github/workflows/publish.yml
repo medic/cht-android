@@ -418,6 +418,32 @@ jobs:
         ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_MOH_TOGO_UAT }}
         ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_MOH_TOGO_UAT }}
 
+    - name: Unpack secrets gandaki_ne
+      env:
+        ANDROID_SECRETS_KEY: ${{ secrets.ANDROID_SECRETS_KEY_GANDAKI_NE }}
+        ANDROID_SECRETS_IV: ${{ secrets.ANDROID_SECRETS_IV_GANDAKI_NE }}
+      run: make org=gandaki_ne keydec
+
+    - name: Assemble gandaki_ne
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: build
+        options: '{ "flavor": "gandaki_ne" }'
+      env:
+        ANDROID_KEYSTORE_PATH: gandaki_ne.keystore
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_GANDAKI_NE }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_GANDAKI_NE }}
+
+    - name: Bundle gandaki_ne
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: bundle
+        options: '{ "flavor": "gandaki_ne" }'
+      env:
+        ANDROID_KEYSTORE_PATH: gandaki_ne.keystore
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_GANDAKI_NE }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_GANDAKI_NE }}
+
     - name: GitHub release
       uses: softprops/action-gh-release@v1
       if: startsWith(github.ref, 'refs/tags/')
