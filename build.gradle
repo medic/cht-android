@@ -424,6 +424,10 @@ android {
       applicationId = 'org.medicmobile.webapp.mobile.lumbini_ne'
     }
 
+    gandaki_ne {
+      dimension = 'brand'
+      applicationId = 'org.medicmobile.webapp.mobile.gandaki_ne'
+    }
   }
 
   splits {
