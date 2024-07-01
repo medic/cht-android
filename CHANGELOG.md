@@ -7,6 +7,17 @@
 
 # Release notes
 
+## 1.4.0
+
+### Technical Improvements
+
+* Fix app crashing due to missing empty constructor in OpenSettingsDialogFragment ([#366](...))
+* Upgrade Ruby version from 2.7 to 3.3 for fastlane in build and publish files for GH actions ([#369](...))
+
+### Flavors
+
+* Add apk for Gandaki, Nepal ([#367](https://github.com/medic/cht-android/pull/334))
+
 ## 1.3.0
 
 ### Improvements
