@@ -47,7 +47,7 @@ jobs:
       if: ${{ env.ANDROID_SECRETS_KEY }}
       uses: ruby/setup-ruby@v1
       with:
-        ruby-version: 2.7
+        ruby-version: 3.3
 
     - name: Set up Fastlane
       if: ${{ env.ANDROID_SECRETS_KEY }}
