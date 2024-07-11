@@ -493,7 +493,7 @@ jobs:
         lane: bundle
         options: '{ "flavor": "moh_civ" }'
       env:
-        ANDROID_KEYSTORE_PATH: new_brand.keystore
+        ANDROID_KEYSTORE_PATH: moh_civ.keystore
         ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_MOH_CIV }}
         ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_MOH_CIV }}
 
