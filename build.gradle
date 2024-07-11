@@ -1,3 +1,6 @@
+import com.github.spotbugs.snom.Confidence
+import com.github.spotbugs.snom.Effort
+
 buildscript {
   repositories {
     mavenCentral()
@@ -6,8 +9,8 @@ buildscript {
     google()
   }
   dependencies {
-    classpath 'com.android.tools.build:gradle:7.1.3'
-    classpath 'com.github.spotbugs.snom:spotbugs-gradle-plugin:5.0.5'
+    classpath 'com.android.tools.build:gradle:8.4.0'
+    classpath 'com.github.spotbugs.snom:spotbugs-gradle-plugin:6.0.8'
   }
 }
 
@@ -31,6 +34,7 @@ task checkstyle(type: Checkstyle) {
   source 'src'
   classpath = files()
   ignoreFailures = false
+  exclude 'test/bash/bats/**'
 }
 
 task pmd(type: Pmd) {
@@ -40,10 +44,12 @@ task pmd(type: Pmd) {
   source 'src'
   exclude '**/**.png'
   exclude '**/**.mp3'
-  exclude '**/**.bats'
+  exclude 'test/bash/bats/**'
   dependencies {
-    pmd 'net.sourceforge.pmd:pmd-java:6.44.0'
-    pmd 'net.sourceforge.pmd:pmd-xml:6.44.0'
+    pmd 'net.sourceforge.pmd:pmd-cli:7.1.0'
+    pmd 'net.sourceforge.pmd:pmd-ant:7.1.0'
+    pmd 'net.sourceforge.pmd:pmd-java:7.1.0'
+    pmd 'net.sourceforge.pmd:pmd-xml:7.1.0'
   }
 }
 
@@ -51,8 +57,8 @@ spotbugs {
   ignoreFailures = false
   showStackTraces = true
   showProgress = true
-  effort = 'default'
-  reportLevel = 'default'
+  effort = Effort.valueOf('DEFAULT')
+  reportLevel = Confidence.valueOf('DEFAULT')
   maxHeapSize = '1g'
   omitVisitors = [
     'FindReturnRef' // This app exchanges data with external applications, we assume is safe.
@@ -95,20 +101,23 @@ def getVersionName = {
 }
 
 android {
-  compileSdkVersion 33
-  buildToolsVersion '30.0.3'
+  compileSdk 34
   packagingOptions {
-    exclude 'META-INF/LICENSE'
-    exclude 'META-INF/NOTICE'
+    resources {
+      excludes += ['META-INF/LICENSE', 'META-INF/NOTICE']
+    }
+  }
+
+  base {
+    archivesName = "${project.name}-${getVersionName()}"
   }
 
   defaultConfig {
     //noinspection OldTargetApi
-    targetSdkVersion 33
+    targetSdkVersion 34
     minSdkVersion 21 // Android 5.0
     versionCode getVersionCode()
     versionName getVersionName()
-    archivesBaseName = "${project.name}-${versionName}"
     //For espresso tests
     testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     // Test user credentials
@@ -125,8 +134,8 @@ android {
   }
 
   compileOptions {
-    sourceCompatibility JavaVersion.VERSION_11
-    targetCompatibility JavaVersion.VERSION_11
+    sourceCompatibility JavaVersion.VERSION_17
+    targetCompatibility JavaVersion.VERSION_17
     // Flag to enable support for the new language APIs
     coreLibraryDesugaringEnabled true
   }
@@ -164,7 +173,11 @@ android {
     }
   }
 
-  lintOptions {
+  buildFeatures {
+    buildConfig true
+  }
+
+  lint {
     lintConfig = new File('config/lint.xml')
 
     disable 'UnusedResources' // linter can't handle static imports, so just skip this test
@@ -179,7 +192,6 @@ android {
       abortOnError true
       htmlReport false
       textReport true
-      textOutput 'stdout'
     }
   }
 
@@ -191,6 +203,7 @@ android {
 
   flavorDimensions 'brand'
 
+  namespace 'org.medicmobile.webapp.mobile'
   productFlavors {
     unbranded {
       // we will not create project-specific src directories
@@ -411,7 +424,15 @@ android {
       applicationId = 'org.medicmobile.webapp.mobile.moh_togo_echis'
     }
 
+    lumbini_ne {
+      dimension = 'brand'
+      applicationId = 'org.medicmobile.webapp.mobile.lumbini_ne'
+    }
 
+    gandaki_ne {
+      dimension = 'brand'
+      applicationId = 'org.medicmobile.webapp.mobile.gandaki_ne'
+    }
   }
 
   splits {
@@ -431,22 +452,23 @@ android {
 
 dependencies {
   implementation fileTree(dir: 'libs', include: ['*.jar'])
-  implementation 'androidx.core:core:1.7.0'
-  implementation 'androidx.activity:activity:1.4.0'
-  implementation 'androidx.fragment:fragment:1.4.1'
-  compileOnly 'com.github.spotbugs:spotbugs-annotations:4.5.3'
-  coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.1.5'
+  implementation platform('org.jetbrains.kotlin:kotlin-bom:1.9.24')
+  implementation 'androidx.core:core:1.13.1'
+  implementation 'androidx.activity:activity:1.9.0'
+  implementation 'androidx.fragment:fragment:1.7.1'
+  compileOnly 'com.github.spotbugs:spotbugs-annotations:4.8.5'
+  coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4'
   testImplementation 'junit:junit:4.13.2'
-  testImplementation 'org.mockito:mockito-inline:4.0.0'
+  testImplementation 'org.mockito:mockito-inline:5.2.0'
   testImplementation 'com.google.android:android-test:4.1.1.4'
-  testImplementation 'org.robolectric:robolectric:4.7'
-  testImplementation 'androidx.test.espresso:espresso-core:3.5.0-alpha05'
-  testImplementation 'androidx.test.espresso:espresso-intents:3.5.0-alpha05'
-  testImplementation 'androidx.test.ext:junit:1.1.3'
-  androidTestImplementation 'androidx.test.espresso:espresso-web:3.5.0-alpha05'
-  androidTestImplementation 'androidx.test.ext:junit:1.1.3'
-  androidTestImplementation 'androidx.test:runner:1.4.0'
-  androidTestImplementation 'androidx.test:rules:1.4.0'
-  androidTestImplementation 'androidx.test:core:1.4.0'
+  testImplementation 'org.robolectric:robolectric:4.12.1'
+  testImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+  testImplementation 'androidx.test.espresso:espresso-intents:3.5.1'
+  testImplementation 'androidx.test.ext:junit:1.1.5'
+  androidTestImplementation 'androidx.test.espresso:espresso-web:3.5.1'
+  androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+  androidTestImplementation 'androidx.test:runner:1.5.2'
+  androidTestImplementation 'androidx.test:rules:1.5.0'
+  androidTestImplementation 'androidx.test:core:1.5.0'
   androidTestImplementation 'org.hamcrest:hamcrest-library:2.2'
 }

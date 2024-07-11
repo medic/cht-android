@@ -256,7 +256,7 @@ class ServerMetadata {
 	}
 }
 
-class ServerRepo {
+final class ServerRepo {
 	private final SharedPreferences prefs;
 	private final SettingsStore settingsStore;
 

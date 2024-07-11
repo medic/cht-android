@@ -21,25 +21,17 @@ import android.provider.Settings;
 import androidx.lifecycle.Lifecycle;
 import androidx.test.core.app.ActivityScenario;
 import androidx.test.espresso.intent.Intents;
-import androidx.test.ext.junit.rules.ActivityScenarioRule;
 
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.MockedStatic;
 import org.robolectric.RobolectricTestRunner;
-import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowActivity;
 import org.robolectric.shadows.ShadowApplicationPackageManager;
 
 @RunWith(RobolectricTestRunner.class)
-@Config(sdk=28)
 public class RequestLocationPermissionActivityTest {
-
-	@Rule
-	public ActivityScenarioRule<RequestLocationPermissionActivity> scenarioRule = new ActivityScenarioRule<>(RequestLocationPermissionActivity.class);
-
 	private ShadowApplicationPackageManager packageManager;
 
 	@Before
@@ -49,9 +41,10 @@ public class RequestLocationPermissionActivityTest {
 
 	@Test
 	public void onClickAllow_withPermissionGranted_setResolveOk() {
-		try(MockedStatic<MedicLog> medicLogMock = mockStatic(MedicLog.class)) {
-			ActivityScenario<RequestLocationPermissionActivity> scenario = scenarioRule.getScenario();
-
+		try(
+			MockedStatic<MedicLog> medicLogMock = mockStatic(MedicLog.class);
+			ActivityScenario<RequestLocationPermissionActivity> scenario = ActivityScenario.launchActivityForResult(RequestLocationPermissionActivity.class)
+		) {
 			scenario.onActivity(requestLocationPermissionActivity -> {
 				//> GIVEN
 				ShadowActivity shadowActivity = shadowOf(requestLocationPermissionActivity);
@@ -83,9 +76,10 @@ public class RequestLocationPermissionActivityTest {
 
 	@Test
 	public void onClickAllow_with_COARSE_PermissionGranted_setResolveOk() {
-		try (MockedStatic<MedicLog> medicLogMock = mockStatic(MedicLog.class)) {
-			ActivityScenario<RequestLocationPermissionActivity> scenario = scenarioRule.getScenario();
-
+		try(
+			MockedStatic<MedicLog> medicLogMock = mockStatic(MedicLog.class);
+			ActivityScenario<RequestLocationPermissionActivity> scenario = ActivityScenario.launchActivityForResult(RequestLocationPermissionActivity.class)
+		) {
 			scenario.onActivity(requestLocationPermissionActivity -> {
 				//> GIVEN
 				ShadowActivity shadowActivity = shadowOf(requestLocationPermissionActivity);
@@ -123,9 +117,10 @@ public class RequestLocationPermissionActivityTest {
 
 	@Test
 	public void onClickAllow_withPermissionDenied_setResolveCanceled() {
-		try(MockedStatic<MedicLog> medicLogMock = mockStatic(MedicLog.class)) {
-			ActivityScenario<RequestLocationPermissionActivity> scenario = scenarioRule.getScenario();
-
+		try(
+			MockedStatic<MedicLog> medicLogMock = mockStatic(MedicLog.class);
+			ActivityScenario<RequestLocationPermissionActivity> scenario = ActivityScenario.launchActivityForResult(RequestLocationPermissionActivity.class)
+		) {
 			scenario.onActivity(requestLocationPermissionActivity -> {
 				Intents.init();
 
@@ -169,9 +164,10 @@ public class RequestLocationPermissionActivityTest {
 
 	@Test
 	public void onClickAllow_withNeverAskAgainAndPermissionGranted_setResolveOk() {
-		try(MockedStatic<MedicLog> medicLogMock = mockStatic(MedicLog.class)) {
-			ActivityScenario<RequestLocationPermissionActivity> scenario = scenarioRule.getScenario();
-
+		try(
+			MockedStatic<MedicLog> medicLogMock = mockStatic(MedicLog.class);
+			ActivityScenario<RequestLocationPermissionActivity> scenario = ActivityScenario.launchActivityForResult(RequestLocationPermissionActivity.class)
+		) {
 			scenario.onActivity(requestLocationPermissionActivity -> {
 				Intents.init();
 
@@ -218,9 +214,10 @@ public class RequestLocationPermissionActivityTest {
 
 	@Test
 	public void onClickAllow_withNeverAskAgainAnd_COARSE_PermissionGranted_setResolveOk() {
-		try(MockedStatic<MedicLog> medicLogMock = mockStatic(MedicLog.class)) {
-			ActivityScenario<RequestLocationPermissionActivity> scenario = scenarioRule.getScenario();
-
+		try(
+			MockedStatic<MedicLog> medicLogMock = mockStatic(MedicLog.class);
+			ActivityScenario<RequestLocationPermissionActivity> scenario = ActivityScenario.launchActivityForResult(RequestLocationPermissionActivity.class)
+		) {
 			scenario.onActivity(requestLocationPermissionActivity -> {
 				Intents.init();
 
@@ -267,9 +264,10 @@ public class RequestLocationPermissionActivityTest {
 
 	@Test
 	public void onClickAllow_withNeverAskAgainAndPermissionDenied_setResolveCanceled() {
-		try(MockedStatic<MedicLog> medicLogMock = mockStatic(MedicLog.class)) {
-			ActivityScenario<RequestLocationPermissionActivity> scenario = scenarioRule.getScenario();
-
+		try(
+			MockedStatic<MedicLog> medicLogMock = mockStatic(MedicLog.class);
+			ActivityScenario<RequestLocationPermissionActivity> scenario = ActivityScenario.launchActivityForResult(RequestLocationPermissionActivity.class)
+		) {
 			scenario.onActivity(requestLocationPermissionActivity -> {
 				Intents.init();
 
@@ -318,9 +316,10 @@ public class RequestLocationPermissionActivityTest {
 
 	@Test
 	public void onClickNegative_noIntentsStarted_setResolveCanceled() {
-		try(MockedStatic<MedicLog> medicLogMock = mockStatic(MedicLog.class)) {
-			ActivityScenario<RequestLocationPermissionActivity> scenario = scenarioRule.getScenario();
-
+		try(
+			MockedStatic<MedicLog> medicLogMock = mockStatic(MedicLog.class);
+			ActivityScenario<RequestLocationPermissionActivity> scenario = ActivityScenario.launchActivityForResult(RequestLocationPermissionActivity.class)
+		) {
 			scenario.onActivity(requestLocationPermissionActivity -> {
 				Intents.init();
 				//> WHEN
