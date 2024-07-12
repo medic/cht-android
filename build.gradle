@@ -419,6 +419,11 @@ android {
       applicationId = 'org.medicmobile.webapp.mobile.moh_togo_uat'
     }
 
+    moh_togo_echis {
+      dimension = 'brand'
+      applicationId = 'org.medicmobile.webapp.mobile.moh_togo_echis'
+    }
+
     lumbini_ne {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.lumbini_ne'
