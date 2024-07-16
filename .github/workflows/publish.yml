@@ -31,7 +31,7 @@ jobs:
     - name: Set up Ruby
       uses: ruby/setup-ruby@v1
       with:
-        ruby-version: 2.7
+        ruby-version: 3.3
 
     - name: Set up Fastlane
       run: gem install fastlane --no-document --quiet
@@ -443,6 +443,87 @@ jobs:
         ANDROID_KEYSTORE_PATH: moh_togo_uat.keystore
         ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_MOH_TOGO_UAT }}
         ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_MOH_TOGO_UAT }}
+
+
+    - name: Unpack secrets moh_togo_echis
+      env:
+        ANDROID_SECRETS_KEY: ${{ secrets.ANDROID_SECRETS_KEY_MOH_TOGO_ECHIS }}
+        ANDROID_SECRETS_IV: ${{ secrets.ANDROID_SECRETS_IV_MOH_TOGO_ECHIS }}
+      run: make org=moh_togo_echis keydec
+
+    - name: Assemble moh_togo_echis
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: build
+        options: '{ "flavor": "moh_togo_echis" }'
+      env:
+        ANDROID_KEYSTORE_PATH: moh_togo_echis.keystore
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_MOH_TOGO_ECHIS }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_MOH_TOGO_ECHIS }}
+
+    - name: Bundle moh_togo_echis
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: bundle
+        options: '{ "flavor": "moh_togo_echis" }'
+      env:
+        ANDROID_KEYSTORE_PATH: moh_togo_echis.keystore
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_MOH_TOGO_ECHIS }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_MOH_TOGO_ECHIS }}
+
+
+    - name: Unpack secrets lumbini_ne
+      env:
+        ANDROID_SECRETS_KEY: ${{ secrets.ANDROID_SECRETS_KEY_LUMBINI_NE }}
+        ANDROID_SECRETS_IV: ${{ secrets.ANDROID_SECRETS_IV_LUMBINI_NE }}
+      run: make org=lumbini_ne keydec
+
+    - name: Assemble lumbini_ne
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: build
+        options: '{ "flavor": "lumbini_ne" }'
+      env:
+        ANDROID_KEYSTORE_PATH: lumbini_ne.keystore
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_LUMBINI_NE }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_LUMBINI_NE }}
+
+    - name: Bundle lumbini_ne
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: bundle
+        options: '{ "flavor": "lumbini_ne" }'
+      env:
+        ANDROID_KEYSTORE_PATH: lumbini_ne.keystore
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_LUMBINI_NE }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_LUMBINI_NE }}
+
+    - name: Unpack secrets gandaki_ne
+      env:
+        ANDROID_SECRETS_KEY: ${{ secrets.ANDROID_SECRETS_KEY_GANDAKI_NE }}
+        ANDROID_SECRETS_IV: ${{ secrets.ANDROID_SECRETS_IV_GANDAKI_NE }}
+      run: make org=gandaki_ne keydec
+
+    - name: Assemble gandaki_ne
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: build
+        options: '{ "flavor": "gandaki_ne" }'
+      env:
+        ANDROID_KEYSTORE_PATH: gandaki_ne.keystore
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_GANDAKI_NE }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_GANDAKI_NE }}
+
+    - name: Bundle gandaki_ne
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: bundle
+        options: '{ "flavor": "gandaki_ne" }'
+      env:
+        ANDROID_KEYSTORE_PATH: gandaki_ne.keystore
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_GANDAKI_NE }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_GANDAKI_NE }}
+
 
     - name: GitHub release
       uses: softprops/action-gh-release@v1

@@ -62,10 +62,13 @@
     <activity android:name="RequestSendSmsPermissionActivity"
         android:screenOrientation="portrait"
        tools:ignore="DiscouragedApi"/>
+    <activity android:name="DomainVerificationActivity"
+      android:screenOrientation="portrait"
+      tools:ignore="DiscouragedApi" />
     <activity android:name="AppUrlIntentActivity"
         android:launchMode="singleInstance"
         android:exported="true">
-      <intent-filter>
+      <intent-filter android:autoVerify="true">
         <action android:name="android.intent.action.VIEW" />
         <category android:name="android.intent.category.DEFAULT" />
         <category android:name="android.intent.category.BROWSABLE" />
