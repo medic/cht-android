@@ -433,6 +433,12 @@ android {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.gandaki_ne'
     }
+
+    moh_civ_uat {
+      dimension = 'brand'
+      applicationId = 'org.medicmobile.webapp.mobile.moh_civ_uat'
+    }
+
   }
 
   splits {
