@@ -25,7 +25,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.MockSettings;
 import org.mockito.MockedStatic;
 import org.robolectric.RobolectricTestRunner;
-import org.robolectric.annotation.Config;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -33,7 +32,6 @@ import java.time.ZoneOffset;
 import java.util.stream.IntStream;
 
 @RunWith(RobolectricTestRunner.class)
-@Config(sdk=28)
 public class OpenSettingsDialogFragmentTest {
 
 	private OpenSettingsDialogFragment openSettingsDialogFragment;
@@ -51,11 +49,12 @@ public class OpenSettingsDialogFragmentTest {
 		doNothing().when(view).setOnTouchListener(argsOnTouch.capture());
 
 		MockSettings fragmentSettings = withSettings()
-			.useConstructor(view)
+			.useConstructor()
 			.defaultAnswer(CALLS_REAL_METHODS);
 
 		openSettingsDialogFragment = mock(OpenSettingsDialogFragment.class, fragmentSettings);
 		when(openSettingsDialogFragment.getActivity()).thenReturn(activity);
+		when(openSettingsDialogFragment.getActivity().findViewById(R.id.wbvMain)).thenReturn(view);
 		argsStartActivity = ArgumentCaptor.forClass(Intent.class);
 		doNothing().when(openSettingsDialogFragment).startActivity(argsStartActivity.capture());
 

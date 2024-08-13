@@ -3,16 +3,22 @@ package org.medicmobile.webapp.mobile;
 import static org.medicmobile.webapp.mobile.BuildConfig.APPLICATION_ID;
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static org.medicmobile.webapp.mobile.BuildConfig.VERSION_NAME;
+import static org.medicmobile.webapp.mobile.MedicLog.warn;
 
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.verify.domain.DomainVerificationManager;
+import android.content.pm.verify.domain.DomainVerificationUserState;
 import android.net.Uri;
+import android.os.Build;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.util.Map;
 import java.util.Optional;
 
 final class Utils {
@@ -81,7 +87,7 @@ final class Utils {
 		if(current.contains(APPLICATION_ID)) return current;
 
 		return String.format("%s %s/%s",
-				current, APPLICATION_ID, VERSION_NAME);
+			current, APPLICATION_ID, VERSION_NAME);
 	}
 
 	static void restartApp(Context context) {
@@ -116,5 +122,33 @@ final class Utils {
 
 	static boolean isDebug() {
 		return DEBUG;
+	}
+
+	static boolean checkIfDomainsAreVerified(Context context) {
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+			return true;
+		}
+
+		DomainVerificationManager manager =
+			context.getSystemService(DomainVerificationManager.class);
+		try {
+			DomainVerificationUserState userState =
+				manager.getDomainVerificationUserState(context.getPackageName());
+
+			return areAllDomainsVerifiedOrSelected(userState.getHostToStateMap());
+		} catch (PackageManager.NameNotFoundException e) {
+			warn(e, "Error while getting package name");
+		}
+		return true;
+	}
+
+	private static boolean areAllDomainsVerifiedOrSelected(Map<String, Integer> hostToStateMap) {
+		for (int stateValue : hostToStateMap.values()) {
+			if (stateValue != DomainVerificationUserState.DOMAIN_STATE_VERIFIED &&
+				stateValue != DomainVerificationUserState.DOMAIN_STATE_SELECTED) {
+				return false;
+			}
+		}
+		return true;
 	}
 }

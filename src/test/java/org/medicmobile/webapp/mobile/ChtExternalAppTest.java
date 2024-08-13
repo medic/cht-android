@@ -26,7 +26,6 @@ import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.mockito.MockedStatic;
 import org.robolectric.RobolectricTestRunner;
-import org.robolectric.annotation.Config;
 
 import java.io.File;
 import java.io.FileDescriptor;
@@ -40,7 +39,6 @@ import java.util.Optional;
 import java.util.Set;
 
 @RunWith(RobolectricTestRunner.class)
-@Config(sdk=28)
 public class ChtExternalAppTest {
 
 	@Rule

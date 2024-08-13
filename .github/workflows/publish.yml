@@ -22,16 +22,16 @@ jobs:
     - name: Set release version
       run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
 
-    - name: Set up Java 11
+    - name: Set up Java 17
       uses: actions/setup-java@v2
       with:
         distribution: 'adopt'
-        java-version: '11'
+        java-version: '17'
 
     - name: Set up Ruby
       uses: ruby/setup-ruby@v1
       with:
-        ruby-version: 2.6
+        ruby-version: 3.3
 
     - name: Set up Fastlane
       run: gem install fastlane --no-document --quiet
@@ -222,6 +222,39 @@ jobs:
       with:
         lane: build
         options: '{ "flavor": "itech_malawi" }'
+
+    - name: Unpack secrets cares_malawi_kch
+      env:
+        ANDROID_SECRETS_KEY: ${{ secrets.ANDROID_SECRETS_KEY_CARES_MALAWI_KCH }}
+        ANDROID_SECRETS_IV: ${{ secrets.ANDROID_SECRETS_IV_CARES_MALAWI_KCH }}
+      run: make org=cares_malawi_kch keydec
+
+    - name: Assemble cares_malawi_kch
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: build
+        options: '{ "flavor": "cares_malawi_kch" }'
+      env:
+        ANDROID_KEYSTORE_PATH: cares_malawi_kch.keystore
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_CARES_MALAWI_KCH }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_CARES_MALAWI_KCH }}
+
+    - name: Unpack secrets cares_malawi_mpc
+      env:
+        ANDROID_SECRETS_KEY: ${{ secrets.ANDROID_SECRETS_KEY_CARES_MALAWI_MPC }}
+        ANDROID_SECRETS_IV: ${{ secrets.ANDROID_SECRETS_IV_CARES_MALAWI_MPC }}
+      run: make org=cares_malawi_mpc keydec
+
+    - name: Assemble cares_malawi_mpc
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: build
+        options: '{ "flavor": "cares_malawi_mpc" }'
+      env:
+        ANDROID_KEYSTORE_PATH: cares_malawi_mpc.keystore
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_CARES_MALAWI_MPC }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_CARES_MALAWI_MPC }}
+
     - name: Assemble alerte_niger
       uses: maierj/fastlane-action@v1.4.0
       with:
@@ -307,6 +340,32 @@ jobs:
         ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_CHT_RCI }}
         ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_CHT_RCI }}
 
+    - name: Unpack secrets moh_civ_uat
+      env:
+        ANDROID_SECRETS_KEY: ${{ secrets.ANDROID_SECRETS_KEY_MOH_CIV_UAT }}
+        ANDROID_SECRETS_IV: ${{ secrets.ANDROID_SECRETS_IV_MOH_CIV_UAT }}
+      run: make org=moh_civ_uat keydec
+
+    - name: Assemble moh_civ_uat
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: build
+        options: '{ "flavor": "moh_civ_uat" }'
+      env:
+        ANDROID_KEYSTORE_PATH: moh_civ_uat.keystore
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_MOH_CIV_UAT }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_MOH_CIV_UAT }}
+
+    - name: Bundle moh_civ_uat
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: bundle
+        options: '{ "flavor": "moh_civ_uat" }'
+      env:
+        ANDROID_KEYSTORE_PATH: moh_civ_uat.keystore
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_MOH_CIV_UAT }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_MOH_CIV_UAT }}
+
     - name: Unpack secrets moh_mali_chw
       env:
         ANDROID_SECRETS_KEY: ${{ secrets.ANDROID_SECRETS_KEY_MOH_MALI_CHW }}
@@ -384,6 +443,113 @@ jobs:
         ANDROID_KEYSTORE_PATH: moh_mali_chw_training_three.keystore
         ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_MOH_MALI_CHW_TRAINING_THREE }}
         ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_MOH_MALI_CHW_TRAINING_THREE }}
+    
+    - name: Unpack secrets moh_togo_uat
+      env:
+        ANDROID_SECRETS_KEY: ${{ secrets.ANDROID_SECRETS_KEY_MOH_TOGO_UAT }}
+        ANDROID_SECRETS_IV: ${{ secrets.ANDROID_SECRETS_IV_MOH_TOGO_UAT }}
+      run: make org=moh_togo_uat keydec
+
+    - name: Assemble moh_togo_uat
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: build
+        options: '{ "flavor": "moh_togo_uat" }'
+      env:
+        ANDROID_KEYSTORE_PATH: moh_togo_uat.keystore
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_MOH_TOGO_UAT }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_MOH_TOGO_UAT }}
+
+    - name: Bundle moh_togo_uat
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: bundle
+        options: '{ "flavor": "moh_togo_uat" }'
+      env:
+        ANDROID_KEYSTORE_PATH: moh_togo_uat.keystore
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_MOH_TOGO_UAT }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_MOH_TOGO_UAT }}
+
+
+    - name: Unpack secrets moh_togo_echis
+      env:
+        ANDROID_SECRETS_KEY: ${{ secrets.ANDROID_SECRETS_KEY_MOH_TOGO_ECHIS }}
+        ANDROID_SECRETS_IV: ${{ secrets.ANDROID_SECRETS_IV_MOH_TOGO_ECHIS }}
+      run: make org=moh_togo_echis keydec
+
+    - name: Assemble moh_togo_echis
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: build
+        options: '{ "flavor": "moh_togo_echis" }'
+      env:
+        ANDROID_KEYSTORE_PATH: moh_togo_echis.keystore
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_MOH_TOGO_ECHIS }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_MOH_TOGO_ECHIS }}
+
+    - name: Bundle moh_togo_echis
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: bundle
+        options: '{ "flavor": "moh_togo_echis" }'
+      env:
+        ANDROID_KEYSTORE_PATH: moh_togo_echis.keystore
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_MOH_TOGO_ECHIS }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_MOH_TOGO_ECHIS }}
+
+
+    - name: Unpack secrets lumbini_ne
+      env:
+        ANDROID_SECRETS_KEY: ${{ secrets.ANDROID_SECRETS_KEY_LUMBINI_NE }}
+        ANDROID_SECRETS_IV: ${{ secrets.ANDROID_SECRETS_IV_LUMBINI_NE }}
+      run: make org=lumbini_ne keydec
+
+    - name: Assemble lumbini_ne
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: build
+        options: '{ "flavor": "lumbini_ne" }'
+      env:
+        ANDROID_KEYSTORE_PATH: lumbini_ne.keystore
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_LUMBINI_NE }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_LUMBINI_NE }}
+
+    - name: Bundle lumbini_ne
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: bundle
+        options: '{ "flavor": "lumbini_ne" }'
+      env:
+        ANDROID_KEYSTORE_PATH: lumbini_ne.keystore
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_LUMBINI_NE }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_LUMBINI_NE }}
+
+    - name: Unpack secrets gandaki_ne
+      env:
+        ANDROID_SECRETS_KEY: ${{ secrets.ANDROID_SECRETS_KEY_GANDAKI_NE }}
+        ANDROID_SECRETS_IV: ${{ secrets.ANDROID_SECRETS_IV_GANDAKI_NE }}
+      run: make org=gandaki_ne keydec
+
+    - name: Assemble gandaki_ne
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: build
+        options: '{ "flavor": "gandaki_ne" }'
+      env:
+        ANDROID_KEYSTORE_PATH: gandaki_ne.keystore
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_GANDAKI_NE }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_GANDAKI_NE }}
+
+    - name: Bundle gandaki_ne
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: bundle
+        options: '{ "flavor": "gandaki_ne" }'
+      env:
+        ANDROID_KEYSTORE_PATH: gandaki_ne.keystore
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_GANDAKI_NE }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_GANDAKI_NE }}
+
 
     - name: GitHub release
       uses: softprops/action-gh-release@v1
