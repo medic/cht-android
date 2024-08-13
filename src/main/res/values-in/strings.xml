@@ -5,4 +5,10 @@
 	<string name="locRequestOkButton">Nyalakan</string>
 	<string name="locRequestDenyButton">Tidak, terima kasih</string>
 	<string name="locRequestIconDescription">Ikon lokasiku</string>
+
+  <string name="domainAppAssociationTitle">Tautkan domain dengan %s?</string>
+  <string name="domainAppAssociationMessage">Ini memastikan semua tautan akan terbuka di aplikasi Anda untuk pengalaman yang lebih baik.</string>
+  <string name="domainAppAssociationIconDescription">Ikon Domain</string>
+  <string name="domainAppAssociationRequestOkButton">Ya, tautkan domain</string>
+  <string name="domainAppAssociationRequestDenyButton">Jangan tautkan</string>
 </resources>

@@ -28,4 +28,10 @@
   <string name="connErrorMessage">Parece que no estás conectado a Internet. Por favor comprueba tu conexión y vuelve a intentar.</string>
 
 	<string name="waitMigration">Por favor espere a que el proceso de migración haya finalizado</string>
+
+  <string name="domainAppAssociationTitle">¿Vincular dominio con %s?</string>
+  <string name="domainAppAssociationMessage">Esto garantiza que todos los enlaces se abrirán en su aplicación para mejor experiencia</string>
+  <string name="domainAppAssociationIconDescription">Icono del dominio</string>
+  <string name="domainAppAssociationRequestOkButton">Sí, vincule dominio</string>
+  <string name="domainAppAssociationRequestDenyButton">No vincular</string>
 </resources>
