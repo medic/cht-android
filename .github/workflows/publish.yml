@@ -418,6 +418,32 @@ jobs:
         ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_MOH_NIGER_CHW }}
         ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_MOH_NIGER_CHW }}
 
+    - name: Unpack secrets moh_mali_chw_training_three
+      env:
+        ANDROID_SECRETS_KEY: ${{ secrets.ANDROID_SECRETS_KEY_MOH_MALI_CHW_TRAINING_THREE }}
+        ANDROID_SECRETS_IV: ${{ secrets.ANDROID_SECRETS_IV_MOH_MALI_CHW_TRAINING_THREE }}
+      run: make org=moh_mali_chw_training_three keydec
+
+    - name: Assemble moh_mali_chw_training_three
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: build
+        options: '{ "flavor": "moh_mali_chw_training_three" }'
+      env:
+        ANDROID_KEYSTORE_PATH: moh_mali_chw_training_three.keystore
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_MOH_MALI_CHW_TRAINING_THREE }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_MOH_MALI_CHW_TRAINING_THREE }}
+
+    - name: Bundle moh_mali_chw_training_three
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: bundle
+        options: '{ "flavor": "moh_mali_chw_training_three" }'
+      env:
+        ANDROID_KEYSTORE_PATH: moh_mali_chw_training_three.keystore
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_MOH_MALI_CHW_TRAINING_THREE }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_MOH_MALI_CHW_TRAINING_THREE }}
+    
     - name: Unpack secrets moh_mali_chw_training_2
       env:
         ANDROID_SECRETS_KEY: ${{ secrets.ANDROID_SECRETS_KEY_MOH_MALI_CHW_TRAINING_2 }}
@@ -443,6 +469,7 @@ jobs:
         ANDROID_KEYSTORE_PATH: moh_mali_chw_training_2.keystore
         ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_MOH_MALI_CHW_TRAINING_2 }}
         ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_MOH_MALI_CHW_TRAINING_2 }}
+
     - name: Unpack secrets moh_togo_uat
       env:
         ANDROID_SECRETS_KEY: ${{ secrets.ANDROID_SECRETS_KEY_MOH_TOGO_UAT }}
@@ -495,7 +522,6 @@ jobs:
         ANDROID_KEYSTORE_PATH: moh_togo_echis.keystore
         ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_MOH_TOGO_ECHIS }}
         ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_MOH_TOGO_ECHIS }}
-
 
     - name: Unpack secrets lumbini_ne
       env:
