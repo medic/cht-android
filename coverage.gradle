@@ -7,16 +7,12 @@ tasks.withType(Test) {
 
 project.afterEvaluate {
   def variantName = 'unbrandedDebug'
-  def testType = "${variantName.capitalize()}UnitTest"
-  def testTaskName = "test${testType}"
+  def testType = "${variantName}UnitTest"
+  def testTaskName = "test${testType.capitalize()}"
 
-  tasks.create(name: "make${testType}CoverageReport", type: JacocoReport, dependsOn: testTaskName) {
+  tasks.create(name: "make${testType.capitalize()}CoverageReport", type: JacocoReport, dependsOn: testTaskName) {
     group = 'Reporting'
     description = "Generate Jacoco coverage report for the ${variantName} build."
-
-    reports {
-      html.enabled(true)
-    }
 
     def excludes = [
       '**/R.class',
@@ -38,10 +34,10 @@ project.afterEvaluate {
     ]
 
     classDirectories.from = files(fileTree(
-      dir: "${project.buildDir}/intermediates/javac/${variantName}/classes",
+      dir: layout.buildDirectory.dir("intermediates/javac/${variantName}/compile${variantName.capitalize()}JavaWithJavac/classes"),
       excludes: excludes
     ))
     sourceDirectories.from = file("${project.projectDir}/src/main/java")
-    executionData.from = file("${project.buildDir}/outputs/unit_test_code_coverage/${testType}/${testTaskName}.exec")
+    executionData.from = layout.buildDirectory.file("outputs/unit_test_code_coverage/${testType}/${testTaskName}.exec")
   }
 }

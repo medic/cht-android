@@ -1,5 +1,9 @@
 package org.medicmobile.webapp.mobile;
 
+import static android.view.View.GONE;
+import static android.view.View.VISIBLE;
+import static org.medicmobile.webapp.mobile.MedicLog.trace;
+
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -8,10 +12,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.Window;
 
-import static android.view.View.VISIBLE;
-import static android.view.View.GONE;
-import static org.medicmobile.webapp.mobile.MedicLog.trace;
-
+import androidx.core.content.ContextCompat;
 
 /**
  * Activity displayed to catch connection errors and give the user
@@ -35,12 +36,17 @@ public class ConnectionErrorActivity extends ClosableAppActivity {
 		BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
 			@Override public void onReceive(Context context, Intent intent) {
 				if ("onPageFinished".equals(intent.getAction()) && isSpinning()) {
-					unregisterReceiver(this);
+					context.unregisterReceiver(this);
 					finish();
 				}
 			}
 		};
-		registerReceiver(broadcastReceiver, new IntentFilter("onPageFinished"));
+		ContextCompat.registerReceiver(
+			getApplicationContext(),
+			broadcastReceiver,
+			new IntentFilter("onPageFinished"),
+			ContextCompat.RECEIVER_NOT_EXPORTED
+		);
 
 		Intent i = getIntent();
 		connErrorInfo = i.getStringExtra("connErrorInfo");

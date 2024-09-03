@@ -102,7 +102,7 @@ public class EmbeddedBrowserActivity extends Activity {
 		container = findViewById(R.id.wbvMain);
 		getFragmentManager()
 			.beginTransaction()
-			.add(new OpenSettingsDialogFragment(container), OpenSettingsDialogFragment.class.getName())
+			.add(new OpenSettingsDialogFragment(), OpenSettingsDialogFragment.class.getName())
 			.commit();
 
 		configureUserAgent();
@@ -395,7 +395,12 @@ public class EmbeddedBrowserActivity extends Activity {
 				}
 			}
 		};
-		registerReceiver(broadcastReceiver, new IntentFilter("retryConnection"));
+		ContextCompat.registerReceiver(
+			getApplicationContext(),
+			broadcastReceiver,
+			new IntentFilter("retryConnection"),
+			ContextCompat.RECEIVER_NOT_EXPORTED
+		);
 	}
 
 //> ENUMS

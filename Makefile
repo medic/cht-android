@@ -168,10 +168,8 @@ ifndef ANDROID_SECRETS_IV
 	$(eval ANDROID_KEYSTORE_PASSWORD := $(shell echo ${${VARNAME}}))
 	$(eval VARNAME=ANDROID_KEY_PASSWORD_${ORG_UPPER})
 	$(eval ANDROID_KEY_PASSWORD := $(shell echo ${${VARNAME}}))
-	$(eval VARNAME=ANDROID_KEY_ALIAS_${ORG_UPPER})
-	$(eval ANDROID_KEY_ALIAS := $(shell echo ${${VARNAME}}))
-	$(eval VARNAME=ANDROID_KEYSTORE_PATH_${ORG_UPPER})
-	$(eval ANDROID_KEYSTORE_PATH := $(shell echo ${${VARNAME}}))
+	$(eval ANDROID_KEY_ALIAS := "medicmobile")
+	$(eval ANDROID_KEYSTORE_PATH := "${org}.keystore")
 endif
 
 check-keystore-exist:
@@ -216,8 +214,6 @@ secrets/secrets-${org}.tar.gz.enc: secrets/secrets-${org}.tar.gz
 	$(info export ANDROID_KEY_PASSWORD_$(ORG_UPPER)=$(ANDROID_KEYSTORE_PASSWORD))
 	$(info export ANDROID_SECRETS_IV_$(ORG_UPPER)=$(ANDROID_SECRETS_IV))
 	$(info export ANDROID_SECRETS_KEY_$(ORG_UPPER)=$(ANDROID_SECRETS_KEY))
-	$(info export ANDROID_KEYSTORE_PATH_$(ORG_UPPER)=$(ANDROID_KEYSTORE_PATH))
-	$(info export ANDROID_KEY_ALIAS_$(ORG_UPPER)=$(ANDROID_KEY_ALIAS))
 	$(info )
 	$(info #)
 	$(info # The file secrets/secrets-${org}.tar.gz.enc was created and has to be added to the git)

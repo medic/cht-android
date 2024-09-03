@@ -57,4 +57,10 @@
 
 	<string name="waitMigration">Please wait until the migration process is finished</string>
   <string name="usingTrainingApp">Use only during training</string>
+
+  <string name="domainAppAssociationTitle">Link domain with %s?</string>
+  <string name="domainAppAssociationMessage">This ensures all links will open in your app for a better experience.</string>
+  <string name="domainAppAssociationIconDescription">Domain Icon</string>
+  <string name="domainAppAssociationRequestOkButton">Yes, link domain</string>
+  <string name="domainAppAssociationRequestDenyButton">Don\'t link</string>
 </resources>

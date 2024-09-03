@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    package="org.medicmobile.webapp.mobile">
+    xmlns:tools="http://schemas.android.com/tools">
 
   <uses-sdk tools:ignore="OldTargetApi"/>
 
@@ -20,7 +19,7 @@
   <uses-permission android:name="com.android.launcher.permission.UNINSTALL_SHORTCUT"/>
 
   <!-- READ_EXTERNAL_STORAGE is required if users want to include photos from their phone  -->
-  <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+  <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32"/>
 
   <!-- SEND_SMS is required if users want to send reports as SMS.To able the feature add the following line:
   <uses-permission android:name="android.permission.SEND_SMS"/>
@@ -41,25 +40,35 @@
     </activity>
     <activity android:name="EmbeddedBrowserActivity"
         android:screenOrientation="portrait"
-        android:configChanges="orientation|screenSize"/>
+        android:configChanges="orientation|screenSize"
+        tools:ignore="DiscouragedApi"/>
     <activity android:name="ConnectionErrorActivity"
         android:screenOrientation="portrait"
         android:configChanges="orientation|screenSize"
-        android:launchMode="singleTop"/>
+        android:launchMode="singleTop"
+        tools:ignore="DiscouragedApi"/>
     <activity android:name="FreeSpaceWarningActivity"
-        android:screenOrientation="portrait"/>
+        android:screenOrientation="portrait"
+        tools:ignore="DiscouragedApi"/>
     <activity android:name="SettingsDialogActivity"
-        android:screenOrientation="portrait"/>
+        android:screenOrientation="portrait"
+        tools:ignore="DiscouragedApi"/>
     <activity android:name="RequestLocationPermissionActivity"
-        android:screenOrientation="portrait"/>
+        android:screenOrientation="portrait"
+        tools:ignore="DiscouragedApi"/>
     <activity android:name="RequestStoragePermissionActivity"
-        android:screenOrientation="portrait"/>
+        android:screenOrientation="portrait"
+       tools:ignore="DiscouragedApi"/>
     <activity android:name="RequestSendSmsPermissionActivity"
-        android:screenOrientation="portrait"/>
+        android:screenOrientation="portrait"
+       tools:ignore="DiscouragedApi"/>
+    <activity android:name="DomainVerificationActivity"
+      android:screenOrientation="portrait"
+      tools:ignore="DiscouragedApi" />
     <activity android:name="AppUrlIntentActivity"
         android:launchMode="singleInstance"
         android:exported="true">
-      <intent-filter>
+      <intent-filter android:autoVerify="true">
         <action android:name="android.intent.action.VIEW" />
         <category android:name="android.intent.category.DEFAULT" />
         <category android:name="android.intent.category.BROWSABLE" />
@@ -69,7 +78,8 @@
     <activity android:name="UpgradingActivity"
       android:screenOrientation="portrait"
       android:configChanges="orientation|screenSize"
-      android:launchMode="singleTop"/>
+      android:launchMode="singleTop"
+      tools:ignore="DiscouragedApi"/>
 
     <provider
       android:name="androidx.core.content.FileProvider"
