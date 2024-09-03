@@ -86,19 +86,12 @@ test-coverage:
 	${GRADLE} ${GRADLE_OPTS} makeUnbrandedDebugUnitTestCoverageReport
 
 test-ui:
-	${GRADLE} connectedUnbrandedDebugAndroidTest \
-		-Pabi=${abi} --stacktrace -Pandroid.testInstrumentationRunnerArguments.class=\
-	org.medicmobile.webapp.mobile.SettingsDialogActivityTest
+	${GRADLE} connectedUnbrandedDebugAndroidTest -Pabi=${abi} --stacktrace
 
 test-ui-gamma:
 	${GRADLE} connectedMedicmobilegammaDebugAndroidTest -Pabi=${abi} --stacktrace
 
-test-ui-url:
-	${GRADLE} connectedUnbrandedDebugAndroidTest \
-		-Pabi=${abi} --stacktrace -Pandroid.testInstrumentationRunnerArguments.class=\
-	org.medicmobile.webapp.mobile.LastUrlTest
-
-test-ui-all: test-ui test-ui-gamma test-ui-url
+test-ui-all: test-ui test-ui-gamma
 
 test-bash-keystore:
 	./src/test/bash/bats/bin/bats src/test/bash/test-keystore.bats
