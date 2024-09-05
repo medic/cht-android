@@ -60,6 +60,18 @@ jobs:
         ANDROID_SECRETS_IV: ${{ secrets.ANDROID_SECRETS_IV_CHT_RCI }}
       run: make org=cht_rci keydec
 
+    - name: Unpack secrets cht_rci_test
+      env:
+        ANDROID_SECRETS_KEY: ${{ secrets.ANDROID_SECRETS_KEY_CHT_RCI_TEST }}
+        ANDROID_SECRETS_IV: ${{ secrets.ANDROID_SECRETS_IV_CHT_RCI_TEST }}
+      run: make org=cht_rci_test keydec
+
+    - name: Unpack secrets cht_rci_test_cht4
+      env:
+        ANDROID_SECRETS_KEY: ${{ secrets.ANDROID_SECRETS_KEY_CHT_RCI_TEST_CHT4 }}
+        ANDROID_SECRETS_IV: ${{ secrets.ANDROID_SECRETS_IV_CHT_RCI_TEST_CHT4 }}
+      run: make org=cht_rci_test_cht4 keydec
+
     - name: Assemble unbranded
       uses: maierj/fastlane-action@v1.4.0
       with:
@@ -311,6 +323,27 @@ jobs:
         ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_CHT_RCI }}
         ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_CHT_RCI }}
 
+    - name: Assemble cht_rci_test
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: build
+        options: '{ "flavor": "cht_rci_test" }'
+      env:
+        ANDROID_KEYSTORE_PATH: cht_rci_test.keystore
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_CHT_RCI_TEST }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_CHT_RCI_TEST }}
+
+
+    - name: Assemble cht_rci_test_cht4
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: build
+        options: '{ "flavor": "cht_rci_test_cht4" }'
+      env:
+        ANDROID_KEYSTORE_PATH: cht_rci_test_cht4.keystore
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_CHT_RCI_TEST_CHT4 }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_CHT_RCI_TEST_CHT4 }}
+
     - name: Bundle alerte_niger
       uses: maierj/fastlane-action@v1.4.0
       with:
@@ -339,6 +372,28 @@ jobs:
         ANDROID_KEYSTORE_PATH: cht_rci.keystore
         ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_CHT_RCI }}
         ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_CHT_RCI }}
+
+
+    - name: Bundle cht_rci_test
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: bundle
+        options: '{ "flavor": "cht_rci_test" }'
+      env:
+        ANDROID_KEYSTORE_PATH: cht_rci_test.keystore
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_CHT_RCI_TEST }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_CHT_RCI_TEST }}
+
+
+    - name: Bundle cht_rci_test_cht4
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: bundle
+        options: '{ "flavor": "cht_rci_test_cht4" }'
+      env:
+        ANDROID_KEYSTORE_PATH: cht_rci_test_cht4.keystore
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_CHT_RCI_TEST_CHT4 }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_CHT_RCI_TEST_CHT4 }}
 
     - name: Unpack secrets moh_civ_uat
       env:
@@ -574,6 +629,97 @@ jobs:
         ANDROID_KEYSTORE_PATH: gandaki_ne.keystore
         ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_GANDAKI_NE }}
         ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_GANDAKI_NE }}
+
+
+
+
+
+ - name: Assemble musomali_test
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: build
+        options: '{ "flavor": "musomali_test" }'
+      env:
+        ANDROID_KEYSTORE_PATH: musomali_test.keystore
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_MUSOMALI_TEST }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_MUSOMALI_TEST }}
+
+ - name: Bundle musomali_test
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: bundle
+        options: '{ "flavor": "musomali_test" }'
+      env:
+        ANDROID_KEYSTORE_PATH: musomali_test.keystore
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_MUSOMALI_TEST }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_MUSOMALI_TEST }}
+
+- name: Unpack secrets musomali_test
+      env:
+        ANDROID_SECRETS_KEY: ${{ secrets.ANDROID_SECRETS_KEY_MUSOMALI_TEST }}
+        ANDROID_SECRETS_IV: ${{ secrets.ANDROID_SECRETS_IV_MUSOMALI_TEST }}
+      run: make org=musomali_test keydec
+
+
+
+
+- name: Assemble musomali_test_sh
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: build
+        options: '{ "flavor": "musomali_test_sh" }'
+      env:
+        ANDROID_KEYSTORE_PATH: musomali_test_sh.keystore
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_MUSOMALI_TEST_SH }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_MUSOMALI_TEST_SH }}
+
+ - name: Bundle musomali_test_sh
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: bundle
+        options: '{ "flavor": "musomali_test_sh" }'
+      env:
+        ANDROID_KEYSTORE_PATH: musomali_test_sh.keystore
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_MUSOMALI_TEST_SH }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_MUSOMALI_TEST_SH }}
+
+- name: Unpack secrets musomali_test_sh
+      env:
+        ANDROID_SECRETS_KEY: ${{ secrets.ANDROID_SECRETS_KEY_MUSOMALI_TEST_SH }}
+        ANDROID_SECRETS_IV: ${{ secrets.ANDROID_SECRETS_IV_MUSOMALI_TEST_SH }}
+      run: make org=musomali_test_sh keydec
+
+
+
+
+
+
+- name: Assemble musomali_test_cht4
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: build
+        options: '{ "flavor": "musomali_test_cht4" }'
+      env:
+        ANDROID_KEYSTORE_PATH: musomali_test_cht4.keystore
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_MUSOMALI_TEST_CHT4 }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_MUSOMALI_TEST_CHT4 }}
+
+ - name: Bundle musomali_test_cht4
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: bundle
+        options: '{ "flavor": "musomali_test_cht4" }'
+      env:
+        ANDROID_KEYSTORE_PATH: musomali_test_cht4.keystore
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_MUSOMALI_TEST_CHT4 }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_MUSOMALI_TEST_CHT4 }}
+
+- name: Unpack secrets musomali_test_cht4
+      env:
+        ANDROID_SECRETS_KEY: ${{ secrets.ANDROID_SECRETS_KEY_MUSOMALI_TEST_CHT4 }}
+        ANDROID_SECRETS_IV: ${{ secrets.ANDROID_SECRETS_IV_MUSOMALI_TEST_CHT4 }}
+      run: make org=musomali_test_cht4 keydec
+
 
 
     - name: GitHub release
