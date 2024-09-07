@@ -575,6 +575,31 @@ jobs:
         ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_GANDAKI_NE }}
         ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_GANDAKI_NE }}
 
+    - name: Unpack secrets safaridoctors_ke_yha
+      env:
+        ANDROID_SECRETS_KEY: ${{ secrets.ANDROID_SECRETS_KEY_SAFARIDOCTORS_KE_YHA }}
+        ANDROID_SECRETS_IV: ${{ secrets.ANDROID_SECRETS_IV_SAFARIDOCTORS_KE_YHA }}
+      run: make org=new_brand keydec
+
+    - name: Assemble new_brand
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: build
+        options: '{ "flavor": "safaridoctors_ke_yha" }'
+      env:
+        ANDROID_KEYSTORE_PATH: safaridoctors_ke_yha.keystore
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_SAFARIDOCTORS_KE_YHA }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_SAFARIDOCTORS_KE_YHA }}
+
+    - name: Bundle new_brand
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: bundle
+        options: '{ "flavor": "safaridoctors_ke_yha" }'
+      env:
+        ANDROID_KEYSTORE_PATH: safaridoctors_ke_yha.keystore
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_SAFARIDOCTORS_KE_YHA }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_SAFARIDOCTORS_KE_YHA }}
 
     - name: GitHub release
       uses: softprops/action-gh-release@v1
