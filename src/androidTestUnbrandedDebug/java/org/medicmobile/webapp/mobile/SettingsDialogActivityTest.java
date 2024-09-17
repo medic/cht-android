@@ -60,7 +60,7 @@ public class SettingsDialogActivityTest {
 
 	@Test
 	public void serverSelectionScreenIsDisplayed() {
-		onView(withText("CHT Android")).check(matches(isDisplayed()));
+		onView(withText("This does not exist")).check(matches(isDisplayed()));
 		onView(withId(R.id.instanceSearchBox)).check(matches(isDisplayed()));
 		onView(withText("Custom")).check(matches(isDisplayed()));
 		onView(withId(R.id.lstServers)).check(matches(isDisplayed()));
