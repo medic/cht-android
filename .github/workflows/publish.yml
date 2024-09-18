@@ -575,6 +575,31 @@ jobs:
         ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_GANDAKI_NE }}
         ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_GANDAKI_NE }}
 
+    - name: Unpack secrets safaridoctors_kenya_yha
+      env:
+        ANDROID_SECRETS_KEY: ${{ secrets.ANDROID_SECRETS_KEY_SAFARIDOCTORS_KENYA_YHA }}
+        ANDROID_SECRETS_IV: ${{ secrets.ANDROID_SECRETS_IV_SAFARIDOCTORS_KENYA_YHA }}
+      run: make org=safaridoctors_kenya_yha keydec
+
+    - name: Assemble safaridoctors_kenya_yha
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: build
+        options: '{ "flavor": "safaridoctors_kenya_yha" }'
+      env:
+        ANDROID_KEYSTORE_PATH: safaridoctors_kenya_yha.keystore
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_SAFARIDOCTORS_KENYA_YHA }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_SAFARIDOCTORS_KENYA_YHA }}
+
+    - name: Bundle safaridoctors_kenya_yha
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: bundle
+        options: '{ "flavor": "safaridoctors_kenya_yha" }'
+      env:
+        ANDROID_KEYSTORE_PATH: safaridoctors_kenya_yha.keystore
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_SAFARIDOCTORS_KENYA_YHA }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_SAFARIDOCTORS_KENYA_YHA }}
 
     - name: Unpack secrets moh_civ
       env:
