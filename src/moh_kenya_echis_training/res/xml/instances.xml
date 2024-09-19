@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<instances xmlns:android="http://schemas.android.com/apk/res/android">
+  <instance name="eCHIS Training 1">https://chis-training.health.go.ke</instance>
+  <instance name="eCHIS Training 2">https://chis-training-2.health.go.ke</instance>
+  <instance name="eCHIS Training 3">https://chis-training-3.health.go.ke</instance>
+  <instance name="eCHIS Testing">https://chis-4-testing.health.go.ke</instance>
+</instances>
