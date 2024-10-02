@@ -5,6 +5,9 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
@@ -19,6 +22,8 @@ public class OpenSettingsDialogFragment extends Fragment {
 	private long lastTimeTap = 0;
 	private GestureHandler swipeGesture;
 	private static final int TIME_BETWEEN_TAPS = 500;
+	private View mainView;
+	private boolean isViewSetup = false;
 
 	private final OnTouchListener onTouchListener = new OnTouchListener() {
 		@SuppressLint("ClickableViewAccessibility")
@@ -33,8 +38,32 @@ public class OpenSettingsDialogFragment extends Fragment {
 	@Override
 	public void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		View view = getActivity().findViewById(R.id.wbvMain);
-		view.setOnTouchListener(onTouchListener);
+		setRetainInstance(true);
+	}
+
+	@Override
+	public void onActivityCreated(Bundle savedInstanceState) {
+		super.onActivityCreated(savedInstanceState);
+		setupViewWithRetry();
+	}
+
+	private void setupViewWithRetry() {
+		new Handler(Looper.getMainLooper()).post(new Runnable() {
+			@Override
+			public void run() {
+				if (getActivity() != null && !isViewSetup) {
+					View view = getActivity().findViewById(R.id.wbvMain);
+
+					if (view != null) {
+						mainView = view;
+						mainView.setOnTouchListener(onTouchListener);
+						isViewSetup = true;
+					} else {
+						new Handler(Looper.getMainLooper()).postDelayed(this, 100);
+					}
+				}
+			}
+		});
 	}
 
 	private void countTaps(MotionEvent event) {
