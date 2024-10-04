@@ -11,9 +11,11 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
+import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.os.Looper;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
@@ -59,6 +61,8 @@ public class OpenSettingsDialogFragmentTest {
 		doNothing().when(openSettingsDialogFragment).startActivity(argsStartActivity.capture());
 
 		openSettingsDialogFragment.onCreate(null);
+		openSettingsDialogFragment.onActivityCreated(null);
+		shadowOf(Looper.getMainLooper()).idle();
 	}
 
 	private void tap(OnTouchListener onTouchListener, MotionEvent eventTap, int times) {
