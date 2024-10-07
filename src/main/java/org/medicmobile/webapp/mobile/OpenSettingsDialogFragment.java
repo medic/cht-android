@@ -46,20 +46,28 @@ public class OpenSettingsDialogFragment extends Fragment {
 		setupViewWithRetry();
 	}
 
+	private boolean shouldSetupView() {
+		return getActivity() != null && !isViewSetup;
+	}
+
+	private boolean setupView() {
+		View view = getActivity().findViewById(R.id.wbvMain);
+		if (view != null) {
+			mainView = view;
+			mainView.setOnTouchListener(onTouchListener);
+			isViewSetup = true;
+			return true;
+		}
+
+		return false;
+	}
+
 	private void setupViewWithRetry() {
 		new Handler(Looper.getMainLooper()).post(new Runnable() {
 			@Override
 			public void run() {
-				if (getActivity() != null && !isViewSetup) {
-					View view = getActivity().findViewById(R.id.wbvMain);
-
-					if (view != null) {
-						mainView = view;
-						mainView.setOnTouchListener(onTouchListener);
-						isViewSetup = true;
-					} else {
-						new Handler(Looper.getMainLooper()).postDelayed(this, 100);
-					}
+				if (shouldSetupView() && !setupView()) {
+					new Handler(Looper.getMainLooper()).postDelayed(this, 100);
 				}
 			}
 		});
