@@ -22,7 +22,7 @@ public class OpenSettingsDialogFragment extends Fragment {
 	private GestureHandler swipeGesture;
 	private static final int TIME_BETWEEN_TAPS = 500;
 	private View mainView;
-	private boolean isViewSetup = false;
+	boolean isViewSetup = false;
 
 	private final OnTouchListener onTouchListener = new OnTouchListener() {
 		@SuppressLint("ClickableViewAccessibility")
@@ -62,13 +62,17 @@ public class OpenSettingsDialogFragment extends Fragment {
 		return false;
 	}
 
-	private void setupViewWithRetry() {
+	void setupViewWithRetry() {
 		new Handler(Looper.getMainLooper()).post(new Runnable() {
 			@Override
 			public void run() {
-				if (shouldSetupView() && !setupView()) {
-					new Handler(Looper.getMainLooper()).postDelayed(this, 100);
+				if (!shouldSetupView() || !setupView()) {
+					retrySetup();
 				}
+			}
+
+			private void retrySetup() {
+				new Handler(Looper.getMainLooper()).postDelayed(this, 100);
 			}
 		});
 	}
