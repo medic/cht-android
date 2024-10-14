@@ -3,12 +3,10 @@ package org.medicmobile.webapp.mobile;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.OptIn;
 import androidx.appcompat.app.AppCompatActivity;
@@ -66,7 +64,7 @@ public class BarcodeScanner extends AppCompatActivity {
 		cameraExecutor.shutdown();
 	}
 
-	private void startCamera () {
+	private void startCamera() {
 		ListenableFuture<ProcessCameraProvider> cameraProviderFuture = ProcessCameraProvider.getInstance(this);
 		cameraProviderFuture.addListener(() -> {
 				try {
@@ -107,7 +105,12 @@ public class BarcodeScanner extends AppCompatActivity {
 									Barcode.FORMAT_QR_CODE,
 									Barcode.FORMAT_AZTEC,
 									Barcode.FORMAT_CODE_39,
-									Barcode.FORMAT_PDF417
+									Barcode.FORMAT_PDF417,
+									Barcode.FORMAT_EAN_13,
+									Barcode.FORMAT_CODE_128,
+									Barcode.FORMAT_UPC_E,
+									Barcode.FORMAT_UPC_A,
+									Barcode.FORMAT_EAN_8
 									)
 							.build();
 			com.google.mlkit.vision.barcode.BarcodeScanner scanner = BarcodeScanning.getClient(options);

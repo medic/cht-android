@@ -285,7 +285,7 @@ public class EmbeddedBrowserActivity extends Activity {
 		evaluateJavascript("window.CHTCore.AndroidApi.v1.locationPermissionRequestResolved();");
 	}
 
-	private void processChtBarcodeResult (int resultCode, Intent intentData) {
+	private void processChtBarcodeResult(int resultCode, Intent intentData) {
 		processChtExternalAppResult(resultCode, intentData);
 	}
 
@@ -417,7 +417,7 @@ public class EmbeddedBrowserActivity extends Activity {
 		CHT_EXTERNAL_APP_ACTIVITY(103),
 		GRAB_MRDT_PHOTO_ACTIVITY(104),
 		FILE_PICKER_ACTIVITY(105),
-	    BARCODE_SCANNER(106);
+		BARCODE_SCANNER(106);
 
 		private final int requestCode;
 
