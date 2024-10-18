@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.OptIn;
 import androidx.appcompat.app.AppCompatActivity;
@@ -27,6 +28,7 @@ import com.google.mlkit.vision.barcode.BarcodeScanning;
 import com.google.mlkit.vision.barcode.common.Barcode;
 import com.google.mlkit.vision.common.InputImage;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
@@ -55,6 +57,17 @@ public class BarcodeScanner extends AppCompatActivity {
 			ActivityCompat.requestPermissions(this,
 					new String[]{Manifest.permission.CAMERA},
 					RequestCode.BARCODE_SCANNER.getCode());
+		}
+	}
+
+	@Override
+	public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+		if (requestCode == RequestCode.BARCODE_SCANNER.getCode()
+				&& grantResults[0] == PackageManager.PERMISSION_GRANTED){
+			startCamera();
+		} else {
+			Toast.makeText(this, "Camera permission denied", Toast.LENGTH_SHORT).show();
 		}
 	}
 

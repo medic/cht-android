@@ -7,8 +7,8 @@
 
   <androidx.camera.view.PreviewView
     android:id="@+id/scannerPreview"
-    android:layout_width="380dp"
-    android:layout_height="500dp"
+    android:layout_width="350dp"
+    android:layout_height="470dp"
     android:layout_gravity="center"
     />
 
