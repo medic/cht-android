@@ -149,7 +149,7 @@ public class BarcodeScanner extends AppCompatActivity {
 
 	private void returnIntent(String barcode) {
 		Intent resultIntent = new Intent();
-		resultIntent.putExtra("CHT_QR_CODE", barcode);
+		resultIntent.putExtra("CHT_BARCODE", barcode);
 		setResult(RESULT_OK, resultIntent);
 		finish();
 	}
