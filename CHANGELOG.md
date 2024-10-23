@@ -7,11 +7,21 @@
 
 # Release notes
 
-## 1.4.1
+## 1.5.0
 
 ### Technical Improvements
 
 * Fix app crashing on certain devices ([#376](https://github.com/medic/cht-android/issues/376))
+* update actions/upload-artifact action image to v4 ([#373](https://github.com/medic/cht-android/issues/373))
+
+### Flavors
+
+* Add moh togo echis apk generation and logo ([#346](https://github.com/medic/cht-android/pull/346))
+* Add moh civ apk generation and logo ([#356](https://github.com/medic/cht-android/pull/356))
+* Generate new flavor for MOH Mali CHW training based on CHT-4.0 ([#301](https://github.com/medic/cht-android/pull/301))
+* Moh mali chw training 3 ([#328](https://github.com/medic/cht-android/pull/328))
+* Adding production flavor for MoH CIV ([#371](https://github.com/medic/cht-android/pull/371))
+* Add Safari Doctors Youth Health Ambassadors app flavor. ([#372](https://github.com/medic/cht-android/pull/372))
 
 ## 1.4.0
 
