@@ -7,6 +7,12 @@
 
 # Release notes
 
+## 1.4.1
+
+### Technical Improvements
+
+* Fix app crashing on certain devices ([#376](https://github.com/medic/cht-android/issues/376))
+
 ## 1.4.0
 
 ### Technical Improvements
