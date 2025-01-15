@@ -13,10 +13,8 @@ import androidx.annotation.Nullable;
 
 import java.time.Clock;
 
-@SuppressLint("ValidFragment")
 public class OpenSettingsDialogFragment extends Fragment {
 
-	private final View view;
 	private int fingerTapCount = 0;
 	private long lastTimeTap = 0;
 	private GestureHandler swipeGesture;
@@ -32,13 +30,10 @@ public class OpenSettingsDialogFragment extends Fragment {
 		}
 	};
 
-	public OpenSettingsDialogFragment(View view) {
-		this.view = view;
-	}
-
 	@Override
 	public void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		View view = getActivity().findViewById(R.id.wbvMain);
 		view.setOnTouchListener(onTouchListener);
 	}
 

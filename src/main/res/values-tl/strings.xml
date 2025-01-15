@@ -5,4 +5,10 @@
 	<string name="locRequestOkButton">Buksan</string>
 	<string name="locRequestDenyButton">Hindi na, Salamat na lang</string>
 	<string name="locRequestIconDescription">Ang icon ng lokasyon ko</string>
+
+  <string name="domainAppAssociationTitle">I-link ang domain sa %s?</string>
+  <string name="domainAppAssociationMessage">Tinitiyak nito na magbubukas ang lahat ng link sa iyong app para sa mas magandang karanasan.</string>
+  <string name="domainAppAssociationIconDescription">Icon ng Domain</string>
+  <string name="domainAppAssociationRequestOkButton">Oo, i-link ang domain</string>
+  <string name="domainAppAssociationRequestDenyButton">Huwag i-link</string>
 </resources>

@@ -7,11 +7,57 @@
 
 # Release notes
 
+## 1.4.0
+
+### Technical Improvements
+
+* Fix app crashing due to missing empty constructor in OpenSettingsDialogFragment ([#338](https://github.com/medic/cht-android/issues/338))
+* Upgrade Ruby version from 2.7 to 3.3 for fastlane in build and publish files for GH actions ([#368](https://github.com/medic/cht-android/issues/368))
+
+### Flavors
+
+* Add apk for Gandaki, Nepal ([#367](https://github.com/medic/cht-android/pull/367))
+
+## 1.3.0
+
+### Improvements
+
+* Add autoverify=true to AndroidManifest.xml file ([#353](https://github.com/medic/cht-android/pull/353))
+* Add prominent disclosure on startup requesting user to link app and domain ([#353](https://github.com/medic/cht-android/pull/354))
+
+### Technical Improvements
+
+* Add sonar configuration ([#352](https://github.com/medic/cht-android/pull/352))
+
+## 1.2.0
+
+### Improvements
+
+* Support Android 14 ([#349](https://github.com/medic/cht-android/pull/349))
+
+### Flavors
+
+* Add apk for cares malawi ([#334](https://github.com/medic/cht-android/pull/334))
+* Generate Moh Togo UAT app bundle ([#339](https://github.com/medic/cht-android/pull/339))
+
+### Technical Improvements
+
+* Upgrade ruby version for fastlane ([#341](https://github.com/medic/cht-android/pull/341))
+* Updated keystores for CARES APKs ([#342](https://github.com/medic/cht-android/pull/342))
+* Fix e2e tests on CI ([#348](https://github.com/medic/cht-android/pull/348))
+* Hardcode the values `ANDROID_KEY_ALIAS` and `ANDROID_KEYSTORE_PATH` in make command `check-env` ([#347](https://github.com/medic/cht-android/pull/347))
+
+## 1.1.0
+
+This release includes the following work:
+1. Update target API to latest, which supports Android 13 ([#324](https://github.com/medic/cht-android/issues/324)).
+2. Improve server selection usability when choosing an instance from the Settings Dialog ([#314](https://github.com/medic/cht-android/issues/314))
+
 ## 1.0.1
 
 This release fixes two bugs:
 1. Users unable to install two different apps or two different flavors [#287](https://github.com/medic/cht-android/issues/287).
-1. A fix for an implicit internal intent vulnerability [#282](https://github.com/medic/cht-android/issues/282).
+2. A fix for an implicit internal intent vulnerability [#282](https://github.com/medic/cht-android/issues/282).
 
 ## 1.0.0
 

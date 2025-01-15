@@ -14,10 +14,9 @@
     <exclude name="ImplicitSwitchFallThrough"/>
     <exclude name="ConstructorCallsOverridableMethod"/>
     <exclude name="NullAssignment"/>
-    <exclude name="DataflowAnomalyAnalysis"/>
     <exclude name="AvoidLiteralsInIfCondition"/>
     <exclude name="AssignmentInOperand"/>
-    <exclude name="BeanMembersShouldSerialize"/>
+    <exclude name="NonSerializableClass"/>
     <exclude name="DoNotTerminateVM"/>
     <exclude name="UseLocaleWithCaseConversions"/>
   </rule>
