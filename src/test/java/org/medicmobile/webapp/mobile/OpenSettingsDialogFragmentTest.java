@@ -14,6 +14,7 @@ import static org.mockito.Mockito.withSettings;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.os.Bundle;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
@@ -227,6 +228,62 @@ public class OpenSettingsDialogFragmentTest {
 			//> THEN
 			verify(openSettingsDialogFragment, never()).startActivity(any());
 			verify(activity, never()).finish();
+		}
+	}
+
+	@Test
+	public void onCreate_setsRetainInstanceTrue_preservesStateAfterRecreation() {
+		//> GIVEN
+		Bundle savedState = new Bundle();
+		MotionEvent eventTap = mock(MotionEvent.class);
+		when(eventTap.getPointerCount()).thenReturn(1);
+		when(eventTap.getActionMasked()).thenReturn(MotionEvent.ACTION_DOWN);
+
+		// First creation
+		openSettingsDialogFragment.onCreate(savedState);
+		OnTouchListener firstListener = argsOnTouch.getValue();
+		// Set up initial clock mock
+		Clock initialTime = Clock.fixed(Instant.ofEpochMilli(1000), ZoneOffset.UTC);
+		// Update clock time for subsequent taps
+		Clock laterTime = Clock.fixed(Instant.ofEpochMilli(1200), ZoneOffset.UTC);
+
+		try (MockedStatic<Clock> mockClock = mockStatic(Clock.class)) {
+			mockClock.when(Clock::systemUTC).thenReturn(initialTime);
+
+			// Simulate initial taps
+			tap(firstListener, eventTap, 3);
+
+			// Simulate fragment recreation (e.g., due to configuration change)
+			Activity newActivity = mock(Activity.class, RETURNS_SMART_NULLS);
+			View newView = mock(View.class);
+			ArgumentCaptor<OnTouchListener> newArgsOnTouch = ArgumentCaptor.forClass(OnTouchListener.class);
+			doNothing().when(newView).setOnTouchListener(newArgsOnTouch.capture());
+			when(openSettingsDialogFragment.getActivity()).thenReturn(newActivity);
+			when(newActivity.findViewById(R.id.wbvMain)).thenReturn(newView);
+
+			//> WHEN
+			openSettingsDialogFragment.onCreate(savedState);
+			OnTouchListener recreatedListener = newArgsOnTouch.getValue();
+
+			mockClock.when(Clock::systemUTC).thenReturn(laterTime);
+
+			// Continue taps after recreation
+			tap(recreatedListener, eventTap, 3);
+
+			// Try to trigger settings with swipe
+			MotionEvent eventSwipe = mock(MotionEvent.class);
+			when(eventSwipe.getPointerCount()).thenReturn(2);
+
+			when(eventSwipe.getActionMasked()).thenReturn(MotionEvent.ACTION_POINTER_DOWN);
+			positionPointers(recreatedListener, eventSwipe, (float) 261.81, (float) 264.99);
+
+			when(eventSwipe.getActionMasked()).thenReturn(MotionEvent.ACTION_MOVE);
+			positionPointers(recreatedListener, eventSwipe, (float) 800.90, (float) 850.13);
+
+			//> THEN
+			Intent intent = argsStartActivity.getValue();
+			assertEquals(SettingsDialogActivity.class.getName(), intent.getComponent().getClassName());
+			verify(newActivity).finish();
 		}
 	}
 }
