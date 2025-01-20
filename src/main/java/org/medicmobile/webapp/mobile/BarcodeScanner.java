@@ -117,9 +117,7 @@ public class BarcodeScanner extends AppCompatActivity {
 			result.addOnSuccessListener(barcodes -> {
 				for (Barcode barcode : barcodes) {
 					String rawValue = barcode.getRawValue();
-					if (rawValue != null) {
-						returnIntent(rawValue);
-					}
+					returnIntent(rawValue);
 				}
 			});
 			result.addOnFailureListener(e -> {
@@ -134,10 +132,12 @@ public class BarcodeScanner extends AppCompatActivity {
 	}
 
 	private void returnIntent(String barcode) {
-		Intent resultIntent = new Intent();
-		resultIntent.putExtra("CHT_BARCODE", barcode);
-		setResult(RESULT_OK, resultIntent);
-		finish();
+		if (barcode != null) {
+			Intent resultIntent = new Intent();
+			resultIntent.putExtra("CHT_BARCODE", barcode);
+			setResult(RESULT_OK, resultIntent);
+			finish();
+		}
 	}
 
 	private BarcodeScannerOptions buildBarcodeOptions () {
