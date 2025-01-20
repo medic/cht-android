@@ -140,7 +140,7 @@ public class BarcodeScanner extends AppCompatActivity {
 		}
 	}
 
-	private BarcodeScannerOptions buildBarcodeOptions () {
+	private BarcodeScannerOptions buildBarcodeOptions() {
 		return new BarcodeScannerOptions.Builder()
 				.setBarcodeFormats(
 						//formats to support
