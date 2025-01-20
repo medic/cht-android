@@ -110,21 +110,7 @@ public class BarcodeScanner extends AppCompatActivity {
 
 		if (imageProxy.getImage() != null) {
 			InputImage image = InputImage.fromMediaImage(imageProxy.getImage(), imageProxy.getImageInfo().getRotationDegrees());
-			BarcodeScannerOptions options =
-					new BarcodeScannerOptions.Builder()
-							.setBarcodeFormats(
-									//formats to support
-									Barcode.FORMAT_QR_CODE,
-									Barcode.FORMAT_AZTEC,
-									Barcode.FORMAT_CODE_39,
-									Barcode.FORMAT_PDF417,
-									Barcode.FORMAT_EAN_13,
-									Barcode.FORMAT_CODE_128,
-									Barcode.FORMAT_UPC_E,
-									Barcode.FORMAT_UPC_A,
-									Barcode.FORMAT_EAN_8
-									)
-							.build();
+			BarcodeScannerOptions options = buildBarcodeOptions();
 			com.google.mlkit.vision.barcode.BarcodeScanner scanner = BarcodeScanning.getClient(options);
 
 			Task<List<Barcode>> result = scanner.process(image);
@@ -152,5 +138,22 @@ public class BarcodeScanner extends AppCompatActivity {
 		resultIntent.putExtra("CHT_BARCODE", barcode);
 		setResult(RESULT_OK, resultIntent);
 		finish();
+	}
+
+	private BarcodeScannerOptions buildBarcodeOptions () {
+		return new BarcodeScannerOptions.Builder()
+				.setBarcodeFormats(
+						//formats to support
+						Barcode.FORMAT_QR_CODE,
+						Barcode.FORMAT_AZTEC,
+						Barcode.FORMAT_CODE_39,
+						Barcode.FORMAT_PDF417,
+						Barcode.FORMAT_EAN_13,
+						Barcode.FORMAT_CODE_128,
+						Barcode.FORMAT_UPC_E,
+						Barcode.FORMAT_UPC_A,
+						Barcode.FORMAT_EAN_8
+				)
+				.build();
 	}
 }

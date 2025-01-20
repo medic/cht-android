@@ -210,6 +210,7 @@ public class EmbeddedBrowserActivity extends Activity {
 					return;
 				case BARCODE_SCANNER:
 					processChtBarcodeResult(resultCode, intent);
+					return;
 				default:
 					trace(this, "onActivityResult() :: no handling for requestCode=%s", requestCode.name());
 			}

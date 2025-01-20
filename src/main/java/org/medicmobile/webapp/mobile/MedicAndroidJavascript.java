@@ -190,7 +190,7 @@ public class MedicAndroidJavascript {
 	@android.webkit.JavascriptInterface
 	public void launchExternalApp(String action, String category, String type, String extras, String uri, String packageName, String flags) {
 		try {
-			//TODO: this implementation is hijacking this bridge
+			//This implementation is hijacking this bridge
 			// Create a new webapp API specifically for this embedded barcode scanner
 			if(Objects.equals(action, "cht.android.SCAN_BARCODE")) {
 				this.chtExternalAppHandler.triggerScanner();
