@@ -60,6 +60,16 @@ public class EmbeddedBrowserActivity extends Activity {
 		}
 	};
 
+	private void setBackground(int background) {
+		View webviewContainer = findViewById(R.id.lytWebView);
+		webviewContainer.setPadding(10, 10, 10, 10);
+		webviewContainer.setBackgroundResource(background);
+	}
+
+	private boolean isProduction(String appUrl) {
+		return appUrl != null && appUrl.contains("app.medicmobile.org");
+	}
+
 
 //> ACTIVITY LIFECYCLE METHODS
 	@SuppressLint("ClickableViewAccessibility")
@@ -84,12 +94,10 @@ public class EmbeddedBrowserActivity extends Activity {
 		this.requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.main);
 
-		// Add an alarming red border if using configurable (i.e. dev)
-		// app with a medic production server.
-		if (settings.allowsConfiguration() && appUrl != null && appUrl.contains("app.medicmobile.org")) {
-			View webviewContainer = findViewById(R.id.lytWebView);
-			webviewContainer.setPadding(10, 10, 10, 10);
-			webviewContainer.setBackgroundResource(R.drawable.warning_background);
+		if (settings.allowsConfiguration() && isProduction(appUrl)) {
+			setBackground(R.drawable.warning_background);
+		} else if (BuildConfig.IS_TRAINING_APP) {
+			setBackground(R.drawable.training_background);
 		}
 
 		// Add a noticeable border to easily identify a training app
@@ -97,6 +105,14 @@ public class EmbeddedBrowserActivity extends Activity {
 			View webviewContainer = findViewById(R.id.lytWebView);
 			webviewContainer.setPadding(10, 10, 10, 10);
 			webviewContainer.setBackgroundResource(R.drawable.training_background);
+		}
+
+		// Add an alarming red border if using configurable (i.e. dev)
+		// app with a medic production server.
+		if (settings.allowsConfiguration() && appUrl != null && appUrl.contains("app.medicmobile.org")) {
+			View webviewContainer = findViewById(R.id.lytWebView);
+			webviewContainer.setPadding(10, 10, 10, 10);
+			webviewContainer.setBackgroundResource(R.drawable.warning_background);
 		}
 
 		container = findViewById(R.id.wbvMain);
