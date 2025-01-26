@@ -19,6 +19,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.res.Resources;
 import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -80,13 +81,13 @@ public class EmbeddedBrowserActivity extends Activity {
 
 		this.settings = SettingsStore.in(this);
 		this.appUrl = settings.getAppUrl();
-
+		boolean isProductionApp =  getResources().getBoolean(R.bool.production);
 		this.requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.main);
 
 		// Add an alarming red border if using configurable (i.e. dev)
 		// app with a medic production server.
-		if (settings.allowsConfiguration() && appUrl != null && appUrl.contains("app.medicmobile.org")) {
+		if (settings.allowsConfiguration() && appUrl != null && appUrl.contains("app.medicmobile.org") && !isProductionApp) {
 			View webviewContainer = findViewById(R.id.lytWebView);
 			webviewContainer.setPadding(10, 10, 10, 10);
 			webviewContainer.setBackgroundResource(R.drawable.warning_background);
