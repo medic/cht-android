@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <bool name="production">False</bool>
+  <bool name="production">false</bool>
 </resources>
