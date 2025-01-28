@@ -86,7 +86,7 @@ public class EmbeddedBrowserActivity extends Activity {
 
 		// Add an alarming red border if using configurable (i.e. dev)
 		// app with a medic production server.
-		if (settings.allowsConfiguration() && appUrl != null && appUrl.contains("app.medicmobile.org") && !isProductionApp) {
+		if (settings.allowCustomHosts() && appUrl != null && appUrl.contains("app.medicmobile.org")) {
 			View webviewContainer = findViewById(R.id.lytWebView);
 			webviewContainer.setPadding(10, 10, 10, 10);
 			webviewContainer.setBackgroundResource(R.drawable.warning_background);
