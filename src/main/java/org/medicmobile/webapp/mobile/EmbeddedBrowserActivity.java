@@ -61,7 +61,7 @@ public class EmbeddedBrowserActivity extends Activity {
 	};
 
 
-//> ACTIVITY LIFECYCLE METHODS
+	//> ACTIVITY LIFECYCLE METHODS
 	@SuppressLint("ClickableViewAccessibility")
 	@Override public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -80,7 +80,7 @@ public class EmbeddedBrowserActivity extends Activity {
 
 		this.settings = SettingsStore.in(this);
 		this.appUrl = settings.getAppUrl();
-		boolean isProductionApp =  getResources().getBoolean(R.bool.production);
+
 		this.requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.main);
 
@@ -171,8 +171,8 @@ public class EmbeddedBrowserActivity extends Activity {
 	@Override public void onBackPressed() {
 		trace(this, "onBackPressed()");
 		container.evaluateJavascript(
-				"angular.element(document.body).injector().get('AndroidApi').v1.back()",
-				backButtonHandler);
+			"angular.element(document.body).injector().get('AndroidApi').v1.back()",
+			backButtonHandler);
 	}
 
 	@Override
@@ -218,7 +218,7 @@ public class EmbeddedBrowserActivity extends Activity {
 		}
 	}
 
-//> ACCESSORS
+	//> ACCESSORS
 	MrdtSupport getMrdtSupport() {
 		return this.mrdt;
 	}
@@ -231,7 +231,7 @@ public class EmbeddedBrowserActivity extends Activity {
 		return this.chtExternalAppHandler;
 	}
 
-//> PUBLIC API
+	//> PUBLIC API
 	public void evaluateJavascript(final String js) {
 		evaluateJavascript(js, true);
 	}
@@ -278,7 +278,7 @@ public class EmbeddedBrowserActivity extends Activity {
 		return false;
 	}
 
-//> PRIVATE HELPERS
+	//> PRIVATE HELPERS
 	private void locationRequestResolved() {
 		evaluateJavascript("window.CHTCore.AndroidApi.v1.locationPermissionRequestResolved();");
 	}
@@ -403,7 +403,7 @@ public class EmbeddedBrowserActivity extends Activity {
 		);
 	}
 
-//> ENUMS
+	//> ENUMS
 	public enum RequestCode {
 		ACCESS_LOCATION_PERMISSION(100),
 		ACCESS_STORAGE_PERMISSION(101),
