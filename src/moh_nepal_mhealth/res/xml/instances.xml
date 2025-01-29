@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<instances xmlns:android="http://schemas.android.com/apk/res/android">
+  <instance name="Achham">https://achham-ne.app.medicmobile.org</instance>
+  <instance name="Bajhang">https://bajhang-ne.app.medicmobile.org</instance>
+  <instance name="Baitadi">https://dho-baitadi.app.medicmobile.org</instance>
+  <instance name="Bajura">https://dho-bajura-ne.app.medicmobile.org</instance>
+  <instance name="Banke">https://dpho-banke.app.medicmobile.org</instance>
+  <instance name="Bhojpur">https://bhojpur-ne.app.medicmobile.org</instance>
+  <instance name="Bardiya">https://bardiya-ne.app.medicmobile.org</instance>
+  <instance name="Dadeldhura">https://dho-dadeldhura-ne.app.medicmobile.org</instance>
+  <instance name="Dhading">https://ohw-dhading.app.medicmobile.org</instance>
+  <instance name="Dhankuta">https://dhankuta-ne.app.medicmobile.org</instance>
+  <instance name="Humla">https://humla-ne.app.medicmobile.org</instance>
+  <instance name="Ilam">https://kfn-ilam.app.medicmobile.org</instance>
+  <instance name="Jajarkot">https://jajarkot-ne.app.medicmobile.org</instance>
+  <instance name="Kailali">https://kailali-ne.app.medicmobile.org</instance>
+  <instance name="Kalikot">https://kalikot-ne.app.medicmobile.org</instance>
+  <instance name="Kanchanpur">https://dpho-kanchanpur.app.medicmobile.org</instance>
+  <instance name="Morang">https://morang-ne.app.medicmobile.org</instance>
+  <instance name="Panchthar">https://panchthar-ne.app.medicmobile.org</instance>
+  <instance name="Pyuthan">https://dpho-pyuthan-ne.app.medicmobile.org</instance>
+  <instance name="Rasuwa">https://dho-rasuwa-ne.app.medicmobile.org</instance>
+  <instance name="Sindhuli">https://care-sindhuli.app.medicmobile.org</instance>
+  <instance name="Sindhupalchowk">https://dho-sindhupalchowk-ne.app.medicmobile.org</instance>
+  <instance name="Salyan">https://salyan-ne.app.medicmobile.org</instance>
+  <instance name="Sankhuwasabha">https://sankhuwashabha-ne.app.medicmobile.org</instance>
+  <instance name="Sunsari">https://dho-sunsari-ne.app.medicmobile.org</instance>
+</instances>
