@@ -7,6 +7,16 @@
 
 # Release notes
 
+## 1.5.1
+
+### Flavors
+
+* Change `musomali` instance URL to self-hosted one ([#384](https://github.com/medic/cht-android/issues/384))
+
+### Fixes
+
+* Don't show red warning border unless custom URL is enabled ([#385](https://github.com/medic/cht-android/issues/385))
+
 ## 1.5.0
 
 ### Technical Improvements
