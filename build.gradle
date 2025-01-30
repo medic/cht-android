@@ -464,6 +464,12 @@ android {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.moh_nepal_mhealth'
     }
+
+    lumbini_chis {
+      dimension = 'brand'
+      applicationId = 'org.medicmobile.webapp.mobile.lumbini'
+    }
+
   }
 
   splits {
