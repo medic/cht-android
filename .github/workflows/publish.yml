@@ -627,6 +627,31 @@ jobs:
         ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_MOH_CIV }}
         ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_MOH_CIV }}
 
+    - name: Unpack secrets moh_nepal_mhealth
+      env:
+          ANDROID_SECRETS_KEY: ${{ secrets.ANDROID_SECRETS_KEY_MOH_NEPAL_MHEALTH }}
+          ANDROID_SECRETS_IV: ${{ secrets.ANDROID_SECRETS_IV_MOH_NEPAL_MHEALTH }}
+      run: make org=moh_nepal_mhealth keydec
+
+    - name: Assemble moh_nepal_mhealth
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+          lane: build
+          options: '{ "flavor": "moh_nepal_mhealth" }'
+      env:
+          ANDROID_KEYSTORE_PATH: moh_nepal_mhealth.keystore
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_MOH_NEPAL_MHEALTH }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_MOH_NEPAL_MHEALTH }}
+
+    - name: Bundle moh_nepal_mhealth
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+          lane: bundle
+          options: '{ "flavor": "moh_nepal_mhealth" }'
+      env:
+          ANDROID_KEYSTORE_PATH: moh_nepal_mhealth.keystore
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_MOH_NEPAL_MHEALTH }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_MOH_NEPAL_MHEALTH }}
 
     - name: GitHub release
       uses: softprops/action-gh-release@v1

@@ -459,6 +459,11 @@ android {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.safaridoctors_kenya_yha'
     }
+
+    moh_nepal_mhealth {
+      dimension = 'brand'
+      applicationId = 'org.medicmobile.webapp.mobile.moh_nepal_mhealth'
+    }
   }
 
   splits {
