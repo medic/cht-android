@@ -677,7 +677,7 @@ jobs:
       env:
         ANDROID_KEYSTORE_PATH: LUMBINI_CHIS.keystore
         ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_LUMBINI_CHIS }}
-        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_LUMBINI_CHIS }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_LUMBINI_CHIS }}
 
     - name: GitHub release
       uses: softprops/action-gh-release@v1
