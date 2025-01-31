@@ -653,6 +653,32 @@ jobs:
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_MOH_NEPAL_MHEALTH }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_MOH_NEPAL_MHEALTH }}
 
+    - name: Unpack secrets LUMBINI_CHIS
+      env:
+        ANDROID_SECRETS_KEY: ${{ secrets.ANDROID_SECRETS_KEY_LUMBINI_CHIS }}
+        ANDROID_SECRETS_IV: ${{ secrets.ANDROID_SECRETS_IV_LUMBINI_CHIS }}
+      run: make org=LUMBINI_CHIS keydec
+
+    - name: Assemble LUMBINI_CHIS
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: build
+        options: '{ "flavor": "LUMBINI_CHIS" }'
+      env:
+        ANDROID_KEYSTORE_PATH: LUMBINI_CHIS.keystore
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_LUMBINI_CHIS }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_LUMBINI_CHIS }}
+
+    - name: Bundle LUMBINI_CHIS
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: bundle
+        options: '{ "flavor": "LUMBINI_CHIS" }'
+      env:
+        ANDROID_KEYSTORE_PATH: LUMBINI_CHIS.keystore
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_LUMBINI_CHIS }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_LUMBINI_CHIS }}
+
     - name: GitHub release
       uses: softprops/action-gh-release@v1
       if: startsWith(github.ref, 'refs/tags/')
