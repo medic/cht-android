@@ -653,29 +653,29 @@ jobs:
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_MOH_NEPAL_MHEALTH }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_MOH_NEPAL_MHEALTH }}
 
-    - name: Unpack secrets LUMBINI_CHIS
+    - name: Unpack secrets lumbini_chis
       env:
         ANDROID_SECRETS_KEY: ${{ secrets.ANDROID_SECRETS_KEY_LUMBINI_CHIS }}
         ANDROID_SECRETS_IV: ${{ secrets.ANDROID_SECRETS_IV_LUMBINI_CHIS }}
-      run: make org=LUMBINI_CHIS keydec
+      run: make org=lumbini_chis keydec
 
-    - name: Assemble LUMBINI_CHIS
+    - name: Assemble lumbini_chis
       uses: maierj/fastlane-action@v1.4.0
       with:
         lane: build
-        options: '{ "flavor": "LUMBINI_CHIS" }'
+        options: '{ "flavor": "lumbini_chis" }'
       env:
-        ANDROID_KEYSTORE_PATH: LUMBINI_CHIS.keystore
+        ANDROID_KEYSTORE_PATH: lumbini_chis.keystore
         ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_LUMBINI_CHIS }}
         ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_LUMBINI_CHIS }}
 
-    - name: Bundle LUMBINI_CHIS
+    - name: Bundle lumbini_chis
       uses: maierj/fastlane-action@v1.4.0
       with:
         lane: bundle
-        options: '{ "flavor": "LUMBINI_CHIS" }'
+        options: '{ "flavor": "lumbini_chis" }'
       env:
-        ANDROID_KEYSTORE_PATH: LUMBINI_CHIS.keystore
+        ANDROID_KEYSTORE_PATH: lumbini_chis.keystore
         ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_LUMBINI_CHIS }}
         ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_LUMBINI_CHIS }}
 
