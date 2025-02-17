@@ -195,30 +195,26 @@ public class MedicAndroidJavascript {
 			if(Objects.equals(action, "cht.android.SCAN_BARCODE")) {
 				this.chtExternalAppHandler.triggerScanner();
 			} else {
-				runExternalAppIntent(action, category, type, extras, uri, packageName, flags);
+				JSONObject parsedExtras = (extras == null) ? null : new JSONObject(extras);
+				Uri parsedUri = (uri == null) ? null : Uri.parse(uri);
+				Integer parsedFlags = (flags == null) ? null : Integer.parseInt(flags);
+
+				ChtExternalApp chtExternalApp = new ChtExternalApp
+						.Builder()
+						.setAction(action)
+						.setCategory(category)
+						.setType(type)
+						.setExtras(parsedExtras)
+						.setUri(parsedUri)
+						.setPackageName(packageName)
+						.setFlags(parsedFlags)
+						.build();
+				this.chtExternalAppHandler.startIntent(chtExternalApp);
 			}
 
 		} catch (Exception ex) {
 			logException(ex);
 		}
-	}
-
-	private void runExternalAppIntent(String action, String category, String type, String extras, String uri, String packageName, String flags) throws JSONException {
-		JSONObject parsedExtras = extras == null ? null : new JSONObject(extras);
-		Uri parsedUri = uri == null ? null : Uri.parse(uri);
-		Integer parsedFlags = flags == null ? null : Integer.parseInt(flags);
-
-		ChtExternalApp chtExternalApp = new ChtExternalApp
-				.Builder()
-				.setAction(action)
-				.setCategory(category)
-				.setType(type)
-				.setExtras(parsedExtras)
-				.setUri(parsedUri)
-				.setPackageName(packageName)
-				.setFlags(parsedFlags)
-				.build();
-		this.chtExternalAppHandler.startIntent(chtExternalApp);
 	}
 
 	@SuppressLint("ObsoleteSdkInt")
