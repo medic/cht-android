@@ -213,6 +213,17 @@ android {
       applicationId = 'org.medicmobile.webapp.mobile'
     }
 
+    medicmobilegamma {
+      dimension = 'brand'
+      applicationId = 'org.medicmobile.webapp.mobile.medicmobilegamma'
+    }
+
+    medicmobilegamma_training {
+      dimension = 'brand'
+      applicationId = 'org.medicmobile.webapp.mobile.medicmobilegamma_training'
+      buildConfigField "boolean", "IS_TRAINING_APP", 'true'
+    }
+
     vhtapp_uganda {
       dimension = 'brand'
       applicationId = "org.medicmobile.webapp.mobile.vhtapp_uganda"
