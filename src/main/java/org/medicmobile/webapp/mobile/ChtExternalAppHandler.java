@@ -76,6 +76,11 @@ public class ChtExternalAppHandler {
 		this.lastIntent = null; // Cleaning as we don't need it anymore.
 	}
 
+	void triggerScanner() {
+		Intent intent = new Intent(context, BarcodeScanner.class);
+		this.context.startActivityForResult(intent, RequestCode.BARCODE_SCANNER.getCode());
+	}
+
 	//> PRIVATE
 
 	private void startActivity(Intent intent) {

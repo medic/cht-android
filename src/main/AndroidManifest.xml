@@ -11,6 +11,9 @@
   <uses-feature android:name="android.hardware.location" android:required="false"/>
   <uses-feature android:name="android.hardware.location.gps" android:required="false"/>
   <uses-feature android:name="android.hardware.location.network" android:required="false"/>
+  <uses-feature
+    android:name="android.hardware.camera"
+    android:required="false" />
 
   <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
   <uses-permission android:name="android.permission.INTERNET"/>
@@ -20,6 +23,9 @@
 
   <!-- READ_EXTERNAL_STORAGE is required if users want to include photos from their phone  -->
   <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32"/>
+
+  <!-- BARCODE_SCANNER -->
+  <uses-permission android:name="android.permission.CAMERA" />
 
   <!-- SEND_SMS is required if users want to send reports as SMS.To able the feature add the following line:
   <uses-permission android:name="android.permission.SEND_SMS"/>
@@ -32,6 +38,9 @@
       android:dataExtractionRules="@xml/backup_rules"
       android:largeHeap="true"
       tools:ignore="LockedOrientationActivity,UnusedAttribute">
+    <meta-data
+      android:name="com.google.mlkit.vision.DEPENDENCIES"
+      android:value="barcode" />
     <activity android:name="StartupActivity" android:exported="true">
       <intent-filter>
         <action android:name="android.intent.action.MAIN"/>
@@ -65,6 +74,9 @@
     <activity android:name="DomainVerificationActivity"
       android:screenOrientation="portrait"
       tools:ignore="DiscouragedApi" />
+    <activity
+        android:theme="@style/Theme.AppCompat.Light"
+        android:name=".BarcodeScanner" />
     <activity android:name="AppUrlIntentActivity"
         android:launchMode="singleInstance"
         android:exported="true">

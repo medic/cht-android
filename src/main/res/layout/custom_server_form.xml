@@ -22,7 +22,7 @@
 			android:layout_alignParentBottom="true"
 			android:onClick="cancelSettingsEdit"
 			android:text="@string/btnCancel"
-			tools:ignore="OnClick" />
+			tools:ignore="OnClick,UsingOnClickInXml" />
 	<!-- OnClick is ignored because lint generates error
 	     incorrectly.  Test with future build tool versions
 	     to see if this exception can be removed -->
@@ -32,5 +32,5 @@
 			android:layout_alignParentBottom="true"
 			android:onClick="verifyAndSave"
 			android:text="@string/btnSave"
-			tools:ignore="OnClick" />
+			tools:ignore="OnClick,UsingOnClickInXml" />
 </RelativeLayout>
