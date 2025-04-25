@@ -33,6 +33,7 @@ public class OpenSettingsDialogFragment extends Fragment {
 	@Override
 	public void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		setRetainInstance(true);
 		View view = getActivity().findViewById(R.id.wbvMain);
 		view.setOnTouchListener(onTouchListener);
 	}

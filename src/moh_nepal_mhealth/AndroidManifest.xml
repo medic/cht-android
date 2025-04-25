@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:tools="http://schemas.android.com/tools">
+
+  <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" tools:node="remove" />
+
+  <application>
+    <activity android:name="AppUrlIntentActivity"
+      android:launchMode="singleInstance"
+      android:exported="true">
+      <intent-filter android:autoVerify="true">
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+
+        <data android:scheme="https" android:host="achham-ne.app.medicmobile.org" android:pathPattern=".*"/>
+        <data android:scheme="https" android:host="bajhang-ne.app.medicmobile.org" android:pathPattern=".*"/>
+        <data android:scheme="https" android:host="dho-baitadi.app.medicmobile.org" android:pathPattern=".*"/>
+        <data android:scheme="https" android:host="dho-bajura-ne.app.medicmobile.org" android:pathPattern=".*"/>
+        <data android:scheme="https" android:host="dpho-banke.app.medicmobile.org" android:pathPattern=".*"/>
+        <data android:scheme="https" android:host="bhojpur-ne.app.medicmobile.org" android:pathPattern=".*"/>
+        <data android:scheme="https" android:host="bardiya-ne.app.medicmobile.org" android:pathPattern=".*"/>
+        <data android:scheme="https" android:host="dho-dadeldhura-ne.app.medicmobile.org" android:pathPattern=".*"/>
+        <data android:scheme="https" android:host="ohw-dhading.app.medicmobile.org" android:pathPattern=".*"/>
+        <data android:scheme="https" android:host="dhankuta-ne.app.medicmobile.org" android:pathPattern=".*"/>
+        <data android:scheme="https" android:host="humla-ne.app.medicmobile.org" android:pathPattern=".*"/>
+        <data android:scheme="https" android:host="kfn-ilam.app.medicmobile.org" android:pathPattern=".*"/>
+        <data android:scheme="https" android:host="jajarkot-ne.app.medicmobile.org" android:pathPattern=".*"/>
+        <data android:scheme="https" android:host="kailali-ne.app.medicmobile.org" android:pathPattern=".*"/>
+        <data android:scheme="https" android:host="kalikot-ne.app.medicmobile.org" android:pathPattern=".*"/>
+        <data android:scheme="https" android:host="dpho-kanchanpur.app.medicmobile.org" android:pathPattern=".*"/>
+        <data android:scheme="https" android:host="morang-ne.app.medicmobile.org" android:pathPattern=".*"/>
+        <data android:scheme="https" android:host="panchthar-ne.app.medicmobile.org" android:pathPattern=".*"/>
+        <data android:scheme="https" android:host="dpho-pyuthan-ne.app.medicmobile.org" android:pathPattern=".*"/>
+        <data android:scheme="https" android:host="dho-rasuwa-ne.app.medicmobile.org" android:pathPattern=".*"/>
+        <data android:scheme="https" android:host="care-sindhuli.app.medicmobile.org" android:pathPattern=".*"/>
+        <data android:scheme="https" android:host="dho-sindhupalchowk-ne.app.medicmobile.org" android:pathPattern=".*"/>
+        <data android:scheme="https" android:host="salyan-ne.app.medicmobile.org" android:pathPattern=".*"/>
+        <data android:scheme="https" android:host="sankhuwashabha-ne.app.medicmobile.org" android:pathPattern=".*"/>
+        <data android:scheme="https" android:host="dho-sunsari-ne.app.medicmobile.org" android:pathPattern=".*"/>
+      </intent-filter>
+    </activity>
+  </application>
+</manifest>

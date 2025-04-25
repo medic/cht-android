@@ -462,9 +462,29 @@ android {
       applicationId = 'org.medicmobile.webapp.mobile.gandaki_ne'
     }
 
+    moh_civ {
+      dimension = 'brand'
+      applicationId = 'org.medicmobile.webapp.mobile.moh_civ'
+    }
+    
     moh_civ_uat {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.moh_civ_uat'
+    }
+
+    safaridoctors_kenya_yha {
+      dimension = 'brand'
+      applicationId = 'org.medicmobile.webapp.mobile.safaridoctors_kenya_yha'
+    }
+
+    moh_nepal_mhealth {
+      dimension = 'brand'
+      applicationId = 'org.medicmobile.webapp.mobile.moh_nepal_mhealth'
+    }
+
+    lumbini_chis {
+      dimension = 'brand'
+      applicationId = 'org.medicmobile.webapp.mobile.lumbini'
     }
 
   }
