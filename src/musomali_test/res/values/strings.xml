@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 	<string name="app_name">CHT-MUSO-TEST</string>
-	<string name="app_host">upgrade-muso-mali.app.medicmobile.org</string>
+	<string name="app_host">cht.mali.test.musohealth.app</string>
 </resources>
