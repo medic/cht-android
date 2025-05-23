@@ -13,6 +13,7 @@
   <uses-feature android:name="android.hardware.location.network" android:required="false"/>
 
   <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+  <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
   <uses-permission android:name="android.permission.INTERNET"/>
   <uses-permission android:name="android.permission.VIBRATE"/>
   <uses-permission android:name="com.android.launcher.permission.INSTALL_SHORTCUT"/>
@@ -91,6 +92,10 @@
         android:resource="@xml/file_paths">
       </meta-data>
     </provider>
+    <service android:name="androidx.work.impl.background.systemjob.SystemJobService"
+      android:permission="android.permission.BIND_JOB_SERVICE"
+      android:exported="true"
+        tools:targetApi="23" />
   </application>
 
   <queries>

@@ -22,6 +22,7 @@ import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.webkit.ConsoleMessage;
@@ -30,12 +31,18 @@ import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.Toast;
 
 import androidx.core.content.ContextCompat;
+import androidx.work.ExistingPeriodicWorkPolicy;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
 
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 @SuppressWarnings({ "PMD.GodClass", "PMD.TooManyMethods" })
 public class EmbeddedBrowserActivity extends Activity {
@@ -128,6 +135,22 @@ public class EmbeddedBrowserActivity extends Activity {
 		if (isValidNavigationUrl(appUrl, recentNavigation)) {
 			container.loadUrl(recentNavigation);
 		}
+
+		runTestWorkerNow(this);
+	}
+
+	private void runTestWorkerNow(Context context) {
+		/*OneTimeWorkRequest request = new OneTimeWorkRequest.Builder(WebViewWorker.class).build();
+		WorkManager.getInstance(context).enqueue(request);*/
+		PeriodicWorkRequest request = new PeriodicWorkRequest.Builder(
+				WebViewWorker.class,
+				15, TimeUnit.MINUTES
+		).build();
+		WorkManager.getInstance(context).enqueueUniquePeriodicWork(
+				"WebViewWorkerTask",
+				ExistingPeriodicWorkPolicy.REPLACE,
+				request
+		);
 	}
 
 	@SuppressWarnings("PMD.CallSuperFirst")
@@ -170,6 +193,7 @@ public class EmbeddedBrowserActivity extends Activity {
 
 	@Override public void onBackPressed() {
 		trace(this, "onBackPressed()");
+		//toast("hey?");
 		container.evaluateJavascript(
 			"angular.element(document.body).injector().get('AndroidApi').v1.back()",
 			backButtonHandler);
