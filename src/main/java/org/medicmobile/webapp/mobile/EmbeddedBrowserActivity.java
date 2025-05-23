@@ -148,7 +148,7 @@ public class EmbeddedBrowserActivity extends Activity {
 		).build();
 		WorkManager.getInstance(context).enqueueUniquePeriodicWork(
 				"WebViewWorkerTask",
-				ExistingPeriodicWorkPolicy.REPLACE,
+				ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
 				request
 		);
 	}

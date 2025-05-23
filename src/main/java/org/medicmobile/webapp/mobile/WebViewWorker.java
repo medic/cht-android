@@ -7,6 +7,7 @@ import android.content.Context;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -49,7 +50,12 @@ public class WebViewWorker extends Worker {
             webView.loadUrl(appUrl);
         });
         try {
-            latch.await(10, TimeUnit.SECONDS);
+            boolean success = latch.await(10, TimeUnit.SECONDS);
+            if (success) {
+                Log.d("NOTI", "success");
+            }else {
+                Log.d("NOTI", "taking so long");
+            }
         } catch (InterruptedException e) {
             return Result.failure();
         }
