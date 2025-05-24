@@ -134,21 +134,22 @@ public class EmbeddedBrowserActivity extends Activity {
 		String recentNavigation = settings.getLastUrl();
 		if (isValidNavigationUrl(appUrl, recentNavigation)) {
 			container.loadUrl(recentNavigation);
+			runTestWorkerNow(this);
 		}
 
-		runTestWorkerNow(this);
 	}
 
 	private void runTestWorkerNow(Context context) {
 		/*OneTimeWorkRequest request = new OneTimeWorkRequest.Builder(WebViewWorker.class).build();
 		WorkManager.getInstance(context).enqueue(request);*/
+		toast("starting worker..........");
 		PeriodicWorkRequest request = new PeriodicWorkRequest.Builder(
 				WebViewWorker.class,
 				15, TimeUnit.MINUTES
 		).build();
 		WorkManager.getInstance(context).enqueueUniquePeriodicWork(
 				"WebViewWorkerTask",
-				ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
+				ExistingPeriodicWorkPolicy.UPDATE,
 				request
 		);
 	}
@@ -193,7 +194,6 @@ public class EmbeddedBrowserActivity extends Activity {
 
 	@Override public void onBackPressed() {
 		trace(this, "onBackPressed()");
-		//toast("hey?");
 		container.evaluateJavascript(
 			"angular.element(document.body).injector().get('AndroidApi').v1.back()",
 			backButtonHandler);
