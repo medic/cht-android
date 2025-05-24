@@ -9,14 +9,20 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.webkit.JavascriptInterface;
+import android.webkit.ValueCallback;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -43,8 +49,13 @@ public class WebViewWorker extends Worker {
 
             webView.setWebViewClient(new WebViewClient() {
                 public void onPageFinished(WebView view, String url) {
-                    //Toast.makeText(getApplicationContext(), "hello----" + appUrl, Toast.LENGTH_LONG).show();
-                    view.evaluateJavascript("AndroidBridge.onJsResult(window.CHTCore.AndroidApi.v1.nota());", null);
+                    String js = "( " +
+                            "async function() { " +
+                            "const tasks = await window.CHTCore.AndroidApi.v1.nota(); " +
+                            "AndroidBridge.onJsResult(JSON.stringify(tasks)); " +
+                            "} " +
+                            ")();";
+                    view.evaluateJavascript(js, null);
                 }
             });
             webView.loadUrl(appUrl);
@@ -53,7 +64,7 @@ public class WebViewWorker extends Worker {
             boolean success = latch.await(10, TimeUnit.SECONDS);
             if (success) {
                 Log.d("NOTI", "success");
-            }else {
+            } else {
                 Log.d("NOTI", "taking so long");
             }
         } catch (InterruptedException e) {
@@ -73,12 +84,31 @@ public class WebViewWorker extends Worker {
         }
 
         @JavascriptInterface
-        public void onJsResult(String data) {
-            showNotification(data);
+        public void onJsResult(String data) throws JSONException {
+            JSONArray dataArray = parseData(data);
+            //Toast.makeText(context, dataArray.getJSONObject(0).getString("_id"), Toast.LENGTH_LONG).show();
+            //showNotification(data);
+            for (int i = 0; i < dataArray.length(); i++) {
+                JSONObject task = dataArray.getJSONObject(i);
+                //String id = task.getString("_id");
+                String contact = task.getString("contact");
+                String title = task.getString("title");
+                showNotification(i, title, contact);
+            }
             latch.countDown();
         }
 
-        private void showNotification(String data) {
+        private JSONArray parseData(String data) {
+            data = data.replace("^\"|\"$", "")
+                    .replace("\\\"", "\"");
+            try {
+                return new JSONArray(data);
+            } catch (JSONException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        private void showNotification(int id, String title, String contact) {
             String channelId = "default_channel";
             NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
@@ -89,14 +119,13 @@ public class WebViewWorker extends Worker {
 
             NotificationCompat.Builder builder = new NotificationCompat.Builder(context, channelId)
                     .setSmallIcon(android.R.drawable.ic_dialog_info)
-                    .setContentTitle("JS Data")
-                    .setContentText(data)
+                    .setContentTitle(title)
+                    .setContentText("You have a " + title + " task for " + contact + " due today")
                     .setPriority(NotificationCompat.PRIORITY_DEFAULT);
 
-            manager.notify(101, builder.build());
+            manager.notify(id, builder.build());
         }
     }
-
 
 
     private void enableStorage(WebView container) {
