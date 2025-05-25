@@ -9,11 +9,9 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.webkit.JavascriptInterface;
-import android.webkit.ValueCallback;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
@@ -27,9 +25,13 @@ import org.json.JSONObject;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-public class WebViewWorker extends Worker {
+public class NotificationWorker extends Worker {
+    final String TAG = "NOTIFICATION_WORKER";
+    final int EXECUTION_TIMEOUT = 10;
+    final static String CHANNEL_ID = "cht_task_notifications";
+    final static String CHANNEL_NAME = "CHT Task Notifications";
 
-    public WebViewWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
+    public NotificationWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
     }
 
@@ -43,42 +45,50 @@ public class WebViewWorker extends Worker {
         new Handler(Looper.getMainLooper()).post(() -> {
             WebView webView = new WebView(getApplicationContext());
             webView.getSettings().setJavaScriptEnabled(true);
-
-            webView.addJavascriptInterface(new JSBridge(getApplicationContext(), latch), "AndroidBridge");
+            webView.addJavascriptInterface(new NotificationBridge(getApplicationContext(), latch), "CHTNotificationBridge");
             enableStorage(webView);
 
             webView.setWebViewClient(new WebViewClient() {
                 public void onPageFinished(WebView view, String url) {
-                    String js = "( " +
-                            "async function() { " +
-                            "const tasks = await window.CHTCore.AndroidApi.v1.nota(); " +
-                            "AndroidBridge.onJsResult(JSON.stringify(tasks)); " +
-                            "} " +
-                            ")();";
+                    String js = "(async function (){" +
+                            " const api = window.CHTCore.AndroidApi;" +
+                            " if (api && api.v1 && api.v1.notificationTasks) {" +
+                            "   const tasks = await api.v1.notificationTasks();" +
+                            "   CHTNotificationBridge.onJsResult(JSON.stringify(tasks));" +
+                            " }" +
+                            "})();";
                     view.evaluateJavascript(js, null);
                 }
             });
             webView.loadUrl(appUrl);
         });
         try {
-            boolean success = latch.await(10, TimeUnit.SECONDS);
-            if (success) {
-                Log.d("NOTI", "success");
+            boolean completed = latch.await(EXECUTION_TIMEOUT, TimeUnit.SECONDS);
+            if (completed) {
+                Log.d(TAG, "notification worker ran successfully");
             } else {
-                Log.d("NOTI", "taking so long");
+                Log.d(TAG, "notification worker taking long to complete");
             }
         } catch (InterruptedException e) {
+            Log.e(TAG, "error executing notification worker" + e);
+            Thread.currentThread().interrupt();
             return Result.failure();
         }
 
         return Result.success();
     }
 
-    public static class JSBridge {
+    private void enableStorage(WebView container) {
+        WebSettings settings = container.getSettings();
+        settings.setDomStorageEnabled(true);
+        settings.setDatabaseEnabled(true);
+    }
+
+    public static class NotificationBridge {
         private final Context context;
         private final CountDownLatch latch;
 
-        JSBridge(Context context, CountDownLatch latch) {
+        NotificationBridge(Context context, CountDownLatch latch) {
             this.context = context;
             this.latch = latch;
         }
@@ -86,14 +96,11 @@ public class WebViewWorker extends Worker {
         @JavascriptInterface
         public void onJsResult(String data) throws JSONException {
             JSONArray dataArray = parseData(data);
-            //Toast.makeText(context, dataArray.getJSONObject(0).getString("_id"), Toast.LENGTH_LONG).show();
-            //showNotification(data);
             for (int i = 0; i < dataArray.length(); i++) {
                 JSONObject task = dataArray.getJSONObject(i);
-                //String id = task.getString("_id");
-                String contact = task.getString("contact");
+                String contentText = task.getString("contentText");
                 String title = task.getString("title");
-                showNotification(i, title, contact);
+                showNotification(i, title, contentText);
             }
             latch.countDown();
         }
@@ -108,30 +115,22 @@ public class WebViewWorker extends Worker {
             }
         }
 
-        private void showNotification(int id, String title, String contact) {
-            String channelId = "default_channel";
+        private void showNotification(int id, String title, String contentText) {
             NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                NotificationChannel channel = new NotificationChannel(channelId, "JS Notifications", NotificationManager.IMPORTANCE_DEFAULT);
+                NotificationChannel channel = new NotificationChannel(CHANNEL_ID, CHANNEL_NAME, NotificationManager.IMPORTANCE_DEFAULT);
                 manager.createNotificationChannel(channel);
             }
 
-            NotificationCompat.Builder builder = new NotificationCompat.Builder(context, channelId)
+            NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
                     .setSmallIcon(android.R.drawable.ic_dialog_info)
                     .setContentTitle(title)
-                    .setContentText("You have a " + title + " task for " + contact + " due today")
+                    .setContentText(contentText)
                     .setPriority(NotificationCompat.PRIORITY_DEFAULT);
 
             manager.notify(id, builder.build());
         }
-    }
-
-
-    private void enableStorage(WebView container) {
-        WebSettings settings = container.getSettings();
-        settings.setDomStorageEnabled(true);
-        settings.setDatabaseEnabled(true);
     }
 
 }

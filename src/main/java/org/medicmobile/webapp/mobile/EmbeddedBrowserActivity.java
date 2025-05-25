@@ -22,7 +22,6 @@ import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.webkit.ConsoleMessage;
@@ -31,12 +30,10 @@ import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
-import android.webkit.WebViewClient;
 import android.widget.Toast;
 
 import androidx.core.content.ContextCompat;
 import androidx.work.ExistingPeriodicWorkPolicy;
-import androidx.work.OneTimeWorkRequest;
 import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
 
@@ -145,12 +142,12 @@ public class EmbeddedBrowserActivity extends Activity {
         WorkManager.getInstance(context).enqueue(request);*/
         //toast("starting worker..........");
 		PeriodicWorkRequest request = new PeriodicWorkRequest.Builder(
-				WebViewWorker.class,
+				NotificationWorker.class,
 				15, TimeUnit.MINUTES
 		).build();
 		WorkManager.getInstance(context).enqueueUniquePeriodicWork(
 				"WebViewWorkerTask",
-				ExistingPeriodicWorkPolicy.UPDATE,
+				ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
 				request
 		);
     }
