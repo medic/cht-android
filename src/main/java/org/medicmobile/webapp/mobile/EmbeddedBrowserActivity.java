@@ -30,6 +30,7 @@ import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.Toast;
 
 import androidx.core.content.ContextCompat;
@@ -38,6 +39,7 @@ import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
 
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
@@ -52,6 +54,8 @@ public class EmbeddedBrowserActivity extends Activity {
   private SmsSender smsSender;
   private ChtExternalAppHandler chtExternalAppHandler;
   private boolean isMigrationRunning = false;
+  private boolean hasCheckedNotificationApi = false;
+  private final String NOTIFICATION_WORK_REQUEST_TAG = "notification_tag";
 
   private static final ValueCallback<String> IGNORE_RESULT = new ValueCallback<String>() {
     public void onReceiveValue(String result) { /* ignore */ }
@@ -132,24 +136,9 @@ public class EmbeddedBrowserActivity extends Activity {
     String recentNavigation = settings.getLastUrl();
     if (isValidNavigationUrl(appUrl, recentNavigation)) {
       container.loadUrl(recentNavigation);
-      runTestWorkerNow(this);
+      initNotificationWorker(this);
     }
 
-  }
-
-  private void runTestWorkerNow(Context context) {
-        /*OneTimeWorkRequest request = new OneTimeWorkRequest.Builder(WebViewWorker.class).build();
-        WorkManager.getInstance(context).enqueue(request);*/
-    //toast("starting worker..........");
-    PeriodicWorkRequest request = new PeriodicWorkRequest.Builder(
-            NotificationWorker.class,
-            15, TimeUnit.MINUTES
-    ).build();
-    WorkManager.getInstance(context).enqueueUniquePeriodicWork(
-            "WebViewWorkerTask",
-            ExistingPeriodicWorkPolicy.UPDATE,
-            request
-    );
   }
 
   @SuppressWarnings("PMD.CallSuperFirst")
@@ -239,6 +228,46 @@ public class EmbeddedBrowserActivity extends Activity {
       warn(ex, "Problem handling intent %s (%s) with requestCode=%s & resultCode=%s",
               intent, action, requestCode.name(), resultCode);
     }
+  }
+
+  private void initNotificationWorker(Context context) {
+    container.setWebViewClient(new WebViewClient() {
+      @Override
+      public void onPageFinished(WebView view, String url) {
+        String jsCheckApi = "(() => typeof window.CHTCore.AndroidApi.v1.notificationTasks === 'function')();";
+        container.evaluateJavascript(jsCheckApi, new ValueCallback<String>() {
+          @Override
+          public void onReceiveValue(String s) {
+            if (!hasCheckedNotificationApi && Objects.equals(s, "true")){
+              hasCheckedNotificationApi = true;
+              AppNotificationManager appNotificationManager = new AppNotificationManager(context);
+              if (!appNotificationManager.hasNotificationPermission()) {
+                WorkManager.getInstance(context).cancelAllWorkByTag(NOTIFICATION_WORK_REQUEST_TAG);
+                appNotificationManager.requestNotificationPermission();
+              }
+              else {
+                startNotificationWorker(context);
+              }
+            }
+          }
+        });
+      }
+    });
+  }
+
+  private void startNotificationWorker (Context context) {
+
+    PeriodicWorkRequest request = new PeriodicWorkRequest.Builder(
+            NotificationWorker.class,
+            15, TimeUnit.MINUTES
+    ).addTag(NOTIFICATION_WORK_REQUEST_TAG).build();
+
+    WorkManager.getInstance(context).enqueueUniquePeriodicWork(
+            "task_notification",
+            ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
+            request
+    );
+    log(context, "startNotificationWorker() :: Started Notification Worker Manager...");
   }
 
   //> ACCESSORS

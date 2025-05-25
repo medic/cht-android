@@ -35,7 +35,9 @@ public class OpenSettingsDialogFragment extends Fragment {
 		super.onCreate(savedInstanceState);
 		setRetainInstance(true);
 		View view = getActivity().findViewById(R.id.wbvMain);
-		view.setOnTouchListener(onTouchListener);
+		if (view != null) {
+			view.setOnTouchListener(onTouchListener);
+		}
 	}
 
 	private void countTaps(MotionEvent event) {
