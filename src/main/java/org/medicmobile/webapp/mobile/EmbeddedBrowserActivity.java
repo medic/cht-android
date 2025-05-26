@@ -264,7 +264,7 @@ public class EmbeddedBrowserActivity extends Activity {
 
     WorkManager.getInstance(context).enqueueUniquePeriodicWork(
             "task_notification",
-            ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
+            ExistingPeriodicWorkPolicy.KEEP,
             request
     );
     log(context, "startNotificationWorker() :: Started Notification Worker Manager...");
