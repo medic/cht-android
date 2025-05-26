@@ -103,7 +103,7 @@ public class NotificationWorker extends Worker {
         String title = task.getString("title");
         long authoredOn = task.getLong("authoredOn");
         int notificationId = (int) (authoredOn % Integer.MAX_VALUE);
-        appNotificationManager.showNotification(notificationId, title, contentText);
+        appNotificationManager.showNotification(notificationId + i, title, contentText);
       }
       latch.countDown();
     }
