@@ -29,7 +29,7 @@ import java.util.concurrent.TimeUnit;
 
 public class NotificationWorker extends Worker {
   final String TAG = "NOTIFICATION_WORKER";
-  final int EXECUTION_TIMEOUT = 10;
+  final int EXECUTION_TIMEOUT = 20;
 
   public NotificationWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
     super(context, workerParams);
@@ -101,7 +101,8 @@ public class NotificationWorker extends Worker {
         JSONObject task = dataArray.getJSONObject(i);
         String contentText = task.getString("contentText");
         String title = task.getString("title");
-        int notificationId = (int) System.currentTimeMillis();
+        long authoredOn = task.getLong("authoredOn");
+        int notificationId = (int) (authoredOn % Integer.MAX_VALUE);
         appNotificationManager.showNotification(notificationId, title, contentText);
       }
       latch.countDown();
