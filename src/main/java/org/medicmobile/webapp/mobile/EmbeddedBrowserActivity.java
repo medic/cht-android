@@ -53,9 +53,10 @@ public class EmbeddedBrowserActivity extends Activity {
   private FilePickerHandler filePickerHandler;
   private SmsSender smsSender;
   private ChtExternalAppHandler chtExternalAppHandler;
+  private AppNotificationManager appNotificationManager;
   private boolean isMigrationRunning = false;
-  private boolean hasCheckedNotificationApi = false;
-  private final String NOTIFICATION_WORK_REQUEST_TAG = "notification_tag";
+  private boolean hasCheckedForNotificationApi = false;
+  private final String NOTIFICATION_WORK_REQUEST_TAG = "cht_notification_tag";
 
   private static final ValueCallback<String> IGNORE_RESULT = new ValueCallback<String>() {
     public void onReceiveValue(String result) { /* ignore */ }
@@ -80,6 +81,7 @@ public class EmbeddedBrowserActivity extends Activity {
     this.filePickerHandler = new FilePickerHandler(this);
     this.mrdt = new MrdtSupport(this);
     this.chtExternalAppHandler = new ChtExternalAppHandler(this);
+    appNotificationManager = new AppNotificationManager(this);
 
     try {
       this.smsSender = SmsSender.createInstance(this);
@@ -133,10 +135,12 @@ public class EmbeddedBrowserActivity extends Activity {
 
     registerRetryConnectionBroadcastReceiver();
 
+    appNotificationManager.requestNotificationPermission();
+
     String recentNavigation = settings.getLastUrl();
     if (isValidNavigationUrl(appUrl, recentNavigation)) {
       container.loadUrl(recentNavigation);
-      initNotificationWorker(this);
+      initializeNotificationWorker(this);
     }
 
   }
@@ -230,7 +234,7 @@ public class EmbeddedBrowserActivity extends Activity {
     }
   }
 
-  private void initNotificationWorker(Context context) {
+  private void initializeNotificationWorker(Context context) {
     container.setWebViewClient(new WebViewClient() {
       @Override
       public void onPageFinished(WebView view, String url) {
@@ -238,15 +242,12 @@ public class EmbeddedBrowserActivity extends Activity {
         container.evaluateJavascript(jsCheckApi, new ValueCallback<String>() {
           @Override
           public void onReceiveValue(String s) {
-            if (!hasCheckedNotificationApi && Objects.equals(s, "true")){
-              hasCheckedNotificationApi = true;
-              AppNotificationManager appNotificationManager = new AppNotificationManager(context);
-              if (!appNotificationManager.hasNotificationPermission()) {
-                WorkManager.getInstance(context).cancelAllWorkByTag(NOTIFICATION_WORK_REQUEST_TAG);
-                appNotificationManager.requestNotificationPermission();
-              }
-              else {
+            if (!hasCheckedForNotificationApi && Objects.equals(s, "true")){
+              hasCheckedForNotificationApi = true;
+              if (appNotificationManager.hasNotificationPermission()){
                 startNotificationWorker(context);
+              } else {
+                WorkManager.getInstance(context).cancelAllWorkByTag(NOTIFICATION_WORK_REQUEST_TAG);
               }
             }
           }
@@ -256,7 +257,6 @@ public class EmbeddedBrowserActivity extends Activity {
   }
 
   private void startNotificationWorker (Context context) {
-
     PeriodicWorkRequest request = new PeriodicWorkRequest.Builder(
             NotificationWorker.class,
             15, TimeUnit.MINUTES

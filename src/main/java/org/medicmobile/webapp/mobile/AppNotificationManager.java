@@ -11,6 +11,7 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 
 import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
 
 public class AppNotificationManager {
@@ -24,7 +25,6 @@ public class AppNotificationManager {
 
   public AppNotificationManager(Context context) {
     this.context = context;
-    //this.activity = activity;
     createNotificationChannel();
   }
 
@@ -49,8 +49,15 @@ public class AppNotificationManager {
     }
   }
 
-  public void sendNotification() {
-    log(context, "hello");
+  void showNotification(int id, String title, String contentText) {
+    NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
+            .setSmallIcon(android.R.drawable.ic_dialog_info)
+            .setContentTitle(title)
+            .setContentText(contentText)
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+
+    NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+    manager.notify(id, builder.build());
   }
 
   private void createNotificationChannel() {

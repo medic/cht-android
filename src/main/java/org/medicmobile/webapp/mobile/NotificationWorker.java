@@ -1,5 +1,7 @@
 package org.medicmobile.webapp.mobile;
 
+import static org.medicmobile.webapp.mobile.MedicLog.log;
+
 import android.annotation.SuppressLint;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -28,8 +30,6 @@ import java.util.concurrent.TimeUnit;
 public class NotificationWorker extends Worker {
   final String TAG = "NOTIFICATION_WORKER";
   final int EXECUTION_TIMEOUT = 10;
-  final static String CHANNEL_ID = "cht_task_notifications";
-  final static String CHANNEL_NAME = "CHT Task Notifications";
 
   public NotificationWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
     super(context, workerParams);
@@ -65,12 +65,12 @@ public class NotificationWorker extends Worker {
     try {
       boolean completed = latch.await(EXECUTION_TIMEOUT, TimeUnit.SECONDS);
       if (completed) {
-        Log.d(TAG, "notification worker ran successfully");
+        log(TAG, "notification worker ran successfully!");
       } else {
-        Log.d(TAG, "notification worker taking long to complete");
+        log(TAG, "notification worker taking too long to complete");
       }
     } catch (InterruptedException e) {
-      Log.e(TAG, "error executing notification worker" + e);
+      log(e, "error: notification worker interrupted");
       Thread.currentThread().interrupt();
       return Result.failure();
     }
@@ -95,12 +95,14 @@ public class NotificationWorker extends Worker {
 
     @JavascriptInterface
     public void onJsResult(String data) throws JSONException {
+      AppNotificationManager appNotificationManager = new AppNotificationManager(context.getApplicationContext());
       JSONArray dataArray = parseData(data);
       for (int i = 0; i < dataArray.length(); i++) {
         JSONObject task = dataArray.getJSONObject(i);
         String contentText = task.getString("contentText");
         String title = task.getString("title");
-        showNotification(i, title, contentText);
+        int notificationId = (int) System.currentTimeMillis();
+        appNotificationManager.showNotification(notificationId, title, contentText);
       }
       latch.countDown();
     }
@@ -111,25 +113,9 @@ public class NotificationWorker extends Worker {
       try {
         return new JSONArray(data);
       } catch (JSONException e) {
+        log(e, "error parsing JS data");
         throw new RuntimeException(e);
       }
-    }
-
-    private void showNotification(int id, String title, String contentText) {
-      NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        NotificationChannel channel = new NotificationChannel(CHANNEL_ID, CHANNEL_NAME, NotificationManager.IMPORTANCE_DEFAULT);
-        manager.createNotificationChannel(channel);
-      }
-
-      NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
-              .setSmallIcon(android.R.drawable.ic_dialog_info)
-              .setContentTitle(title)
-              .setContentText(contentText)
-              .setPriority(NotificationCompat.PRIORITY_DEFAULT);
-
-      manager.notify(id, builder.build());
     }
   }
 
