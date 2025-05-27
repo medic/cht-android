@@ -6,6 +6,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -23,6 +24,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 public class NotificationWorker extends Worker {
+  final String TAG = "NOTIFICATION_WORKER";
   final int EXECUTION_TIMEOUT = 10;
 
   public NotificationWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
@@ -59,9 +61,9 @@ public class NotificationWorker extends Worker {
     try {
       boolean completed = latch.await(EXECUTION_TIMEOUT, TimeUnit.SECONDS);
       if (completed) {
-        log(getApplicationContext(), "notification worker ran successfully!");
+        Log.d(TAG, "notification worker ran successfully!");
       } else {
-        log(getApplicationContext(), "notification worker taking too long to complete");
+        Log.d(TAG, "notification worker taking too long to complete");
       }
     } catch (InterruptedException e) {
       log(e, "error: notification worker interrupted");

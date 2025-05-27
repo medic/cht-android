@@ -83,6 +83,10 @@ public class EmbeddedBrowserActivity extends Activity {
     this.chtExternalAppHandler = new ChtExternalAppHandler(this);
     appNotificationManager = new AppNotificationManager(this);
 
+    if (appNotificationManager.manager != null) {
+      appNotificationManager.manager.cancelAll();
+    }
+
     try {
       this.smsSender = SmsSender.createInstance(this);
     } catch (Exception ex) {
