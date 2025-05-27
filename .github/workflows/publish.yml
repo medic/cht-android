@@ -291,6 +291,32 @@ jobs:
         ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_MOH_KENYA_ECHIS }}
         ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_MOH_KENYA_ECHIS }}
 
+     - name: Unpack secrets chis_kenya
+      env:
+        ANDROID_SECRETS_KEY: ${{ secrets.ANDROID_SECRETS_KEY_CHIS_KENYA }}
+        ANDROID_SECRETS_IV: ${{ secrets.ANDROID_SECRETS_IV_CHIS_KENYA }}
+      run: make org=chis_kenya keydec
+
+    - name: Assemble chis_kenya
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: build
+        options: '{ "flavor": "chis_kenya" }'
+      env:
+        ANDROID_KEYSTORE_PATH: chis_kenya.keystore
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_CHIS_KENYA }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_CHIS_KENYA }}
+
+    - name: Bundle chis_kenya
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: bundle
+        options: '{ "flavor": "chis_kenya" }'
+      env:
+        ANDROID_KEYSTORE_PATH: chis_kenya.keystore
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_CHIS_KENYA }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_CHIS_KENYA }}
+
     - name: Assemble chis_ne
       uses: maierj/fastlane-action@v1.4.0
       with:
