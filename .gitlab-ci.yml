@@ -1,0 +1,137 @@
+# GitLab CI/CD configuration for Android app
+stages:
+  - build
+  - test
+  - release
+
+# Cache Gradle dependencies to speed up builds
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - .gradle/
+    - build/
+    - app/build/
+
+# Define variables
+variables:
+  ANDROID_COMPILE_SDK: "34"
+  GRADLE_OPTS: "-Xmx2g -Dorg.gradle.jvmargs=-Xmx2g"
+
+# Job to build the debug APK
+build_debug:
+  stage: build
+  image: ubuntu:22.04
+  tags:
+    - ANDROID
+  before_script:
+    - apt-get update && apt-get install -y openjdk-17-jdk wget unzip
+    - export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+    - export PATH=$JAVA_HOME/bin:$PATH
+    - export ANDROID_HOME=/android-sdk
+    - mkdir -p $ANDROID_HOME
+    - wget -q https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O tools.zip
+    - unzip -q tools.zip -d $ANDROID_HOME/cmdline-tools
+    - mv $ANDROID_HOME/cmdline-tools/cmdline-tools $ANDROID_HOME/cmdline-tools/latest
+    - yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+    - $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-${ANDROID_COMPILE_SDK}" "build-tools;${ANDROID_COMPILE_SDK}.0.0"
+  script:
+    - ./gradlew assembleChis_kenya
+    - ./gradlew assembleMoh_kenya_echis
+  artifacts:
+    paths:
+      - /builds/echis-core/cht-android/build/outputs/apk/chis_kenya/debug/*.apk
+      - /builds/echis-core/cht-android/build/outputs/apk/moh_kenya_echis/debug/*.apk
+    expire_in: 1 week
+  only:
+    - branches
+    - merge_requests
+
+# Job to run unit tests
+test:
+  stage: test
+  image: ubuntu:22.04
+  tags:
+    - ANDROID
+  before_script:
+    - apt-get update && apt-get install -y openjdk-17-jdk wget unzip
+    - export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+    - export PATH=$JAVA_HOME/bin:$PATH
+    - export ANDROID_HOME=/android-sdk
+    - mkdir -p $ANDROID_HOME
+    - wget -q https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O tools.zip
+    - unzip -q tools.zip -d $ANDROID_HOME/cmdline-tools
+    - mv $ANDROID_HOME/cmdline-tools/cmdline-tools $ANDROID_HOME/cmdline-tools/latest
+    - yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+    - $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-${ANDROID_COMPILE_SDK}" "build-tools;${ANDROID_COMPILE_SDK}.0.0"
+  script:
+    - ./gradlew testChis_kenyaDebugUnitTest
+    - ./gradlew testChis_kenyaReleaseUnitTest
+    - ./gradlew testMoh_kenya_echisDebugUnitTest
+    - ./gradlew testMoh_kenya_echisDebugUnitTest
+  artifacts:
+    paths:
+      - /builds/echis-core/cht-android/build/test-results/
+    expire_in: 1 week
+  only:
+    - branches
+    - merge_requests
+
+# Job to build release APK (requires signing keys)
+release_prod_apk:
+  stage: release
+  image: ubuntu:22.04
+  tags:
+    - ANDROID
+
+  before_script:
+    - apt-get update && apt-get install -y openjdk-17-jdk wget unzip
+    - export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+    - export PATH=$JAVA_HOME/bin:$PATH
+    - export ANDROID_HOME=/android-sdk
+    - mkdir -p $ANDROID_HOME
+    - wget -q https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O tools.zip
+    - unzip -q tools.zip -d $ANDROID_HOME/cmdline-tools
+    - mv $ANDROID_HOME/cmdline-tools/cmdline-tools $ANDROID_HOME/cmdline-tools/latest
+    - yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+    - $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-${ANDROID_COMPILE_SDK}" "build-tools;${ANDROID_COMPILE_SDK}.0.0"
+  script:
+    - echo "$KEYSTORE_FILE" | base64 -d > chis_kenya.keystore
+    - ./gradlew assembleMoh_kenya_echis -Pandroid.injected.signing.store-file=chis_kenya.keystore -Pandroid.injected.signing.store-password=$KEYSTORE_PASSWORD -Pandroid.injected.signing.key-alias=$KEY_ALIAS -Pandroid.injected.signing.key-password=$KEY_PASSWORD
+    - ./gradlew bundleMoh_kenya_echis -Pandroid.injected.signing.store-file=chis_kenya.keystore -Pandroid.injected.signing.store-password=$KEYSTORE_PASSWORD -Pandroid.injected.signing.key-alias=$KEY_ALIAS -Pandroid.injected.signing.key-password=$KEY_PASSWORD
+  artifacts:
+    paths:
+      - /builds/echis-core/cht-android/build/outputs/apk/moh_kenya_echis/release/*.apk
+      - /builds/echis-core/cht-android/build/outputs/apk/moh_kenya_echis/release/*.aab
+  only:
+    - main
+    - master
+  when: manual
+
+release_training_apk:
+  stage: release
+  image: ubuntu:22.04
+  tags:
+    - ANDROID
+
+  before_script:
+    - apt-get update && apt-get install -y openjdk-17-jdk wget unzip
+    - export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+    - export PATH=$JAVA_HOME/bin:$PATH
+    - export ANDROID_HOME=/android-sdk
+    - mkdir -p $ANDROID_HOME
+    - wget -q https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O tools.zip
+    - unzip -q tools.zip -d $ANDROID_HOME/cmdline-tools
+    - mv $ANDROID_HOME/cmdline-tools/cmdline-tools $ANDROID_HOME/cmdline-tools/latest
+    - yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+    - $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-${ANDROID_COMPILE_SDK}" "build-tools;${ANDROID_COMPILE_SDK}.0.0"
+  script:
+    - echo "$KEYSTORE_FILE" | base64 -d > chis_kenya.keystore
+    - ./gradlew assembleChis_kenya -Pandroid.injected.signing.store-file=chis_kenya.keystore -Pandroid.injected.signing.store-password=$KEYSTORE_PASSWORD -Pandroid.injected.signing.key-alias=$KEY_ALIAS -Pandroid.injected.signing.key-password=$KEY_PASSWORD
+    - ./gradlew bundleChis_kenya -Pandroid.injected.signing.store-file=chis_kenya.keystore -Pandroid.injected.signing.store-password=$KEYSTORE_PASSWORD -Pandroid.injected.signing.key-alias=$KEY_ALIAS -Pandroid.injected.signing.key-password=$KEY_PASSWORD
+  artifacts:
+    paths:
+      - /builds/echis-core/cht-android/build/outputs/apk/chis_kenya/release/*.apk
+      - /builds/echis-core/cht-android/build/outputs/apk/chis_kenya/release/*.aab
+  only:
+    - training
+  when: manual
