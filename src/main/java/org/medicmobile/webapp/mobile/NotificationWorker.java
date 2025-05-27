@@ -3,20 +3,15 @@ package org.medicmobile.webapp.mobile;
 import static org.medicmobile.webapp.mobile.MedicLog.log;
 
 import android.annotation.SuppressLint;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
 import android.content.Context;
-import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 import androidx.annotation.NonNull;
-import androidx.core.app.NotificationCompat;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
@@ -28,8 +23,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 public class NotificationWorker extends Worker {
-  final String TAG = "NOTIFICATION_WORKER";
-  final int EXECUTION_TIMEOUT = 20;
+  final int EXECUTION_TIMEOUT = 10;
 
   public NotificationWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
     super(context, workerParams);
@@ -52,8 +46,8 @@ public class NotificationWorker extends Worker {
         public void onPageFinished(WebView view, String url) {
           String js = "(async function (){" +
                   " const api = window.CHTCore.AndroidApi;" +
-                  " if (api && api.v1 && api.v1.notificationTasks) {" +
-                  "   const tasks = await api.v1.notificationTasks();" +
+                  " if (api && api.v1 && api.v1.taskNotifications) {" +
+                  "   const tasks = await api.v1.taskNotifications();" +
                   "   CHTNotificationBridge.onJsResult(JSON.stringify(tasks));" +
                   " }" +
                   "})();";
@@ -65,9 +59,9 @@ public class NotificationWorker extends Worker {
     try {
       boolean completed = latch.await(EXECUTION_TIMEOUT, TimeUnit.SECONDS);
       if (completed) {
-        log(TAG, "notification worker ran successfully!");
+        log(getApplicationContext(), "notification worker ran successfully!");
       } else {
-        log(TAG, "notification worker taking too long to complete");
+        log(getApplicationContext(), "notification worker taking too long to complete");
       }
     } catch (InterruptedException e) {
       log(e, "error: notification worker interrupted");

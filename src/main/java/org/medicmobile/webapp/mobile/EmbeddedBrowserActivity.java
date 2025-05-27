@@ -238,7 +238,7 @@ public class EmbeddedBrowserActivity extends Activity {
     container.setWebViewClient(new WebViewClient() {
       @Override
       public void onPageFinished(WebView view, String url) {
-        String jsCheckApi = "(() => typeof window.CHTCore.AndroidApi.v1.notificationTasks === 'function')();";
+        String jsCheckApi = "(() => typeof window.CHTCore.AndroidApi.v1.taskNotifications === 'function')();";
         container.evaluateJavascript(jsCheckApi, new ValueCallback<String>() {
           @Override
           public void onReceiveValue(String s) {
