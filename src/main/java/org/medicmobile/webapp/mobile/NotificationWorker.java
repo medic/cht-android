@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit;
 
 public class NotificationWorker extends Worker {
   final String TAG = "NOTIFICATION_WORKER";
-  final int EXECUTION_TIMEOUT = 10;
+  final int EXECUTION_TIMEOUT = 20;
 
   public NotificationWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
     super(context, workerParams);
@@ -64,6 +64,7 @@ public class NotificationWorker extends Worker {
         Log.d(TAG, "notification worker ran successfully!");
       } else {
         Log.d(TAG, "notification worker taking too long to complete");
+        return Result.failure();
       }
     } catch (InterruptedException e) {
       log(e, "error: notification worker interrupted");
