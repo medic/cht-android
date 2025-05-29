@@ -56,7 +56,7 @@ public class EmbeddedBrowserActivity extends Activity {
   private AppNotificationManager appNotificationManager;
   private boolean isMigrationRunning = false;
   private boolean hasCheckedForNotificationApi = false;
-  private final String NOTIFICATION_WORK_REQUEST_TAG = "cht_notification_tag";
+  private static final String NOTIFICATION_WORK_REQUEST_TAG = "cht_notification_tag";
 
   private static final ValueCallback<String> IGNORE_RESULT = new ValueCallback<String>() {
     public void onReceiveValue(String result) { /* ignore */ }

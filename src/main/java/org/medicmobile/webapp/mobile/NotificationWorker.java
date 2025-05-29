@@ -24,7 +24,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 public class NotificationWorker extends Worker {
-  final String TAG = "NOTIFICATION_WORKER";
+  final static String TAG = "NOTIFICATION_WORKER";
   final int EXECUTION_TIMEOUT = 20;
 
   public NotificationWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
@@ -45,6 +45,7 @@ public class NotificationWorker extends Worker {
       enableStorage(webView);
 
       webView.setWebViewClient(new WebViewClient() {
+        @Override
         public void onPageFinished(WebView view, String url) {
           String js = "(async function (){" +
                   " const api = window.CHTCore.AndroidApi;" +
@@ -112,7 +113,7 @@ public class NotificationWorker extends Worker {
         return new JSONArray(data);
       } catch (JSONException e) {
         log(e, "error parsing JS data");
-        throw new RuntimeException(e);
+        return new JSONArray();
       }
     }
   }

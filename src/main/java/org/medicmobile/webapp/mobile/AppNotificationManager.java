@@ -41,13 +41,10 @@ public class AppNotificationManager {
   }
 
   public void requestNotificationPermission() {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-      if (context instanceof Activity activity) {
-        if (!hasNotificationPermission()) {
-          ActivityCompat.requestPermissions(activity,
-                  new String[]{Manifest.permission.POST_NOTIFICATIONS}, REQUEST_NOTIFICATION_PERMISSION);
-        }
-      }
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            context instanceof Activity activity && !hasNotificationPermission()) {
+      ActivityCompat.requestPermissions(activity,
+              new String[]{Manifest.permission.POST_NOTIFICATIONS}, REQUEST_NOTIFICATION_PERMISSION);
     }
   }
 
