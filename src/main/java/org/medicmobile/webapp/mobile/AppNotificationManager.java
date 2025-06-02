@@ -1,7 +1,5 @@
 package org.medicmobile.webapp.mobile;
 
-import static org.medicmobile.webapp.mobile.MedicLog.log;
-
 import android.Manifest;
 import android.app.Activity;
 import android.app.NotificationChannel;
