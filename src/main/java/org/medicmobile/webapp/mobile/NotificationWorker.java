@@ -44,34 +44,6 @@ public class NotificationWorker extends Worker {
 	  webView.addJavascriptInterface(new NotificationBridge(getApplicationContext(), latch), "CHTNotificationBridge");
 	  enableStorage(webView);
 
-      webView.setWebViewClient(new WebViewClient() {
-        @Override
-        public void onPageFinished(WebView view, String url) {
-          String js = "(async function (){" +
-                  " const api = window.CHTCore.AndroidApi;" +
-                  " if (api && api.v1 && api.v1.taskNotifications) {" +
-                  "   const tasks = await api.v1.taskNotifications();" +
-                  "   CHTNotificationBridge.onJsResult(JSON.stringify(tasks));" +
-                  " }" +
-                  "})();";
-          view.evaluateJavascript(js, null);
-        }
-      });
-      webView.loadUrl(appUrl);
-    });
-    try {
-      boolean completed = latch.await(EXECUTION_TIMEOUT, TimeUnit.SECONDS);
-      if (completed) {
-        Log.d(TAG, "notification worker ran successfully!");
-      } else {
-        Log.d(TAG, "notification worker taking too long to complete");
-        return Result.failure();
-      }
-    } catch (InterruptedException e) {
-      log(e, "error: notification worker interrupted");
-      Thread.currentThread().interrupt();
-      return Result.failure();
-    }
 	  webView.setWebViewClient(new WebViewClient() {
 		@Override
 		public void onPageFinished(WebView view, String url) {
