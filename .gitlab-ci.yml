@@ -37,8 +37,12 @@ build_debug:
   script:
     - ./gradlew assembleChis_kenya
     - ./gradlew assembleMoh_kenya_echis
+    - ./gradlew bundleChis_kenya
+    - ./gradlew bundleMoh_kenya_echis
   artifacts:
     paths:
+      - /builds/echis-core/cht-android/build/outputs/bundle/chis_kenyaDebug/*.aab
+      - /builds/echis-core/cht-android/build/outputs/bundle/moh_kenya_echisDebug/*.aab
       - /builds/echis-core/cht-android/build/outputs/apk/chis_kenya/debug/*.apk
       - /builds/echis-core/cht-android/build/outputs/apk/moh_kenya_echis/debug/*.apk
     expire_in: 1 week
@@ -101,7 +105,7 @@ release_prod_apk:
   artifacts:
     paths:
       - /builds/echis-core/cht-android/build/outputs/apk/moh_kenya_echis/release/*.apk
-      - /builds/echis-core/cht-android/build/outputs/apk/moh_kenya_echis/release/*.aab
+      - /builds/echis-core/cht-android/build/outputs/bundle/moh_kenya_echisRelease/*.aab
   only:
     - main
     - master
@@ -131,7 +135,7 @@ release_training_apk:
   artifacts:
     paths:
       - /builds/echis-core/cht-android/build/outputs/apk/chis_kenya/release/*.apk
-      - /builds/echis-core/cht-android/build/outputs/apk/chis_kenya/release/*.aab
+      - /builds/echis-core/cht-android/build/outputs/bundle/chis_kenyaRelease/*.aab
   only:
     - training
   when: manual
