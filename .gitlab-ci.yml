@@ -16,6 +16,7 @@ cache:
 variables:
   ANDROID_COMPILE_SDK: "34"
   GRADLE_OPTS: "-Xmx2g -Dorg.gradle.jvmargs=-Xmx2g"
+  APP_VERSION_SIMPLE: "v1.0.${CI_PIPELINE_IID}"
 
 # Job to build the debug APK
 build_debug:
@@ -35,6 +36,7 @@ build_debug:
     - yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
     - $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-${ANDROID_COMPILE_SDK}" "build-tools;${ANDROID_COMPILE_SDK}.0.0"
   script:
+    - export RELEASE_VERSION="$APP_VERSION_SIMPLE"
     - ./gradlew assembleChis_kenya
     - ./gradlew assembleMoh_kenya_echis
     - ./gradlew bundleChis_kenya
@@ -99,6 +101,7 @@ release_prod_apk:
     - yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
     - $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-${ANDROID_COMPILE_SDK}" "build-tools;${ANDROID_COMPILE_SDK}.0.0"
   script:
+    - export RELEASE_VERSION="$APP_VERSION_SIMPLE"
     - echo "$KEYSTORE_FILE" | base64 -d > chis_kenya.keystore
     - ./gradlew assembleMoh_kenya_echis -Pandroid.injected.signing.store-file=chis_kenya.keystore -Pandroid.injected.signing.store-password=$KEYSTORE_PASSWORD -Pandroid.injected.signing.key-alias=$KEY_ALIAS -Pandroid.injected.signing.key-password=$KEY_PASSWORD
     - ./gradlew bundleMoh_kenya_echis -Pandroid.injected.signing.store-file=chis_kenya.keystore -Pandroid.injected.signing.store-password=$KEYSTORE_PASSWORD -Pandroid.injected.signing.key-alias=$KEY_ALIAS -Pandroid.injected.signing.key-password=$KEY_PASSWORD
@@ -129,6 +132,7 @@ release_training_apk:
     - yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
     - $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-${ANDROID_COMPILE_SDK}" "build-tools;${ANDROID_COMPILE_SDK}.0.0"
   script:
+    - export RELEASE_VERSION="$APP_VERSION_SIMPLE"
     - echo "$KEYSTORE_FILE" | base64 -d > chis_kenya.keystore
     - ./gradlew assembleChis_kenya -Pandroid.injected.signing.store-file=chis_kenya.keystore -Pandroid.injected.signing.store-password=$KEYSTORE_PASSWORD -Pandroid.injected.signing.key-alias=$KEY_ALIAS -Pandroid.injected.signing.key-password=$KEY_PASSWORD
     - ./gradlew bundleChis_kenya -Pandroid.injected.signing.store-file=chis_kenya.keystore -Pandroid.injected.signing.store-password=$KEYSTORE_PASSWORD -Pandroid.injected.signing.key-alias=$KEY_ALIAS -Pandroid.injected.signing.key-password=$KEY_PASSWORD
