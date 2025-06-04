@@ -31,11 +31,9 @@ import androidx.test.espresso.web.webdriver.Locator;
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.LargeTest;
+import androidx.test.rule.GrantPermissionRule;
 
-import androidx.test.uiautomator.UiDevice;
-import androidx.test.uiautomator.UiObject;
-import androidx.test.uiautomator.UiSelector;
-import androidx.test.platform.app.InstrumentationRegistry;
+import android.Manifest;
 
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -58,6 +56,11 @@ public class LoginTests {
 	@Rule
 	public ActivityScenarioRule<SettingsDialogActivity> mActivityTestRule =
 			new ActivityScenarioRule<>(SettingsDialogActivity.class);
+	@Rule
+	public GrantPermissionRule permissionRule =
+			GrantPermissionRule.grant(
+					Manifest.permission.POST_NOTIFICATIONS
+			);
 
 	@Test
 	public void testLoginScreen() throws Exception {
@@ -69,8 +72,6 @@ public class LoginTests {
 				.inRoot(isDialog())
 				.perform(click());
 		Thread.sleep(7000);//TODO: use better ways to handle delays
-
-		allowNotificationPermission();
 
 		ViewInteraction webView = onView(
 				allOf(withId(R.id.wbvMain),
@@ -131,13 +132,5 @@ public class LoginTests {
 						&& view.equals(((ViewGroup) parent).getChildAt(position));
 			}
 		};
-	}
-
-	private void allowNotificationPermission() throws Exception {
-		UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
-		UiObject allowButton = device.findObject(new UiSelector().text("Allow"));
-		if (allowButton.exists() && allowButton.isEnabled()) {
-			allowButton.click();
-		}
 	}
 }

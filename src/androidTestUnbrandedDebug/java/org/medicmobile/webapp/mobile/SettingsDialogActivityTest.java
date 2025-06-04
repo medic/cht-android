@@ -33,11 +33,9 @@ import androidx.test.espresso.web.webdriver.Locator;
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.LargeTest;
+import androidx.test.rule.GrantPermissionRule;
 
-import androidx.test.uiautomator.UiDevice;
-import androidx.test.uiautomator.UiObject;
-import androidx.test.uiautomator.UiSelector;
-import androidx.test.platform.app.InstrumentationRegistry;
+import android.Manifest;
 
 import org.junit.FixMethodOrder;
 import org.junit.Rule;
@@ -62,6 +60,11 @@ public class SettingsDialogActivityTest {
 	@Rule
 	public ActivityScenarioRule<SettingsDialogActivity> mActivityTestRule =
 			new ActivityScenarioRule<>(SettingsDialogActivity.class);
+	@Rule
+	public GrantPermissionRule permissionRule =
+			GrantPermissionRule.grant(
+					Manifest.permission.POST_NOTIFICATIONS
+			);
 
 	@Test
 	public void serverSelectionScreenIsDisplayed() {
@@ -104,8 +107,6 @@ public class SettingsDialogActivityTest {
 				.perform(click());
 
 		Thread.sleep(7000);    //TODO: use better ways to handle delays
-
-		allowNotificationPermission();
 
 		ViewInteraction webView = onView(
 				allOf(withId(R.id.wbvMain),
@@ -216,13 +217,5 @@ public class SettingsDialogActivityTest {
 	private String getLanguage(String code) {
 		Locale aLocale = new Locale(code);
 		return aLocale.getDisplayName();
-	}
-
-	private void allowNotificationPermission() throws Exception {
-		UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
-		UiObject allowButton = device.findObject(new UiSelector().text("Allow"));
-		if (allowButton.exists() && allowButton.isEnabled()) {
-			allowButton.click();
-		}
 	}
 }
