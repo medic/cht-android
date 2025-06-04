@@ -7,6 +7,7 @@ import static org.medicmobile.webapp.mobile.MedicLog.trace;
 import static org.medicmobile.webapp.mobile.Utils.isUrlRelated;
 import static org.medicmobile.webapp.mobile.Utils.restartApp;
 
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -56,6 +57,7 @@ public class UrlHandler extends WebViewClient {
 		processError(view, errorCode, description);
 	}
 
+	@SuppressLint("UseRequiresApi")
 	@TargetApi(23)
 	@Override
 	public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {

@@ -1,5 +1,6 @@
 package org.medicmobile.webapp.mobile.util;
 
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.os.Build;
@@ -22,11 +23,13 @@ public class Vibrator {
 		return new Vibrator(context);
 	}
 
+	@SuppressLint("UseRequiresApi")
 	@TargetApi(26)
 	public void vibrate(long milliseconds) {
 		getVibrator().vibrate(VibrationEffect.createOneShot(milliseconds, VibrationEffect.DEFAULT_AMPLITUDE));
 	}
 
+	@SuppressLint("UseRequiresApi")
 	@TargetApi(31)
 	protected android.os.Vibrator getVibrator() {
 		VibratorManager vibratorManager = (VibratorManager) context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE);
