@@ -32,6 +32,11 @@ import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.LargeTest;
 
+import androidx.test.uiautomator.UiDevice;
+import androidx.test.uiautomator.UiObject;
+import androidx.test.uiautomator.UiSelector;
+import androidx.test.platform.app.InstrumentationRegistry;
+
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
@@ -42,6 +47,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 
 import java.util.Locale;
+
 @LargeTest
 @RunWith(AndroidJUnit4.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
@@ -56,13 +62,15 @@ public class LoginTests {
 	@Test
 	public void testLoginScreen() throws Exception {
 		onData(anything())
-			.inAdapterView(withId(R.id.lstServers))
-			.atPosition(0)
-			.perform(click());
+				.inAdapterView(withId(R.id.lstServers))
+				.atPosition(0)
+				.perform(click());
 		onView(withText("Continue"))
-			.inRoot(isDialog())
-			.perform(click());
+				.inRoot(isDialog())
+				.perform(click());
 		Thread.sleep(7000);//TODO: use better ways to handle delays
+
+		allowNotificationPermission();
 
 		ViewInteraction webView = onView(
 				allOf(withId(R.id.wbvMain),
@@ -123,5 +131,13 @@ public class LoginTests {
 						&& view.equals(((ViewGroup) parent).getChildAt(position));
 			}
 		};
+	}
+
+	private void allowNotificationPermission() throws Exception {
+		UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
+		UiObject allowButton = device.findObject(new UiSelector().text("Allow"));
+		if (allowButton.exists() && allowButton.isEnabled()) {
+			allowButton.click();
+		}
 	}
 }
