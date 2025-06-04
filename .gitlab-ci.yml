@@ -112,7 +112,6 @@ release_prod_apk:
   only:
     - main
     - master
-  when: manual
 
 release_training_apk:
   stage: release
@@ -142,4 +141,3 @@ release_training_apk:
       - /builds/echis-core/cht-android/build/outputs/bundle/chis_kenyaRelease/*.aab
   only:
     - training
-  when: manual
