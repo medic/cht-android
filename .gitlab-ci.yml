@@ -41,7 +41,6 @@ build_debug:
     - $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-${ANDROID_COMPILE_SDK}" "build-tools;${ANDROID_COMPILE_SDK}.0.0"
   script:
     - export RELEASE_VERSION="$APP_VERSION_SIMPLE"
-    - export ANDROID_KEYSTORE_PATH="/Users/karimkkanji/Downloads/chis_kenya.keystore"
     - ./gradlew assembleChis_kenya
     - ./gradlew assembleMoh_kenya_echis
     - ./gradlew bundleChis_kenya
