@@ -98,7 +98,7 @@ jobs:
         sudo udevadm trigger --name-match=kvm
 
     - name: Gradle cache
-      uses: actions/cache@v2
+      uses: actions/cache@v4
       with:
         path: |
           ~/.gradle/caches
@@ -106,7 +106,7 @@ jobs:
         key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*') }}-${{ hashFiles('**/gradle/wrapper/gradle-wrapper.properties') }}-${{ hashFiles('**/buildSrc/**/*.kt') }}
 
     - name: AVD cache
-      uses: actions/cache@v2
+      uses: actions/cache@v4
       id: avd-cache
       with:
         path: |
