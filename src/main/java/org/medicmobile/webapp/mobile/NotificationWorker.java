@@ -49,10 +49,8 @@ public class NotificationWorker extends Worker {
 				public void onPageFinished(WebView view, String url) {
 					String js = "(async function (){" +
 							" const api = window.CHTCore.AndroidApi;" +
-							" if (api && api.v1 && api.v1.taskNotifications) {" +
-							"   const tasks = await api.v1.taskNotifications();" +
-							"   CHTNotificationBridge.onJsResult(JSON.stringify(tasks));" +
-							" }" +
+							" const tasks = await api.v1.taskNotifications();" +
+							" CHTNotificationBridge.onJsResult(JSON.stringify(tasks));" +
 							"})();";
 					view.evaluateJavascript(js, null);
 				}
@@ -99,8 +97,8 @@ public class NotificationWorker extends Worker {
 				JSONObject task = dataArray.getJSONObject(i);
 				String contentText = task.getString("contentText");
 				String title = task.getString("title");
-				long authoredOn = task.getLong("authoredOn");
-				int notificationId = (int) (authoredOn % Integer.MAX_VALUE);
+				long readyAt = task.getLong("readyAt");
+				int notificationId = (int) (readyAt % Integer.MAX_VALUE);
 				appNotificationManager.showNotification(notificationId + i, title, contentText);
 			}
 			latch.countDown();

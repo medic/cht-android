@@ -144,7 +144,7 @@ public class EmbeddedBrowserActivity extends Activity {
 		String recentNavigation = settings.getLastUrl();
 		if (isValidNavigationUrl(appUrl, recentNavigation)) {
 			container.loadUrl(recentNavigation);
-			initializeNotificationWorker(this);
+			initNotificationWorker(this);
 		}
 
 	}
@@ -238,20 +238,22 @@ public class EmbeddedBrowserActivity extends Activity {
 		}
 	}
 
-	private void initializeNotificationWorker(Context context) {
+	private void initNotificationWorker(Context context) {
 		container.setWebViewClient(new WebViewClient() {
 			@Override
 			public void onPageFinished(WebView view, String url) {
 				String jsCheckApi = "(() => typeof window.CHTCore.AndroidApi.v1.taskNotifications === 'function')();";
 				container.evaluateJavascript(jsCheckApi, new ValueCallback<String>() {
 					@Override
-					public void onReceiveValue(String s) {
-						if (!hasCheckedForNotificationApi && Objects.equals(s, "true")) {
+					public void onReceiveValue(String hasApi) {
+						if (!hasCheckedForNotificationApi && !Objects.equals(hasApi, "null")) {
 							hasCheckedForNotificationApi = true;
-							if (appNotificationManager.hasNotificationPermission()) {
+							if (Objects.equals(hasApi, "true") &&
+									appNotificationManager.hasNotificationPermission()) {
 								startNotificationWorker(context);
 							} else {
 								WorkManager.getInstance(context).cancelAllWorkByTag(NOTIFICATION_WORK_REQUEST_TAG);
+								log(this, "initNotificationWorker() :: stopped notification worker manager");
 							}
 						}
 					}
