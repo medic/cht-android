@@ -99,6 +99,11 @@ public class ChtExternalApp {
 				return;
 			}
 
+			// ODK does not have boolean data type
+			if (value instanceof String strValue && ("true".equals(strValue) || "false".equals(strValue))) {
+				value = Boolean.parseBoolean(strValue);
+			}
+
 			intent.putExtra(key, (Serializable) value);
 
 		} catch (Exception exception) {
