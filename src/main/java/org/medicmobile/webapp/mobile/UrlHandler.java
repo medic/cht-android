@@ -33,6 +33,7 @@ public class UrlHandler extends WebViewClient {
 			// Load all related URLs in the WebView
 			return false;
 		}
+
 		// Let Android decide what to do with unrelated URLs
 		// unrelated URLs include `tel:` and `sms:` uri schemes
 		Intent i = new Intent(Intent.ACTION_VIEW, uri);
