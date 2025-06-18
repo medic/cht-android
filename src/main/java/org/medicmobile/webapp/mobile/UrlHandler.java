@@ -33,17 +33,6 @@ public class UrlHandler extends WebViewClient {
 			// Load all related URLs in the WebView
 			return false;
 		}
-		// some urls should be loaded in the Webview. Used for sso
-		String[] internUrls = parentActivity.getResources().getStringArray(R.array.intern_urls);
-		if(internUrls!=null) {
-			for (String url : internUrls) {
-				if (isUrlRelated(url, uri)) {
-					// Load all intern URLs in the WebView as well
-					return false;
-				}
-			}
-		}
-
 		// Let Android decide what to do with unrelated URLs
 		// unrelated URLs include `tel:` and `sms:` uri schemes
 		Intent i = new Intent(Intent.ACTION_VIEW, uri);

@@ -4,10 +4,6 @@
 
 	<string name="scheme">https</string>
 	<string name="app_host"/>
-	<array name="intern_urls">
-<!--		urls that will be opened in the webview. Useful for SSO login and let authentication be done in the app-->
-<!--		<item>https://login.microsoftonline.com</item>-->
-	</array>
   <bool name="allowCustomHosts">True</bool>
 
 	<string name="txtAppUrl">CHT server URL</string>
