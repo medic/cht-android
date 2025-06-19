@@ -18,7 +18,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.net.URI;
 import java.util.Map;
 import java.util.Optional;
 
@@ -32,9 +31,7 @@ final class Utils {
 		// android.net.Uri doesn't give us a host for URLs like blob:https://some-project.dev.medicmobile.org/abc-123
 		// so we might as well just regex the URL string
 		if (uriToTest != null) {
-			String uriToTestString = uriToTest.toString();
-			return isUrlRelated(appUrl, uriToTestString)
-					|| (uriToTestString.contains("redirect_uri="+ Uri.encode(appUrl)+Uri.encode("/medic/login/oidc")));
+			return isUrlRelated(appUrl, uriToTest.toString());
 		}
 		return false;
 	}
