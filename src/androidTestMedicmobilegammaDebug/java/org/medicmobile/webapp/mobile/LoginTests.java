@@ -31,6 +31,9 @@ import androidx.test.espresso.web.webdriver.Locator;
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.LargeTest;
+import androidx.test.rule.GrantPermissionRule;
+
+import android.Manifest;
 
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -42,6 +45,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 
 import java.util.Locale;
+
 @LargeTest
 @RunWith(AndroidJUnit4.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
@@ -52,16 +56,21 @@ public class LoginTests {
 	@Rule
 	public ActivityScenarioRule<SettingsDialogActivity> mActivityTestRule =
 			new ActivityScenarioRule<>(SettingsDialogActivity.class);
+	@Rule
+	public GrantPermissionRule permissionRule =
+			GrantPermissionRule.grant(
+					Manifest.permission.POST_NOTIFICATIONS
+			);
 
 	@Test
 	public void testLoginScreen() throws Exception {
 		onData(anything())
-			.inAdapterView(withId(R.id.lstServers))
-			.atPosition(0)
-			.perform(click());
+				.inAdapterView(withId(R.id.lstServers))
+				.atPosition(0)
+				.perform(click());
 		onView(withText("Continue"))
-			.inRoot(isDialog())
-			.perform(click());
+				.inRoot(isDialog())
+				.perform(click());
 		Thread.sleep(7000);//TODO: use better ways to handle delays
 
 		ViewInteraction webView = onView(
