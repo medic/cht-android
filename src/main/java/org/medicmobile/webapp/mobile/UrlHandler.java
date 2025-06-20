@@ -20,16 +20,18 @@ import android.webkit.WebViewClient;
 public class UrlHandler extends WebViewClient {
 	EmbeddedBrowserActivity parentActivity;
 	SettingsStore settings;
+	private final String oidcRedirectUriQueryParam;
 
 	public UrlHandler(EmbeddedBrowserActivity parentActivity, SettingsStore settings) {
 		this.parentActivity = parentActivity;
 		this.settings = settings;
+		this.oidcRedirectUriQueryParam = "redirect_uri=" + Uri.encode(this.settings.getAppUrl() + "/medic/login/oidc");
 	}
 
 	@Override
 	public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
 		Uri uri = request.getUrl();
-		if (isUrlRelated(this.settings.getAppUrl(), uri)) {
+		if (isUrlRelated(this.settings.getAppUrl(), uri) || isOidcProviderUrl(uri)) {
 			// Load all related URLs in the WebView
 			return false;
 		}
@@ -39,6 +41,18 @@ public class UrlHandler extends WebViewClient {
 		Intent i = new Intent(Intent.ACTION_VIEW, uri);
 		view.getContext().startActivity(i);
 		return true;
+	}
+
+	/**
+	 * Support OIDC login flow by allowing any URL that contains the current app_url as the redirect_uri.
+	 */
+	private boolean isOidcProviderUrl(Uri uriToTest) {
+		if (uriToTest == null) {
+			return false;
+		}
+		return uriToTest
+			.toString()
+			.contains(oidcRedirectUriQueryParam);
 	}
 
 	/**
