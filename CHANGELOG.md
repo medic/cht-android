@@ -7,6 +7,24 @@
 
 # Release notes
 
+## 1.5.2
+
+### Flavors
+
+* Add production flavor for MoH Nepal mHealth program ([#388](https://github.com/medic/cht-android/pull/388))
+* Add new flavor for MoH Nepal Lumbini ([#389](https://github.com/medic/cht-android/pull/389))
+* Fix case for `lumbini_chis` flavor ([#390](https://github.com/medic/cht-android/pull/390))
+* Fix missing URLs for `moh_nepal_mhealth` ([#391](https://github.com/medic/cht-android/pull/391))
+
+### Fixes
+
+* Fix URL handling to support SSO login ([#396](https://github.com/medic/cht-android/issues/396))
+
+### Technical Improvements
+
+* Bump copyright year to 2025 ([#381](https://github.com/medic/cht-android/pull/381))
+* Update `actions/cache` action in GitHub workflow ([#395](https://github.com/medic/cht-android/pull/395))
+
 ## 1.5.1
 
 ### Flavors
