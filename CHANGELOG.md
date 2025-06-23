@@ -15,6 +15,7 @@
 * Add new flavor for MoH Nepal Lumbini ([#389](https://github.com/medic/cht-android/pull/389))
 * Fix case for `lumbini_chis` flavor ([#390](https://github.com/medic/cht-android/pull/390))
 * Fix missing URLs for `moh_nepal_mhealth` ([#391](https://github.com/medic/cht-android/pull/391))
+* Remove unused flavors: `cares_malawi_kch`, `cares_malawi_mpc`, `safaridoctors_kenya_yha` ([#345](https://github.com/medic/cht-android/issues/345))
 
 ### Fixes
 
