@@ -33,6 +33,9 @@ import androidx.test.espresso.web.webdriver.Locator;
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.LargeTest;
+import androidx.test.rule.GrantPermissionRule;
+
+import android.Manifest;
 
 import org.junit.FixMethodOrder;
 import org.junit.Rule;
@@ -57,6 +60,11 @@ public class SettingsDialogActivityTest {
 	@Rule
 	public ActivityScenarioRule<SettingsDialogActivity> mActivityTestRule =
 			new ActivityScenarioRule<>(SettingsDialogActivity.class);
+	@Rule
+	public GrantPermissionRule permissionRule =
+			GrantPermissionRule.grant(
+					Manifest.permission.POST_NOTIFICATIONS
+			);
 
 	@Test
 	public void serverSelectionScreenIsDisplayed() {
@@ -83,22 +91,22 @@ public class SettingsDialogActivityTest {
 	@Test
 	public void testLoginScreen() throws Exception {
 		onData(anything())
-			.inAdapterView(withId(R.id.lstServers))
-			.atPosition(1)
-			.perform(click());
+				.inAdapterView(withId(R.id.lstServers))
+				.atPosition(1)
+				.perform(click());
 
 		onView(withText("Login to Gamma Dev?"))
-			.inRoot(isDialog())
-			.check(matches(isDisplayed()));
+				.inRoot(isDialog())
+				.check(matches(isDisplayed()));
 		onView(withText("Cancel"))
-			.inRoot(isDialog())
-			.check(matches(isDisplayed()));
+				.inRoot(isDialog())
+				.check(matches(isDisplayed()));
 
 		onView(withText("Continue"))
-			.inRoot(isDialog())
-			.perform(click());
+				.inRoot(isDialog())
+				.perform(click());
 
-		Thread.sleep(7000);	//TODO: use better ways to handle delays
+		Thread.sleep(7000);    //TODO: use better ways to handle delays
 
 		ViewInteraction webView = onView(
 				allOf(withId(R.id.wbvMain),
@@ -146,13 +154,13 @@ public class SettingsDialogActivityTest {
 	@Test
 	public void testCancelSelectedServer() {
 		onData(anything())
-			.inAdapterView(withId(R.id.lstServers))
-			.atPosition(2)
-			.perform(click());
+				.inAdapterView(withId(R.id.lstServers))
+				.atPosition(2)
+				.perform(click());
 
 		onView(withText(R.string.btnCancel))
-			.inRoot(isDialog())
-			.perform(click());
+				.inRoot(isDialog())
+				.perform(click());
 
 		onView(withText("CHT Android")).check(matches(isDisplayed()));
 		onView(withText("Custom")).check(matches(isDisplayed()));
@@ -197,13 +205,13 @@ public class SettingsDialogActivityTest {
 		onView(withText(SERVER_THREE)).check(matches(isDisplayed()));
 
 		onData(anything())
-			.inAdapterView(withId(R.id.lstServers))
-			.atPosition(0)
-			.perform(click());
+				.inAdapterView(withId(R.id.lstServers))
+				.atPosition(0)
+				.perform(click());
 
 		onView(withText("Login to Gamma Dev?"))
-			.inRoot(isDialog())
-			.check(matches(isDisplayed()));
+				.inRoot(isDialog())
+				.check(matches(isDisplayed()));
 	}
 
 	private String getLanguage(String code) {

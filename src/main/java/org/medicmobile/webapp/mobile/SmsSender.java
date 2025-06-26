@@ -17,6 +17,7 @@ import static org.medicmobile.webapp.mobile.MedicLog.trace;
 import static org.medicmobile.webapp.mobile.MedicLog.warn;
 import static java.lang.Integer.toHexString;
 
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
@@ -102,11 +103,13 @@ class SmsSender {
 		trace(this.parent, "SmsSender :: Cannot send sms without Send SMS permission. Sms ID=%s", this.sms.getId());
 	}
 
+	@SuppressLint("UseRequiresApi")
 	@TargetApi(31)
 	protected SmsManager getManager() {
 		return parent.getSystemService(android.telephony.SmsManager.class);
 	}
 
+	@SuppressLint("UseRequiresApi")
 	@TargetApi(23)
 	protected int getBroadcastFlags() {
 		return FLAG_ONE_SHOT | FLAG_IMMUTABLE;
@@ -115,6 +118,7 @@ class SmsSender {
 	/**
 	 * @see <a href="https://developer.android.com/reference/android/telephony/SmsMessage#createFromPdu(byte[])">createFromPdu(byte[])</a>
 	 */
+	@SuppressLint("UseRequiresApi")
 	@TargetApi(23)
 	protected SmsMessage createFromPdu(Intent intent) {
 		byte[] pdu = intent.getByteArrayExtra("pdu");

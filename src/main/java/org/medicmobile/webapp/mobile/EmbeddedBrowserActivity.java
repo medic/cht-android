@@ -30,14 +30,20 @@ import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.Toast;
 
 import androidx.core.content.ContextCompat;
+import androidx.work.ExistingPeriodicWorkPolicy;
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
 
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
-@SuppressWarnings({ "PMD.GodClass", "PMD.TooManyMethods" })
+@SuppressWarnings({"PMD.GodClass", "PMD.TooManyMethods"})
 public class EmbeddedBrowserActivity extends Activity {
 
 	private WebView container;
@@ -47,14 +53,17 @@ public class EmbeddedBrowserActivity extends Activity {
 	private FilePickerHandler filePickerHandler;
 	private SmsSender smsSender;
 	private ChtExternalAppHandler chtExternalAppHandler;
+	private AppNotificationManager appNotificationManager;
 	private boolean isMigrationRunning = false;
+	private boolean hasCheckedForNotificationApi = false;
+	private static final String NOTIFICATION_WORK_REQUEST_TAG = "cht_notification_tag";
 
 	private static final ValueCallback<String> IGNORE_RESULT = new ValueCallback<String>() {
 		public void onReceiveValue(String result) { /* ignore */ }
 	};
 	private final ValueCallback<String> backButtonHandler = new ValueCallback<String>() {
 		public void onReceiveValue(String result) {
-			if(!"true".equals(result)) {
+			if (!"true".equals(result)) {
 				EmbeddedBrowserActivity.this.moveTaskToBack(false);
 			}
 		}
@@ -63,7 +72,8 @@ public class EmbeddedBrowserActivity extends Activity {
 
 	//> ACTIVITY LIFECYCLE METHODS
 	@SuppressLint("ClickableViewAccessibility")
-	@Override public void onCreate(Bundle savedInstanceState) {
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
 		trace(this, "Starting webview...");
@@ -71,10 +81,15 @@ public class EmbeddedBrowserActivity extends Activity {
 		this.filePickerHandler = new FilePickerHandler(this);
 		this.mrdt = new MrdtSupport(this);
 		this.chtExternalAppHandler = new ChtExternalAppHandler(this);
+		appNotificationManager = new AppNotificationManager(this);
+
+		if (appNotificationManager.manager != null) {
+			appNotificationManager.manager.cancelAll();
+		}
 
 		try {
 			this.smsSender = SmsSender.createInstance(this);
-		} catch(Exception ex) {
+		} catch (Exception ex) {
 			error(ex, "Failed to create SmsSender.");
 		}
 
@@ -101,9 +116,9 @@ public class EmbeddedBrowserActivity extends Activity {
 
 		container = findViewById(R.id.wbvMain);
 		getFragmentManager()
-			.beginTransaction()
-			.add(new OpenSettingsDialogFragment(), OpenSettingsDialogFragment.class.getName())
-			.commit();
+				.beginTransaction()
+				.add(new OpenSettingsDialogFragment(), OpenSettingsDialogFragment.class.getName())
+				.commit();
 
 		configureUserAgent();
 
@@ -124,10 +139,14 @@ public class EmbeddedBrowserActivity extends Activity {
 
 		registerRetryConnectionBroadcastReceiver();
 
+		appNotificationManager.requestNotificationPermission();
+
 		String recentNavigation = settings.getLastUrl();
 		if (isValidNavigationUrl(appUrl, recentNavigation)) {
 			container.loadUrl(recentNavigation);
+			initNotificationWorker(this);
 		}
+
 	}
 
 	@SuppressWarnings("PMD.CallSuperFirst")
@@ -139,8 +158,8 @@ public class EmbeddedBrowserActivity extends Activity {
 			log(this, "onStart() :: Running Crosswalk migration ...");
 			isMigrationRunning = true;
 			Intent intent = new Intent(this, UpgradingActivity.class)
-				.putExtra("isClosable", false)
-				.putExtra("backPressedMessage", getString(R.string.waitMigration));
+					.putExtra("isClosable", false)
+					.putExtra("backPressedMessage", getString(R.string.waitMigration));
 			startActivity(intent);
 			xWalkMigration.run();
 		} else {
@@ -168,11 +187,12 @@ public class EmbeddedBrowserActivity extends Activity {
 		super.onStop();
 	}
 
-	@Override public void onBackPressed() {
+	@Override
+	public void onBackPressed() {
 		trace(this, "onBackPressed()");
 		container.evaluateJavascript(
-			"angular.element(document.body).injector().get('AndroidApi').v1.back()",
-			backButtonHandler);
+				"angular.element(document.body).injector().get('AndroidApi').v1.back()",
+				backButtonHandler);
 	}
 
 	@Override
@@ -214,8 +234,46 @@ public class EmbeddedBrowserActivity extends Activity {
 		} catch (Exception ex) {
 			String action = intent == null ? null : intent.getAction();
 			warn(ex, "Problem handling intent %s (%s) with requestCode=%s & resultCode=%s",
-				intent, action, requestCode.name(), resultCode);
+					intent, action, requestCode.name(), resultCode);
 		}
+	}
+
+	private void initNotificationWorker(Context context) {
+		container.setWebViewClient(new WebViewClient() {
+			@Override
+			public void onPageFinished(WebView view, String url) {
+				String jsCheckApi = "(() => typeof window.CHTCore.AndroidApi.v1.taskNotifications === 'function')();";
+				container.evaluateJavascript(jsCheckApi, new ValueCallback<String>() {
+					@Override
+					public void onReceiveValue(String hasApi) {
+						if (!hasCheckedForNotificationApi && !Objects.equals(hasApi, "null")) {
+							hasCheckedForNotificationApi = true;
+							if (Objects.equals(hasApi, "true") &&
+									appNotificationManager.hasNotificationPermission()) {
+								startNotificationWorker(context);
+							} else {
+								WorkManager.getInstance(context).cancelAllWorkByTag(NOTIFICATION_WORK_REQUEST_TAG);
+								log(this, "initNotificationWorker() :: stopped notification worker manager");
+							}
+						}
+					}
+				});
+			}
+		});
+	}
+
+	private void startNotificationWorker(Context context) {
+		PeriodicWorkRequest request = new PeriodicWorkRequest.Builder(
+				NotificationWorker.class,
+				15, TimeUnit.MINUTES
+		).addTag(NOTIFICATION_WORK_REQUEST_TAG).build();
+
+		WorkManager.getInstance(context).enqueueUniquePeriodicWork(
+				"task_notification",
+				ExistingPeriodicWorkPolicy.KEEP,
+				request
+		);
+		log(context, "startNotificationWorker() :: Started Notification Worker Manager...");
 	}
 
 	//> ACCESSORS
@@ -272,8 +330,8 @@ public class EmbeddedBrowserActivity extends Activity {
 
 		trace(this, "getLocationPermissions() :: Fine or Coarse location not granted before, requesting access...");
 		startActivityForResult(
-			new Intent(this, RequestLocationPermissionActivity.class),
-			RequestCode.ACCESS_LOCATION_PERMISSION.getCode()
+				new Intent(this, RequestLocationPermissionActivity.class),
+				RequestCode.ACCESS_LOCATION_PERMISSION.getCode()
 		);
 		return false;
 	}
@@ -311,10 +369,10 @@ public class EmbeddedBrowserActivity extends Activity {
 		}
 
 		trace(
-			this,
-			"EmbeddedBrowserActivity :: No handling for trigger: %s, requestCode: %s",
-			triggerClass,
-			RequestCode.ACCESS_STORAGE_PERMISSION.name()
+				this,
+				"EmbeddedBrowserActivity :: No handling for trigger: %s, requestCode: %s",
+				triggerClass,
+				RequestCode.ACCESS_STORAGE_PERMISSION.name()
 		);
 	}
 
@@ -335,7 +393,8 @@ public class EmbeddedBrowserActivity extends Activity {
 
 	private void setUpUiClient(WebView container) {
 		container.setWebChromeClient(new WebChromeClient() {
-			@Override public boolean onConsoleMessage(ConsoleMessage cm) {
+			@Override
+			public boolean onConsoleMessage(ConsoleMessage cm) {
 				if (!DEBUG) {
 					return super.onConsoleMessage(cm);
 				}
@@ -343,12 +402,14 @@ public class EmbeddedBrowserActivity extends Activity {
 				return true;
 			}
 
-			@Override public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, FileChooserParams fileChooserParams) {
+			@Override
+			public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, FileChooserParams fileChooserParams) {
 				filePickerHandler.openPicker(fileChooserParams, filePathCallback);
 				return true;
 			}
 
-			@Override public void onGeolocationPermissionsShowPrompt(final String origin, final GeolocationPermissions.Callback callback) {
+			@Override
+			public void onGeolocationPermissionsShowPrompt(final String origin, final GeolocationPermissions.Callback callback) {
 				callback.invoke(origin, true, true);
 			}
 		});
@@ -386,7 +447,8 @@ public class EmbeddedBrowserActivity extends Activity {
 
 	private void registerRetryConnectionBroadcastReceiver() {
 		BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
-			@Override public void onReceive(Context context, Intent intent) {
+			@Override
+			public void onReceive(Context context, Intent intent) {
 				String action = intent.getAction();
 				if (action.equals("retryConnection")) {
 					// user fixed the connection and asked the app
@@ -396,10 +458,10 @@ public class EmbeddedBrowserActivity extends Activity {
 			}
 		};
 		ContextCompat.registerReceiver(
-			getApplicationContext(),
-			broadcastReceiver,
-			new IntentFilter("retryConnection"),
-			ContextCompat.RECEIVER_NOT_EXPORTED
+				getApplicationContext(),
+				broadcastReceiver,
+				new IntentFilter("retryConnection"),
+				ContextCompat.RECEIVER_NOT_EXPORTED
 		);
 	}
 
@@ -420,9 +482,9 @@ public class EmbeddedBrowserActivity extends Activity {
 
 		public static Optional<RequestCode> valueOf(int code) {
 			return Arrays
-				.stream(RequestCode.values())
-				.filter(e -> e.getCode() == code)
-				.findFirst();
+					.stream(RequestCode.values())
+					.filter(e -> e.getCode() == code)
+					.findFirst();
 		}
 
 		public int getCode() {
