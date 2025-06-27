@@ -99,6 +99,11 @@ public class ChtExternalApp {
 				return;
 			}
 
+			// ODK does not have boolean data type
+			if (value instanceof String strValue && ("true".equals(strValue) || "false".equals(strValue))) {
+				value = Boolean.parseBoolean(strValue);
+			}
+
 			intent.putExtra(key, (Serializable) value);
 
 		} catch (Exception exception) {
@@ -234,7 +239,7 @@ public class ChtExternalApp {
 				return Optional.empty();
 			}
 
-			JSONObject json = parseBundleToJson(intent.getExtras());
+			JSONObject json = parseBundleToJson(null, intent.getExtras());
 			if (json == null) {
 				return Optional.empty();
 			}
@@ -244,13 +249,13 @@ public class ChtExternalApp {
 
 		//> PRIVATE
 
-		private JSONObject parseBundleToJson(Bundle bundle) {
+		private JSONObject parseBundleToJson(String parentKey, Bundle bundle) {
 			try {
 				JSONObject json = new JSONObject();
 				bundle
 						.keySet()
 						.iterator()
-						.forEachRemaining(key -> setValueInJson(key, json, bundle));
+						.forEachRemaining(key -> setValueInJson(parentKey, key, json, bundle));
 				return json;
 
 			} catch (Exception exception) {
@@ -260,33 +265,36 @@ public class ChtExternalApp {
 			return null;
 		}
 
-		private void setValueInJson(String key, JSONObject json, Bundle bundle) {
+		private void setValueInJson(String parentKey, String childKey, JSONObject json, Bundle bundle) {
+			String key = ("detectedRdt".equals(parentKey) && "concerns".equals(childKey))
+				? "detectionConcerns"
+				: childKey;
 			try {
-				Object value = bundle.get(key);
+				Object value = bundle.get(childKey);
 
 				if (value instanceof Bitmap) {
-					json.put(key, parseBitmapImageToBase64((Bitmap) value));
+					json.put(key, parseBitmapImageToBase64((Bitmap) value, false));
 					return;
 				}
 
 				if (value instanceof Bundle) {
-					json.put(key, parseBundleToJson((Bundle) value));
+					json.put(key, parseBundleToJson(key, (Bundle) value));
 					return;
 				}
 
 				if (isBundleList(value)) {
 					JSONArray jsonArray = ((List<Bundle>) value)
 							.stream()
-							.map(this::parseBundleToJson)
+							.map(val -> this.parseBundleToJson(key, val))
 							.collect(Collector.of(JSONArray::new, JSONArray::put, JSONArray::put));
-
 					json.put(key, jsonArray);
 					return;
 				}
 
 				Optional<Uri> imagePath = getImageUri(value);
 				if (imagePath.isPresent()) {
-					json.put(key, getImageFromStoragePath(imagePath.get()));
+					boolean keepFullResolution = bundle.getBoolean("sampleImage", false);
+					json.put(key, getImageFromStoragePath(imagePath.get(), keepFullResolution));
 					return;
 				}
 
@@ -321,7 +329,7 @@ public class ChtExternalApp {
 			return getUriFromFilePath(path);
 		}
 
-		private String getImageFromStoragePath(Uri filePath) {
+		private String getImageFromStoragePath(Uri filePath, boolean keepFullResolution) {
 			trace(this, "ChtExternalApp :: Retrieving image from storage path.");
 
 			try (
@@ -331,7 +339,7 @@ public class ChtExternalApp {
 					InputStream file = new FileInputStream(parcelFileDescriptor.getFileDescriptor());
 			){
 				Bitmap imgBitmap = BitmapFactory.decodeStream(file);
-				return parseBitmapImageToBase64(imgBitmap);
+				return parseBitmapImageToBase64(imgBitmap, keepFullResolution);
 
 			} catch (Exception exception) {
 				error(exception, "ChtExternalApp :: Failed to process image file from path: %s", filePath);
@@ -340,10 +348,11 @@ public class ChtExternalApp {
 			return null;
 		}
 
-		private String parseBitmapImageToBase64(Bitmap imgBitmap) throws IOException {
+		private String parseBitmapImageToBase64(Bitmap imgBitmap, boolean keepFullResolution) throws IOException {
 			try (ByteArrayOutputStream outputFile = new ByteArrayOutputStream()) {
 				trace(this, "ChtExternalApp :: Compressing image file.");
-				imgBitmap.compress(Bitmap.CompressFormat.JPEG, 75, outputFile);
+				int quality = keepFullResolution ? 100 : 75;
+				imgBitmap.compress(Bitmap.CompressFormat.JPEG, quality, outputFile);
 
 				trace(this, "ChtExternalApp :: Encoding image file to Base64.");
 				byte[] imageBytes = outputFile.toByteArray();

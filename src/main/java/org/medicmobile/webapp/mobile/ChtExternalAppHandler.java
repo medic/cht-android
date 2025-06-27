@@ -27,19 +27,21 @@ public class ChtExternalAppHandler {
 	}
 
 	String processResult(int resultCode, Intent intent) {
-		if (resultCode != RESULT_OK) {
-			String message = "ChtExternalAppHandler :: Bad result code: %s. The external app either: " +
-					"explicitly returned this result, didn't return any result or crashed during the operation.";
-
-			warn(this, message, resultCode);
-			return safeFormat("console.error('" + message + "')", resultCode);
-		}
-
 		try {
 			Optional<JSONObject> json = new ChtExternalApp
 					.Response(intent, this.context)
 					.getData();
 			String data = json.map(JSONObject::toString).orElse(null);
+
+			if (resultCode != RESULT_OK) {
+				String message = "ChtExternalAppHandler :: Bad result code: %s. The external app either: " +
+					"explicitly returned this result, did not return any result or crashed during the operation. "
+					+ data;
+
+				warn(this, message, resultCode);
+				return safeFormat("console.error('" + message + "')", resultCode);
+			}
+
 			return makeJavaScript(data);
 
 		} catch (Exception exception) {
