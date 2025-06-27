@@ -267,7 +267,7 @@ public class ChtExternalApp {
 
 		private void setValueInJson(String parentKey, String childKey, JSONObject json, Bundle bundle) {
 			String key = ("detectedRdt".equals(parentKey) && "concerns".equals(childKey))
-				? "detected_rdt_concerns"
+				? "detectionConcerns"
 				: childKey;
 			try {
 				Object value = bundle.get(childKey);
