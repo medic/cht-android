@@ -239,7 +239,7 @@ public class ChtExternalApp {
 				return Optional.empty();
 			}
 
-			JSONObject json = parseBundleToJson(null, intent.getExtras());
+			JSONObject json = parseBundleToJson(intent.getExtras());
 			if (json == null) {
 				return Optional.empty();
 			}
@@ -249,13 +249,13 @@ public class ChtExternalApp {
 
 		//> PRIVATE
 
-		private JSONObject parseBundleToJson(String parentKey, Bundle bundle) {
+		private JSONObject parseBundleToJson(Bundle bundle) {
 			try {
 				JSONObject json = new JSONObject();
 				bundle
 						.keySet()
 						.iterator()
-						.forEachRemaining(key -> setValueInJson(parentKey, key, json, bundle));
+						.forEachRemaining(key -> setValueInJson(key, json, bundle));
 				return json;
 
 			} catch (Exception exception) {
@@ -265,12 +265,9 @@ public class ChtExternalApp {
 			return null;
 		}
 
-		private void setValueInJson(String parentKey, String childKey, JSONObject json, Bundle bundle) {
-			String key = ("detectedRdt".equals(parentKey) && "concerns".equals(childKey))
-				? "detectionConcerns"
-				: childKey;
+		private void setValueInJson(String key, JSONObject json, Bundle bundle) {
 			try {
-				Object value = bundle.get(childKey);
+				Object value = bundle.get(key);
 
 				if (value instanceof Bitmap) {
 					json.put(key, parseBitmapImageToBase64((Bitmap) value, false));
@@ -278,15 +275,16 @@ public class ChtExternalApp {
 				}
 
 				if (value instanceof Bundle) {
-					json.put(key, parseBundleToJson(key, (Bundle) value));
+					json.put(key, parseBundleToJson((Bundle) value));
 					return;
 				}
 
 				if (isBundleList(value)) {
 					JSONArray jsonArray = ((List<Bundle>) value)
 							.stream()
-							.map(val -> this.parseBundleToJson(key, val))
+							.map(this::parseBundleToJson)
 							.collect(Collector.of(JSONArray::new, JSONArray::put, JSONArray::put));
+
 					json.put(key, jsonArray);
 					return;
 				}
