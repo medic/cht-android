@@ -63,7 +63,7 @@ public class SettingsDialogActivity extends FragmentActivity {
 		setContentView(R.layout.server_select_list);
 
 		// TODO: replace `UPSIDE_DOWN_CAKE` with `VANILLA_ICE_CREAM` when SDK 35 comes out of preview
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
 			View view = findViewById(R.id.serverSelectListLayout);
 			ViewCompat.requestApplyInsets(view.getRootView());
 //			((View) view.getParent()).requestApplyInsets();
@@ -89,7 +89,7 @@ public class SettingsDialogActivity extends FragmentActivity {
 
 		setContentView(R.layout.custom_server_form);
 		// TODO: replace `UPSIDE_DOWN_CAKE` with `VANILLA_ICE_CREAM` when SDK 35 comes out of preview
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
 			View view = findViewById(R.id.customServerFormLayout);
 			ViewCompat.requestApplyInsets(view.getRootView());
 //			((View) view.getParent()).requestApplyInsets();

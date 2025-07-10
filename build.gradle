@@ -101,7 +101,7 @@ def getVersionName = {
 }
 
 android {
-  compileSdkPreview "VanillaIceCream"
+  compileSdk 36
   packagingOptions {
     resources {
       excludes += ['META-INF/LICENSE', 'META-INF/NOTICE']
@@ -114,7 +114,7 @@ android {
 
   defaultConfig {
     //noinspection OldTargetApi
-    targetSdkPreview "VanillaIceCream"
+    targetSdkVersion 36
     minSdkVersion 21 // Android 5.0
     versionCode getVersionCode()
     versionName getVersionName()
