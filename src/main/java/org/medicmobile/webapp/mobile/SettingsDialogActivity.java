@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.content.res.XmlResourceParser;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
@@ -19,6 +20,7 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import androidx.core.view.ViewCompat;
 import androidx.fragment.app.FragmentActivity;
 
 import org.medicmobile.webapp.mobile.adapters.FilterableListAdapter;
@@ -60,10 +62,16 @@ public class SettingsDialogActivity extends FragmentActivity {
 
 		setContentView(R.layout.server_select_list);
 
-		ListView list = findViewById(R.id.lstServers);
+		// TODO: replace `UPSIDE_DOWN_CAKE` with `VANILLA_ICE_CREAM` when SDK 35 comes out of preview
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+			View view = findViewById(R.id.serverSelectListLayout);
+			ViewCompat.requestApplyInsets(view.getRootView());
+//			((View) view.getParent()).requestApplyInsets();
+		}
 
 		List<ServerMetadata> servers = serverRepo.getServers();
 		ServerMetadataAdapter adapter = ServerMetadataAdapter.createInstance(this, servers);
+		ListView list = findViewById(R.id.lstServers);
 		list.setAdapter(adapter);
 		list.setOnItemClickListener(new ServerClickListener(adapter));
 
@@ -80,6 +88,12 @@ public class SettingsDialogActivity extends FragmentActivity {
 		state = STATE_FORM;
 
 		setContentView(R.layout.custom_server_form);
+		// TODO: replace `UPSIDE_DOWN_CAKE` with `VANILLA_ICE_CREAM` when SDK 35 comes out of preview
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+			View view = findViewById(R.id.customServerFormLayout);
+			ViewCompat.requestApplyInsets(view.getRootView());
+//			((View) view.getParent()).requestApplyInsets();
+		}
 
 		if(!this.settings.hasWebappSettings()) {
 			cancelButton().setVisibility(View.GONE);

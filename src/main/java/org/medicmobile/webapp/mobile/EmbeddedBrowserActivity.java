@@ -21,8 +21,10 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.webkit.ConsoleMessage;
 import android.webkit.GeolocationPermissions;
@@ -33,6 +35,9 @@ import android.webkit.WebView;
 import android.widget.Toast;
 
 import androidx.core.content.ContextCompat;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 import java.util.Arrays;
 import java.util.Optional;
@@ -61,7 +66,7 @@ public class EmbeddedBrowserActivity extends Activity {
 	};
 
 
-	//> ACTIVITY LIFECYCLE METHODS
+//> ACTIVITY LIFECYCLE METHODS
 	@SuppressLint("ClickableViewAccessibility")
 	@Override public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -83,23 +88,28 @@ public class EmbeddedBrowserActivity extends Activity {
 
 		this.requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.main);
+		View webviewContainer = findViewById(R.id.lytWebView);
+		// TODO: replace `UPSIDE_DOWN_CAKE` with `VANILLA_ICE_CREAM` when SDK 35 comes out of preview
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+			ViewCompat.requestApplyInsets(webviewContainer.getRootView());
+//			((View) webviewContainer.getParent()).requestApplyInsets();
+		}
 
 		// Add an alarming red border if using configurable (i.e. dev)
 		// app with a medic production server.
-		if (settings.allowCustomHosts() && appUrl != null && appUrl.contains("app.medicmobile.org")) {
-			View webviewContainer = findViewById(R.id.lytWebView);
+		if (settings.allowsConfiguration() && appUrl != null && appUrl.contains("app.medicmobile.org")) {
 			webviewContainer.setPadding(10, 10, 10, 10);
 			webviewContainer.setBackgroundResource(R.drawable.warning_background);
 		}
 
 		// Add a noticeable border to easily identify a training app
 		if (BuildConfig.IS_TRAINING_APP) {
-			View webviewContainer = findViewById(R.id.lytWebView);
 			webviewContainer.setPadding(10, 10, 10, 10);
 			webviewContainer.setBackgroundResource(R.drawable.training_background);
 		}
 
 		container = findViewById(R.id.wbvMain);
+
 		getFragmentManager()
 			.beginTransaction()
 			.add(new OpenSettingsDialogFragment(), OpenSettingsDialogFragment.class.getName())
@@ -171,8 +181,8 @@ public class EmbeddedBrowserActivity extends Activity {
 	@Override public void onBackPressed() {
 		trace(this, "onBackPressed()");
 		container.evaluateJavascript(
-			"angular.element(document.body).injector().get('AndroidApi').v1.back()",
-			backButtonHandler);
+				"angular.element(document.body).injector().get('AndroidApi').v1.back()",
+				backButtonHandler);
 	}
 
 	@Override
@@ -218,7 +228,7 @@ public class EmbeddedBrowserActivity extends Activity {
 		}
 	}
 
-	//> ACCESSORS
+//> ACCESSORS
 	MrdtSupport getMrdtSupport() {
 		return this.mrdt;
 	}
@@ -231,7 +241,7 @@ public class EmbeddedBrowserActivity extends Activity {
 		return this.chtExternalAppHandler;
 	}
 
-	//> PUBLIC API
+//> PUBLIC API
 	public void evaluateJavascript(final String js) {
 		evaluateJavascript(js, true);
 	}
@@ -278,7 +288,7 @@ public class EmbeddedBrowserActivity extends Activity {
 		return false;
 	}
 
-	//> PRIVATE HELPERS
+//> PRIVATE HELPERS
 	private void locationRequestResolved() {
 		evaluateJavascript("window.CHTCore.AndroidApi.v1.locationPermissionRequestResolved();");
 	}
@@ -403,7 +413,7 @@ public class EmbeddedBrowserActivity extends Activity {
 		);
 	}
 
-	//> ENUMS
+//> ENUMS
 	public enum RequestCode {
 		ACCESS_LOCATION_PERMISSION(100),
 		ACCESS_STORAGE_PERMISSION(101),
