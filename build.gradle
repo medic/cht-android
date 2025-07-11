@@ -9,7 +9,7 @@ buildscript {
     google()
   }
   dependencies {
-    classpath 'com.android.tools.build:gradle:8.4.0'
+    classpath 'com.android.tools.build:gradle:8.11.1'
     classpath 'com.github.spotbugs.snom:spotbugs-gradle-plugin:6.0.8'
   }
 }
@@ -162,14 +162,15 @@ android {
   }
 
   buildTypes {
-    debug {
-      testCoverageEnabled = true
-    }
     release {
       minifyEnabled true
       proguardFiles getDefaultProguardFile('proguard-android-optimize.txt')
       shrinkResources true
       signingConfig signingConfigs.release
+    }
+    debug {
+      enableUnitTestCoverage true
+      enableAndroidTestCoverage true
     }
   }
 
