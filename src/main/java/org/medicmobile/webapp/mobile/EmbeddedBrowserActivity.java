@@ -89,8 +89,7 @@ public class EmbeddedBrowserActivity extends Activity {
 		this.requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.main);
 		View webviewContainer = findViewById(R.id.lytWebView);
-		// TODO: replace `UPSIDE_DOWN_CAKE` with `VANILLA_ICE_CREAM` when SDK 35 comes out of preview
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
 			ViewCompat.requestApplyInsets(webviewContainer.getRootView());
 //			((View) webviewContainer.getParent()).requestApplyInsets();
 		}
