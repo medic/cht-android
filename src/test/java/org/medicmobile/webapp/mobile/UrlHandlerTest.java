@@ -82,7 +82,7 @@ public class UrlHandlerTest {
 			CustomTabsIntent.Builder.class,
 			(mock, context) -> when(mock.build()).thenReturn(intent)
 		)) {
-		    doNothing().when(intent).launchUrl(any(), any());
+			doNothing().when(intent).launchUrl(any(), any());
 			when(webResourceRequest.getUrl()).thenReturn(expectedUri);
 
 			boolean result = handler.shouldOverrideUrlLoading(webView, webResourceRequest);
