@@ -17,6 +17,8 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import androidx.browser.customtabs.CustomTabsIntent;
+
 public class UrlHandler extends WebViewClient {
 	EmbeddedBrowserActivity parentActivity;
 	SettingsStore settings;
@@ -31,9 +33,13 @@ public class UrlHandler extends WebViewClient {
 	@Override
 	public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
 		Uri uri = request.getUrl();
-		if (isUrlRelated(this.settings.getAppUrl(), uri) || isOidcProviderUrl(uri)) {
+		if (isUrlRelated(this.settings.getAppUrl(), uri)) {
 			// Load all related URLs in the WebView
 			return false;
+		}
+		if (isOidcProviderUrl(uri)) {
+			launchCustomTab(uri);
+			return true;
 		}
 
 		// Let Android decide what to do with unrelated URLs
@@ -41,6 +47,11 @@ public class UrlHandler extends WebViewClient {
 		Intent i = new Intent(Intent.ACTION_VIEW, uri);
 		view.getContext().startActivity(i);
 		return true;
+	}
+
+	private void launchCustomTab(Uri uri) {
+		CustomTabsIntent customTabsIntent = new CustomTabsIntent.Builder().build();
+		customTabsIntent.launchUrl(this.parentActivity, uri);
 	}
 
 	/**
