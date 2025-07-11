@@ -17,6 +17,7 @@ variables:
   ANDROID_COMPILE_SDK: "34"
   GRADLE_OPTS: "-Xmx2g -Dorg.gradle.jvmargs=-Xmx2g"
   APP_VERSION_SIMPLE: "v1.0.${CI_PIPELINE_IID}"
+  APP_VERSION_SIMPLE_PROD: "v1.5.${CI_PIPELINE_IID}"
   ANDROID_KEYSTORE_PATH:
   ANDROID_KEYSTORE_PASSWORD:
   ANDROID_KEY_ALIAS:
@@ -106,7 +107,7 @@ release_prod_apk:
     - $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-${ANDROID_COMPILE_SDK}" "build-tools;${ANDROID_COMPILE_SDK}.0.0"
   script:
     - echo "$KEYSTORE_FILE_PROD" | base64 -d > moh_kenya_echis.keystore
-    - export RELEASE_VERSION="$APP_VERSION_SIMPLE"
+    - export RELEASE_VERSION="$APP_VERSION_SIMPLE_PROD"
     - export ANDROID_KEYSTORE_PASSWORD="$KEYSTORE_PROD_PASSWORD"
     - export ANDROID_KEY_ALIAS="$KEY_ALIAS"
     - export ANDROID_KEY_PASSWORD="$KEY_PROD_PASSWORD"
