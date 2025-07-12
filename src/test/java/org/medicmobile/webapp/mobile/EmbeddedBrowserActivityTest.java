@@ -14,10 +14,13 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.content.Intent;
+import android.net.Uri;
 
 import androidx.core.content.ContextCompat;
 import androidx.test.espresso.intent.Intents;
@@ -270,6 +273,27 @@ public class EmbeddedBrowserActivityTest {
 					));
 
 					Intents.release();
+				});
+		}
+	}
+
+	@Test
+	public void onNewIntent() {
+		Intent intent = mock(Intent.class);
+		String url = "https://example.com";
+		when(intent.getData()).thenReturn(Uri.parse(url));
+		try(MockedStatic<MedicLog> medicLogMock = mockStatic(MedicLog.class)) {
+			scenarioRule
+				.getScenario()
+				.onActivity(embeddedBrowserActivity -> {
+					embeddedBrowserActivity.onNewIntent(intent);
+
+					verify(intent, times(1)).getData();
+					medicLogMock.verify(() -> MedicLog.trace(
+						eq(embeddedBrowserActivity),
+						eq("Pointing browser to: %s"),
+						eq(url)
+					));
 				});
 		}
 	}
