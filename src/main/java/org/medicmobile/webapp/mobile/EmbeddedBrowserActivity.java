@@ -136,7 +136,7 @@ public class EmbeddedBrowserActivity extends Activity {
 	}
 
 	@Override
-	protected void onNewIntent (Intent intent) {
+	protected void onNewIntent(Intent intent) {
 		Uri appLinkData = intent.getData();
 		browseTo(appLinkData);
 	}
