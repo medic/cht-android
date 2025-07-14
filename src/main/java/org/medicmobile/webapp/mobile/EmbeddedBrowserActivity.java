@@ -91,7 +91,6 @@ public class EmbeddedBrowserActivity extends Activity {
 		View webviewContainer = findViewById(R.id.lytWebView);
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
 			ViewCompat.requestApplyInsets(webviewContainer.getRootView());
-//			((View) webviewContainer.getParent()).requestApplyInsets();
 		}
 
 		// Add an alarming red border if using configurable (i.e. dev)

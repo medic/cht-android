@@ -64,7 +64,6 @@ public class SettingsDialogActivity extends FragmentActivity {
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
 			View view = findViewById(R.id.serverSelectListLayout);
 			ViewCompat.requestApplyInsets(view.getRootView());
-//			((View) view.getParent()).requestApplyInsets();
 		}
 
 		List<ServerMetadata> servers = serverRepo.getServers();
@@ -89,7 +88,6 @@ public class SettingsDialogActivity extends FragmentActivity {
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
 			View view = findViewById(R.id.customServerFormLayout);
 			ViewCompat.requestApplyInsets(view.getRootView());
-//			((View) view.getParent()).requestApplyInsets();
 		}
 
 		if(!this.settings.hasWebappSettings()) {
