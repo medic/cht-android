@@ -61,7 +61,6 @@ public class OpenSettingsDialogFragmentTest {
 		argsStartActivity = ArgumentCaptor.forClass(Intent.class);
 		doNothing().when(openSettingsDialogFragment).startActivity(argsStartActivity.capture());
 
-//		openSettingsDialogFragment.onCreate(null);
 		openSettingsDialogFragment.onViewCreated(fragmentView, null);
 	}
 
@@ -243,7 +242,6 @@ public class OpenSettingsDialogFragmentTest {
 		when(eventTap.getActionMasked()).thenReturn(MotionEvent.ACTION_DOWN);
 
 		// First creation
-//		openSettingsDialogFragment.onCreate(savedState);
 		openSettingsDialogFragment.onViewCreated(fragmentView, savedState);
 		OnTouchListener firstListener = argsOnTouch.getValue();
 
@@ -267,7 +265,6 @@ public class OpenSettingsDialogFragmentTest {
 			when(openSettingsDialogFragment.getActivity()).thenReturn(newActivity);
 
 			//> WHEN
-//			openSettingsDialogFragment.onCreate(savedState);
 			openSettingsDialogFragment.onViewCreated(newFragmentView, savedState);
 			OnTouchListener recreatedListener = newArgsOnTouch.getValue();
 
