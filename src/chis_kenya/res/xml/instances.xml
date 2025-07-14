@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<instances xmlns:android="http://schemas.android.com/apk/res/android">
-  <instance name="eCHIS Training 1">https://training-1.echis.go.ke</instance>
-  <instance name="eCHIS Training 2">https://training-2.echis.go.ke</instance>
-  <instance name="eCHIS Training 3">https://training-3.echis.go.ke</instance>
-  <instance name="eCHIS Training 4">https://training-4.echis.go.ke</instance>
-  <instance name="eCHIS Staging">https://staging.echis.go.ke</instance>
-</instances>
