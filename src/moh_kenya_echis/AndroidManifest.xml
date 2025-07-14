@@ -13,20 +13,21 @@
         <category android:name="android.intent.category.DEFAULT" />
         <category android:name="android.intent.category.BROWSABLE" />
 
-        <data android:scheme="https" android:host="migori.echis.go.ke" android:pathPattern=".*"/>
-        <data android:scheme="https" android:host="kisumu.echis.go.ke" android:pathPattern=".*"/>
-        <data android:scheme="https" android:host="nyeri.echis.go.ke" android:pathPattern=".*"/>
-        <data android:scheme="https" android:host="kilifi.echis.go.ke" android:pathPattern=".*"/>
-        <data android:scheme="https" android:host="machakos.echis.go.ke" android:pathPattern=".*"/>
-        <data android:scheme="https" android:host="garissa.echis.go.ke" android:pathPattern=".*"/>
-        <data android:scheme="https" android:host="nakuru.echis.go.ke" android:pathPattern=".*"/>
-        <data android:scheme="https" android:host="isiolo.echis.go.ke" android:pathPattern=".*"/>
-        <data android:scheme="https" android:host="nairobi.echis.go.ke" android:pathPattern=".*"/>
-        <data android:scheme="https" android:host="turkana.echis.go.ke" android:pathPattern=".*"/>
-        <data android:scheme="https" android:host="kakamega.echis.go.ke" android:pathPattern=".*"/>
-        <data android:scheme="https" android:host="vihiga.echis.go.ke" android:pathPattern=".*"/>
-        <data android:scheme="https" android:host="kitui.echis.go.ke" android:pathPattern=".*"/>
-        <data android:scheme="https" android:host="uasingishu.echis.go.ke" android:pathPattern=".*"/>
+        <data android:scheme="https" android:host="migori-echis.health.go.ke" android:pathPattern=".*"/>
+        <data android:scheme="https" android:host="kisumu-echis.health.go.ke" android:pathPattern=".*"/>
+        <data android:scheme="https" android:host="nyeri-echis.health.go.ke" android:pathPattern=".*"/>
+        <data android:scheme="https" android:host="kilifi-echis.health.go.ke" android:pathPattern=".*"/>
+        <data android:scheme="https" android:host="machakos-echis.health.go.ke" android:pathPattern=".*"/>
+        <data android:scheme="https" android:host="garissa-echis.health.go.ke" android:pathPattern=".*"/>
+        <data android:scheme="https" android:host="nakuru-echis.health.go.ke" android:pathPattern=".*"/>
+        <data android:scheme="https" android:host="isiolo-echis.health.go.ke" android:pathPattern=".*"/>
+        <data android:scheme="https" android:host="nairobi-echis.health.go.ke" android:pathPattern=".*"/>
+        <data android:scheme="https" android:host="turkana-echis.health.go.ke" android:pathPattern=".*"/>
+        <data android:scheme="https" android:host="kakamega-echis.health.go.ke" android:pathPattern=".*"/>
+        <data android:scheme="https" android:host="vihiga-echis.health.go.ke" android:pathPattern=".*"/>
+        <data android:scheme="https" android:host="kitui-echis.health.go.ke" android:pathPattern=".*"/>
+        <data android:scheme="https" android:host="uasingishu-echis.health.go.ke" android:pathPattern=".*"/>
+
         <data android:scheme="https" android:host="baringo.echis.go.ke" android:pathPattern=".*"/>
         <data android:scheme="https" android:host="bomet.echis.go.ke" android:pathPattern=".*"/>
         <data android:scheme="https" android:host="bungoma.echis.go.ke" android:pathPattern=".*"/>
