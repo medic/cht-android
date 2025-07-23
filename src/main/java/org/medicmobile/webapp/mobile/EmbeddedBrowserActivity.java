@@ -119,10 +119,6 @@ public class EmbeddedBrowserActivity extends Activity {
 
 		enableUrlHandlers(container);
 
-		Intent appLinkIntent = getIntent();
-		Uri appLinkData = appLinkIntent.getData();
-		browseTo(appLinkData);
-
 		if (settings.allowsConfiguration()) {
 			toast(redactUrl(appUrl));
 		}
@@ -130,9 +126,24 @@ public class EmbeddedBrowserActivity extends Activity {
 		registerRetryConnectionBroadcastReceiver();
 
 		String recentNavigation = settings.getLastUrl();
-		if (isValidNavigationUrl(appUrl, recentNavigation)) {
+		Intent appLinkIntent = getIntent();
+		Uri appLinkData = appLinkIntent.getData();
+		if (appLinkData != null) {
+			// The app has been opened via an app link.
+			browseTo(appLinkData);
+		} else if (isValidNavigationUrl(appUrl, recentNavigation)) {
+			// The app has been opened normally, and the user can start where they left off.
 			container.loadUrl(recentNavigation);
+		} else {
+			// The app has been opened normally, but no previous URL is available. (Maybe it is the first time.)
+			browseTo(null);
 		}
+	}
+
+	@Override
+	protected void onNewIntent(Intent intent) {
+		Uri appLinkData = intent.getData();
+		browseTo(appLinkData);
 	}
 
 	@SuppressWarnings("PMD.CallSuperFirst")

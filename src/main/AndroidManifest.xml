@@ -40,9 +40,18 @@
       </intent-filter>
     </activity>
     <activity android:name="EmbeddedBrowserActivity"
-        android:screenOrientation="portrait"
-        android:configChanges="orientation|screenSize"
-        tools:ignore="DiscouragedApi"/>
+      android:screenOrientation="portrait"
+      android:configChanges="orientation|screenSize"
+      android:launchMode="singleTask"
+      android:exported="true"
+      tools:ignore="DiscouragedApi">
+      <intent-filter android:autoVerify="true">
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <data android:scheme="@string/scheme" android:host="@string/app_host" android:pathPattern=".*"/>
+      </intent-filter>
+    </activity>
     <activity android:name="ConnectionErrorActivity"
         android:screenOrientation="portrait"
         android:configChanges="orientation|screenSize"
@@ -66,16 +75,6 @@
     <activity android:name="DomainVerificationActivity"
       android:screenOrientation="portrait"
       tools:ignore="DiscouragedApi" />
-    <activity android:name="AppUrlIntentActivity"
-        android:launchMode="singleInstance"
-        android:exported="true">
-      <intent-filter android:autoVerify="true">
-        <action android:name="android.intent.action.VIEW" />
-        <category android:name="android.intent.category.DEFAULT" />
-        <category android:name="android.intent.category.BROWSABLE" />
-        <data android:scheme="@string/scheme" android:host="@string/app_host" android:pathPattern=".*"/>
-      </intent-filter>
-    </activity>
     <activity android:name="UpgradingActivity"
       android:screenOrientation="portrait"
       android:configChanges="orientation|screenSize"
