@@ -24,7 +24,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.Window;
 import android.webkit.ConsoleMessage;
 import android.webkit.GeolocationPermissions;
@@ -35,9 +34,7 @@ import android.webkit.WebView;
 import android.widget.Toast;
 
 import androidx.core.content.ContextCompat;
-import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 import java.util.Arrays;
 import java.util.Optional;

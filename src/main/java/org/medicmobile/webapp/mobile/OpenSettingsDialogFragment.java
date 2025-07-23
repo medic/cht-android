@@ -1,7 +1,5 @@
 package org.medicmobile.webapp.mobile;
 
-import static org.medicmobile.webapp.mobile.MedicLog.trace;
-
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Fragment;
