@@ -7,6 +7,11 @@
 
 # Release notes
 
+## 1.6.0
+
+* Android 15 support ([#407](https://github.com/medic/cht-android/pull/407))
+* Update OIDC handling to use custom tabs ([#405](https://github.com/medic/cht-android/pull/405))
+
 ## 1.5.2
 
 ### Flavors
