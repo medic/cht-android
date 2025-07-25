@@ -85,6 +85,14 @@ public class ChtExternalApp {
 
 	//> PRIVATE
 
+	private Serializable getSerializableValue(Object value) {
+		// ODK does not have boolean data type
+		if (value instanceof String strValue && ("true".equals(strValue) || "false".equals(strValue))) {
+			return Boolean.parseBoolean(strValue);
+		}
+		return (Serializable) value;
+	}
+
 	private void setIntentExtras(Intent intent, String key, JSONObject data) {
 		try {
 			Object value = data.get(key);
@@ -99,7 +107,7 @@ public class ChtExternalApp {
 				return;
 			}
 
-			intent.putExtra(key, (Serializable) value);
+			intent.putExtra(key, getSerializableValue(value));
 
 		} catch (Exception exception) {
 			error(exception, "ChtExternalApp :: Problem setting intent extras. Key=%s, Data=%s", key, data);
@@ -265,7 +273,7 @@ public class ChtExternalApp {
 				Object value = bundle.get(key);
 
 				if (value instanceof Bitmap) {
-					json.put(key, parseBitmapImageToBase64((Bitmap) value));
+					json.put(key, parseBitmapImageToBase64((Bitmap) value, false));
 					return;
 				}
 
@@ -286,7 +294,8 @@ public class ChtExternalApp {
 
 				Optional<Uri> imagePath = getImageUri(value);
 				if (imagePath.isPresent()) {
-					json.put(key, getImageFromStoragePath(imagePath.get()));
+					boolean keepFullResolution = bundle.getBoolean("sampleImage", false);
+					json.put(key, getImageFromStoragePath(imagePath.get(), keepFullResolution));
 					return;
 				}
 
@@ -321,7 +330,7 @@ public class ChtExternalApp {
 			return getUriFromFilePath(path);
 		}
 
-		private String getImageFromStoragePath(Uri filePath) {
+		private String getImageFromStoragePath(Uri filePath, boolean keepFullResolution) {
 			trace(this, "ChtExternalApp :: Retrieving image from storage path.");
 
 			try (
@@ -331,7 +340,7 @@ public class ChtExternalApp {
 					InputStream file = new FileInputStream(parcelFileDescriptor.getFileDescriptor());
 			){
 				Bitmap imgBitmap = BitmapFactory.decodeStream(file);
-				return parseBitmapImageToBase64(imgBitmap);
+				return parseBitmapImageToBase64(imgBitmap, keepFullResolution);
 
 			} catch (Exception exception) {
 				error(exception, "ChtExternalApp :: Failed to process image file from path: %s", filePath);
@@ -340,10 +349,11 @@ public class ChtExternalApp {
 			return null;
 		}
 
-		private String parseBitmapImageToBase64(Bitmap imgBitmap) throws IOException {
+		private String parseBitmapImageToBase64(Bitmap imgBitmap, boolean keepFullResolution) throws IOException {
 			try (ByteArrayOutputStream outputFile = new ByteArrayOutputStream()) {
 				trace(this, "ChtExternalApp :: Compressing image file.");
-				imgBitmap.compress(Bitmap.CompressFormat.JPEG, 75, outputFile);
+				int quality = keepFullResolution ? 100 : 75;
+				imgBitmap.compress(Bitmap.CompressFormat.JPEG, quality, outputFile);
 
 				trace(this, "ChtExternalApp :: Encoding image file to Base64.");
 				byte[] imageBytes = outputFile.toByteArray();
