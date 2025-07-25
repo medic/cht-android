@@ -35,8 +35,8 @@ public class ChtExternalAppHandler {
 
 			if (resultCode != RESULT_OK) {
 				String message = "ChtExternalAppHandler :: Bad result code: %s. The external app either: " +
-					"explicitly returned this result, did not return any result or crashed during the operation. "
-					+ data;
+					"explicitly returned this result, did not return any result or crashed during the operation. " +
+					data;
 
 				warn(this, message, resultCode);
 				return safeFormat("console.error('" + message + "')", resultCode);
