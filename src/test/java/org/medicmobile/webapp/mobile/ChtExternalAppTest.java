@@ -126,7 +126,7 @@ public class ChtExternalAppTest {
 				"\"an.int\": 5," +
 				"\"a.long\": 2147483649," +
 				"\"a.double\": 2.8," +
-				"\"a.boolean\": true," +
+				"\"a.boolean\": \"true\"," +
 				"\"a.string\": \"some text\"" +
 				"}";
 		String arraysJson = "{" +
