@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 public class ChtExternalApp {
 
@@ -292,6 +293,18 @@ public class ChtExternalApp {
 					return;
 				}
 
+				if (isPrimitiveList(value)) {
+					// ODK/Enketo models a primitive multi-value list (e.g. a select_multiple question) as a
+					// space-delimited string.
+					String nodeList = ((List<?>) value)
+						.stream()
+						.map(Object::toString)
+						.map(s -> s.replace(" ", "_"))
+						.collect(Collectors.joining(" "));
+					json.put(key, nodeList);
+					return;
+				}
+
 				Optional<Uri> imagePath = getImageUri(value);
 				if (imagePath.isPresent()) {
 					boolean keepFullResolution = bundle.getBoolean("sampleImage", false);
@@ -314,6 +327,22 @@ public class ChtExternalApp {
 			List<?> list = (List<?>) value; // Avoid casting many times to same type.
 
 			return !list.isEmpty() && list.get(0) instanceof Bundle;
+		}
+
+		private boolean isPrimitiveList(Object value) {
+			if (!(value instanceof List) || ((List<?>) value).isEmpty()) {
+				return false;
+			}
+
+			Object first = ((List<?>) value).get(0);
+			return first instanceof String ||
+				first instanceof Integer ||
+				first instanceof Long ||
+				first instanceof Double ||
+				first instanceof Float ||
+				first instanceof Boolean ||
+				first instanceof Short ||
+				first instanceof Character;
 		}
 
 		private Optional<Uri> getImageUri(Object value) {
