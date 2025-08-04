@@ -18,13 +18,17 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import androidx.browser.customtabs.CustomTabsIntent;
+
 public class UrlHandler extends WebViewClient {
 	EmbeddedBrowserActivity parentActivity;
 	SettingsStore settings;
+	private final String oidcRedirectUriQueryParam;
 
 	public UrlHandler(EmbeddedBrowserActivity parentActivity, SettingsStore settings) {
 		this.parentActivity = parentActivity;
 		this.settings = settings;
+		this.oidcRedirectUriQueryParam = "redirect_uri=" + Uri.encode(this.settings.getAppUrl() + "/medic/login/oidc");
 	}
 
 	@Override
@@ -34,12 +38,33 @@ public class UrlHandler extends WebViewClient {
 			// Load all related URLs in the WebView
 			return false;
 		}
+		if (isOidcProviderUrl(uri)) {
+			launchCustomTab(uri);
+			return true;
+		}
 
 		// Let Android decide what to do with unrelated URLs
 		// unrelated URLs include `tel:` and `sms:` uri schemes
 		Intent i = new Intent(Intent.ACTION_VIEW, uri);
 		view.getContext().startActivity(i);
 		return true;
+	}
+
+	private void launchCustomTab(Uri uri) {
+		CustomTabsIntent customTabsIntent = new CustomTabsIntent.Builder().build();
+		customTabsIntent.launchUrl(this.parentActivity, uri);
+	}
+
+	/**
+	 * Support OIDC login flow by allowing any URL that contains the current app_url as the redirect_uri.
+	 */
+	private boolean isOidcProviderUrl(Uri uriToTest) {
+		if (uriToTest == null) {
+			return false;
+		}
+		return uriToTest
+			.toString()
+			.contains(oidcRedirectUriQueryParam);
 	}
 
 	/**

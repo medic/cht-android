@@ -114,7 +114,7 @@ android {
 
   defaultConfig {
     //noinspection OldTargetApi
-    targetSdkVersion 34
+    targetSdkVersion 35
     minSdkVersion 21 // Android 5.0
     versionCode getVersionCode()
     versionName getVersionName()
@@ -374,16 +374,6 @@ android {
       applicationId = 'org.medicmobile.webapp.mobile.itech_malawi'
     }
 
-    cares_malawi_kch {
-      dimension = 'brand'
-      applicationId = 'org.medicmobile.webapp.mobile.cares_malawi_kch'
-    }
-
-    cares_malawi_mpc {
-      dimension = 'brand'
-      applicationId = 'org.medicmobile.webapp.mobile.cares_malawi_mpc'
-    }
-
     alerte_niger {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.alerte_niger'
@@ -455,11 +445,6 @@ android {
       applicationId = 'org.medicmobile.webapp.mobile.moh_civ_uat'
     }
 
-    safaridoctors_kenya_yha {
-      dimension = 'brand'
-      applicationId = 'org.medicmobile.webapp.mobile.safaridoctors_kenya_yha'
-    }
-
     moh_nepal_mhealth {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.moh_nepal_mhealth'
@@ -490,6 +475,7 @@ android {
 dependencies {
   implementation fileTree(dir: 'libs', include: ['*.jar'])
   implementation platform('org.jetbrains.kotlin:kotlin-bom:1.9.24')
+  implementation 'androidx.browser:browser:1.8.0'
   implementation 'androidx.work:work-runtime:2.10.1'
   implementation 'androidx.core:core:1.16.0'
   implementation 'androidx.activity:activity:1.10.1'

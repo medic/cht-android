@@ -21,6 +21,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.view.Window;
@@ -37,6 +38,7 @@ import androidx.core.content.ContextCompat;
 import androidx.work.ExistingPeriodicWorkPolicy;
 import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
+import androidx.core.view.ViewCompat;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -70,7 +72,7 @@ public class EmbeddedBrowserActivity extends Activity {
 	};
 
 
-	//> ACTIVITY LIFECYCLE METHODS
+//> ACTIVITY LIFECYCLE METHODS
 	@SuppressLint("ClickableViewAccessibility")
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -98,23 +100,26 @@ public class EmbeddedBrowserActivity extends Activity {
 
 		this.requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.main);
+		View webviewContainer = findViewById(R.id.lytWebView);
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+			ViewCompat.requestApplyInsets(webviewContainer.getRootView());
+		}
 
 		// Add an alarming red border if using configurable (i.e. dev)
 		// app with a medic production server.
-		if (settings.allowCustomHosts() && appUrl != null && appUrl.contains("app.medicmobile.org")) {
-			View webviewContainer = findViewById(R.id.lytWebView);
+		if (settings.allowsConfiguration() && appUrl != null && appUrl.contains("app.medicmobile.org")) {
 			webviewContainer.setPadding(10, 10, 10, 10);
 			webviewContainer.setBackgroundResource(R.drawable.warning_background);
 		}
 
 		// Add a noticeable border to easily identify a training app
 		if (BuildConfig.IS_TRAINING_APP) {
-			View webviewContainer = findViewById(R.id.lytWebView);
 			webviewContainer.setPadding(10, 10, 10, 10);
 			webviewContainer.setBackgroundResource(R.drawable.training_background);
 		}
 
 		container = findViewById(R.id.wbvMain);
+
 		getFragmentManager()
 				.beginTransaction()
 				.add(new OpenSettingsDialogFragment(), OpenSettingsDialogFragment.class.getName())
@@ -129,10 +134,6 @@ public class EmbeddedBrowserActivity extends Activity {
 
 		enableUrlHandlers(container);
 
-		Intent appLinkIntent = getIntent();
-		Uri appLinkData = appLinkIntent.getData();
-		browseTo(appLinkData);
-
 		if (settings.allowsConfiguration()) {
 			toast(redactUrl(appUrl));
 		}
@@ -142,11 +143,26 @@ public class EmbeddedBrowserActivity extends Activity {
 		appNotificationManager.requestNotificationPermission();
 
 		String recentNavigation = settings.getLastUrl();
-		if (isValidNavigationUrl(appUrl, recentNavigation)) {
+		Intent appLinkIntent = getIntent();
+		Uri appLinkData = appLinkIntent.getData();
+		if (appLinkData != null) {
+			// The app has been opened via an app link.
+			browseTo(appLinkData);
+		} else if (isValidNavigationUrl(appUrl, recentNavigation)) {
+			// The app has been opened normally, and the user can start where they left off.
 			container.loadUrl(recentNavigation);
 			initNotificationWorker(this);
+		} else {
+			// The app has been opened normally, but no previous URL is available. (Maybe it is the first time.)
+			browseTo(null);
 		}
 
+	}
+
+	@Override
+	protected void onNewIntent(Intent intent) {
+		Uri appLinkData = intent.getData();
+		browseTo(appLinkData);
 	}
 
 	@SuppressWarnings("PMD.CallSuperFirst")
@@ -277,6 +293,7 @@ public class EmbeddedBrowserActivity extends Activity {
 	}
 
 	//> ACCESSORS
+//> ACCESSORS
 	MrdtSupport getMrdtSupport() {
 		return this.mrdt;
 	}
@@ -289,7 +306,7 @@ public class EmbeddedBrowserActivity extends Activity {
 		return this.chtExternalAppHandler;
 	}
 
-	//> PUBLIC API
+//> PUBLIC API
 	public void evaluateJavascript(final String js) {
 		evaluateJavascript(js, true);
 	}
@@ -336,7 +353,7 @@ public class EmbeddedBrowserActivity extends Activity {
 		return false;
 	}
 
-	//> PRIVATE HELPERS
+//> PRIVATE HELPERS
 	private void locationRequestResolved() {
 		evaluateJavascript("window.CHTCore.AndroidApi.v1.locationPermissionRequestResolved();");
 	}
@@ -465,7 +482,7 @@ public class EmbeddedBrowserActivity extends Activity {
 		);
 	}
 
-	//> ENUMS
+//> ENUMS
 	public enum RequestCode {
 		ACCESS_LOCATION_PERMISSION(100),
 		ACCESS_STORAGE_PERMISSION(101),
