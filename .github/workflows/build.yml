@@ -31,11 +31,11 @@ jobs:
       with:
         submodules: true
 
-    - name: Set up Java 17
+    - name: Set up Java 20
       uses: actions/setup-java@v2
       with:
         distribution: 'adopt'
-        java-version: '17'
+        java-version: '20'
 
     - name: Test Bash Keystores scripts
       run: make test-bash-keystore
