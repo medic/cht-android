@@ -55,7 +55,7 @@
             style="@style/borderlessButton"
             android:onClick="onClickNegative"
             android:text="@string/locRequestDenyButton"
-            tools:ignore="OnClick" />
+            tools:ignore="OnClick,UsingOnClickInXml" />
 
         <View
             android:layout_width="0dp"
@@ -67,7 +67,7 @@
             style="@style/borderlessButton"
             android:onClick="onClickOk"
             android:text="@string/locRequestOkButton"
-            tools:ignore="OnClick" />
+            tools:ignore="OnClick,UsingOnClickInXml" />
     </LinearLayout>
 
 </RelativeLayout>
