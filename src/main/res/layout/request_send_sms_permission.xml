@@ -55,7 +55,7 @@
       style="@style/borderlessButton"
       android:onClick="onClickDeny"
       android:text="@string/sendSmsRequestDenyButton"
-      tools:ignore="OnClick" />
+      tools:ignore="OnClick,UsingOnClickInXml" />
 
     <View
       android:layout_width="0dp"
@@ -67,7 +67,7 @@
       style="@style/borderlessButton"
       android:onClick="onClickAllow"
       android:text="@string/sendSmsRequestAllowButton"
-      tools:ignore="OnClick" />
+      tools:ignore="OnClick,UsingOnClickInXml" />
   </LinearLayout>
 
 </RelativeLayout>
