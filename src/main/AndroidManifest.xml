@@ -50,8 +50,7 @@
         <action android:name="android.intent.action.VIEW" />
         <category android:name="android.intent.category.DEFAULT" />
         <category android:name="android.intent.category.BROWSABLE" />
-        <data android:scheme="@string/scheme" android:host="@string/app_host" android:pathPattern=".*"
-            tools:ignore="AppLinkUrlError" />
+        <data android:scheme="@string/scheme" android:host="@string/app_host" android:pathPattern=".*" />
       </intent-filter>
     </activity>
     <activity android:name="ConnectionErrorActivity"
