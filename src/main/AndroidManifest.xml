@@ -44,6 +44,7 @@
       android:configChanges="orientation|screenSize"
       android:launchMode="singleTask"
       android:exported="true"
+      android:theme="@style/Theme.AppCompat.NoActionBar"
       tools:ignore="DiscouragedApi">
       <intent-filter android:autoVerify="true">
         <action android:name="android.intent.action.VIEW" />
