@@ -26,12 +26,11 @@ import java.util.concurrent.TimeUnit;
 public class NotificationWorker extends Worker {
 	static final String TAG = "NOTIFICATION_WORKER";
 	static final int EXECUTION_TIMEOUT = 20;
-	static String appUrl;
+	private final SettingsStore settings = SettingsStore.in(getApplicationContext());
+	private final String appUrl = settings.getAppUrl();
 
 	public NotificationWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
 		super(context, workerParams);
-		SettingsStore settings = SettingsStore.in(getApplicationContext());
-		appUrl = settings.getAppUrl();
 	}
 
 	@SuppressLint("SetJavaScriptEnabled")
@@ -42,7 +41,7 @@ public class NotificationWorker extends Worker {
 		new Handler(Looper.getMainLooper()).post(() -> {
 			WebView webView = new WebView(getApplicationContext());
 			webView.getSettings().setJavaScriptEnabled(true);
-			webView.addJavascriptInterface(new NotificationBridge(getApplicationContext(), latch), "CHTNotificationBridge");
+			webView.addJavascriptInterface(new NotificationBridge(getApplicationContext(), latch, appUrl), "CHTNotificationBridge");
 			enableStorage(webView);
 
 			webView.setWebViewClient(new WebViewClient() {
@@ -84,10 +83,12 @@ public class NotificationWorker extends Worker {
 	public static class NotificationBridge {
 		private final Context context;
 		private final CountDownLatch latch;
+		private final String appUrl;
 
-		NotificationBridge(Context context, CountDownLatch latch) {
+		NotificationBridge(Context context, CountDownLatch latch, String appUrl) {
 			this.context = context;
 			this.latch = latch;
+			this.appUrl = appUrl;
 		}
 
 		@JavascriptInterface
