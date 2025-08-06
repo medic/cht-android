@@ -281,7 +281,7 @@ public class EmbeddedBrowserActivity extends Activity {
 	private void startNotificationWorker(Context context) {
 		PeriodicWorkRequest request = new PeriodicWorkRequest.Builder(
 				NotificationWorker.class,
-				15, TimeUnit.MINUTES
+				15, TimeUnit.MINUTES //run background worker every 15 mins
 		).addTag(NOTIFICATION_WORK_REQUEST_TAG).build();
 
 		WorkManager.getInstance(context).enqueueUniquePeriodicWork(
