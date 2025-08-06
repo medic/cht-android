@@ -75,9 +75,9 @@ public class NotificationWorker extends Worker {
 	}
 
 	private void enableStorage(WebView container) {
-		WebSettings settings = container.getSettings();
-		settings.setDomStorageEnabled(true);
-		settings.setDatabaseEnabled(true);
+		WebSettings webSettings = container.getSettings();
+		webSettings.setDomStorageEnabled(true);
+		webSettings.setDatabaseEnabled(true);
 	}
 
 	public static class NotificationBridge {
