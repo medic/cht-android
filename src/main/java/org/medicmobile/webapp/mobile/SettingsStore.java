@@ -89,7 +89,7 @@ public abstract class SettingsStore {
 		SharedPreferences.Editor ed = prefs.edit();
 		ed.putBoolean("notification-worker-status", status).apply();
 	}
-	Boolean getIsNotificationWorkerStarted() {
+	boolean getIsNotificationWorkerStarted() {
 		return prefs.getBoolean("notification-worker-status", false);
 	}
 
