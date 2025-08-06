@@ -293,7 +293,6 @@ public class EmbeddedBrowserActivity extends Activity {
 	}
 
 	//> ACCESSORS
-//> ACCESSORS
 	MrdtSupport getMrdtSupport() {
 		return this.mrdt;
 	}

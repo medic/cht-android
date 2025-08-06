@@ -8,6 +8,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Build;
 
 import androidx.core.app.ActivityCompat;
@@ -21,10 +22,13 @@ public class AppNotificationManager {
 
 	private final Context context;
 	NotificationManager manager;
+	private final String appUrl;
 
 	public AppNotificationManager(Context context) {
 		this.context = context;
 		manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+		SettingsStore settings = SettingsStore.in(context.getApplicationContext());
+		appUrl = settings.getAppUrl();
 		createNotificationChannel();
 	}
 
@@ -48,6 +52,7 @@ public class AppNotificationManager {
 
 	void showNotification(int id, String title, String contentText) {
 		Intent intent = new Intent(context, EmbeddedBrowserActivity.class);
+		intent.setData(Uri.parse(appUrl.concat("/#/tasks")));
 		intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
 		PendingIntent pendingIntent = PendingIntent.getActivity(
 				context,
