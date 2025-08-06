@@ -160,6 +160,19 @@ public class EmbeddedBrowserActivity extends Activity {
 	}
 
 	@Override
+	protected void onRestart() {
+		super.onRestart();
+		//restart activity to initialize worker manager for initial installation
+		if(!settings.getIsNotificationWorkerStarted() &&
+				appNotificationManager.hasNotificationPermission() &&
+				//don't show dialog on initial sync
+				container.getUrl() != null &&
+				container.getUrl().contains("/#/")) {
+			appNotificationManager.refreshActivityDialog(this);
+		}
+	}
+
+	@Override
 	protected void onNewIntent(Intent intent) {
 		Uri appLinkData = intent.getData();
 		browseTo(appLinkData);
@@ -269,6 +282,7 @@ public class EmbeddedBrowserActivity extends Activity {
 								startNotificationWorker(context);
 							} else {
 								WorkManager.getInstance(context).cancelAllWorkByTag(NOTIFICATION_WORK_REQUEST_TAG);
+								settings.setIsNotificationWorkerStarted(false);
 								log(this, "initNotificationWorker() :: stopped notification worker manager");
 							}
 						}
@@ -289,6 +303,7 @@ public class EmbeddedBrowserActivity extends Activity {
 				ExistingPeriodicWorkPolicy.KEEP,
 				request
 		);
+		settings.setIsNotificationWorkerStarted(true);
 		log(context, "startNotificationWorker() :: Started Notification Worker Manager...");
 	}
 

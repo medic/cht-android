@@ -2,10 +2,12 @@ package org.medicmobile.webapp.mobile;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
@@ -45,6 +47,20 @@ public class AppNotificationManager {
 			ActivityCompat.requestPermissions(activity,
 					new String[]{Manifest.permission.POST_NOTIFICATIONS}, REQUEST_NOTIFICATION_PERMISSION);
 		}
+	}
+
+	public void refreshActivityDialog(Activity activity) {
+		new AlertDialog.Builder(activity)
+				.setTitle("Notifications")
+				.setMessage("Refresh to receive notifications")
+				.setCancelable(false)
+				.setPositiveButton("Refresh", new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int id) {
+						activity.recreate();
+					}
+				})
+				.setNegativeButton("Cancel", null)
+				.show();
 	}
 
 	void showNotification(String appUrl, int id, String title, String contentText) {
