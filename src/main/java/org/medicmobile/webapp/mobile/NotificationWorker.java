@@ -26,17 +26,18 @@ import java.util.concurrent.TimeUnit;
 public class NotificationWorker extends Worker {
 	static final String TAG = "NOTIFICATION_WORKER";
 	static final int EXECUTION_TIMEOUT = 20;
+	static String appUrl;
 
 	public NotificationWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
 		super(context, workerParams);
+		SettingsStore settings = SettingsStore.in(getApplicationContext());
+		appUrl = settings.getAppUrl();
 	}
 
 	@SuppressLint("SetJavaScriptEnabled")
 	@NonNull
 	@Override
 	public Result doWork() {
-		SettingsStore settings = SettingsStore.in(getApplicationContext());
-		String appUrl = settings.getAppUrl();
 		CountDownLatch latch = new CountDownLatch(1);
 		new Handler(Looper.getMainLooper()).post(() -> {
 			WebView webView = new WebView(getApplicationContext());
@@ -99,7 +100,7 @@ public class NotificationWorker extends Worker {
 				String title = task.getString("title");
 				long readyAt = task.getLong("readyAt");
 				int notificationId = (int) (readyAt % Integer.MAX_VALUE);
-				appNotificationManager.showNotification(notificationId + i, title, contentText);
+				appNotificationManager.showNotification(appUrl, notificationId + i, title, contentText);
 			}
 			latch.countDown();
 		}

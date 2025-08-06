@@ -22,13 +22,10 @@ public class AppNotificationManager {
 
 	private final Context context;
 	NotificationManager manager;
-	private final String appUrl;
 
 	public AppNotificationManager(Context context) {
 		this.context = context;
 		manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-		SettingsStore settings = SettingsStore.in(context.getApplicationContext());
-		appUrl = settings.getAppUrl();
 		createNotificationChannel();
 	}
 
@@ -50,7 +47,7 @@ public class AppNotificationManager {
 		}
 	}
 
-	void showNotification(int id, String title, String contentText) {
+	void showNotification(String appUrl, int id, String title, String contentText) {
 		Intent intent = new Intent(context, EmbeddedBrowserActivity.class);
 		intent.setData(Uri.parse(appUrl.concat("/#/tasks")));
 		intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
