@@ -8,11 +8,15 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.webkit.JavascriptInterface;
+import android.webkit.ValueCallback;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 import androidx.annotation.NonNull;
+import androidx.work.ExistingPeriodicWorkPolicy;
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
@@ -20,14 +24,18 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 public class NotificationWorker extends Worker {
 	static final String TAG = "NOTIFICATION_WORKER";
 	static final int EXECUTION_TIMEOUT = 20;
+	static final int WORKER_REPEAT_INTERVAL_MINS = 15; //run background worker every 15 mins
 	private final SettingsStore settings = SettingsStore.in(getApplicationContext());
 	private final String appUrl = settings.getAppUrl();
+	private static boolean hasCheckedForNotificationApi = false;
+	private static final String NOTIFICATION_WORK_REQUEST_TAG = "cht_notification_tag";
 
 	public NotificationWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
 		super(context, workerParams);
@@ -72,6 +80,44 @@ public class NotificationWorker extends Worker {
 		}
 
 		return Result.success();
+	}
+
+	static void initNotificationWorker(Context context, WebView webView, AppNotificationManager appNotificationManager) {
+		webView.setWebViewClient(new WebViewClient() {
+			@Override
+			public void onPageFinished(WebView view, String url) {
+				String jsCheckApi = "(() => typeof window.CHTCore.AndroidApi.v1.taskNotifications === 'function')();";
+				webView.evaluateJavascript(jsCheckApi, new ValueCallback<String>() {
+					@Override
+					public void onReceiveValue(String hasApi) {
+						if (!hasCheckedForNotificationApi && !Objects.equals(hasApi, "null")) {
+							hasCheckedForNotificationApi = true;
+							if (Objects.equals(hasApi, "true") && appNotificationManager.hasNotificationPermission()) {
+								startNotificationWorker(context);
+							} else {
+								//missing notification permissions
+								WorkManager.getInstance(context).cancelAllWorkByTag(NOTIFICATION_WORK_REQUEST_TAG);
+								log(this, "initNotificationWorker() :: stopped notification worker manager");
+							}
+						}
+					}
+				});
+			}
+		});
+	}
+
+	private static void startNotificationWorker(Context context) {
+		PeriodicWorkRequest request = new PeriodicWorkRequest.Builder(
+				NotificationWorker.class,
+				WORKER_REPEAT_INTERVAL_MINS, TimeUnit.MINUTES
+		).addTag(NOTIFICATION_WORK_REQUEST_TAG).build();
+
+		WorkManager.getInstance(context).enqueueUniquePeriodicWork(
+				"task_notification",
+				ExistingPeriodicWorkPolicy.KEEP,
+				request
+		);
+		log(context, "startNotificationWorker() :: Started Notification Worker Manager...");
 	}
 
 	private void enableStorage(WebView container) {

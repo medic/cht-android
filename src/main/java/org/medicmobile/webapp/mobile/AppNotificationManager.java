@@ -49,20 +49,6 @@ public class AppNotificationManager {
 		}
 	}
 
-	public void refreshActivityDialog(Activity activity) {
-		new AlertDialog.Builder(activity)
-				.setTitle("Notifications")
-				.setMessage("Refresh to receive notifications")
-				.setCancelable(false)
-				.setPositiveButton("Refresh", new DialogInterface.OnClickListener() {
-					public void onClick(DialogInterface dialog, int id) {
-						activity.recreate();
-					}
-				})
-				.setNegativeButton("Cancel", null)
-				.show();
-	}
-
 	void showNotification(String appUrl, int id, String title, String contentText) {
 		Intent intent = new Intent(context, EmbeddedBrowserActivity.class);
 		intent.setData(Uri.parse(appUrl.concat("/#/tasks")));

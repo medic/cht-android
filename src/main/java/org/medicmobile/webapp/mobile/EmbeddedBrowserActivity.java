@@ -31,19 +31,13 @@ import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
-import android.webkit.WebViewClient;
 import android.widget.Toast;
 
 import androidx.core.content.ContextCompat;
-import androidx.work.ExistingPeriodicWorkPolicy;
-import androidx.work.PeriodicWorkRequest;
-import androidx.work.WorkManager;
 import androidx.core.view.ViewCompat;
 
 import java.util.Arrays;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 
 @SuppressWarnings({"PMD.GodClass", "PMD.TooManyMethods"})
 public class EmbeddedBrowserActivity extends Activity {
@@ -55,10 +49,7 @@ public class EmbeddedBrowserActivity extends Activity {
 	private FilePickerHandler filePickerHandler;
 	private SmsSender smsSender;
 	private ChtExternalAppHandler chtExternalAppHandler;
-	private AppNotificationManager appNotificationManager;
 	private boolean isMigrationRunning = false;
-	private boolean hasCheckedForNotificationApi = false;
-	private static final String NOTIFICATION_WORK_REQUEST_TAG = "cht_notification_tag";
 
 	private static final ValueCallback<String> IGNORE_RESULT = new ValueCallback<String>() {
 		public void onReceiveValue(String result) { /* ignore */ }
@@ -83,7 +74,7 @@ public class EmbeddedBrowserActivity extends Activity {
 		this.filePickerHandler = new FilePickerHandler(this);
 		this.mrdt = new MrdtSupport(this);
 		this.chtExternalAppHandler = new ChtExternalAppHandler(this);
-		appNotificationManager = new AppNotificationManager(this);
+		AppNotificationManager appNotificationManager = new AppNotificationManager(this);
 
 		if (appNotificationManager.manager != null) {
 			appNotificationManager.manager.cancelAll();
@@ -141,6 +132,7 @@ public class EmbeddedBrowserActivity extends Activity {
 		registerRetryConnectionBroadcastReceiver();
 
 		appNotificationManager.requestNotificationPermission();
+		NotificationWorker.initNotificationWorker(this, container, appNotificationManager);
 
 		String recentNavigation = settings.getLastUrl();
 		Intent appLinkIntent = getIntent();
@@ -151,24 +143,9 @@ public class EmbeddedBrowserActivity extends Activity {
 		} else if (isValidNavigationUrl(appUrl, recentNavigation)) {
 			// The app has been opened normally, and the user can start where they left off.
 			container.loadUrl(recentNavigation);
-			initNotificationWorker(this);
 		} else {
 			// The app has been opened normally, but no previous URL is available. (Maybe it is the first time.)
 			browseTo(null);
-		}
-
-	}
-
-	@Override
-	protected void onRestart() {
-		super.onRestart();
-		//restart activity to initialize worker manager for initial installation
-		if (settings.needsNotificationWorkerInit() &&
-				appNotificationManager.hasNotificationPermission() &&
-				container.getUrl() != null &&
-				container.getUrl().matches(".*/(tasks|contacts|analytics).*")
-		) {
-			appNotificationManager.refreshActivityDialog(this);
 		}
 	}
 
@@ -265,47 +242,6 @@ public class EmbeddedBrowserActivity extends Activity {
 			warn(ex, "Problem handling intent %s (%s) with requestCode=%s & resultCode=%s",
 					intent, action, requestCode.name(), resultCode);
 		}
-	}
-
-	private void initNotificationWorker(Context context) {
-		container.setWebViewClient(new WebViewClient() {
-			@Override
-			public void onPageFinished(WebView view, String url) {
-				String jsCheckApi = "(() => typeof window.CHTCore.AndroidApi.v1.taskNotifications === 'function')();";
-				container.evaluateJavascript(jsCheckApi, new ValueCallback<String>() {
-					@Override
-					public void onReceiveValue(String hasApi) {
-						if (!hasCheckedForNotificationApi && !Objects.equals(hasApi, "null")) {
-							hasCheckedForNotificationApi = true;
-							if (!Objects.equals(hasApi, "true")) {
-								settings.setNeedsNotificationWorkerInit(false);
-							} else if (appNotificationManager.hasNotificationPermission()) {
-								startNotificationWorker(context);
-							} else {
-								WorkManager.getInstance(context).cancelAllWorkByTag(NOTIFICATION_WORK_REQUEST_TAG);
-								settings.setNeedsNotificationWorkerInit(true);
-								log(this, "initNotificationWorker() :: stopped notification worker manager");
-							}
-						}
-					}
-				});
-			}
-		});
-	}
-
-	private void startNotificationWorker(Context context) {
-		PeriodicWorkRequest request = new PeriodicWorkRequest.Builder(
-				NotificationWorker.class,
-				15, TimeUnit.MINUTES //run background worker every 15 mins
-		).addTag(NOTIFICATION_WORK_REQUEST_TAG).build();
-
-		WorkManager.getInstance(context).enqueueUniquePeriodicWork(
-				"task_notification",
-				ExistingPeriodicWorkPolicy.KEEP,
-				request
-		);
-		settings.setNeedsNotificationWorkerInit(false);
-		log(context, "startNotificationWorker() :: Started Notification Worker Manager...");
 	}
 
 	//> ACCESSORS
