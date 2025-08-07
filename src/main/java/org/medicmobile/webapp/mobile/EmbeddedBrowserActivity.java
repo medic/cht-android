@@ -72,7 +72,7 @@ public class EmbeddedBrowserActivity extends Activity {
 	};
 
 
-//> ACTIVITY LIFECYCLE METHODS
+	//> ACTIVITY LIFECYCLE METHODS
 	@SuppressLint("ClickableViewAccessibility")
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -163,11 +163,10 @@ public class EmbeddedBrowserActivity extends Activity {
 	protected void onRestart() {
 		super.onRestart();
 		//restart activity to initialize worker manager for initial installation
-		if(!settings.getIsNotificationWorkerStarted() &&
+		if (settings.needsNotificationWorkerInit() &&
 				appNotificationManager.hasNotificationPermission() &&
-				//don't show dialog on initial sync
-				container.getUrl() != null &&
-				container.getUrl().contains("/#/")) {
+				isValidNavigationUrl(appUrl, settings.getLastUrl())
+		) {
 			appNotificationManager.refreshActivityDialog(this);
 		}
 	}
@@ -282,7 +281,7 @@ public class EmbeddedBrowserActivity extends Activity {
 								startNotificationWorker(context);
 							} else {
 								WorkManager.getInstance(context).cancelAllWorkByTag(NOTIFICATION_WORK_REQUEST_TAG);
-								settings.setIsNotificationWorkerStarted(false);
+								settings.setNeedsNotificationWorkerInit(true);
 								log(this, "initNotificationWorker() :: stopped notification worker manager");
 							}
 						}
@@ -303,7 +302,7 @@ public class EmbeddedBrowserActivity extends Activity {
 				ExistingPeriodicWorkPolicy.KEEP,
 				request
 		);
-		settings.setIsNotificationWorkerStarted(true);
+		settings.setNeedsNotificationWorkerInit(false);
 		log(context, "startNotificationWorker() :: Started Notification Worker Manager...");
 	}
 
@@ -320,7 +319,7 @@ public class EmbeddedBrowserActivity extends Activity {
 		return this.chtExternalAppHandler;
 	}
 
-//> PUBLIC API
+	//> PUBLIC API
 	public void evaluateJavascript(final String js) {
 		evaluateJavascript(js, true);
 	}
@@ -367,7 +366,7 @@ public class EmbeddedBrowserActivity extends Activity {
 		return false;
 	}
 
-//> PRIVATE HELPERS
+	//> PRIVATE HELPERS
 	private void locationRequestResolved() {
 		evaluateJavascript("window.CHTCore.AndroidApi.v1.locationPermissionRequestResolved();");
 	}
@@ -496,7 +495,7 @@ public class EmbeddedBrowserActivity extends Activity {
 		);
 	}
 
-//> ENUMS
+	//> ENUMS
 	public enum RequestCode {
 		ACCESS_LOCATION_PERMISSION(100),
 		ACCESS_STORAGE_PERMISSION(101),
