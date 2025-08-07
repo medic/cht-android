@@ -165,7 +165,8 @@ public class EmbeddedBrowserActivity extends Activity {
 		//restart activity to initialize worker manager for initial installation
 		if (settings.needsNotificationWorkerInit() &&
 				appNotificationManager.hasNotificationPermission() &&
-				isValidNavigationUrl(appUrl, settings.getLastUrl())
+				container.getUrl() != null &&
+				container.getUrl().matches(".*/(tasks|contacts|analytics).*")
 		) {
 			appNotificationManager.refreshActivityDialog(this);
 		}
@@ -276,8 +277,9 @@ public class EmbeddedBrowserActivity extends Activity {
 					public void onReceiveValue(String hasApi) {
 						if (!hasCheckedForNotificationApi && !Objects.equals(hasApi, "null")) {
 							hasCheckedForNotificationApi = true;
-							if (Objects.equals(hasApi, "true") &&
-									appNotificationManager.hasNotificationPermission()) {
+							if (!Objects.equals(hasApi, "true")) {
+								settings.setNeedsNotificationWorkerInit(false);
+							} else if (appNotificationManager.hasNotificationPermission()) {
 								startNotificationWorker(context);
 							} else {
 								WorkManager.getInstance(context).cancelAllWorkByTag(NOTIFICATION_WORK_REQUEST_TAG);
