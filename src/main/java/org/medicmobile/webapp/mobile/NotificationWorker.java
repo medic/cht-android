@@ -35,7 +35,7 @@ public class NotificationWorker extends Worker {
 	private final SettingsStore settings = SettingsStore.in(getApplicationContext());
 	private final String appUrl = settings.getAppUrl();
 	private static boolean hasCheckedForNotificationApi = false;
-	private static final String NOTIFICATION_WORK_REQUEST_TAG = "cht_notification_tag";
+	public static final String NOTIFICATION_WORK_REQUEST_TAG = "cht_notification_tag";
 
 	public NotificationWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
 		super(context, workerParams);
