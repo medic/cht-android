@@ -1,5 +1,7 @@
 package org.medicmobile.webapp.mobile;
 
+import static org.medicmobile.webapp.mobile.MedicLog.log;
+
 import android.Manifest;
 import android.app.Activity;
 import android.app.NotificationChannel;
@@ -10,23 +12,47 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
+import android.webkit.ValueCallback;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
+import androidx.work.ExistingPeriodicWorkPolicy;
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
+
+import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 public class AppNotificationManager {
-	private static final String CHANNEL_ID = "cht_task_notifications";
-	private static final String CHANNEL_NAME = "CHT Task Notifications";
-	private static final int REQUEST_NOTIFICATION_PERMISSION = 1001;
+	private static final String CHANNEL_ID = "cht_android_notifications";
+	private static final String CHANNEL_NAME = "CHT Android Notifications";
+	public static final int REQUEST_NOTIFICATION_PERMISSION = 1001;
+	private static boolean hasCheckedForNotificationApi = false;
+	private static boolean hasTaskNotificationsApi = false;
 
+	private static volatile AppNotificationManager instance;
 	private final Context context;
+
 	NotificationManager manager;
 
-	public AppNotificationManager(Context context) {
-		this.context = context;
+	private AppNotificationManager(Context context) {
+		this.context = context.getApplicationContext();
 		manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 		createNotificationChannel();
+	}
+
+	public static AppNotificationManager getInstance(Context context) {
+		if (instance == null) {
+			synchronized (AppNotificationManager.class) {
+				if (instance == null) {
+					instance = new AppNotificationManager(context);
+				}
+			}
+		}
+		return instance;
 	}
 
 	public boolean hasNotificationPermission() {
@@ -39,12 +65,65 @@ public class AppNotificationManager {
 		return true;
 	}
 
-	public void requestNotificationPermission() {
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
-				context instanceof Activity activity && !hasNotificationPermission()) {
+	public void requestNotificationPermission(Activity activity) {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !hasNotificationPermission()) {
 			ActivityCompat.requestPermissions(activity,
 					new String[]{Manifest.permission.POST_NOTIFICATIONS}, REQUEST_NOTIFICATION_PERMISSION);
+		} else {
+			startNotificationWorker();
 		}
+	}
+
+	void initNotificationWorker(WebView webView, Activity activity) {
+		if (!hasNotificationPermission()) {
+			stopNotificationWorker();
+		}
+		if (hasTaskNotificationsApi) {
+			startNotificationWorker();
+		} else {
+			checkTaskNotificationApi(webView, activity);
+		}
+	}
+
+	private void startNotificationWorker() {
+		PeriodicWorkRequest request = new PeriodicWorkRequest.Builder(
+				NotificationWorker.class,
+				NotificationWorker.WORKER_REPEAT_INTERVAL_MINS,
+				TimeUnit.MINUTES
+		).addTag(NotificationWorker.TAG).build();
+
+		WorkManager.getInstance(context).enqueueUniquePeriodicWork(
+				"appNotifications",
+				ExistingPeriodicWorkPolicy.KEEP,
+				request
+		);
+		log(context, "startNotificationWorker() :: Started Notification Worker Manager...");
+	}
+
+	private void stopNotificationWorker() {
+		WorkManager.getInstance(context).cancelAllWorkByTag(NotificationWorker.TAG);
+		log(this, "stopNotificationWorker() :: Stopped notification worker manager");
+	}
+
+	private void checkTaskNotificationApi(WebView webView, Activity activity) {
+		webView.setWebViewClient(new WebViewClient() {
+			@Override
+			public void onPageFinished(WebView view, String url) {
+				String jsCheckApi = "(() => typeof window.CHTCore.AndroidApi.v1.taskNotifications === 'function')();";
+				webView.evaluateJavascript(jsCheckApi, new ValueCallback<String>() {
+					@Override
+					public void onReceiveValue(String hasApi) {
+						if (!hasCheckedForNotificationApi && !Objects.equals(hasApi, "null")) {
+							hasCheckedForNotificationApi = true;
+							if (Objects.equals(hasApi, "true")) {
+								hasTaskNotificationsApi = true;
+								requestNotificationPermission(activity);
+							}
+						}
+					}
+				});
+			}
+		});
 	}
 
 	void showNotification(String appUrl, int id, String title, String contentText) {

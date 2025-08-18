@@ -8,15 +8,11 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.webkit.JavascriptInterface;
-import android.webkit.ValueCallback;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 import androidx.annotation.NonNull;
-import androidx.work.ExistingPeriodicWorkPolicy;
-import androidx.work.PeriodicWorkRequest;
-import androidx.work.WorkManager;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
@@ -24,18 +20,17 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 public class NotificationWorker extends Worker {
 	static final String TAG = "NOTIFICATION_WORKER";
-	static final int EXECUTION_TIMEOUT = 20;
+	public static final String NOTIFICATION_WORK_REQUEST_TAG = "cht_notification_tag";
+	static final int EXECUTION_TIMEOUT_SECS = 20;
 	static final int WORKER_REPEAT_INTERVAL_MINS = 15; //run background worker every 15 mins
+
 	private final SettingsStore settings = SettingsStore.in(getApplicationContext());
 	private final String appUrl = settings.getAppUrl();
-	private static boolean hasCheckedForNotificationApi = false;
-	public static final String NOTIFICATION_WORK_REQUEST_TAG = "cht_notification_tag";
 
 	public NotificationWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
 		super(context, workerParams);
@@ -66,7 +61,7 @@ public class NotificationWorker extends Worker {
 			webView.loadUrl(appUrl);
 		});
 		try {
-			boolean completed = latch.await(EXECUTION_TIMEOUT, TimeUnit.SECONDS);
+			boolean completed = latch.await(EXECUTION_TIMEOUT_SECS, TimeUnit.SECONDS);
 			if (completed) {
 				Log.d(TAG, "notification worker ran successfully!");
 			} else {
@@ -82,50 +77,6 @@ public class NotificationWorker extends Worker {
 		return Result.success();
 	}
 
-	static void initNotificationWorker(Context context, WebView webView, AppNotificationManager appNotificationManager) {
-		webView.setWebViewClient(new WebViewClient() {
-			@Override
-			public void onPageFinished(WebView view, String url) {
-				String jsCheckApi = "(() => typeof window.CHTCore.AndroidApi.v1.taskNotifications === 'function')();";
-				webView.evaluateJavascript(jsCheckApi, new ValueCallback<String>() {
-					@Override
-					public void onReceiveValue(String hasApi) {
-						if (!hasCheckedForNotificationApi && !Objects.equals(hasApi, "null")) {
-							hasCheckedForNotificationApi = true;
-							if (Objects.equals(hasApi, "true") && appNotificationManager.hasNotificationPermission()) {
-								startNotificationWorker(context);
-							} else {
-								//missing notification permissions
-								WorkManager.getInstance(context).cancelAllWorkByTag(NOTIFICATION_WORK_REQUEST_TAG);
-								log(this, "initNotificationWorker() :: stopped notification worker manager");
-							}
-						}
-					}
-				});
-			}
-		});
-	}
-
-	private static void startNotificationWorker(Context context) {
-		PeriodicWorkRequest request = new PeriodicWorkRequest.Builder(
-				NotificationWorker.class,
-				WORKER_REPEAT_INTERVAL_MINS, TimeUnit.MINUTES
-		).addTag(NOTIFICATION_WORK_REQUEST_TAG).build();
-
-		WorkManager.getInstance(context).enqueueUniquePeriodicWork(
-				"task_notification",
-				ExistingPeriodicWorkPolicy.KEEP,
-				request
-		);
-		log(context, "startNotificationWorker() :: Started Notification Worker Manager...");
-	}
-
-	private void enableStorage(WebView container) {
-		WebSettings webSettings = container.getSettings();
-		webSettings.setDomStorageEnabled(true);
-		webSettings.setDatabaseEnabled(true);
-	}
-
 	public static class NotificationBridge {
 		private final Context context;
 		private final CountDownLatch latch;
@@ -139,7 +90,7 @@ public class NotificationWorker extends Worker {
 
 		@JavascriptInterface
 		public void onJsResult(String data) throws JSONException {
-			AppNotificationManager appNotificationManager = new AppNotificationManager(context.getApplicationContext());
+			AppNotificationManager appNotificationManager = AppNotificationManager.getInstance(context);
 			JSONArray dataArray = parseData(data);
 			for (int i = 0; i < dataArray.length(); i++) {
 				JSONObject task = dataArray.getJSONObject(i);
@@ -162,6 +113,12 @@ public class NotificationWorker extends Worker {
 				return new JSONArray();
 			}
 		}
+	}
+
+	private void enableStorage(WebView container) {
+		WebSettings webSettings = container.getSettings();
+		webSettings.setDomStorageEnabled(true);
+		webSettings.setDatabaseEnabled(true);
 	}
 
 }

@@ -19,6 +19,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.Build;
@@ -33,6 +34,7 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.ViewCompat;
 
@@ -50,6 +52,7 @@ public class EmbeddedBrowserActivity extends Activity {
 	private SmsSender smsSender;
 	private ChtExternalAppHandler chtExternalAppHandler;
 	private boolean isMigrationRunning = false;
+	private AppNotificationManager appNotificationManager;
 
 	private static final ValueCallback<String> IGNORE_RESULT = new ValueCallback<String>() {
 		public void onReceiveValue(String result) { /* ignore */ }
@@ -74,11 +77,7 @@ public class EmbeddedBrowserActivity extends Activity {
 		this.filePickerHandler = new FilePickerHandler(this);
 		this.mrdt = new MrdtSupport(this);
 		this.chtExternalAppHandler = new ChtExternalAppHandler(this);
-		AppNotificationManager appNotificationManager = new AppNotificationManager(this);
-
-		if (appNotificationManager.manager != null) {
-			appNotificationManager.manager.cancelAll();
-		}
+		appNotificationManager = AppNotificationManager.getInstance(this);
 
 		try {
 			this.smsSender = SmsSender.createInstance(this);
@@ -131,8 +130,7 @@ public class EmbeddedBrowserActivity extends Activity {
 
 		registerRetryConnectionBroadcastReceiver();
 
-		appNotificationManager.requestNotificationPermission();
-		NotificationWorker.initNotificationWorker(this, container, appNotificationManager);
+		initializeNotifications();
 
 		String recentNavigation = settings.getLastUrl();
 		Intent appLinkIntent = getIntent();
@@ -202,6 +200,15 @@ public class EmbeddedBrowserActivity extends Activity {
 	}
 
 	@Override
+	public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+		if (requestCode == AppNotificationManager.REQUEST_NOTIFICATION_PERMISSION && grantResults.length > 0 &&
+				grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+			initializeNotifications();
+		}
+	}
+
+	@Override
 	protected void onActivityResult(int requestCd, int resultCode, Intent intent) {
 		Optional<RequestCode> requestCodeOpt = RequestCode.valueOf(requestCd);
 
@@ -242,6 +249,13 @@ public class EmbeddedBrowserActivity extends Activity {
 			warn(ex, "Problem handling intent %s (%s) with requestCode=%s & resultCode=%s",
 					intent, action, requestCode.name(), resultCode);
 		}
+	}
+
+	private void initializeNotifications() {
+		if (appNotificationManager.manager != null) {
+			appNotificationManager.manager.cancelAll();
+		}
+		appNotificationManager.initNotificationWorker(container, this);
 	}
 
 	//> ACCESSORS
