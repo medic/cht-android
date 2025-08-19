@@ -37,6 +37,7 @@ public class OpenSettingsDialogFragmentTest {
 
 	private OpenSettingsDialogFragment openSettingsDialogFragment;
 	private Activity activity;
+	private View fragmentView;
 	private ArgumentCaptor<OnTouchListener> argsOnTouch;
 	private ArgumentCaptor<Intent> argsStartActivity;
 
@@ -45,9 +46,11 @@ public class OpenSettingsDialogFragmentTest {
 		activity = mock(Activity.class, RETURNS_SMART_NULLS);
 		doNothing().when(activity).finish();
 
-		View view = mock(View.class);
+		fragmentView = mock(View.class);
+		View webView = mock(View.class);
 		argsOnTouch = ArgumentCaptor.forClass(OnTouchListener.class);
-		doNothing().when(view).setOnTouchListener(argsOnTouch.capture());
+		doNothing().when(webView).setOnTouchListener(argsOnTouch.capture());
+		when(fragmentView.findViewById(R.id.wbvMain)).thenReturn(webView);
 
 		MockSettings fragmentSettings = withSettings()
 			.useConstructor()
@@ -55,11 +58,10 @@ public class OpenSettingsDialogFragmentTest {
 
 		openSettingsDialogFragment = mock(OpenSettingsDialogFragment.class, fragmentSettings);
 		when(openSettingsDialogFragment.getActivity()).thenReturn(activity);
-		when(openSettingsDialogFragment.getActivity().findViewById(R.id.wbvMain)).thenReturn(view);
 		argsStartActivity = ArgumentCaptor.forClass(Intent.class);
 		doNothing().when(openSettingsDialogFragment).startActivity(argsStartActivity.capture());
 
-		openSettingsDialogFragment.onCreate(null);
+		openSettingsDialogFragment.onViewCreated(fragmentView, null);
 	}
 
 	private void tap(OnTouchListener onTouchListener, MotionEvent eventTap, int times) {
@@ -240,11 +242,11 @@ public class OpenSettingsDialogFragmentTest {
 		when(eventTap.getActionMasked()).thenReturn(MotionEvent.ACTION_DOWN);
 
 		// First creation
-		openSettingsDialogFragment.onCreate(savedState);
+		openSettingsDialogFragment.onViewCreated(fragmentView, savedState);
 		OnTouchListener firstListener = argsOnTouch.getValue();
+
 		// Set up initial clock mock
 		Clock initialTime = Clock.fixed(Instant.ofEpochMilli(1000), ZoneOffset.UTC);
-		// Update clock time for subsequent taps
 		Clock laterTime = Clock.fixed(Instant.ofEpochMilli(1200), ZoneOffset.UTC);
 
 		try (MockedStatic<Clock> mockClock = mockStatic(Clock.class)) {
@@ -255,14 +257,15 @@ public class OpenSettingsDialogFragmentTest {
 
 			// Simulate fragment recreation (e.g., due to configuration change)
 			Activity newActivity = mock(Activity.class, RETURNS_SMART_NULLS);
-			View newView = mock(View.class);
+			View newFragmentView = mock(View.class);
+			View newWebView = mock(View.class);
 			ArgumentCaptor<OnTouchListener> newArgsOnTouch = ArgumentCaptor.forClass(OnTouchListener.class);
-			doNothing().when(newView).setOnTouchListener(newArgsOnTouch.capture());
+			doNothing().when(newWebView).setOnTouchListener(newArgsOnTouch.capture());
+			when(newFragmentView.findViewById(R.id.wbvMain)).thenReturn(newWebView);
 			when(openSettingsDialogFragment.getActivity()).thenReturn(newActivity);
-			when(newActivity.findViewById(R.id.wbvMain)).thenReturn(newView);
 
 			//> WHEN
-			openSettingsDialogFragment.onCreate(savedState);
+			openSettingsDialogFragment.onViewCreated(newFragmentView, savedState);
 			OnTouchListener recreatedListener = newArgsOnTouch.getValue();
 
 			mockClock.when(Clock::systemUTC).thenReturn(laterTime);

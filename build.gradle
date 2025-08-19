@@ -101,7 +101,7 @@ def getVersionName = {
 }
 
 android {
-  compileSdk 34
+  compileSdk 35
   packagingOptions {
     resources {
       excludes += ['META-INF/LICENSE', 'META-INF/NOTICE']
@@ -114,7 +114,7 @@ android {
 
   defaultConfig {
     //noinspection OldTargetApi
-    targetSdkVersion 34
+    targetSdkVersion 35
     minSdkVersion 21 // Android 5.0
     versionCode getVersionCode()
     versionName getVersionName()
@@ -380,16 +380,6 @@ android {
       applicationId = 'org.medicmobile.webapp.mobile.itech_malawi'
     }
 
-    cares_malawi_kch {
-      dimension = 'brand'
-      applicationId = 'org.medicmobile.webapp.mobile.cares_malawi_kch'
-    }
-
-    cares_malawi_mpc {
-      dimension = 'brand'
-      applicationId = 'org.medicmobile.webapp.mobile.cares_malawi_mpc'
-    }
-
     alerte_niger {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.alerte_niger'
@@ -472,11 +462,6 @@ android {
       applicationId = 'org.medicmobile.webapp.mobile.moh_civ_uat'
     }
 
-    safaridoctors_kenya_yha {
-      dimension = 'brand'
-      applicationId = 'org.medicmobile.webapp.mobile.safaridoctors_kenya_yha'
-    }
-
     moh_nepal_mhealth {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.moh_nepal_mhealth'
@@ -507,6 +492,8 @@ android {
 dependencies {
   implementation fileTree(dir: 'libs', include: ['*.jar'])
   implementation platform('org.jetbrains.kotlin:kotlin-bom:1.9.24')
+  implementation 'androidx.browser:browser:1.8.0'
+  implementation 'androidx.appcompat:appcompat:1.7.1'
   implementation 'androidx.core:core:1.13.1'
   implementation 'androidx.activity:activity:1.9.0'
   implementation 'androidx.fragment:fragment:1.7.1'
@@ -515,10 +502,10 @@ dependencies {
   testImplementation 'junit:junit:4.13.2'
   testImplementation 'org.mockito:mockito-inline:5.2.0'
   testImplementation 'com.google.android:android-test:4.1.1.4'
-  testImplementation 'org.robolectric:robolectric:4.12.1'
+  testImplementation 'org.robolectric:robolectric:4.15.1'
   testImplementation 'androidx.test.espresso:espresso-core:3.5.1'
   testImplementation 'androidx.test.espresso:espresso-intents:3.5.1'
-  testImplementation 'androidx.test.ext:junit:1.1.5'
+  testImplementation 'androidx.test.ext:junit:1.2.1'
   androidTestImplementation 'androidx.test.espresso:espresso-web:3.5.1'
   androidTestImplementation 'androidx.test.ext:junit:1.1.5'
   androidTestImplementation 'androidx.test:runner:1.5.2'

@@ -235,38 +235,6 @@ jobs:
         lane: build
         options: '{ "flavor": "itech_malawi" }'
 
-    - name: Unpack secrets cares_malawi_kch
-      env:
-        ANDROID_SECRETS_KEY: ${{ secrets.ANDROID_SECRETS_KEY_CARES_MALAWI_KCH }}
-        ANDROID_SECRETS_IV: ${{ secrets.ANDROID_SECRETS_IV_CARES_MALAWI_KCH }}
-      run: make org=cares_malawi_kch keydec
-
-    - name: Assemble cares_malawi_kch
-      uses: maierj/fastlane-action@v1.4.0
-      with:
-        lane: build
-        options: '{ "flavor": "cares_malawi_kch" }'
-      env:
-        ANDROID_KEYSTORE_PATH: cares_malawi_kch.keystore
-        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_CARES_MALAWI_KCH }}
-        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_CARES_MALAWI_KCH }}
-
-    - name: Unpack secrets cares_malawi_mpc
-      env:
-        ANDROID_SECRETS_KEY: ${{ secrets.ANDROID_SECRETS_KEY_CARES_MALAWI_MPC }}
-        ANDROID_SECRETS_IV: ${{ secrets.ANDROID_SECRETS_IV_CARES_MALAWI_MPC }}
-      run: make org=cares_malawi_mpc keydec
-
-    - name: Assemble cares_malawi_mpc
-      uses: maierj/fastlane-action@v1.4.0
-      with:
-        lane: build
-        options: '{ "flavor": "cares_malawi_mpc" }'
-      env:
-        ANDROID_KEYSTORE_PATH: cares_malawi_mpc.keystore
-        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_CARES_MALAWI_MPC }}
-        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_CARES_MALAWI_MPC }}
-
     - name: Assemble alerte_niger
       uses: maierj/fastlane-action@v1.4.0
       with:
@@ -629,32 +597,6 @@ jobs:
         ANDROID_KEYSTORE_PATH: gandaki_ne.keystore
         ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_GANDAKI_NE }}
         ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_GANDAKI_NE }}
-
-    - name: Unpack secrets safaridoctors_kenya_yha
-      env:
-        ANDROID_SECRETS_KEY: ${{ secrets.ANDROID_SECRETS_KEY_SAFARIDOCTORS_KENYA_YHA }}
-        ANDROID_SECRETS_IV: ${{ secrets.ANDROID_SECRETS_IV_SAFARIDOCTORS_KENYA_YHA }}
-      run: make org=safaridoctors_kenya_yha keydec
-
-    - name: Assemble safaridoctors_kenya_yha
-      uses: maierj/fastlane-action@v1.4.0
-      with:
-        lane: build
-        options: '{ "flavor": "safaridoctors_kenya_yha" }'
-      env:
-        ANDROID_KEYSTORE_PATH: safaridoctors_kenya_yha.keystore
-        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_SAFARIDOCTORS_KENYA_YHA }}
-        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_SAFARIDOCTORS_KENYA_YHA }}
-
-    - name: Bundle safaridoctors_kenya_yha
-      uses: maierj/fastlane-action@v1.4.0
-      with:
-        lane: bundle
-        options: '{ "flavor": "safaridoctors_kenya_yha" }'
-      env:
-        ANDROID_KEYSTORE_PATH: safaridoctors_kenya_yha.keystore
-        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_SAFARIDOCTORS_KENYA_YHA }}
-        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_SAFARIDOCTORS_KENYA_YHA }}
 
     - name: Unpack secrets moh_civ
       env:
