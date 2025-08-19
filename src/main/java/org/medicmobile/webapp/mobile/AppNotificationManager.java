@@ -30,8 +30,8 @@ public class AppNotificationManager {
 	private static final String CHANNEL_ID = "cht_android_notifications";
 	private static final String CHANNEL_NAME = "CHT Android Notifications";
 	public static final int REQUEST_NOTIFICATION_PERMISSION = 1001;
-	private static boolean hasCheckedForNotificationApi = false;
-	private static boolean hasTaskNotificationsApi = false;
+	private boolean hasCheckedForNotificationApi = false;
+	private boolean hasTaskNotificationsApi = false;
 
 	private static volatile AppNotificationManager instance;
 	private final Context context;
@@ -102,7 +102,7 @@ public class AppNotificationManager {
 
 	private void stopNotificationWorker() {
 		WorkManager.getInstance(context).cancelAllWorkByTag(NotificationWorker.NOTIFICATION_WORK_REQUEST_TAG);
-		log(this, "stopNotificationWorker() :: Stopped notification worker manager");
+		log(context, "stopNotificationWorker() :: Stopped notification worker manager");
 	}
 
 	private void checkTaskNotificationApi(WebView webView, Activity activity) {
@@ -113,8 +113,8 @@ public class AppNotificationManager {
 				webView.evaluateJavascript(jsCheckApi, new ValueCallback<String>() {
 					@Override
 					public void onReceiveValue(String hasApi) {
-						if (!hasCheckedForNotificationApi && !Objects.equals(hasApi, "null")) {
-							hasCheckedForNotificationApi = true;
+						if (!hasCheckedForNotificationApi) {
+							hasCheckedForNotificationApi = !Objects.equals(hasApi, "null");
 							if (Objects.equals(hasApi, "true")) {
 								hasTaskNotificationsApi = true;
 								requestNotificationPermission(activity);
