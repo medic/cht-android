@@ -26,7 +26,7 @@ import java.util.concurrent.TimeUnit;
 public class NotificationWorker extends Worker {
 	static final String DEBUG_TAG = "NOTIFICATION_WORKER";
 	public static final String NOTIFICATION_WORK_REQUEST_TAG = "cht_notification_tag";
-	public static final String NOTIFICATION_WORK_REQUEST_NAME = "appNotifications";
+	public static final String NOTIFICATION_WORK_NAME = "appNotifications";
 	static final int EXECUTION_TIMEOUT_SECS = 20;
 	static final int WORKER_REPEAT_INTERVAL_MINS = 15; //run background worker every 15 mins
 

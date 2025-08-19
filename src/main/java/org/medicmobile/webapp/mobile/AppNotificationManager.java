@@ -93,16 +93,16 @@ public class AppNotificationManager {
 		).addTag(NotificationWorker.NOTIFICATION_WORK_REQUEST_TAG).build();
 
 		WorkManager.getInstance(context).enqueueUniquePeriodicWork(
-				NotificationWorker.NOTIFICATION_WORK_REQUEST_NAME,
+				NotificationWorker.NOTIFICATION_WORK_NAME,
 				ExistingPeriodicWorkPolicy.KEEP,
 				request
 		);
-		log(context, "startNotificationWorker() :: Started Notification Worker Manager...");
+		log(context, "startNotificationWorker() :: Started Notification Work Manager...");
 	}
 
 	private void stopNotificationWorker() {
 		WorkManager.getInstance(context).cancelAllWorkByTag(NotificationWorker.NOTIFICATION_WORK_REQUEST_TAG);
-		log(context, "stopNotificationWorker() :: Stopped notification worker manager");
+		log(context, "stopNotificationWorker() :: Stopped notification work manager");
 	}
 
 	private void checkTaskNotificationApi(WebView webView, Activity activity) {
