@@ -24,8 +24,9 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 public class NotificationWorker extends Worker {
-	static final String TAG = "NOTIFICATION_WORKER";
+	static final String DEBUG_TAG = "NOTIFICATION_WORKER";
 	public static final String NOTIFICATION_WORK_REQUEST_TAG = "cht_notification_tag";
+	public static final String NOTIFICATION_WORK_REQUEST_NAME = "appNotifications";
 	static final int EXECUTION_TIMEOUT_SECS = 20;
 	static final int WORKER_REPEAT_INTERVAL_MINS = 15; //run background worker every 15 mins
 
@@ -63,9 +64,9 @@ public class NotificationWorker extends Worker {
 		try {
 			boolean completed = latch.await(EXECUTION_TIMEOUT_SECS, TimeUnit.SECONDS);
 			if (completed) {
-				Log.d(TAG, "notification worker ran successfully!");
+				Log.d(DEBUG_TAG, "notification worker ran successfully!");
 			} else {
-				Log.d(TAG, "notification worker taking too long to complete");
+				Log.d(DEBUG_TAG, "notification worker taking too long to complete");
 				return Result.failure();
 			}
 		} catch (InterruptedException e) {

@@ -66,6 +66,9 @@ public class AppNotificationManager {
 	}
 
 	public void requestNotificationPermission(Activity activity) {
+		if (!hasNotificationPermission()) {
+			stopNotificationWorker();
+		}
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !hasNotificationPermission()) {
 			ActivityCompat.requestPermissions(activity,
 					new String[]{Manifest.permission.POST_NOTIFICATIONS}, REQUEST_NOTIFICATION_PERMISSION);
@@ -75,9 +78,6 @@ public class AppNotificationManager {
 	}
 
 	void initNotificationWorker(WebView webView, Activity activity) {
-		if (!hasNotificationPermission()) {
-			stopNotificationWorker();
-		}
 		if (hasTaskNotificationsApi) {
 			startNotificationWorker();
 		} else {
@@ -90,10 +90,10 @@ public class AppNotificationManager {
 				NotificationWorker.class,
 				NotificationWorker.WORKER_REPEAT_INTERVAL_MINS,
 				TimeUnit.MINUTES
-		).addTag(NotificationWorker.TAG).build();
+		).addTag(NotificationWorker.NOTIFICATION_WORK_REQUEST_TAG).build();
 
 		WorkManager.getInstance(context).enqueueUniquePeriodicWork(
-				"appNotifications",
+				NotificationWorker.NOTIFICATION_WORK_REQUEST_NAME,
 				ExistingPeriodicWorkPolicy.KEEP,
 				request
 		);
@@ -101,7 +101,7 @@ public class AppNotificationManager {
 	}
 
 	private void stopNotificationWorker() {
-		WorkManager.getInstance(context).cancelAllWorkByTag(NotificationWorker.TAG);
+		WorkManager.getInstance(context).cancelAllWorkByTag(NotificationWorker.NOTIFICATION_WORK_REQUEST_TAG);
 		log(this, "stopNotificationWorker() :: Stopped notification worker manager");
 	}
 
