@@ -7,8 +7,6 @@ import static org.medicmobile.webapp.mobile.MedicLog.trace;
 import static org.medicmobile.webapp.mobile.Utils.isUrlRelated;
 import static org.medicmobile.webapp.mobile.Utils.restartApp;
 
-import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -18,6 +16,7 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import androidx.annotation.RequiresApi;
 import androidx.browser.customtabs.CustomTabsIntent;
 
 public class UrlHandler extends WebViewClient {
@@ -82,8 +81,8 @@ public class UrlHandler extends WebViewClient {
 		processError(view, errorCode, description);
 	}
 
-	@SuppressLint("UseRequiresApi")
-	@TargetApi(23)
+
+	@RequiresApi(23)
 	@Override
 	public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
 		String failingUrl = request.getUrl().toString();

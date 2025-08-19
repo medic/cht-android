@@ -7,6 +7,7 @@ import android.os.Build;
 import android.os.VibrationEffect;
 import android.os.VibratorManager;
 
+@SuppressLint("UseRequiresApi")
 public class Vibrator {
 	protected final Context context;
 
@@ -23,13 +24,11 @@ public class Vibrator {
 		return new Vibrator(context);
 	}
 
-	@SuppressLint("UseRequiresApi")
 	@TargetApi(26)
 	public void vibrate(long milliseconds) {
 		getVibrator().vibrate(VibrationEffect.createOneShot(milliseconds, VibrationEffect.DEFAULT_AMPLITUDE));
 	}
 
-	@SuppressLint("UseRequiresApi")
 	@TargetApi(31)
 	protected android.os.Vibrator getVibrator() {
 		VibratorManager vibratorManager = (VibratorManager) context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE);

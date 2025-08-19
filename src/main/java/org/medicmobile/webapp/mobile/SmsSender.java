@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+@SuppressLint("UseRequiresApi")
 class SmsSender {
 	private static final int UNUSED_REQUEST_CODE = 0;
 	private static final String DEFAULT_SMSC = null;
@@ -103,13 +104,11 @@ class SmsSender {
 		trace(this.parent, "SmsSender :: Cannot send sms without Send SMS permission. Sms ID=%s", this.sms.getId());
 	}
 
-	@SuppressLint("UseRequiresApi")
 	@TargetApi(31)
 	protected SmsManager getManager() {
 		return parent.getSystemService(android.telephony.SmsManager.class);
 	}
 
-	@SuppressLint("UseRequiresApi")
 	@TargetApi(23)
 	protected int getBroadcastFlags() {
 		return FLAG_ONE_SHOT | FLAG_IMMUTABLE;
@@ -118,7 +117,6 @@ class SmsSender {
 	/**
 	 * @see <a href="https://developer.android.com/reference/android/telephony/SmsMessage#createFromPdu(byte[])">createFromPdu(byte[])</a>
 	 */
-	@SuppressLint("UseRequiresApi")
 	@TargetApi(23)
 	protected SmsMessage createFromPdu(Intent intent) {
 		byte[] pdu = intent.getByteArrayExtra("pdu");
