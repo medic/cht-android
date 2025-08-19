@@ -316,24 +316,14 @@ android {
 
     musomali {
       dimension = 'brand'
-      applicationId = 'org.medicmobile.webapp.mobile.musomali'
+      applicationId = 'org.musohealth.webapp.mobile.musomali'
     }
 
     musomali_test {
       dimension = 'brand'
-      applicationId = 'org.medicmobile.webapp.mobile.musomali_test'
+      applicationId = 'org.musohealth.webapp.mobile.musomali_test'
     }
 
-    musomali_test_sh {
-      dimension = 'brand'
-      applicationId = 'org.medicmobile.webapp.mobile.musomali_test_sh'
-    }
-
-
-    musomali_test_cht4 {
-      dimension = 'brand'
-      applicationId = 'org.medicmobile.webapp.mobile.musomali_test_cht4'
-    }
 
     pih_malawi {
       dimension = 'brand'
@@ -412,17 +402,17 @@ android {
     
     cht_rci {
       dimension = 'brand'
-      applicationId = 'org.medicmobile.webapp.mobile.cht_rci'
+      applicationId = 'org.musohealth.webapp.mobile.cht_rci'
     }
 
     cht_rci_test {
       dimension = 'brand'
-      applicationId = 'org.medicmobile.webapp.mobile.cht_rci_test'
+      applicationId = 'org.musohealth.webapp.mobile.cht_rci_test'
     }
 
     cht_rci_test_cht4 {
       dimension = 'brand'
-      applicationId = 'org.medicmobile.webapp.mobile.cht_rci_test_cht4'
+      applicationId = 'org.musohealth.webapp.mobile.cht_rci_test_cht4'
     }
 
     moh_mali_chw {
@@ -472,9 +462,29 @@ android {
       applicationId = 'org.medicmobile.webapp.mobile.gandaki_ne'
     }
 
+    moh_civ {
+      dimension = 'brand'
+      applicationId = 'org.medicmobile.webapp.mobile.moh_civ'
+    }
+    
     moh_civ_uat {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.moh_civ_uat'
+    }
+
+    safaridoctors_kenya_yha {
+      dimension = 'brand'
+      applicationId = 'org.medicmobile.webapp.mobile.safaridoctors_kenya_yha'
+    }
+
+    moh_nepal_mhealth {
+      dimension = 'brand'
+      applicationId = 'org.medicmobile.webapp.mobile.moh_nepal_mhealth'
+    }
+
+    lumbini_chis {
+      dimension = 'brand'
+      applicationId = 'org.medicmobile.webapp.mobile.lumbini'
     }
 
   }

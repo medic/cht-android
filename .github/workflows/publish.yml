@@ -630,6 +630,109 @@ jobs:
         ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_GANDAKI_NE }}
         ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_GANDAKI_NE }}
 
+    - name: Unpack secrets safaridoctors_kenya_yha
+      env:
+        ANDROID_SECRETS_KEY: ${{ secrets.ANDROID_SECRETS_KEY_SAFARIDOCTORS_KENYA_YHA }}
+        ANDROID_SECRETS_IV: ${{ secrets.ANDROID_SECRETS_IV_SAFARIDOCTORS_KENYA_YHA }}
+      run: make org=safaridoctors_kenya_yha keydec
+
+    - name: Assemble safaridoctors_kenya_yha
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: build
+        options: '{ "flavor": "safaridoctors_kenya_yha" }'
+      env:
+        ANDROID_KEYSTORE_PATH: safaridoctors_kenya_yha.keystore
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_SAFARIDOCTORS_KENYA_YHA }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_SAFARIDOCTORS_KENYA_YHA }}
+
+    - name: Bundle safaridoctors_kenya_yha
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: bundle
+        options: '{ "flavor": "safaridoctors_kenya_yha" }'
+      env:
+        ANDROID_KEYSTORE_PATH: safaridoctors_kenya_yha.keystore
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_SAFARIDOCTORS_KENYA_YHA }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_SAFARIDOCTORS_KENYA_YHA }}
+
+    - name: Unpack secrets moh_civ
+      env:
+        ANDROID_SECRETS_KEY: ${{ secrets.ANDROID_SECRETS_KEY_MOH_CIV }}
+        ANDROID_SECRETS_IV: ${{ secrets.ANDROID_SECRETS_IV_MOH_CIV }}
+      run: make org=moh_civ keydec
+
+    - name: Assemble moh_civ
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: build
+        options: '{ "flavor": "moh_civ" }'
+      env:
+        ANDROID_KEYSTORE_PATH: moh_civ.keystore
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_MOH_CIV }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_MOH_CIV }}
+
+    - name: Bundle moh_civ
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: bundle
+        options: '{ "flavor": "moh_civ" }'
+      env:
+        ANDROID_KEYSTORE_PATH: moh_civ.keystore
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_MOH_CIV }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_MOH_CIV }}
+
+    - name: Unpack secrets moh_nepal_mhealth
+      env:
+          ANDROID_SECRETS_KEY: ${{ secrets.ANDROID_SECRETS_KEY_MOH_NEPAL_MHEALTH }}
+          ANDROID_SECRETS_IV: ${{ secrets.ANDROID_SECRETS_IV_MOH_NEPAL_MHEALTH }}
+      run: make org=moh_nepal_mhealth keydec
+
+    - name: Assemble moh_nepal_mhealth
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+          lane: build
+          options: '{ "flavor": "moh_nepal_mhealth" }'
+      env:
+          ANDROID_KEYSTORE_PATH: moh_nepal_mhealth.keystore
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_MOH_NEPAL_MHEALTH }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_MOH_NEPAL_MHEALTH }}
+
+    - name: Bundle moh_nepal_mhealth
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+          lane: bundle
+          options: '{ "flavor": "moh_nepal_mhealth" }'
+      env:
+          ANDROID_KEYSTORE_PATH: moh_nepal_mhealth.keystore
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_MOH_NEPAL_MHEALTH }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_MOH_NEPAL_MHEALTH }}
+
+    - name: Unpack secrets lumbini_chis
+      env:
+        ANDROID_SECRETS_KEY: ${{ secrets.ANDROID_SECRETS_KEY_LUMBINI_CHIS }}
+        ANDROID_SECRETS_IV: ${{ secrets.ANDROID_SECRETS_IV_LUMBINI_CHIS }}
+      run: make org=lumbini_chis keydec
+
+    - name: Assemble lumbini_chis
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: build
+        options: '{ "flavor": "lumbini_chis" }'
+      env:
+        ANDROID_KEYSTORE_PATH: lumbini_chis.keystore
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_LUMBINI_CHIS }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_LUMBINI_CHIS }}
+
+    - name: Bundle lumbini_chis
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: bundle
+        options: '{ "flavor": "lumbini_chis" }'
+      env:
+        ANDROID_KEYSTORE_PATH: lumbini_chis.keystore
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_LUMBINI_CHIS }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_LUMBINI_CHIS }}
 
 
 
@@ -659,66 +762,6 @@ jobs:
         ANDROID_SECRETS_KEY: ${{ secrets.ANDROID_SECRETS_KEY_MUSOMALI_TEST }}
         ANDROID_SECRETS_IV: ${{ secrets.ANDROID_SECRETS_IV_MUSOMALI_TEST }}
       run: make org=musomali_test keydec
-
-
-
-
-- name: Assemble musomali_test_sh
-      uses: maierj/fastlane-action@v1.4.0
-      with:
-        lane: build
-        options: '{ "flavor": "musomali_test_sh" }'
-      env:
-        ANDROID_KEYSTORE_PATH: musomali_test_sh.keystore
-        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_MUSOMALI_TEST_SH }}
-        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_MUSOMALI_TEST_SH }}
-
- - name: Bundle musomali_test_sh
-      uses: maierj/fastlane-action@v1.4.0
-      with:
-        lane: bundle
-        options: '{ "flavor": "musomali_test_sh" }'
-      env:
-        ANDROID_KEYSTORE_PATH: musomali_test_sh.keystore
-        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_MUSOMALI_TEST_SH }}
-        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_MUSOMALI_TEST_SH }}
-
-- name: Unpack secrets musomali_test_sh
-      env:
-        ANDROID_SECRETS_KEY: ${{ secrets.ANDROID_SECRETS_KEY_MUSOMALI_TEST_SH }}
-        ANDROID_SECRETS_IV: ${{ secrets.ANDROID_SECRETS_IV_MUSOMALI_TEST_SH }}
-      run: make org=musomali_test_sh keydec
-
-
-
-
-
-
-- name: Assemble musomali_test_cht4
-      uses: maierj/fastlane-action@v1.4.0
-      with:
-        lane: build
-        options: '{ "flavor": "musomali_test_cht4" }'
-      env:
-        ANDROID_KEYSTORE_PATH: musomali_test_cht4.keystore
-        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_MUSOMALI_TEST_CHT4 }}
-        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_MUSOMALI_TEST_CHT4 }}
-
- - name: Bundle musomali_test_cht4
-      uses: maierj/fastlane-action@v1.4.0
-      with:
-        lane: bundle
-        options: '{ "flavor": "musomali_test_cht4" }'
-      env:
-        ANDROID_KEYSTORE_PATH: musomali_test_cht4.keystore
-        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_MUSOMALI_TEST_CHT4 }}
-        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_MUSOMALI_TEST_CHT4 }}
-
-- name: Unpack secrets musomali_test_cht4
-      env:
-        ANDROID_SECRETS_KEY: ${{ secrets.ANDROID_SECRETS_KEY_MUSOMALI_TEST_CHT4 }}
-        ANDROID_SECRETS_IV: ${{ secrets.ANDROID_SECRETS_IV_MUSOMALI_TEST_CHT4 }}
-      run: make org=musomali_test_cht4 keydec
 
 
 

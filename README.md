@@ -20,7 +20,7 @@ To open the app's Settings page, tap 5 times with one finger on the screen and t
 
 ## Copyright
 
-Copyright 2013-2022 Medic Mobile, Inc. <hello@medic.org>.
+Copyright 2013-2025 Medic Mobile, Inc. <hello@medic.org>.
 
 
 ## License
