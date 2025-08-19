@@ -81,7 +81,6 @@ public class UrlHandler extends WebViewClient {
 		processError(view, errorCode, description);
 	}
 
-
 	@RequiresApi(23)
 	@Override
 	public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
