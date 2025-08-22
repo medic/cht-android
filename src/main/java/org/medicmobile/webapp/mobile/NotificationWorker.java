@@ -34,7 +34,6 @@ public class NotificationWorker extends Worker {
 
 	private final SettingsStore settings = SettingsStore.in(getApplicationContext());
 	private final String appUrl = settings.getAppUrl();
-	private boolean isDone;
 	private WebView webView;
 
 	public NotificationWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
@@ -57,10 +56,7 @@ public class NotificationWorker extends Worker {
 				webView.setWebViewClient(new WebViewClient() {
 					@Override
 					public void onPageFinished(WebView view, String url) {
-						if(!isDone) {
-							isDone = true;
-							view.evaluateJavascript(getJavaScriptString("NotificationWorkerBridge"), null);
-						}
+						view.evaluateJavascript(getJavaScriptString("NotificationWorkerBridge"), null);
 					}
 				});
 				webView.loadUrl(appUrl);
@@ -139,7 +135,7 @@ public class NotificationWorker extends Worker {
 		return "(async function (){" +
 				" const api = window.CHTCore.AndroidApi;" +
 				" const tasks = await api.v1.taskNotifications();" +
-				interfaceName + ".onGetNotificationResult(JSON.stringify(tasks), '" + appUrl +"');" +
+				interfaceName + ".onGetNotificationResult(JSON.stringify(tasks), '" + appUrl + "');" +
 				"})();";
 	}
 
