@@ -3,6 +3,7 @@ package org.medicmobile.webapp.mobile;
 import static org.medicmobile.webapp.mobile.BuildConfig.APPLICATION_ID;
 import static org.medicmobile.webapp.mobile.BuildConfig.DEBUG;
 import static org.medicmobile.webapp.mobile.BuildConfig.VERSION_NAME;
+import static org.medicmobile.webapp.mobile.MedicLog.log;
 import static org.medicmobile.webapp.mobile.MedicLog.warn;
 
 import android.app.Activity;
@@ -14,6 +15,7 @@ import android.content.pm.verify.domain.DomainVerificationUserState;
 import android.net.Uri;
 import android.os.Build;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -118,6 +120,22 @@ final class Utils {
 		}
 
 		return Optional.of(Uri.fromFile(file));
+	}
+
+	/**
+	 * parses js string array to JSONArray
+	 * @param stringArray {String} array in string format
+	 * @return {JSONArray}
+	 */
+	static JSONArray parseJSArrayData(String stringArray) {
+		stringArray = stringArray.replace("^\"|\"$", "")
+				.replace("\\\"", "\"");
+		try {
+			return new JSONArray(stringArray);
+		} catch (JSONException e) {
+			log(e, "error parsing JS data");
+			return new JSONArray();
+		}
 	}
 
 	static boolean isDebug() {

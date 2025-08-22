@@ -13,7 +13,6 @@ import static org.medicmobile.webapp.mobile.Utils.createUseragentFrom;
 import static org.medicmobile.webapp.mobile.Utils.isValidNavigationUrl;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -35,14 +34,17 @@ import android.webkit.WebView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.ViewCompat;
+
+import org.medicmobile.webapp.mobile.listeners.NotificationWorkRequestLiveData;
 
 import java.util.Arrays;
 import java.util.Optional;
 
 @SuppressWarnings({"PMD.GodClass", "PMD.TooManyMethods"})
-public class EmbeddedBrowserActivity extends Activity {
+public class EmbeddedBrowserActivity extends AppCompatActivity {
 
 	private WebView container;
 	private SettingsStore settings;
@@ -130,6 +132,7 @@ public class EmbeddedBrowserActivity extends Activity {
 
 		registerRetryConnectionBroadcastReceiver();
 
+		notificationWorkRequestObserver();
 		initializeNotifications();
 
 		String recentNavigation = settings.getLastUrl();
@@ -148,7 +151,8 @@ public class EmbeddedBrowserActivity extends Activity {
 	}
 
 	@Override
-	protected void onNewIntent(Intent intent) {
+	protected void onNewIntent(@NonNull Intent intent) {
+		super.onNewIntent(intent);
 		Uri appLinkData = intent.getData();
 		browseTo(appLinkData);
 	}
@@ -191,8 +195,10 @@ public class EmbeddedBrowserActivity extends Activity {
 		super.onStop();
 	}
 
+
 	@Override
 	public void onBackPressed() {
+		super.onBackPressed();
 		trace(this, "onBackPressed()");
 		container.evaluateJavascript(
 				"angular.element(document.body).injector().get('AndroidApi').v1.back()",
@@ -210,6 +216,7 @@ public class EmbeddedBrowserActivity extends Activity {
 
 	@Override
 	protected void onActivityResult(int requestCd, int resultCode, Intent intent) {
+		super.onActivityResult(requestCd, resultCode, intent);
 		Optional<RequestCode> requestCodeOpt = RequestCode.valueOf(requestCd);
 
 		if (!requestCodeOpt.isPresent()) {
@@ -256,6 +263,15 @@ public class EmbeddedBrowserActivity extends Activity {
 			appNotificationManager.manager.cancelAll();
 		}
 		appNotificationManager.initNotificationWorker(container, this);
+	}
+
+	private void notificationWorkRequestObserver() {
+		NotificationWorkRequestLiveData.getInstance().getRequest().observe(this, request -> {
+			if (request != null) {
+				container.evaluateJavascript(request, null);
+				NotificationWorkRequestLiveData.getInstance().resetRequest();
+			}
+		});
 	}
 
 	//> ACCESSORS

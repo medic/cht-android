@@ -23,6 +23,10 @@ import androidx.work.ExistingPeriodicWorkPolicy;
 import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
@@ -124,6 +128,17 @@ public class AppNotificationManager {
 				});
 			}
 		});
+	}
+
+	void showMultipleTaskNotifications(JSONArray dataArray, String appUrl) throws JSONException {
+		for (int i = 0; i < dataArray.length(); i++) {
+			JSONObject notification = dataArray.getJSONObject(i);
+			String contentText = notification.getString("contentText");
+			String title = notification.getString("title");
+			long readyAt = notification.getLong("readyAt");
+			int notificationId = (int) (readyAt % Integer.MAX_VALUE);
+			showNotification(appUrl, notificationId + i, title, contentText);
+		}
 	}
 
 	void showNotification(String appUrl, int id, String title, String contentText) {

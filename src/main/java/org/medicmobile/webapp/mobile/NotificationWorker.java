@@ -13,12 +13,14 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 import androidx.annotation.NonNull;
+import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.ProcessLifecycleOwner;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
+import org.medicmobile.webapp.mobile.listeners.NotificationWorkRequestLiveData;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -27,11 +29,13 @@ public class NotificationWorker extends Worker {
 	static final String DEBUG_TAG = "NOTIFICATION_WORKER";
 	public static final String NOTIFICATION_WORK_REQUEST_TAG = "cht_notification_tag";
 	public static final String NOTIFICATION_WORK_NAME = "appNotifications";
-	static final int EXECUTION_TIMEOUT_SECS = 20;
+	static final int EXECUTION_TIMEOUT_SECS = 5;
 	static final int WORKER_REPEAT_INTERVAL_MINS = 15; //run background worker every 15 mins
 
 	private final SettingsStore settings = SettingsStore.in(getApplicationContext());
 	private final String appUrl = settings.getAppUrl();
+	private boolean isDone;
+	private WebView webView;
 
 	public NotificationWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
 		super(context, workerParams);
@@ -42,29 +46,36 @@ public class NotificationWorker extends Worker {
 	@Override
 	public Result doWork() {
 		CountDownLatch latch = new CountDownLatch(1);
-		new Handler(Looper.getMainLooper()).post(() -> {
-			WebView webView = new WebView(getApplicationContext());
-			webView.getSettings().setJavaScriptEnabled(true);
-			webView.addJavascriptInterface(new NotificationBridge(getApplicationContext(), latch, appUrl), "CHTNotificationBridge");
-			enableStorage(webView);
+		if (!isAppInForeground()) {
+			Log.d(DEBUG_TAG, "app in background creating webview");
+			new Handler(Looper.getMainLooper()).post(() -> {
+				webView = new WebView(getApplicationContext());
+				webView.getSettings().setJavaScriptEnabled(true);
+				webView.addJavascriptInterface(new NotificationBridge(getApplicationContext(), latch), "NotificationWorkerBridge");
+				enableStorage(webView);
 
-			webView.setWebViewClient(new WebViewClient() {
-				@Override
-				public void onPageFinished(WebView view, String url) {
-					String js = "(async function (){" +
-							" const api = window.CHTCore.AndroidApi;" +
-							" const tasks = await api.v1.taskNotifications();" +
-							" CHTNotificationBridge.onJsResult(JSON.stringify(tasks));" +
-							"})();";
-					view.evaluateJavascript(js, null);
-				}
+				webView.setWebViewClient(new WebViewClient() {
+					@Override
+					public void onPageFinished(WebView view, String url) {
+						if(!isDone) {
+							isDone = true;
+							view.evaluateJavascript(getJavaScriptString("NotificationWorkerBridge"), null);
+						}
+					}
+				});
+				webView.loadUrl(appUrl);
 			});
-			webView.loadUrl(appUrl);
-		});
+		} else {
+			//send request to main webview
+			Log.d(DEBUG_TAG, "app in foreground sending work to webview");
+			NotificationWorkRequestLiveData.getInstance().sendRequest(getJavaScriptString("medicmobile_android"));
+			latch.countDown();
+		}
 		try {
 			boolean completed = latch.await(EXECUTION_TIMEOUT_SECS, TimeUnit.SECONDS);
 			if (completed) {
 				Log.d(DEBUG_TAG, "notification worker ran successfully!");
+				return Result.success();
 			} else {
 				Log.d(DEBUG_TAG, "notification worker taking too long to complete");
 				return Result.failure();
@@ -73,46 +84,28 @@ public class NotificationWorker extends Worker {
 			log(e, "error: notification worker interrupted");
 			Thread.currentThread().interrupt();
 			return Result.failure();
+		} finally {
+			new Handler(Looper.getMainLooper()).post(() -> {
+				destroyWebView(webView);
+			});
 		}
-
-		return Result.success();
 	}
 
 	public static class NotificationBridge {
 		private final Context context;
 		private final CountDownLatch latch;
-		private final String appUrl;
 
-		NotificationBridge(Context context, CountDownLatch latch, String appUrl) {
+		NotificationBridge(Context context, CountDownLatch latch) {
 			this.context = context;
 			this.latch = latch;
-			this.appUrl = appUrl;
 		}
 
 		@JavascriptInterface
-		public void onJsResult(String data) throws JSONException {
+		public void onGetNotificationResult(String data, String appUrl) throws JSONException {
 			AppNotificationManager appNotificationManager = AppNotificationManager.getInstance(context);
-			JSONArray dataArray = parseData(data);
-			for (int i = 0; i < dataArray.length(); i++) {
-				JSONObject task = dataArray.getJSONObject(i);
-				String contentText = task.getString("contentText");
-				String title = task.getString("title");
-				long readyAt = task.getLong("readyAt");
-				int notificationId = (int) (readyAt % Integer.MAX_VALUE);
-				appNotificationManager.showNotification(appUrl, notificationId + i, title, contentText);
-			}
+			JSONArray dataArray = Utils.parseJSArrayData(data);
+			appNotificationManager.showMultipleTaskNotifications(dataArray, appUrl);
 			latch.countDown();
-		}
-
-		private JSONArray parseData(String data) {
-			data = data.replace("^\"|\"$", "")
-					.replace("\\\"", "\"");
-			try {
-				return new JSONArray(data);
-			} catch (JSONException e) {
-				log(e, "error parsing JS data");
-				return new JSONArray();
-			}
 		}
 	}
 
@@ -120,6 +113,34 @@ public class NotificationWorker extends Worker {
 		WebSettings webSettings = container.getSettings();
 		webSettings.setDomStorageEnabled(true);
 		webSettings.setDatabaseEnabled(true);
+	}
+
+	private boolean isAppInForeground() {
+		return ProcessLifecycleOwner.get()
+				.getLifecycle()
+				.getCurrentState()
+				.isAtLeast(Lifecycle.State.STARTED);
+	}
+
+	private void destroyWebView(WebView wv) {
+		if (wv != null) {
+			wv.stopLoading();
+			wv.getSettings().setJavaScriptEnabled(false);
+			wv.loadUrl("about:blank");
+			wv.clearHistory();
+			wv.clearCache(true);
+			wv.removeAllViews();
+			wv.destroy();
+			wv = null;
+		}
+	}
+
+	private String getJavaScriptString(String interfaceName) {
+		return "(async function (){" +
+				" const api = window.CHTCore.AndroidApi;" +
+				" const tasks = await api.v1.taskNotifications();" +
+				interfaceName + ".onGetNotificationResult(JSON.stringify(tasks), '" + appUrl +"');" +
+				"})();";
 	}
 
 }
