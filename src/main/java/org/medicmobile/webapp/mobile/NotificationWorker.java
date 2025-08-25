@@ -29,7 +29,7 @@ public class NotificationWorker extends Worker {
 	static final String DEBUG_TAG = "NOTIFICATION_WORKER";
 	public static final String NOTIFICATION_WORK_REQUEST_TAG = "cht_notification_tag";
 	public static final String NOTIFICATION_WORK_NAME = "appNotifications";
-	static final int EXECUTION_TIMEOUT_SECS = 5;
+	static final int EXECUTION_TIMEOUT_SECS = 10;
 	static final int WORKER_REPEAT_INTERVAL_MINS = 15; //run background worker every 15 mins
 
 	private final SettingsStore settings = SettingsStore.in(getApplicationContext());

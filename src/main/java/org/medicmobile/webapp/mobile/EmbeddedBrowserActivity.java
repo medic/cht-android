@@ -132,7 +132,6 @@ public class EmbeddedBrowserActivity extends AppCompatActivity {
 
 		registerRetryConnectionBroadcastReceiver();
 
-		notificationWorkRequestObserver();
 		initializeNotifications();
 
 		String recentNavigation = settings.getLastUrl();
@@ -259,6 +258,7 @@ public class EmbeddedBrowserActivity extends AppCompatActivity {
 	}
 
 	private void initializeNotifications() {
+		notificationWorkRequestObserver();
 		if (appNotificationManager.manager != null) {
 			appNotificationManager.manager.cancelAll();
 		}

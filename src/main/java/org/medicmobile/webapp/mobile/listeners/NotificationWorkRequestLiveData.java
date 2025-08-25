@@ -5,14 +5,18 @@ import androidx.lifecycle.MutableLiveData;
 
 public class NotificationWorkRequestLiveData {
 
-	private static NotificationWorkRequestLiveData instance;
+	private static volatile NotificationWorkRequestLiveData instance;
 	private final MutableLiveData<String> requestLiveData = new MutableLiveData<>();
 
 	private NotificationWorkRequestLiveData() {}
 
-	public static synchronized NotificationWorkRequestLiveData getInstance() {
+	public static NotificationWorkRequestLiveData getInstance() {
 		if (instance == null) {
-			instance = new NotificationWorkRequestLiveData();
+			synchronized (NotificationWorkRequestLiveData.class) {
+				if (instance == null) {
+					instance = new NotificationWorkRequestLiveData();
+				}
+			}
 		}
 		return instance;
 	}
