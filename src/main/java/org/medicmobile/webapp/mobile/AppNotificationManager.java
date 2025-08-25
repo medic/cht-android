@@ -137,13 +137,13 @@ public class AppNotificationManager {
 			String title = notification.getString("title");
 			long readyAt = notification.getLong("readyAt");
 			int notificationId = (int) (readyAt % Integer.MAX_VALUE);
-			showNotification(appUrl, notificationId + i, title, contentText);
+			showNotification(appUrl.concat("/#/tasks"), notificationId + i, title, contentText);
 		}
 	}
 
 	void showNotification(String appUrl, int id, String title, String contentText) {
 		Intent intent = new Intent(context, EmbeddedBrowserActivity.class);
-		intent.setData(Uri.parse(appUrl.concat("/#/tasks")));
+		intent.setData(Uri.parse(appUrl));
 		intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
 		PendingIntent pendingIntent = PendingIntent.getActivity(
 				context,
@@ -158,8 +158,6 @@ public class AppNotificationManager {
 				.setAutoCancel(true)
 				.setContentIntent(pendingIntent)
 				.setPriority(NotificationCompat.PRIORITY_DEFAULT);
-
-
 		manager.notify(id, builder.build());
 	}
 
