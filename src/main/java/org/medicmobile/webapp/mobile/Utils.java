@@ -128,8 +128,6 @@ final class Utils {
 	 * @return {JSONArray}
 	 */
 	static JSONArray parseJSArrayData(String stringArray) {
-		stringArray = stringArray.replace("^\"|\"$", "")
-				.replace("\\\"", "\"");
 		try {
 			return new JSONArray(stringArray);
 		} catch (JSONException e) {

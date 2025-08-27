@@ -54,7 +54,6 @@ public class EmbeddedBrowserActivity extends AppCompatActivity {
 	private SmsSender smsSender;
 	private ChtExternalAppHandler chtExternalAppHandler;
 	private boolean isMigrationRunning = false;
-	private AppNotificationManager appNotificationManager;
 
 	private static final ValueCallback<String> IGNORE_RESULT = new ValueCallback<String>() {
 		public void onReceiveValue(String result) { /* ignore */ }
@@ -79,7 +78,6 @@ public class EmbeddedBrowserActivity extends AppCompatActivity {
 		this.filePickerHandler = new FilePickerHandler(this);
 		this.mrdt = new MrdtSupport(this);
 		this.chtExternalAppHandler = new ChtExternalAppHandler(this);
-		appNotificationManager = AppNotificationManager.getInstance(this);
 
 		try {
 			this.smsSender = SmsSender.createInstance(this);
@@ -258,10 +256,8 @@ public class EmbeddedBrowserActivity extends AppCompatActivity {
 	}
 
 	private void initializeNotifications() {
+		AppNotificationManager appNotificationManager = AppNotificationManager.getInstance(this);
 		notificationWorkRequestObserver();
-		if (appNotificationManager.manager != null) {
-			appNotificationManager.manager.cancelAll();
-		}
 		appNotificationManager.initNotificationWorker(container, this);
 	}
 

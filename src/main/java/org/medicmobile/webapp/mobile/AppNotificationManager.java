@@ -39,8 +39,7 @@ public class AppNotificationManager {
 
 	private static volatile AppNotificationManager instance;
 	private final Context context;
-
-	NotificationManager manager;
+	private final NotificationManager manager;
 
 	private AppNotificationManager(Context context) {
 		this.context = context.getApplicationContext();
@@ -82,6 +81,7 @@ public class AppNotificationManager {
 	}
 
 	void initNotificationWorker(WebView webView, Activity activity) {
+		manager.cancelAll();
 		if (hasTaskNotificationsApi) {
 			startNotificationWorker();
 		} else {
@@ -114,7 +114,7 @@ public class AppNotificationManager {
 			@Override
 			public void onPageFinished(WebView view, String url) {
 				String jsCheckApi = "(() => typeof window.CHTCore.AndroidApi.v1.taskNotifications === 'function')();";
-				webView.evaluateJavascript(jsCheckApi, new ValueCallback<String>() {
+				view.evaluateJavascript(jsCheckApi, new ValueCallback<String>() {
 					@Override
 					public void onReceiveValue(String hasApi) {
 						if (!hasCheckedForNotificationApi) {

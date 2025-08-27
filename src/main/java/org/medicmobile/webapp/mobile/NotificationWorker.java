@@ -45,14 +45,14 @@ public class NotificationWorker extends Worker {
 	@Override
 	public Result doWork() {
 		CountDownLatch latch = new CountDownLatch(1);
+		Handler handler = new Handler(Looper.getMainLooper());
 		if (!isAppInForeground()) {
-			Log.d(DEBUG_TAG, "app in background creating webview");
-			new Handler(Looper.getMainLooper()).post(() -> {
+			Log.d(DEBUG_TAG, "app in background, creating webview");
+			handler.post(() -> {
 				webView = new WebView(getApplicationContext());
 				webView.getSettings().setJavaScriptEnabled(true);
 				webView.addJavascriptInterface(new NotificationBridge(getApplicationContext(), latch), "NotificationWorkerBridge");
 				enableStorage(webView);
-
 				webView.setWebViewClient(new WebViewClient() {
 					@Override
 					public void onPageFinished(WebView view, String url) {
@@ -63,7 +63,7 @@ public class NotificationWorker extends Worker {
 			});
 		} else {
 			//send request to main webview
-			Log.d(DEBUG_TAG, "app in foreground sending work to webview");
+			Log.d(DEBUG_TAG, "app in foreground, sending work to webview");
 			NotificationWorkRequestLiveData.getInstance().sendRequest(getJavaScriptString("medicmobile_android"));
 			latch.countDown();
 		}
@@ -81,7 +81,7 @@ public class NotificationWorker extends Worker {
 			Thread.currentThread().interrupt();
 			return Result.failure();
 		} finally {
-			new Handler(Looper.getMainLooper()).post(() -> {
+			handler.post(() -> {
 				destroyWebView(webView);
 			});
 		}
