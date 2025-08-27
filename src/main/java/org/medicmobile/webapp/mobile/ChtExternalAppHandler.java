@@ -21,6 +21,7 @@ public class ChtExternalAppHandler {
 
 	private final Activity context;
 	private Intent lastIntent;
+	private long lastActivityStartTime = 0;
 
 	ChtExternalAppHandler(Activity context) {
 		this.context = context;
@@ -28,6 +29,9 @@ public class ChtExternalAppHandler {
 
 	String processResult(int resultCode, Intent intent) {
 		try {
+			intent.putExtra("duration", (System.currentTimeMillis() - this.lastActivityStartTime) / 1000);
+			this.lastActivityStartTime = 0;
+
 			Optional<JSONObject> json = new ChtExternalApp
 					.Response(intent, this.context)
 					.getData();
@@ -83,6 +87,7 @@ public class ChtExternalAppHandler {
 	private void startActivity(Intent intent) {
 		try {
 			trace(this, "ChtExternalAppHandler :: Starting activity %s %s", intent, intent.getExtras());
+			this.lastActivityStartTime = System.currentTimeMillis();
 			this.context.startActivityForResult(intent, RequestCode.CHT_EXTERNAL_APP_ACTIVITY.getCode());
 
 		} catch (Exception exception) {
