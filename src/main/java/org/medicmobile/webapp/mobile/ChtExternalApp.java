@@ -293,11 +293,13 @@ public class ChtExternalApp {
 					return;
 				}
 
-				if (isPrimitiveList(value)) {
+				Optional<List<?>> primitiveListOpt = asPrimitiveList(value);
+				if (primitiveListOpt.isPresent()) {
 					// ODK/Enketo models a primitive multi-value list (e.g. a select_multiple question) as a
 					// space-delimited string.
-					String nodeList = ((List<?>) value)
+					String nodeList = primitiveListOpt
 						.stream()
+						.flatMap(List::stream)
 						.map(Object::toString)
 						.map(s -> s.replace(" ", "_"))
 						.collect(Collectors.joining(" "));
@@ -329,20 +331,30 @@ public class ChtExternalApp {
 			return !list.isEmpty() && list.get(0) instanceof Bundle;
 		}
 
-		private boolean isPrimitiveList(Object value) {
-			if (!(value instanceof List) || ((List<?>) value).isEmpty()) {
-				return false;
+		private boolean isPrimitive(Object value) {
+			return value instanceof String ||
+				value instanceof Integer ||
+				value instanceof Long ||
+				value instanceof Double ||
+				value instanceof Float ||
+				value instanceof Boolean ||
+				value instanceof Short ||
+				value instanceof Character;
+		}
+
+		private Optional<List<?>> asPrimitiveList(Object value) {
+			if (value != null && value.getClass().isArray()) {
+				value = List.of(((Object[]) value));
+			}
+			if (
+				!(value instanceof List)
+				|| ((List<?>) value).isEmpty()
+				|| !isPrimitive(((List<?>) value).get(0))
+			) {
+				return Optional.empty();
 			}
 
-			Object first = ((List<?>) value).get(0);
-			return first instanceof String ||
-				first instanceof Integer ||
-				first instanceof Long ||
-				first instanceof Double ||
-				first instanceof Float ||
-				first instanceof Boolean ||
-				first instanceof Short ||
-				first instanceof Character;
+			return Optional.of((List<?>) value);
 		}
 
 		private Optional<Uri> getImageUri(Object value) {
