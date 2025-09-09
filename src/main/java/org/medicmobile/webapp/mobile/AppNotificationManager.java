@@ -40,18 +40,22 @@ public class AppNotificationManager {
 	private static volatile AppNotificationManager instance;
 	private final Context context;
 	private final NotificationManager manager;
+	private final String appUrl;
+	private NotificationForegroundHandler foregroundNotificationHandler;
 
-	private AppNotificationManager(Context context) {
+
+	private AppNotificationManager(Context context, String appUrl) {
 		this.context = context.getApplicationContext();
+		this.appUrl = appUrl;
 		manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 		createNotificationChannel();
 	}
 
-	public static AppNotificationManager getInstance(Context context) {
+	public static AppNotificationManager getInstance(Context context, String appUrl) {
 		if (instance == null) {
 			synchronized (AppNotificationManager.class) {
 				if (instance == null) {
-					instance = new AppNotificationManager(context);
+					instance = new AppNotificationManager(context, appUrl);
 				}
 			}
 		}
@@ -70,38 +74,56 @@ public class AppNotificationManager {
 
 	public void requestNotificationPermission(Activity activity) {
 		if (!hasNotificationPermission()) {
+			stopForegroundNotificationHandler();
 			stopNotificationWorker();
 		}
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !hasNotificationPermission()) {
 			ActivityCompat.requestPermissions(activity,
 					new String[]{Manifest.permission.POST_NOTIFICATIONS}, REQUEST_NOTIFICATION_PERMISSION);
 		} else {
+			startForegroundNotificationHandler();
 			startNotificationWorker();
 		}
 	}
 
-	void initNotificationWorker(WebView webView, Activity activity) {
+	void initAppNotification(WebView webView, Activity activity) {
+		foregroundNotificationHandler = new NotificationForegroundHandler(webView, appUrl);
 		manager.cancelAll();
 		if (hasTaskNotificationsApi) {
+			startForegroundNotificationHandler();
 			startNotificationWorker();
 		} else {
 			checkTaskNotificationApi(webView, activity);
 		}
 	}
 
-	private void startNotificationWorker() {
-		PeriodicWorkRequest request = new PeriodicWorkRequest.Builder(
-				NotificationWorker.class,
-				NotificationWorker.WORKER_REPEAT_INTERVAL_MINS,
-				TimeUnit.MINUTES
-		).addTag(NotificationWorker.NOTIFICATION_WORK_REQUEST_TAG).build();
+	void startForegroundNotificationHandler() {
+		if (foregroundNotificationHandler != null && hasNotificationPermission()) {
+			foregroundNotificationHandler.start();
+		}
+	}
 
-		WorkManager.getInstance(context).enqueueUniquePeriodicWork(
-				NotificationWorker.NOTIFICATION_WORK_NAME,
-				ExistingPeriodicWorkPolicy.KEEP,
-				request
-		);
-		log(context, "startNotificationWorker() :: Started Notification Work Manager...");
+	private void startNotificationWorker() {
+		if (hasNotificationPermission()) {
+			PeriodicWorkRequest request = new PeriodicWorkRequest.Builder(
+					NotificationWorker.class,
+					NotificationWorker.WORKER_REPEAT_INTERVAL_MINS,
+					TimeUnit.MINUTES
+			).addTag(NotificationWorker.NOTIFICATION_WORK_REQUEST_TAG).build();
+
+			WorkManager.getInstance(context).enqueueUniquePeriodicWork(
+					NotificationWorker.NOTIFICATION_WORK_NAME,
+					ExistingPeriodicWorkPolicy.KEEP,
+					request
+			);
+			log(context, "startNotificationWorker() :: Started Notification Work Manager...");
+		}
+	}
+
+	void stopForegroundNotificationHandler() {
+		if (foregroundNotificationHandler != null) {
+			foregroundNotificationHandler.stop();
+		}
 	}
 
 	private void stopNotificationWorker() {
@@ -130,7 +152,7 @@ public class AppNotificationManager {
 		});
 	}
 
-	void showMultipleTaskNotifications(JSONArray dataArray, String appUrl) throws JSONException {
+	void showMultipleTaskNotifications(JSONArray dataArray) throws JSONException {
 		Intent intent = new Intent(context, EmbeddedBrowserActivity.class);
 		intent.setData(Uri.parse(appUrl.concat("/#/tasks")));
 		for (int i = 0; i < dataArray.length(); i++) {

@@ -13,6 +13,7 @@ import static org.medicmobile.webapp.mobile.Utils.createUseragentFrom;
 import static org.medicmobile.webapp.mobile.Utils.isValidNavigationUrl;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -34,17 +35,14 @@ import android.webkit.WebView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.ViewCompat;
-
-import org.medicmobile.webapp.mobile.listeners.NotificationWorkRequestLiveData;
 
 import java.util.Arrays;
 import java.util.Optional;
 
 @SuppressWarnings({"PMD.GodClass", "PMD.TooManyMethods"})
-public class EmbeddedBrowserActivity extends AppCompatActivity {
+public class EmbeddedBrowserActivity extends Activity {
 
 	private WebView container;
 	private SettingsStore settings;
@@ -54,6 +52,7 @@ public class EmbeddedBrowserActivity extends AppCompatActivity {
 	private SmsSender smsSender;
 	private ChtExternalAppHandler chtExternalAppHandler;
 	private boolean isMigrationRunning = false;
+	AppNotificationManager appNotificationManager;
 
 	private static final ValueCallback<String> IGNORE_RESULT = new ValueCallback<String>() {
 		public void onReceiveValue(String result) { /* ignore */ }
@@ -195,11 +194,22 @@ public class EmbeddedBrowserActivity extends AppCompatActivity {
 
 	@Override
 	public void onBackPressed() {
-		super.onBackPressed();
 		trace(this, "onBackPressed()");
 		container.evaluateJavascript(
 				"angular.element(document.body).injector().get('AndroidApi').v1.back()",
 				backButtonHandler);
+	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+		appNotificationManager.startForegroundNotificationHandler();
+	}
+
+	@Override
+	protected void onPause() {
+		appNotificationManager.stopForegroundNotificationHandler();
+		super.onPause();
 	}
 
 	@Override
@@ -256,18 +266,8 @@ public class EmbeddedBrowserActivity extends AppCompatActivity {
 	}
 
 	private void initializeNotifications() {
-		AppNotificationManager appNotificationManager = AppNotificationManager.getInstance(this);
-		notificationWorkRequestObserver();
-		appNotificationManager.initNotificationWorker(container, this);
-	}
-
-	private void notificationWorkRequestObserver() {
-		NotificationWorkRequestLiveData.getInstance().getRequest().observe(this, request -> {
-			if (request != null) {
-				container.evaluateJavascript(request, null);
-				NotificationWorkRequestLiveData.getInstance().resetRequest();
-			}
-		});
+		appNotificationManager = AppNotificationManager.getInstance(this, appUrl);
+		appNotificationManager.initAppNotification(container, this);
 	}
 
 	//> ACCESSORS

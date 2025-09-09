@@ -20,7 +20,6 @@ import androidx.work.WorkerParameters;
 
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.medicmobile.webapp.mobile.listeners.NotificationWorkRequestLiveData;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -35,6 +34,11 @@ public class NotificationWorker extends Worker {
 	private final SettingsStore settings = SettingsStore.in(getApplicationContext());
 	private final String appUrl = settings.getAppUrl();
 	private WebView webView;
+	private final String notificationsJS = "(async function (){" +
+			" const api = window.CHTCore.AndroidApi;" +
+			" const tasks = await api.v1.taskNotifications();" +
+			" NotificationWorkerBridge.onGetNotificationResult(JSON.stringify(tasks), '" + appUrl + "');" +
+			" })();";
 
 	public NotificationWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
 		super(context, workerParams);
@@ -44,29 +48,29 @@ public class NotificationWorker extends Worker {
 	@NonNull
 	@Override
 	public Result doWork() {
+		if (isAppInForeground()) {
+			Log.d(DEBUG_TAG, "app in foreground, skipping execution");
+			return Result.success();
+		}
+
+		Log.d(DEBUG_TAG, "app in background, creating webview");
 		CountDownLatch latch = new CountDownLatch(1);
 		Handler handler = new Handler(Looper.getMainLooper());
-		if (!isAppInForeground()) {
-			Log.d(DEBUG_TAG, "app in background, creating webview");
-			handler.post(() -> {
-				webView = new WebView(getApplicationContext());
-				webView.getSettings().setJavaScriptEnabled(true);
-				webView.addJavascriptInterface(new NotificationBridge(getApplicationContext(), latch), "NotificationWorkerBridge");
-				enableStorage(webView);
-				webView.setWebViewClient(new WebViewClient() {
-					@Override
-					public void onPageFinished(WebView view, String url) {
-						view.evaluateJavascript(getJavaScriptString("NotificationWorkerBridge"), null);
-					}
-				});
-				webView.loadUrl(appUrl);
+
+		handler.post(() -> {
+			webView = new WebView(getApplicationContext());
+			webView.getSettings().setJavaScriptEnabled(true);
+			webView.addJavascriptInterface(new NotificationBridge(getApplicationContext(), latch), "NotificationWorkerBridge");
+			enableStorage(webView);
+			webView.setWebViewClient(new WebViewClient() {
+				@Override
+				public void onPageFinished(WebView view, String url) {
+					view.evaluateJavascript(notificationsJS, null);
+				}
 			});
-		} else {
-			//send request to main webview
-			Log.d(DEBUG_TAG, "app in foreground, sending work to webview");
-			NotificationWorkRequestLiveData.getInstance().sendRequest(getJavaScriptString("medicmobile_android"));
-			latch.countDown();
-		}
+			webView.loadUrl(appUrl);
+		});
+
 		try {
 			boolean completed = latch.await(EXECUTION_TIMEOUT_SECS, TimeUnit.SECONDS);
 			if (completed) {
@@ -98,9 +102,9 @@ public class NotificationWorker extends Worker {
 
 		@JavascriptInterface
 		public void onGetNotificationResult(String data, String appUrl) throws JSONException {
-			AppNotificationManager appNotificationManager = AppNotificationManager.getInstance(context);
+			AppNotificationManager appNotificationManager = AppNotificationManager.getInstance(context, appUrl);
 			JSONArray dataArray = Utils.parseJSArrayData(data);
-			appNotificationManager.showMultipleTaskNotifications(dataArray, appUrl);
+			appNotificationManager.showMultipleTaskNotifications(dataArray);
 			latch.countDown();
 		}
 	}
@@ -130,13 +134,4 @@ public class NotificationWorker extends Worker {
 			wv = null;
 		}
 	}
-
-	private String getJavaScriptString(String interfaceName) {
-		return "(async function (){" +
-				" const api = window.CHTCore.AndroidApi;" +
-				" const tasks = await api.v1.taskNotifications();" +
-				interfaceName + ".onGetNotificationResult(JSON.stringify(tasks), '" + appUrl + "');" +
-				"})();";
-	}
-
 }

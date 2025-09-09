@@ -150,9 +150,9 @@ public class MedicAndroidJavascript {
 
 	@JavascriptInterface
 	public void onGetNotificationResult(String result, String appUrl) throws JSONException {
-		AppNotificationManager appNotificationManager = AppNotificationManager.getInstance(parent);
+		AppNotificationManager appNotificationManager = AppNotificationManager.getInstance(parent, appUrl);
 		JSONArray dataArray = Utils.parseJSArrayData(result);
-		appNotificationManager.showMultipleTaskNotifications(dataArray, appUrl);
+		appNotificationManager.showMultipleTaskNotifications(dataArray);
 	}
 
 	@android.webkit.JavascriptInterface
