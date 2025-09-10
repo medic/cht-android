@@ -203,12 +203,14 @@ public class EmbeddedBrowserActivity extends Activity {
 	@Override
 	protected void onResume() {
 		super.onResume();
+		appNotificationManager.stopNotificationWorker();
 		appNotificationManager.startForegroundNotificationHandler();
 	}
 
 	@Override
 	protected void onPause() {
 		appNotificationManager.stopForegroundNotificationHandler();
+		appNotificationManager.startNotificationWorker();
 		super.onPause();
 	}
 

@@ -13,8 +13,6 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 import androidx.annotation.NonNull;
-import androidx.lifecycle.Lifecycle;
-import androidx.lifecycle.ProcessLifecycleOwner;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
@@ -30,9 +28,11 @@ public class NotificationWorker extends Worker {
 	public static final String NOTIFICATION_WORK_NAME = "appNotifications";
 	static final int EXECUTION_TIMEOUT_SECS = 10;
 	static final int WORKER_REPEAT_INTERVAL_MINS = 15; //run background worker every 15 mins
+	static final int INITIAL_EXECUTION_DELAY_MINS = 2;
 
 	private final SettingsStore settings = SettingsStore.in(getApplicationContext());
 	private final String appUrl = settings.getAppUrl();
+	private CountDownLatch latch;
 	private WebView webView;
 	private final String notificationsJS = "(async function (){" +
 			" const api = window.CHTCore.AndroidApi;" +
@@ -44,19 +44,19 @@ public class NotificationWorker extends Worker {
 		super(context, workerParams);
 	}
 
+	@Override
+	public void onStopped() {
+		super.onStopped();
+		latch.countDown();
+	}
+
 	@SuppressLint("SetJavaScriptEnabled")
 	@NonNull
 	@Override
 	public Result doWork() {
-		if (isAppInForeground()) {
-			Log.d(DEBUG_TAG, "app in foreground, skipping execution");
-			return Result.success();
-		}
-
-		Log.d(DEBUG_TAG, "app in background, creating webview");
-		CountDownLatch latch = new CountDownLatch(1);
+		Log.d(DEBUG_TAG, "background worker running......");
+		latch = new CountDownLatch(1);
 		Handler handler = new Handler(Looper.getMainLooper());
-
 		handler.post(() -> {
 			webView = new WebView(getApplicationContext());
 			webView.getSettings().setJavaScriptEnabled(true);
@@ -113,13 +113,6 @@ public class NotificationWorker extends Worker {
 		WebSettings webSettings = container.getSettings();
 		webSettings.setDomStorageEnabled(true);
 		webSettings.setDatabaseEnabled(true);
-	}
-
-	private boolean isAppInForeground() {
-		return ProcessLifecycleOwner.get()
-				.getLifecycle()
-				.getCurrentState()
-				.isAtLeast(Lifecycle.State.STARTED);
 	}
 
 	private void destroyWebView(WebView wv) {

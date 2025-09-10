@@ -82,7 +82,6 @@ public class AppNotificationManager {
 					new String[]{Manifest.permission.POST_NOTIFICATIONS}, REQUEST_NOTIFICATION_PERMISSION);
 		} else {
 			startForegroundNotificationHandler();
-			startNotificationWorker();
 		}
 	}
 
@@ -91,44 +90,9 @@ public class AppNotificationManager {
 		manager.cancelAll();
 		if (hasTaskNotificationsApi) {
 			startForegroundNotificationHandler();
-			startNotificationWorker();
 		} else {
 			checkTaskNotificationApi(webView, activity);
 		}
-	}
-
-	void startForegroundNotificationHandler() {
-		if (foregroundNotificationHandler != null && hasNotificationPermission()) {
-			foregroundNotificationHandler.start();
-		}
-	}
-
-	private void startNotificationWorker() {
-		if (hasNotificationPermission()) {
-			PeriodicWorkRequest request = new PeriodicWorkRequest.Builder(
-					NotificationWorker.class,
-					NotificationWorker.WORKER_REPEAT_INTERVAL_MINS,
-					TimeUnit.MINUTES
-			).addTag(NotificationWorker.NOTIFICATION_WORK_REQUEST_TAG).build();
-
-			WorkManager.getInstance(context).enqueueUniquePeriodicWork(
-					NotificationWorker.NOTIFICATION_WORK_NAME,
-					ExistingPeriodicWorkPolicy.KEEP,
-					request
-			);
-			log(context, "startNotificationWorker() :: Started Notification Work Manager...");
-		}
-	}
-
-	void stopForegroundNotificationHandler() {
-		if (foregroundNotificationHandler != null) {
-			foregroundNotificationHandler.stop();
-		}
-	}
-
-	private void stopNotificationWorker() {
-		WorkManager.getInstance(context).cancelAllWorkByTag(NotificationWorker.NOTIFICATION_WORK_REQUEST_TAG);
-		log(context, "stopNotificationWorker() :: Stopped notification work manager");
 	}
 
 	private void checkTaskNotificationApi(WebView webView, Activity activity) {
@@ -150,6 +114,47 @@ public class AppNotificationManager {
 				});
 			}
 		});
+	}
+
+	void startForegroundNotificationHandler() {
+		if (foregroundNotificationHandler != null && hasNotificationPermission() && hasTaskNotificationsApi) {
+			foregroundNotificationHandler.start();
+		}
+	}
+
+	public void startNotificationWorker() {
+		if (hasNotificationPermission() && hasTaskNotificationsApi) {
+			PeriodicWorkRequest request = new PeriodicWorkRequest.Builder(
+					NotificationWorker.class,
+					NotificationWorker.WORKER_REPEAT_INTERVAL_MINS,
+					TimeUnit.MINUTES
+			)
+					.setInitialDelay(NotificationWorker.INITIAL_EXECUTION_DELAY_MINS, TimeUnit.MINUTES)
+					.addTag(NotificationWorker.NOTIFICATION_WORK_REQUEST_TAG)
+					.build();
+
+			WorkManager.getInstance(context).enqueueUniquePeriodicWork(
+					NotificationWorker.NOTIFICATION_WORK_NAME,
+					ExistingPeriodicWorkPolicy.KEEP,
+					request
+			);
+			log(context, "startNotificationWorker() :: Started Notification Work Manager...");
+		}
+	}
+
+	void stopForegroundNotificationHandler() {
+		if (foregroundNotificationHandler != null) {
+			foregroundNotificationHandler.stop();
+		}
+	}
+
+	public void stopNotificationWorker() {
+		try {
+			WorkManager.getInstance(context).cancelAllWorkByTag(NotificationWorker.NOTIFICATION_WORK_REQUEST_TAG);
+			log(context, "stopNotificationWorker() :: Stopped notification work manager");
+		} catch (IllegalStateException e) {
+			log(context, "stopNotificationWorker() :: error");
+		}
 	}
 
 	void showMultipleTaskNotifications(JSONArray dataArray) throws JSONException {
