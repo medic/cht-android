@@ -10,13 +10,15 @@ import static androidx.test.espresso.web.sugar.Web.onWebView;
 import static androidx.test.espresso.web.webdriver.DriverAtoms.clearElement;
 import static androidx.test.espresso.web.webdriver.DriverAtoms.findElement;
 import static androidx.test.espresso.web.webdriver.DriverAtoms.webClick;
-
 import static junit.framework.TestCase.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
 
+import androidx.test.core.app.ActivityScenario;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.espresso.ViewInteraction;
 import androidx.test.espresso.web.webdriver.DriverAtoms;
@@ -70,7 +72,7 @@ public class NotificationTest {
 
 		Thread.sleep(4000);
 
-		assertEquals("expect no worker running at login page", 0, checkWorkerManager());
+		assertEquals("expect no worker running at login page", 0, getRunningWorkers());
 
 		onWebView()
 				.withNoTimeout()
@@ -85,10 +87,24 @@ public class NotificationTest {
 
 		Thread.sleep(10 * 1000);
 
-		assertEquals("expect only one worker", 1, checkWorkerManager());
+		ActivityScenario<EmbeddedBrowserActivity> embeddedScenario = ActivityScenario.launch(EmbeddedBrowserActivity.class);
+		AppNotificationManager ap = AppNotificationManager.getInstance(context, "");
+		assertTrue("foreground handler running", ap.foregroundNotificationHandler.isRunning());
+		assertEquals("expect no work manager while app is in foreground", 0, getRunningWorkers());
+
+		//close app
+		embeddedScenario.onActivity(EmbeddedBrowserActivity::onBackPressed);
+		Thread.sleep(1000);
+		assertFalse("foreground handler stops running", ap.foregroundNotificationHandler.isRunning());
+		assertEquals("expect work manager enqueued while app is in background", 1, getRunningWorkers());
+
+		//reopen app
+		embeddedScenario = ActivityScenario.launch(EmbeddedBrowserActivity.class);
+		assertEquals("no work manager on app restart", 0, getRunningWorkers());
+		assertTrue("foreground handler running on restart", ap.foregroundNotificationHandler.isRunning());
 	}
 
-	private long checkWorkerManager() throws ExecutionException, InterruptedException {
+	private long getRunningWorkers() throws ExecutionException, InterruptedException {
 		List<WorkInfo> workInfos = WorkManager.getInstance(context)
 				.getWorkInfosByTag(NotificationWorker.NOTIFICATION_WORK_REQUEST_TAG)
 				.get();

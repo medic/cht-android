@@ -41,7 +41,7 @@ public class AppNotificationManager {
 	private final Context context;
 	private final NotificationManager manager;
 	private final String appUrl;
-	private NotificationForegroundHandler foregroundNotificationHandler;
+	NotificationForegroundHandler foregroundNotificationHandler;
 
 
 	private AppNotificationManager(Context context, String appUrl) {
@@ -149,12 +149,8 @@ public class AppNotificationManager {
 	}
 
 	public void stopNotificationWorker() {
-		try {
-			WorkManager.getInstance(context).cancelAllWorkByTag(NotificationWorker.NOTIFICATION_WORK_REQUEST_TAG);
-			log(context, "stopNotificationWorker() :: Stopped notification work manager");
-		} catch (IllegalStateException e) {
-			log(context, "stopNotificationWorker() :: error");
-		}
+		WorkManager.getInstance(context).cancelAllWorkByTag(NotificationWorker.NOTIFICATION_WORK_REQUEST_TAG);
+		log(context, "stopNotificationWorker() :: Stopped notification work manager");
 	}
 
 	void showMultipleTaskNotifications(JSONArray dataArray) throws JSONException {

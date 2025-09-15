@@ -44,4 +44,8 @@ public class NotificationForegroundHandler {
 			Log.d(DEBUG_TAG, "foreground handler stopped");
 		}
 	}
+
+	boolean isRunning() {
+		return isRunning;
+	}
 }
