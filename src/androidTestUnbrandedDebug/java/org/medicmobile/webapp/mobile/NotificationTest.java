@@ -63,7 +63,7 @@ public class NotificationTest {
 	@Ignore("TODO: add TEST_SERVER")
 	@SuppressLint("CheckResult")
 	@Test
-	public void startsNotificationWorkerManager() throws InterruptedException, ExecutionException {
+	public void startsNotificationWorkers() throws InterruptedException, ExecutionException {
 		context = ApplicationProvider.getApplicationContext();
 		onView(withText("Custom")).perform(click());
 		ViewInteraction textAppUrl = onView(withId(R.id.txtAppUrl));
