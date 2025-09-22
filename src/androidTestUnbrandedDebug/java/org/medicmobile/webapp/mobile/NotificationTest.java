@@ -88,7 +88,7 @@ public class NotificationTest {
 		Thread.sleep(10 * 1000);
 
 		ActivityScenario<EmbeddedBrowserActivity> embeddedScenario = ActivityScenario.launch(EmbeddedBrowserActivity.class);
-		AppNotificationManager ap = AppNotificationManager.getInstance(context, "");
+		AppNotificationManager ap = AppNotificationManager.getInstance(context);
 		assertTrue("foreground handler running", ap.foregroundNotificationHandler.isRunning());
 		assertEquals("expect no work manager while app is in foreground", 0, getRunningWorkers());
 

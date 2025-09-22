@@ -16,9 +16,9 @@ import androidx.annotation.NonNull;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 
+import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -34,11 +34,6 @@ public class NotificationWorker extends Worker {
 	private final String appUrl = settings.getAppUrl();
 	private CountDownLatch latch;
 	private WebView webView;
-	private final String notificationsJS = "(async function (){" +
-			" const api = window.CHTCore.AndroidApi;" +
-			" const tasks = await api.v1.taskNotifications();" +
-			" NotificationWorkerBridge.onGetNotificationResult(JSON.stringify(tasks), '" + appUrl + "');" +
-			" })();";
 
 	public NotificationWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
 		super(context, workerParams);
@@ -47,7 +42,9 @@ public class NotificationWorker extends Worker {
 	@Override
 	public void onStopped() {
 		super.onStopped();
-		latch.countDown();
+		if (latch != null) {
+			latch.countDown();
+		}
 	}
 
 	@SuppressLint("SetJavaScriptEnabled")
@@ -55,6 +52,16 @@ public class NotificationWorker extends Worker {
 	@Override
 	public Result doWork() {
 		Log.d(DEBUG_TAG, "background worker running......");
+		String notificationsJS = """
+				(async function (){
+					let result = null;
+					const api = window.CHTCore.AndroidApi;
+					if(typeof api.v1.taskNotifications === 'function') {
+						result = await api.v1.taskNotifications();
+					}
+					NotificationWorkerBridge.onGetNotificationResult(JSON.stringify(result));
+				})();
+				""";
 		latch = new CountDownLatch(1);
 		Handler handler = new Handler(Looper.getMainLooper());
 		handler.post(() -> {
@@ -101,10 +108,11 @@ public class NotificationWorker extends Worker {
 		}
 
 		@JavascriptInterface
-		public void onGetNotificationResult(String data, String appUrl) throws JSONException {
-			AppNotificationManager appNotificationManager = AppNotificationManager.getInstance(context, appUrl);
-			JSONArray dataArray = Utils.parseJSArrayData(data);
-			appNotificationManager.showMultipleTaskNotifications(dataArray);
+		public void onGetNotificationResult(String data) throws JSONException {
+			if (!Objects.equals(data, "null")) {
+				AppNotificationManager appNotificationManager = AppNotificationManager.getInstance(context);
+				appNotificationManager.showNotificationsFromJsArray(data);
+			}
 			latch.countDown();
 		}
 	}
@@ -118,13 +126,7 @@ public class NotificationWorker extends Worker {
 	private void destroyWebView(WebView wv) {
 		if (wv != null) {
 			wv.stopLoading();
-			wv.getSettings().setJavaScriptEnabled(false);
-			wv.loadUrl("about:blank");
-			wv.clearHistory();
-			wv.clearCache(true);
-			wv.removeAllViews();
 			wv.destroy();
-			wv = null;
 		}
 	}
 }

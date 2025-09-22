@@ -14,15 +14,20 @@ public class NotificationForegroundHandler {
 	private final Runnable runnable;
 	private boolean isRunning = false;
 
-	NotificationForegroundHandler(WebView container, String appUrl) {
-		String js = "(async function (){" +
-				" const api = window.CHTCore.AndroidApi;" +
-				" const tasks = await api.v1.taskNotifications();" +
-				"medicmobile_android.onGetNotificationResult(JSON.stringify(tasks), '" + appUrl + "');" +
-				"})();";
+	NotificationForegroundHandler(WebView container) {
 		runnable = new Runnable() {
 			@Override
 			public void run() {
+				String js = """
+						(async function (){
+							let result = [];
+							const api = window.CHTCore.AndroidApi;
+							if(typeof api.v1.taskNotifications === 'function') {
+								result = await api.v1.taskNotifications();
+							}
+							medicmobile_android.onGetNotificationResult(JSON.stringify(result));
+						})();
+						""";
 				container.evaluateJavascript(js, null);
 				handler.postDelayed(this, INTERVAL_MILLIS);
 			}

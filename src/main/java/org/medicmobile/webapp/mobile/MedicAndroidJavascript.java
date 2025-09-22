@@ -1,5 +1,11 @@
 package org.medicmobile.webapp.mobile;
 
+import static org.medicmobile.webapp.mobile.MedicLog.log;
+import static java.util.Calendar.DAY_OF_MONTH;
+import static java.util.Calendar.MONTH;
+import static java.util.Calendar.YEAR;
+import static java.util.Locale.UK;
+
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.app.ActivityManager.MemoryInfo;
@@ -10,12 +16,15 @@ import android.net.NetworkCapabilities;
 import android.net.NetworkInfo;
 import android.net.TrafficStats;
 import android.net.Uri;
-import android.os.Process;
-import android.webkit.JavascriptInterface;
-import android.widget.DatePicker;
 import android.os.Build;
 import android.os.Environment;
+import android.os.Process;
 import android.os.StatFs;
+import android.webkit.JavascriptInterface;
+import android.widget.DatePicker;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -32,16 +41,6 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import static java.util.Calendar.DAY_OF_MONTH;
-import static java.util.Calendar.MONTH;
-import static java.util.Calendar.YEAR;
-import static java.util.Locale.UK;
-import static org.medicmobile.webapp.mobile.MedicLog.log;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
@@ -149,10 +148,9 @@ public class MedicAndroidJavascript {
 	}
 
 	@JavascriptInterface
-	public void onGetNotificationResult(String result, String appUrl) throws JSONException {
-		AppNotificationManager appNotificationManager = AppNotificationManager.getInstance(parent, appUrl);
-		JSONArray dataArray = Utils.parseJSArrayData(result);
-		appNotificationManager.showMultipleTaskNotifications(dataArray);
+	public void onGetNotificationResult(String result) throws JSONException {
+		AppNotificationManager appNotificationManager = AppNotificationManager.getInstance(parent);
+		appNotificationManager.showNotificationsFromJsArray(result);
 	}
 
 	@android.webkit.JavascriptInterface

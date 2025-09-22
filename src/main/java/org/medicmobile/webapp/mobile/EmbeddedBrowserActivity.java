@@ -204,13 +204,13 @@ public class EmbeddedBrowserActivity extends Activity {
 	protected void onResume() {
 		super.onResume();
 		appNotificationManager.stopNotificationWorker();
-		appNotificationManager.startForegroundNotificationHandler();
+		appNotificationManager.startForegroundNotificationHandler(container, this);
 	}
 
 	@Override
 	protected void onPause() {
 		appNotificationManager.stopForegroundNotificationHandler();
-		appNotificationManager.startNotificationWorker();
+		appNotificationManager.startNotificationWorker(container.getUrl());
 		super.onPause();
 	}
 
@@ -268,8 +268,8 @@ public class EmbeddedBrowserActivity extends Activity {
 	}
 
 	private void initializeNotifications() {
-		appNotificationManager = AppNotificationManager.getInstance(this, appUrl);
-		appNotificationManager.initAppNotification(container, this);
+		appNotificationManager = AppNotificationManager.getInstance(this);
+		appNotificationManager.startForegroundNotificationHandler(container, this);
 	}
 
 	//> ACCESSORS

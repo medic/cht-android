@@ -12,9 +12,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
-import android.webkit.ValueCallback;
 import android.webkit.WebView;
-import android.webkit.WebViewClient;
 
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
@@ -27,15 +25,12 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 public class AppNotificationManager {
 	private static final String CHANNEL_ID = "cht_android_notifications";
 	private static final String CHANNEL_NAME = "CHT Android Notifications";
 	public static final int REQUEST_NOTIFICATION_PERMISSION = 1001;
-	private boolean hasCheckedForNotificationApi = false;
-	private boolean hasTaskNotificationsApi = false;
 
 	private static volatile AppNotificationManager instance;
 	private final Context context;
@@ -76,55 +71,27 @@ public class AppNotificationManager {
 	public void requestNotificationPermission(Activity activity) {
 		if (!hasNotificationPermission()) {
 			stopForegroundNotificationHandler();
-			stopNotificationWorker();
 		}
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !hasNotificationPermission()) {
 			ActivityCompat.requestPermissions(activity,
 					new String[]{Manifest.permission.POST_NOTIFICATIONS}, REQUEST_NOTIFICATION_PERMISSION);
-		} else {
-			startForegroundNotificationHandler();
 		}
 	}
 
-	void initAppNotification(WebView webView, Activity activity) {
-		foregroundNotificationHandler = new NotificationForegroundHandler(webView, appUrl);
+	void startForegroundNotificationHandler(WebView webView, Activity activity) {
+		boolean isValidUrl = Utils.isValidNavigationUrl(appUrl, webView.getUrl());
+		foregroundNotificationHandler = new NotificationForegroundHandler(webView);
 		manager.cancelAll();
-		if (hasTaskNotificationsApi) {
-			startForegroundNotificationHandler();
-		} else {
-			checkTaskNotificationApi(webView, activity);
-		}
-	}
-
-	private void checkTaskNotificationApi(WebView webView, Activity activity) {
-		webView.setWebViewClient(new WebViewClient() {
-			@Override
-			public void onPageFinished(WebView view, String url) {
-				String jsCheckApi = "(() => typeof window.CHTCore.AndroidApi.v1.taskNotifications === 'function')();";
-				view.evaluateJavascript(jsCheckApi, new ValueCallback<String>() {
-					@Override
-					public void onReceiveValue(String hasApi) {
-						if (!hasCheckedForNotificationApi) {
-							hasCheckedForNotificationApi = !Objects.equals(hasApi, "null");
-							if (Objects.equals(hasApi, "true")) {
-								hasTaskNotificationsApi = true;
-								requestNotificationPermission(activity);
-							}
-						}
-					}
-				});
-			}
-		});
-	}
-
-	void startForegroundNotificationHandler() {
-		if (foregroundNotificationHandler != null && hasNotificationPermission() && hasTaskNotificationsApi) {
+		if (hasNotificationPermission() && isValidUrl) {
 			foregroundNotificationHandler.start();
+		} else {
+			requestNotificationPermission(activity);
 		}
 	}
 
-	public void startNotificationWorker() {
-		if (hasNotificationPermission() && hasTaskNotificationsApi) {
+	public void startNotificationWorker(String url) {
+		boolean isValidUrl = Utils.isValidNavigationUrl(appUrl, url);
+		if (hasNotificationPermission() && isValidUrl) {
 			PeriodicWorkRequest request = new PeriodicWorkRequest.Builder(
 					NotificationWorker.class,
 					NotificationWorker.WORKER_REPEAT_INTERVAL_MINS,
