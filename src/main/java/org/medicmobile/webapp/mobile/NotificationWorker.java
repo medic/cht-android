@@ -54,11 +54,8 @@ public class NotificationWorker extends Worker {
 		Log.d(DEBUG_TAG, "background worker running......");
 		String notificationsJS = """
 				(async function (){
-					let result = null;
 					const api = window.CHTCore.AndroidApi;
-					if(typeof api.v1.taskNotifications === 'function') {
-						result = await api.v1.taskNotifications();
-					}
+					const result = await api.v1.taskNotifications();
 					NotificationWorkerBridge.onGetNotificationResult(JSON.stringify(result));
 				})();
 				""";

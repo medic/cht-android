@@ -12,7 +12,9 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
+import android.webkit.ValueCallback;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
 
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
@@ -25,6 +27,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 public class AppNotificationManager {
@@ -36,6 +39,7 @@ public class AppNotificationManager {
 	private final Context context;
 	private final NotificationManager manager;
 	private final String appUrl;
+	private boolean hasCheckedForNotificationApi;
 	NotificationForegroundHandler foregroundNotificationHandler;
 
 
@@ -78,20 +82,38 @@ public class AppNotificationManager {
 		}
 	}
 
+	private void checkTaskNotificationApi(WebView webView, Activity activity) {
+		webView.setWebViewClient(new WebViewClient() {
+			@Override
+			public void onPageFinished(WebView view, String url) {
+				String jsCheckApi = "(() => typeof window.CHTCore.AndroidApi.v1.taskNotifications === 'function')();";
+				view.evaluateJavascript(jsCheckApi, new ValueCallback<String>() {
+					@Override
+					public void onReceiveValue(String hasApi) {
+						if (!hasCheckedForNotificationApi) {
+							hasCheckedForNotificationApi = !Objects.equals(hasApi, "null");
+							if (Objects.equals(hasApi, "true")) {
+								requestNotificationPermission(activity);
+							}
+						}
+					}
+				});
+			}
+		});
+	}
+
 	void startForegroundNotificationHandler(WebView webView, Activity activity) {
-		boolean isValidUrl = Utils.isValidNavigationUrl(appUrl, webView.getUrl());
 		foregroundNotificationHandler = new NotificationForegroundHandler(webView);
 		manager.cancelAll();
-		if (hasNotificationPermission() && isValidUrl) {
+		if (hasNotificationPermission()) {
 			foregroundNotificationHandler.start();
 		} else {
-			requestNotificationPermission(activity);
+			checkTaskNotificationApi(webView, activity);
 		}
 	}
 
 	public void startNotificationWorker(String url) {
-		boolean isValidUrl = Utils.isValidNavigationUrl(appUrl, url);
-		if (hasNotificationPermission() && isValidUrl) {
+		if (hasNotificationPermission()) {
 			PeriodicWorkRequest request = new PeriodicWorkRequest.Builder(
 					NotificationWorker.class,
 					NotificationWorker.WORKER_REPEAT_INTERVAL_MINS,
