@@ -44,18 +44,19 @@ public class AppNotificationManager {
 	NotificationForegroundHandler foregroundNotificationHandler;
 
 
-	private AppNotificationManager(Context context, String appUrl) {
+	private AppNotificationManager(Context context) {
 		this.context = context.getApplicationContext();
-		this.appUrl = appUrl;
+		SettingsStore settings = SettingsStore.in(this.context);
+		appUrl = settings.getAppUrl();
 		manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 		createNotificationChannel();
 	}
 
-	public static AppNotificationManager getInstance(Context context, String appUrl) {
+	public static AppNotificationManager getInstance(Context context) {
 		if (instance == null) {
 			synchronized (AppNotificationManager.class) {
 				if (instance == null) {
-					instance = new AppNotificationManager(context, appUrl);
+					instance = new AppNotificationManager(context);
 				}
 			}
 		}
@@ -182,6 +183,11 @@ public class AppNotificationManager {
 				.setContentIntent(pendingIntent)
 				.setPriority(NotificationCompat.PRIORITY_DEFAULT);
 		manager.notify(id, builder.build());
+	}
+
+	public void showNotificationsFromJsArray(String jsArrayString) throws JSONException {
+		JSONArray dataArray = Utils.parseJSArrayData(jsArrayString);
+		showMultipleTaskNotifications(dataArray);
 	}
 
 	private void createNotificationChannel() {
