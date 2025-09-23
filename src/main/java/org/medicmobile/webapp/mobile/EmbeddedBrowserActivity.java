@@ -204,7 +204,7 @@ public class EmbeddedBrowserActivity extends Activity {
 	protected void onResume() {
 		super.onResume();
 		appNotificationManager.stopNotificationWorker();
-		appNotificationManager.startForegroundNotificationHandler(container, this);
+		appNotificationManager.startForegroundNotificationHandler(container);
 	}
 
 	@Override
@@ -271,7 +271,7 @@ public class EmbeddedBrowserActivity extends Activity {
 		appNotificationManager = new AppNotificationManager(this);
 		appNotificationManager.cancelAllNotifications();
 		appNotificationManager.requestNotificationPermission(this);
-		appNotificationManager.startForegroundNotificationHandler(container, this);
+		appNotificationManager.startForegroundNotificationHandler(container);
 	}
 
 	//> ACCESSORS

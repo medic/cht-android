@@ -18,16 +18,15 @@ public class NotificationForegroundHandler {
 		runnable = new Runnable() {
 			@Override
 			public void run() {
-				String js = """
-						(async function (){
-							let result = [];
-							const api = window.CHTCore && window.CHTCore.AndroidApi;
-							if (api && typeof api.v1.taskNotifications === 'function'){
-								result = await api.v1.taskNotifications();
-							}
-							medicmobile_android.onGetNotificationResult(JSON.stringify(result));
-						})();
-						""";
+				String js =
+						"(async function (){ " +
+						"let result = []; " +
+						"const api = window.CHTCore && window.CHTCore.AndroidApi; " +
+						"if (api && typeof api.v1.taskNotifications === 'function'){ " +
+						"result = await api.v1.taskNotifications(); " +
+						"} " +
+						"medicmobile_android.onGetNotificationResult(JSON.stringify(result)); " +
+						"})(); ";
 				container.evaluateJavascript(js, null);
 				handler.postDelayed(this, INTERVAL_MILLIS);
 			}

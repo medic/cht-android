@@ -52,16 +52,15 @@ public class NotificationWorker extends Worker {
 	@Override
 	public Result doWork() {
 		Log.d(DEBUG_TAG, "background worker running......");
-		String notificationsJS = """
-				(async function (){
-					let result = null;
-					const api = window.CHTCore.AndroidApi;
-					if(api && typeof api.v1.taskNotifications === 'function'){
-						result = await api.v1.taskNotifications();
-					}
-					NotificationWorkerBridge.onGetNotificationResult(JSON.stringify(result));
-				})();
-				""";
+		String notificationsJS =
+				"(async function (){ " +
+				"let result = null; " +
+				"const api = window.CHTCore.AndroidApi; " +
+				"if(api && typeof api.v1.taskNotifications === 'function'){ " +
+				"result = await api.v1.taskNotifications(); " +
+				"} " +
+				"NotificationWorkerBridge.onGetNotificationResult(JSON.stringify(result)); " +
+				"})(); ";
 		latch = new CountDownLatch(1);
 		Handler handler = new Handler(Looper.getMainLooper());
 		handler.post(() -> {

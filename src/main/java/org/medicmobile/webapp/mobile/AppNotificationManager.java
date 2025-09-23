@@ -63,7 +63,7 @@ public class AppNotificationManager {
 		}
 	}
 
-	void startForegroundNotificationHandler(WebView webView, Activity activity) {
+	void startForegroundNotificationHandler(WebView webView) {
 		foregroundNotificationHandler = new NotificationForegroundHandler(webView);
 		if (hasNotificationPermission()) {
 			foregroundNotificationHandler.start();
