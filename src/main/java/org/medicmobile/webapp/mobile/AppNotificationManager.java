@@ -32,7 +32,6 @@ public class AppNotificationManager {
 	private static final String CHANNEL_NAME = "CHT Android Notifications";
 	public static final int REQUEST_NOTIFICATION_PERMISSION = 1001;
 
-	private static volatile AppNotificationManager instance;
 	private final Context context;
 	private final NotificationManager manager;
 	private final String appUrl;

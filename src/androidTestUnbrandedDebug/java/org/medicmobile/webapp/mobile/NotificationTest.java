@@ -11,8 +11,6 @@ import static androidx.test.espresso.web.webdriver.DriverAtoms.clearElement;
 import static androidx.test.espresso.web.webdriver.DriverAtoms.findElement;
 import static androidx.test.espresso.web.webdriver.DriverAtoms.webClick;
 import static junit.framework.TestCase.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -88,20 +86,16 @@ public class NotificationTest {
 		Thread.sleep(10 * 1000);
 
 		ActivityScenario<EmbeddedBrowserActivity> embeddedScenario = ActivityScenario.launch(EmbeddedBrowserActivity.class);
-		AppNotificationManager ap = AppNotificationManager.getInstance(context);
-		assertTrue("foreground handler running", ap.foregroundNotificationHandler.isRunning());
 		assertEquals("expect no work manager while app is in foreground", 0, getRunningWorkers());
 
 		//close app
 		embeddedScenario.onActivity(EmbeddedBrowserActivity::onBackPressed);
 		Thread.sleep(1000);
-		assertFalse("foreground handler stops running", ap.foregroundNotificationHandler.isRunning());
 		assertEquals("expect work manager enqueued while app is in background", 1, getRunningWorkers());
 
 		//reopen app
 		embeddedScenario = ActivityScenario.launch(EmbeddedBrowserActivity.class);
 		assertEquals("no work manager on app restart", 0, getRunningWorkers());
-		assertTrue("foreground handler running on restart", ap.foregroundNotificationHandler.isRunning());
 	}
 
 	private long getRunningWorkers() throws ExecutionException, InterruptedException {
