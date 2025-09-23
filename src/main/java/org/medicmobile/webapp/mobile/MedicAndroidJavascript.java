@@ -149,7 +149,7 @@ public class MedicAndroidJavascript {
 
 	@JavascriptInterface
 	public void onGetNotificationResult(String result) throws JSONException {
-		AppNotificationManager appNotificationManager = AppNotificationManager.getInstance(parent);
+		AppNotificationManager appNotificationManager = new AppNotificationManager(parent);
 		appNotificationManager.showNotificationsFromJsArray(result);
 	}
 

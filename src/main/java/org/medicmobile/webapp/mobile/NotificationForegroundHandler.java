@@ -20,8 +20,11 @@ public class NotificationForegroundHandler {
 			public void run() {
 				String js = """
 						(async function (){
-							const api = window.CHTCore.AndroidApi;
-							const result = await api.v1.taskNotifications();
+							let result = [];
+							const api = window.CHTCore && window.CHTCore.AndroidApi;
+							if (api && typeof api.v1.taskNotifications === 'function'){
+								result = await api.v1.taskNotifications();
+							}
 							medicmobile_android.onGetNotificationResult(JSON.stringify(result));
 						})();
 						""";

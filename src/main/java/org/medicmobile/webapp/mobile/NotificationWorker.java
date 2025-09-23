@@ -54,8 +54,11 @@ public class NotificationWorker extends Worker {
 		Log.d(DEBUG_TAG, "background worker running......");
 		String notificationsJS = """
 				(async function (){
+					let result = null;
 					const api = window.CHTCore.AndroidApi;
-					const result = await api.v1.taskNotifications();
+					if(api && typeof api.v1.taskNotifications === 'function'){
+						result = await api.v1.taskNotifications();
+					}
 					NotificationWorkerBridge.onGetNotificationResult(JSON.stringify(result));
 				})();
 				""";
@@ -107,7 +110,7 @@ public class NotificationWorker extends Worker {
 		@JavascriptInterface
 		public void onGetNotificationResult(String data) throws JSONException {
 			if (!Objects.equals(data, "null")) {
-				AppNotificationManager appNotificationManager = AppNotificationManager.getInstance(context);
+				AppNotificationManager appNotificationManager = new AppNotificationManager(context);
 				appNotificationManager.showNotificationsFromJsArray(data);
 			}
 			latch.countDown();
