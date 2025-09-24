@@ -12,7 +12,6 @@ public class NotificationForegroundHandler {
 	private static final int INITIAL_EXECUTION_DELAY = 5_000;
 
 	private final Runnable runnable;
-	private boolean isRunning = false;
 
 	NotificationForegroundHandler(WebView container) {
 		runnable = new Runnable() {
@@ -34,22 +33,12 @@ public class NotificationForegroundHandler {
 	}
 
 	void start() {
-		if (!isRunning) {
-			handler.postDelayed(runnable, INITIAL_EXECUTION_DELAY);
-			isRunning = true;
-			Log.d(DEBUG_TAG, "foreground handler started");
-		}
+		handler.postDelayed(runnable, INITIAL_EXECUTION_DELAY);
+		Log.d(DEBUG_TAG, "foreground handler started");
 	}
 
 	void stop() {
-		if (isRunning) {
-			handler.removeCallbacks(runnable);
-			isRunning = false;
-			Log.d(DEBUG_TAG, "foreground handler stopped");
-		}
-	}
-
-	boolean isRunning() {
-		return isRunning;
+		handler.removeCallbacks(runnable);
+		Log.d(DEBUG_TAG, "foreground handler stopped");
 	}
 }
