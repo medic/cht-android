@@ -9,7 +9,7 @@ public class NotificationForegroundHandler {
 	public static final String DEBUG_TAG = "NOTIFICATION_HANDLER";
 	private final Handler handler = new Handler(Looper.getMainLooper());
 	private static final int INTERVAL_MILLIS = 5 * 60 * 1000; //5mins interval
-	private static final int INITIAL_EXECUTION_DELAY = 5_000;
+	private static final int INITIAL_EXECUTION_DELAY = 20_000;
 
 	private final Runnable runnable;
 

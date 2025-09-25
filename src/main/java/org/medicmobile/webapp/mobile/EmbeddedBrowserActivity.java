@@ -52,7 +52,7 @@ public class EmbeddedBrowserActivity extends Activity {
 	private SmsSender smsSender;
 	private ChtExternalAppHandler chtExternalAppHandler;
 	private boolean isMigrationRunning = false;
-	AppNotificationManager appNotificationManager;
+	private AppNotificationManager appNotificationManager;
 
 	private static final ValueCallback<String> IGNORE_RESULT = new ValueCallback<String>() {
 		public void onReceiveValue(String result) { /* ignore */ }
@@ -204,7 +204,7 @@ public class EmbeddedBrowserActivity extends Activity {
 	protected void onResume() {
 		super.onResume();
 		appNotificationManager.stopNotificationWorker();
-		appNotificationManager.startForegroundNotificationHandler(container);
+		appNotificationManager.startForegroundNotificationHandler();
 	}
 
 	@Override
@@ -268,10 +268,11 @@ public class EmbeddedBrowserActivity extends Activity {
 	}
 
 	private void initializeNotifications() {
-		appNotificationManager = new AppNotificationManager(this);
+		NotificationForegroundHandler foregroundNotificationHandler = new NotificationForegroundHandler(container);
+		appNotificationManager = new AppNotificationManager(this, foregroundNotificationHandler);
 		appNotificationManager.cancelAllNotifications();
 		appNotificationManager.requestNotificationPermission(this);
-		appNotificationManager.startForegroundNotificationHandler(container);
+		appNotificationManager.startForegroundNotificationHandler();
 	}
 
 	//> ACCESSORS

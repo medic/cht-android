@@ -12,7 +12,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
-import android.webkit.WebView;
 
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
@@ -35,7 +34,7 @@ public class AppNotificationManager {
 	private final Context context;
 	private final NotificationManager manager;
 	private final String appUrl;
-	NotificationForegroundHandler foregroundNotificationHandler;
+	private NotificationForegroundHandler notificationForegroundHandler;
 
 
 	public AppNotificationManager(Context context) {
@@ -44,6 +43,11 @@ public class AppNotificationManager {
 		appUrl = settings.getAppUrl();
 		manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 		createNotificationChannel();
+	}
+
+	public AppNotificationManager(Context context, NotificationForegroundHandler notificationForegroundHandler) {
+		this(context);
+		this.notificationForegroundHandler = notificationForegroundHandler;
 	}
 
 	public boolean hasNotificationPermission() {
@@ -63,10 +67,9 @@ public class AppNotificationManager {
 		}
 	}
 
-	void startForegroundNotificationHandler(WebView webView) {
-		foregroundNotificationHandler = new NotificationForegroundHandler(webView);
+	void startForegroundNotificationHandler() {
 		if (hasNotificationPermission()) {
-			foregroundNotificationHandler.start();
+			notificationForegroundHandler.start();
 		}
 	}
 
@@ -91,9 +94,7 @@ public class AppNotificationManager {
 	}
 
 	void stopForegroundNotificationHandler() {
-		if (foregroundNotificationHandler != null) {
-			foregroundNotificationHandler.stop();
-		}
+		notificationForegroundHandler.stop();
 	}
 
 	public void stopNotificationWorker() {

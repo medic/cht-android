@@ -34,6 +34,15 @@ public class NotificationWorker extends Worker {
 	private final String appUrl = settings.getAppUrl();
 	private CountDownLatch latch;
 	private WebView webView;
+	String notificationsJS =
+					"(async function (){ " +
+					"let result = null; " +
+					"const api = window.CHTCore.AndroidApi; " +
+					"if(typeof api.v1.taskNotifications === 'function'){ " +
+					"result = await api.v1.taskNotifications(); " +
+					"} " +
+					"NotificationWorkerBridge.onGetNotificationResult(JSON.stringify(result)); " +
+					"})(); ";
 
 	public NotificationWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
 		super(context, workerParams);
@@ -52,21 +61,22 @@ public class NotificationWorker extends Worker {
 	@Override
 	public Result doWork() {
 		Log.d(DEBUG_TAG, "background worker running......");
-		String notificationsJS =
-				"(async function (){ " +
-				"let result = null; " +
-				"const api = window.CHTCore.AndroidApi; " +
-				"if(api && typeof api.v1.taskNotifications === 'function'){ " +
-				"result = await api.v1.taskNotifications(); " +
-				"} " +
-				"NotificationWorkerBridge.onGetNotificationResult(JSON.stringify(result)); " +
-				"})(); ";
 		latch = new CountDownLatch(1);
 		Handler handler = new Handler(Looper.getMainLooper());
 		handler.post(() -> {
 			webView = new WebView(getApplicationContext());
 			webView.getSettings().setJavaScriptEnabled(true);
-			webView.addJavascriptInterface(new NotificationBridge(getApplicationContext(), latch), "NotificationWorkerBridge");
+			Object notificationInterface = new Object() {
+				@JavascriptInterface
+				public void onGetNotificationResult(String data) throws JSONException {
+					if (!Objects.equals(data, "null")) {
+						AppNotificationManager appNotificationManager = new AppNotificationManager(getApplicationContext());
+						appNotificationManager.showNotificationsFromJsArray(data);
+					}
+					latch.countDown();
+				}
+			};
+			webView.addJavascriptInterface(notificationInterface, "NotificationWorkerBridge");
 			enableStorage(webView);
 			webView.setWebViewClient(new WebViewClient() {
 				@Override
@@ -97,25 +107,6 @@ public class NotificationWorker extends Worker {
 		}
 	}
 
-	public static class NotificationBridge {
-		private final Context context;
-		private final CountDownLatch latch;
-
-		NotificationBridge(Context context, CountDownLatch latch) {
-			this.context = context;
-			this.latch = latch;
-		}
-
-		@JavascriptInterface
-		public void onGetNotificationResult(String data) throws JSONException {
-			if (!Objects.equals(data, "null")) {
-				AppNotificationManager appNotificationManager = new AppNotificationManager(context);
-				appNotificationManager.showNotificationsFromJsArray(data);
-			}
-			latch.countDown();
-		}
-	}
-
 	private void enableStorage(WebView container) {
 		WebSettings webSettings = container.getSettings();
 		webSettings.setDomStorageEnabled(true);
@@ -126,6 +117,7 @@ public class NotificationWorker extends Worker {
 		if (wv != null) {
 			wv.stopLoading();
 			wv.destroy();
+			Log.d(DEBUG_TAG, "clean up successful");
 		}
 	}
 }
