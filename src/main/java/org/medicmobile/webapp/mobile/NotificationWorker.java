@@ -49,7 +49,7 @@ public class NotificationWorker extends ListenableWorker {
 	@NonNull
 	@Override
 	public ListenableFuture<Result> startWork() {
-		Log.d(DEBUG_TAG, "background worker running......");
+		Log.d(DEBUG_TAG, "background worker running....");
 		return CallbackToFutureAdapter.getFuture(completer -> {
 			handler.post(() -> {
 				webView = new WebView(getApplicationContext());
