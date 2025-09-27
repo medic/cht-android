@@ -12,12 +12,13 @@ public class NotificationForegroundHandler {
 	private static final int INTERVAL_MILLIS = 5 * 60 * 1000; //5mins interval
 	private static final int INITIAL_EXECUTION_DELAY = 2_000;
 
-	private final Runnable runnable;
+	private final Runnable task;
 	private final WebView webView;
+	private boolean isPageLoaded = false;
 
 	NotificationForegroundHandler(WebView container) {
 		webView = container;
-		runnable = new Runnable() {
+		task = new Runnable() {
 			@Override
 			public void run() {
 				String js =
@@ -32,23 +33,29 @@ public class NotificationForegroundHandler {
 		};
 	}
 
+	private void postTask() {
+		handler.postDelayed(task, INITIAL_EXECUTION_DELAY);
+		Log.d(DEBUG_TAG, "foreground handler started");
+	}
+
 	void start() {
+		if (isPageLoaded) {
+			postTask();
+			return;
+		}
 		webView.setWebViewClient(new WebViewClient(){
-			boolean isStarted = false;
 			@Override
 			public void onPageFinished(WebView view, String url) {
-				if (isStarted) {
-					return;
+				if (!isPageLoaded) {
+					isPageLoaded = true;
+					postTask();
 				}
-				isStarted = true;
-				handler.postDelayed(runnable, INITIAL_EXECUTION_DELAY);
-				Log.d(DEBUG_TAG, "foreground handler started");
 			}
 		});
 	}
 
 	void stop() {
-		handler.removeCallbacks(runnable);
+		handler.removeCallbacks(task);
 		Log.d(DEBUG_TAG, "foreground handler stopped");
 	}
 }
