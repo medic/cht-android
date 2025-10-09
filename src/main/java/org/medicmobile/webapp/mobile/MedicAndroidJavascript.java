@@ -11,6 +11,7 @@ import android.net.NetworkInfo;
 import android.net.TrafficStats;
 import android.net.Uri;
 import android.os.Process;
+import android.webkit.JavascriptInterface;
 import android.widget.DatePicker;
 import android.os.Build;
 import android.os.Environment;
@@ -34,6 +35,7 @@ import java.util.Map;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.medicmobile.webapp.mobile.util.AppDataStore;
 
 import static java.util.Calendar.DAY_OF_MONTH;
 import static java.util.Calendar.MONTH;
@@ -163,6 +165,13 @@ public class MedicAndroidJavascript {
 		} catch(Exception ex) {
 			logException(ex);
 		}
+	}
+
+	//@SuppressLint("CheckResult")
+	@JavascriptInterface
+	public void updateTaskNotificationStore(String notifications) {
+		AppDataStore appDataStore = AppDataStore.getInstance(parent);
+		appDataStore.putString(AppNotificationManager.TASK_NOTIFICATIONS_KEY, notifications);
 	}
 
 	@android.webkit.JavascriptInterface
