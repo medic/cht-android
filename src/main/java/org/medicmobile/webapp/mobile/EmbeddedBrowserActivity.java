@@ -35,11 +35,14 @@ import android.webkit.WebView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.OptIn;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.ViewCompat;
 
 import java.util.Arrays;
 import java.util.Optional;
+
+import kotlinx.coroutines.ExperimentalCoroutinesApi;
 
 @SuppressWarnings({ "PMD.GodClass", "PMD.TooManyMethods" })
 public class EmbeddedBrowserActivity extends Activity {
@@ -238,6 +241,7 @@ public class EmbeddedBrowserActivity extends Activity {
 		}
 	}
 
+	@OptIn(markerClass = ExperimentalCoroutinesApi.class)
 	@Override
 	public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
 		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -247,6 +251,7 @@ public class EmbeddedBrowserActivity extends Activity {
 		}
 	}
 
+	@OptIn(markerClass = ExperimentalCoroutinesApi.class)
 	private void initializeNotifications() {
 		AppNotificationManager appNotificationManager = new AppNotificationManager(this, appUrl);
 		appNotificationManager.cancelAllNotifications();

@@ -29,29 +29,32 @@ import org.medicmobile.webapp.mobile.util.AppDataStore;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.concurrent.TimeUnit;
 
+import kotlinx.coroutines.ExperimentalCoroutinesApi;
+
+@ExperimentalCoroutinesApi
 public class AppNotificationManager {
 	private static final String CHANNEL_ID = "cht_android_notifications";
 	private static final String CHANNEL_NAME = "CHT Android Notifications";
 	public static final int REQUEST_NOTIFICATION_PERMISSION = 1001;
-	public static Preferences.Key<String> TASK_NOTIFICATIONS_KEY =
+	public static final Preferences.Key<String> TASK_NOTIFICATIONS_KEY =
 			PreferencesKeys.stringKey("task_notifications");
 	private static final Preferences.Key<Long> TASK_NOTIFICATION_DAY_KEY =
-			PreferencesKeys.longKey("cht_task_notification-day");
+			PreferencesKeys.longKey("cht_task_notification_day");
 	private static final Preferences.Key<Long> LATEST_NOTIFICATION_TIMESTAMP_KEY =
 			PreferencesKeys.longKey("cht_task_notification_timestamp");
 
 	private final Context context;
 	private final NotificationManager manager;
 	private final String appUrl;
-
+	private final AppDataStore appDataStore;
 
 	public AppNotificationManager(Context context, String appUrl) {
 		this.context = context.getApplicationContext();
 		this.appUrl = appUrl;
 		manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+		appDataStore = AppDataStore.getInstance(this.context);
 		createNotificationChannel();
 	}
 
@@ -79,7 +82,6 @@ public class AppNotificationManager {
 					NotificationWorker.WORKER_REPEAT_INTERVAL_MINS,
 					TimeUnit.MINUTES
 			)
-					//.setInitialDelay(NotificationWorker.INITIAL_EXECUTION_DELAY_SECS, TimeUnit.SECONDS)
 					.addTag(NotificationWorker.NOTIFICATION_WORK_REQUEST_TAG)
 					.build();
 
@@ -93,6 +95,7 @@ public class AppNotificationManager {
 	}
 
 	public void stopNotificationWorker() {
+		appDataStore.setValue(TASK_NOTIFICATIONS_KEY, "[]");
 		WorkManager.getInstance(context).cancelAllWorkByTag(NotificationWorker.NOTIFICATION_WORK_REQUEST_TAG);
 		log(context, "stopNotificationWorker() :: Stopped notification work manager");
 	}
@@ -101,37 +104,45 @@ public class AppNotificationManager {
 		manager.cancelAll();
 	}
 
+	/**
+	 * @param dataArray JSONArray notifications sorted by readyAt in descending order
+	 * @throws JSONException Method uses blockingGet() don't run on UI thread
+	 */
 	void showMultipleTaskNotifications(JSONArray dataArray) throws JSONException {
 		Intent intent = new Intent(context, EmbeddedBrowserActivity.class);
 		intent.setData(Uri.parse(appUrl.concat("/#/tasks")));
-		//appDataStore.putString();
-
-		for (int i = 0; i < dataArray.length(); i++) {
-			JSONObject notification = dataArray.getJSONObject(i);
-			String contentText = notification.getString("contentText");
-			String title = notification.getString("title");
-			long readyAt = notification.getLong("readyAt");
-			int notificationId = (int) (readyAt % Integer.MAX_VALUE);
-			showNotification(intent, notificationId + i, title, contentText);
-		}
-	}
-
-	void filterTaskNotification(JSONObject notification) throws JSONException {
-		AppDataStore appDataStore = AppDataStore.getInstance(context);
-		//LocalDate today = ;
 		long startOfDay = LocalDate.now()
 				.atStartOfDay(ZoneId.systemDefault())
 				.toInstant().toEpochMilli();
-		long notificationDay = appDataStore.getLongValue(TASK_NOTIFICATION_DAY_KEY).blockingGet();
-		long latestNotificationTimestamp = appDataStore.getLongValue(LATEST_NOTIFICATION_TIMESTAMP_KEY).blockingGet();
+		long latestStoredTimestamp = getLatestStoredTimestamp(startOfDay);
 
+		for (int i = 0; i < dataArray.length(); i++) {
+			JSONObject notification = dataArray.getJSONObject(i);
+			long readyAt = notification.getLong("readyAt");
+			long endDate = notification.getLong("endDate");
+			if (readyAt > latestStoredTimestamp && endDate >= startOfDay) {
+				int notificationId = (int) (readyAt % Integer.MAX_VALUE);
+				String contentText = notification.getString("contentText");
+				String title = notification.getString("title");
+				showNotification(intent, notificationId + i, title, contentText);
+			}
+			if (i == 0) {
+				appDataStore.setLongValue(LATEST_NOTIFICATION_TIMESTAMP_KEY, readyAt);
+			}
+		}
+	}
 
-		//appDataStore.putString(TASK_NOTIFICATION_DAY_KEY, )
-		long latestReadyAt = notification.getLong("readyAt");
-		long latestEndDate = notification.getLong("endDate");
+	private long getLatestStoredTimestamp(long startOfDay) {
+		if (isNewDay(startOfDay)) {
+			appDataStore.setLongValue(TASK_NOTIFICATION_DAY_KEY, startOfDay);
+			return 0;
+		}
+		return appDataStore.getLongValue(LATEST_NOTIFICATION_TIMESTAMP_KEY).blockingGet();
+	}
 
-
-
+	private boolean isNewDay(long startOfDay) {
+		long storedNotificationDay = appDataStore.getLongValue(TASK_NOTIFICATION_DAY_KEY).blockingGet();
+		return startOfDay != storedNotificationDay;
 	}
 
 	void showNotification(Intent intent, int id, String title, String contentText) {

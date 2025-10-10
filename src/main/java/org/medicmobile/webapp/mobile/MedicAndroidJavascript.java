@@ -43,7 +43,10 @@ import static java.util.Calendar.YEAR;
 import static java.util.Locale.UK;
 import static org.medicmobile.webapp.mobile.MedicLog.log;
 
+import androidx.annotation.OptIn;
+
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import kotlinx.coroutines.ExperimentalCoroutinesApi;
 
 public class MedicAndroidJavascript {
 	private static final String DATE_FORMAT = "yyyy-MM-dd";
@@ -168,10 +171,11 @@ public class MedicAndroidJavascript {
 	}
 
 	//@SuppressLint("CheckResult")
+	@OptIn(markerClass = ExperimentalCoroutinesApi.class)
 	@JavascriptInterface
 	public void updateTaskNotificationStore(String notifications) {
 		AppDataStore appDataStore = AppDataStore.getInstance(parent);
-		appDataStore.putString(AppNotificationManager.TASK_NOTIFICATIONS_KEY, notifications);
+		appDataStore.setValue(AppNotificationManager.TASK_NOTIFICATIONS_KEY, notifications);
 	}
 
 	@android.webkit.JavascriptInterface
