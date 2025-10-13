@@ -50,6 +50,12 @@ public class AppNotificationManager {
 		createNotificationChannel();
 	}
 
+	public long getStartOfDay() {
+		return LocalDate.now()
+				.atStartOfDay(ZoneId.systemDefault())
+				.toInstant().toEpochMilli();
+	}
+
 	public boolean hasNotificationPermission() {
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
 			return ContextCompat.checkSelfPermission(context,
@@ -112,9 +118,7 @@ public class AppNotificationManager {
 	void showMultipleTaskNotifications(JSONArray dataArray) throws JSONException {
 		Intent intent = new Intent(context, EmbeddedBrowserActivity.class);
 		intent.setData(Uri.parse(appUrl.concat("/#/tasks")));
-		long startOfDay = LocalDate.now()
-				.atStartOfDay(ZoneId.systemDefault())
-				.toInstant().toEpochMilli();
+		long startOfDay = getStartOfDay();
 		long latestStoredTimestamp = getLatestStoredTimestamp(startOfDay);
 		for (int i = 0; i < dataArray.length(); i++) {
 			JSONObject notification = dataArray.getJSONObject(i);

@@ -1,6 +1,8 @@
 package org.medicmobile.webapp.mobile;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import android.app.NotificationManager;
 import android.content.Context;
@@ -63,6 +65,9 @@ public class AppNotificationManagerTest {
 		appNotificationManager.cancelAllNotifications();
 		assertEquals(0, shadowNotificationManager.getAllNotifications().size());
 
+		AppNotificationManager mockAppNotificationManager = mock(AppNotificationManager.class);
+		when(mockAppNotificationManager.getStartOfDay()).thenReturn(appNotificationManager.getStartOfDay() + 1000);
+
 		appNotificationManager.showNotificationsFromJsArray(jsData);
 		assertEquals(0, shadowNotificationManager.getAllNotifications().size());
 
@@ -89,6 +94,10 @@ public class AppNotificationManagerTest {
 
 		appNotificationManager.cancelAllNotifications();
 		assertEquals(0, shadowNotificationManager.getAllNotifications().size());
+
+		AppNotificationManager mockAppNotificationManager = mock(AppNotificationManager.class);
+		when(mockAppNotificationManager.getStartOfDay()).thenReturn(appNotificationManager.getStartOfDay() + 1000);
+
 		appNotificationManager.showNotificationsFromJsArray(newNotificationData);
 		assertEquals(1, shadowNotificationManager.getAllNotifications().size());
 
