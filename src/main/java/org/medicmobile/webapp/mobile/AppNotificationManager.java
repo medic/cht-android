@@ -96,9 +96,17 @@ public class AppNotificationManager {
 		manager.cancelAll();
 	}
 
+	public void showNotificationsFromJsArray(String jsArrayString) throws JSONException {
+		JSONArray dataArray = Utils.parseJSArrayData(jsArrayString);
+		if (dataArray.length() == 0) {
+			return;
+		}
+		showMultipleTaskNotifications(dataArray);
+	}
+
 	/**
 	 * @param dataArray JSONArray notifications sorted by readyAt in descending order
-	 * @throws JSONException
+	 * @throws JSONException throws JSONException
 	 * Method is blocking don't run on UI thread
 	 */
 	void showMultipleTaskNotifications(JSONArray dataArray) throws JSONException {
@@ -108,7 +116,6 @@ public class AppNotificationManager {
 				.atStartOfDay(ZoneId.systemDefault())
 				.toInstant().toEpochMilli();
 		long latestStoredTimestamp = getLatestStoredTimestamp(startOfDay);
-
 		for (int i = 0; i < dataArray.length(); i++) {
 			JSONObject notification = dataArray.getJSONObject(i);
 			long readyAt = notification.getLong("readyAt");
@@ -119,10 +126,8 @@ public class AppNotificationManager {
 				String title = notification.getString("title");
 				showNotification(intent, notificationId + i, title, contentText);
 			}
-			if (i == 0) {
-				appDataStore.saveLong(LATEST_NOTIFICATION_TIMESTAMP_KEY, readyAt);
-			}
 		}
+		appDataStore.saveLong(LATEST_NOTIFICATION_TIMESTAMP_KEY, dataArray.getJSONObject(0).getLong("readyAt"));
 	}
 
 	private long getLatestStoredTimestamp(long startOfDay) {
@@ -154,12 +159,6 @@ public class AppNotificationManager {
 				.setContentIntent(pendingIntent)
 				.setPriority(NotificationCompat.PRIORITY_DEFAULT);
 		manager.notify(id, builder.build());
-	}
-
-
-	public void showNotificationsFromJsArray(String jsArrayString) throws JSONException {
-		JSONArray dataArray = Utils.parseJSArrayData(jsArrayString);
-		showMultipleTaskNotifications(dataArray);
 	}
 
 	private void createNotificationChannel() {
