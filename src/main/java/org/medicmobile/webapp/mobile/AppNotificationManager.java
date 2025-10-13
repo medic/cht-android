@@ -50,12 +50,6 @@ public class AppNotificationManager {
 		createNotificationChannel();
 	}
 
-	public long getStartOfDay() {
-		return LocalDate.now()
-				.atStartOfDay(ZoneId.systemDefault())
-				.toInstant().toEpochMilli();
-	}
-
 	public boolean hasNotificationPermission() {
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
 			return ContextCompat.checkSelfPermission(context,
@@ -132,6 +126,12 @@ public class AppNotificationManager {
 			}
 		}
 		appDataStore.saveLong(LATEST_NOTIFICATION_TIMESTAMP_KEY, dataArray.getJSONObject(0).getLong("readyAt"));
+	}
+
+	public long getStartOfDay() {
+		return LocalDate.now()
+				.atStartOfDay(ZoneId.systemDefault())
+				.toInstant().toEpochMilli();
 	}
 
 	private long getLatestStoredTimestamp(long startOfDay) {
