@@ -34,8 +34,8 @@ public class AppNotificationManager {
 	private static final String CHANNEL_NAME = "CHT Android Notifications";
 	public static final int REQUEST_NOTIFICATION_PERMISSION = 1001;
 	public static final String TASK_NOTIFICATIONS_KEY = "task_notifications";
-	private static final String TASK_NOTIFICATION_DAY_KEY = "cht_task_notification_day";
-	private static final String LATEST_NOTIFICATION_TIMESTAMP_KEY = "cht_task_notification_timestamp";
+	public static final String TASK_NOTIFICATION_DAY_KEY = "cht_task_notification_day";
+	public static final String LATEST_NOTIFICATION_TIMESTAMP_KEY = "cht_task_notification_timestamp";
 
 	private final Context context;
 	private final NotificationManager manager;
