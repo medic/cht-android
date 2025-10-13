@@ -2,6 +2,9 @@ import com.github.spotbugs.snom.Confidence
 import com.github.spotbugs.snom.Effort
 
 buildscript {
+  ext {
+    kotlin_version = '1.9.22'
+  }
   repositories {
     mavenCentral()
     maven { url 'https://jitpack.io' }
@@ -11,6 +14,7 @@ buildscript {
   dependencies {
     classpath 'com.android.tools.build:gradle:8.10.1'
     classpath 'com.github.spotbugs.snom:spotbugs-gradle-plugin:6.1.13'
+    classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
   }
 }
 
@@ -19,6 +23,7 @@ apply plugin: 'checkstyle'
 apply plugin: 'pmd'
 apply plugin: 'com.github.spotbugs'
 apply from: 'coverage.gradle'
+apply plugin: 'org.jetbrains.kotlin.android'
 
 // enable verbose lint warnings
 gradle.projectsEvaluated {
@@ -470,18 +475,23 @@ android {
       universalApk false
     }
   }
+  kotlinOptions {
+    jvmTarget = '17'
+  }
 }
 
+def androidXCoreVersion = '1.16.0'
 dependencies {
   implementation fileTree(dir: 'libs', include: ['*.jar'])
   implementation platform('org.jetbrains.kotlin:kotlin-bom:1.9.24')
   implementation 'androidx.browser:browser:1.8.0'
   implementation 'androidx.appcompat:appcompat:1.7.1'
   implementation 'androidx.work:work-runtime:2.10.5'
-  implementation 'androidx.core:core:1.16.0'
+  implementation 'androidx.core:core:$androidXCoreVersion'
+  implementation 'androidx.core:core-ktx:$androidXCoreVersion'
   implementation 'androidx.activity:activity:1.10.1'
   implementation 'androidx.fragment:fragment:1.8.8'
-  implementation 'androidx.datastore:datastore-preferences-rxjava3:1.1.7'
+  implementation "androidx.datastore:datastore-preferences:1.1.7"
   compileOnly 'com.github.spotbugs:spotbugs-annotations:4.9.3'
   coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.5'
   testImplementation 'junit:junit:4.13.2'

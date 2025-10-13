@@ -16,8 +16,6 @@ import android.os.Build;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
-import androidx.datastore.preferences.core.Preferences;
-import androidx.datastore.preferences.core.PreferencesKeys;
 import androidx.work.ExistingPeriodicWorkPolicy;
 import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
@@ -31,19 +29,13 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.concurrent.TimeUnit;
 
-import kotlinx.coroutines.ExperimentalCoroutinesApi;
-
-@ExperimentalCoroutinesApi
 public class AppNotificationManager {
 	private static final String CHANNEL_ID = "cht_android_notifications";
 	private static final String CHANNEL_NAME = "CHT Android Notifications";
 	public static final int REQUEST_NOTIFICATION_PERMISSION = 1001;
-	public static final Preferences.Key<String> TASK_NOTIFICATIONS_KEY =
-			PreferencesKeys.stringKey("task_notifications");
-	private static final Preferences.Key<Long> TASK_NOTIFICATION_DAY_KEY =
-			PreferencesKeys.longKey("cht_task_notification_day");
-	private static final Preferences.Key<Long> LATEST_NOTIFICATION_TIMESTAMP_KEY =
-			PreferencesKeys.longKey("cht_task_notification_timestamp");
+	public static final String TASK_NOTIFICATIONS_KEY = "task_notifications";
+	private static final String TASK_NOTIFICATION_DAY_KEY = "cht_task_notification_day";
+	private static final String LATEST_NOTIFICATION_TIMESTAMP_KEY = "cht_task_notification_timestamp";
 
 	private final Context context;
 	private final NotificationManager manager;
@@ -54,7 +46,7 @@ public class AppNotificationManager {
 		this.context = context.getApplicationContext();
 		this.appUrl = appUrl;
 		manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-		appDataStore = AppDataStore.getInstance(this.context);
+		appDataStore = new AppDataStore(this.context);
 		createNotificationChannel();
 	}
 
@@ -87,7 +79,7 @@ public class AppNotificationManager {
 
 			WorkManager.getInstance(context).enqueueUniquePeriodicWork(
 					NotificationWorker.NOTIFICATION_WORK_NAME,
-					ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
+					ExistingPeriodicWorkPolicy.KEEP,
 					request
 			);
 			log(context, "startNotificationWorker() :: Started Notification Work Manager...");
@@ -95,7 +87,7 @@ public class AppNotificationManager {
 	}
 
 	public void stopNotificationWorker() {
-		appDataStore.setValue(TASK_NOTIFICATIONS_KEY, "[]");
+		appDataStore.saveString(TASK_NOTIFICATIONS_KEY, "[]");
 		WorkManager.getInstance(context).cancelAllWorkByTag(NotificationWorker.NOTIFICATION_WORK_REQUEST_TAG);
 		log(context, "stopNotificationWorker() :: Stopped notification work manager");
 	}
@@ -106,7 +98,7 @@ public class AppNotificationManager {
 
 	/**
 	 * @param dataArray JSONArray notifications sorted by readyAt in descending order
-	 * @throws JSONException Method uses blockingGet() don't run on UI thread
+	 * @throws JSONException Method is blocking don't run on UI thread
 	 */
 	void showMultipleTaskNotifications(JSONArray dataArray) throws JSONException {
 		Intent intent = new Intent(context, EmbeddedBrowserActivity.class);
@@ -127,21 +119,21 @@ public class AppNotificationManager {
 				showNotification(intent, notificationId + i, title, contentText);
 			}
 			if (i == 0) {
-				appDataStore.setLongValue(LATEST_NOTIFICATION_TIMESTAMP_KEY, readyAt);
+				appDataStore.saveLong(LATEST_NOTIFICATION_TIMESTAMP_KEY, readyAt);
 			}
 		}
 	}
 
 	private long getLatestStoredTimestamp(long startOfDay) {
 		if (isNewDay(startOfDay)) {
-			appDataStore.setLongValue(TASK_NOTIFICATION_DAY_KEY, startOfDay);
+			appDataStore.saveLong(TASK_NOTIFICATION_DAY_KEY, startOfDay);
 			return 0;
 		}
-		return appDataStore.getLongValue(LATEST_NOTIFICATION_TIMESTAMP_KEY).blockingGet();
+		return appDataStore.getLongBlocking(LATEST_NOTIFICATION_TIMESTAMP_KEY, 0);
 	}
 
 	private boolean isNewDay(long startOfDay) {
-		long storedNotificationDay = appDataStore.getLongValue(TASK_NOTIFICATION_DAY_KEY).blockingGet();
+		long storedNotificationDay = appDataStore.getLongBlocking(TASK_NOTIFICATION_DAY_KEY, 0);
 		return startOfDay != storedNotificationDay;
 	}
 

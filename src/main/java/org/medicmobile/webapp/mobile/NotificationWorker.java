@@ -30,12 +30,11 @@ public class NotificationWorker extends Worker {
 		Context context = getApplicationContext();
 		SettingsStore settings = SettingsStore.in(context);
 		String appUrl = settings.getAppUrl();
-		AppDataStore appDataStore = AppDataStore.getInstance(context);
+		AppDataStore appDataStore = new AppDataStore(context);
 		AppNotificationManager appNotificationManager = new AppNotificationManager(context, appUrl);
 		try {
 			String result = appDataStore
-					.getValue(AppNotificationManager.TASK_NOTIFICATIONS_KEY, "[]")
-					.blockingGet();
+					.getStringBlocking(AppNotificationManager.TASK_NOTIFICATIONS_KEY, "[]");
 			appNotificationManager.showNotificationsFromJsArray(result);
 			return Result.success();
 		} catch (JSONException e) {

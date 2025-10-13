@@ -1,93 +1,74 @@
 package org.medicmobile.webapp.mobile.util;
 
-import static org.medicmobile.webapp.mobile.MedicLog.log;
-
 import android.content.Context;
+import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.emptyPreferences
+import androidx.datastore.preferences.core.longPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.preferencesDataStore
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import org.medicmobile.webapp.mobile.MedicLog.log
 
-import androidx.datastore.core.CorruptionException;
-import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler;
-import androidx.datastore.preferences.core.MutablePreferences;
-import androidx.datastore.preferences.core.Preferences;
-import androidx.datastore.preferences.rxjava3.RxPreferenceDataStoreBuilder;
-import androidx.datastore.rxjava3.RxDataStore;
+private const val DATASTORE_NAME = "cht_datastore"
+val Context.dataStore by preferencesDataStore(
+    name = DATASTORE_NAME,
+    corruptionHandler = ReplaceFileCorruptionHandler { corruptionException ->
+        log(corruptionException, "Data store corrupted")
+        emptyPreferences()
+    })
 
-import io.reactivex.rxjava3.core.Single;
-import kotlin.jvm.functions.Function1;
+class AppDataStore(private val context: Context) {
 
-@kotlinx.coroutines.ExperimentalCoroutinesApi
-public class AppDataStore {
-	private static final String DATASTORE_NAME = "cht_store";
-	private final RxDataStore<Preferences> dataStore;
-	private static volatile AppDataStore instance;
+    private val coroutineScope = CoroutineScope(Dispatchers.IO + Job())
 
-	private AppDataStore(Context context) {
-		dataStore = new RxPreferenceDataStoreBuilder(
-				context, DATASTORE_NAME)
-				.setCorruptionHandler(new ReplaceFileCorruptionHandler<>(new Function1<CorruptionException, Preferences>() {
-					@Override
-					public Preferences invoke(CorruptionException e) {
-						log(e, "datastore corrupted");
-						return new MutablePreferences();
-					}
-				}))
-				.build();
-	}
+    fun saveString(key: String, value: String) {
+        coroutineScope.launch {
+            try {
+                val key = stringPreferencesKey(key)
+                context.dataStore.edit { prefs -> prefs[key] = value }
+            } catch (e: Exception) {
+                log(e, "error saving string");
+            }
+        }
+    }
 
-	public static AppDataStore getInstance(Context context) {
-		if (instance == null) {
-			synchronized (AppDataStore.class) {
-				if (instance == null) {
-					instance = new AppDataStore(context);
-				}
-			}
-		}
-		return instance;
-	}
+    suspend fun getStringOnce(key: String, defaultValue: String = ""): String {
+        val prefsKey = stringPreferencesKey(key)
+        return context.dataStore.data.map { prefs -> prefs[prefsKey] ?: defaultValue }.first()
+    }
 
+    fun getStringBlocking(key: String, defaultValue: String): String {
+        return runBlocking {
+            getStringOnce(key, defaultValue)
+        }
+    }
 
-	public Single<Boolean> setValue(Preferences.Key<String> key, String input) {
-		return dataStore.updateDataAsync(prefsIn -> {
-					MutablePreferences mp = prefsIn.toMutablePreferences();
-					mp.set(key, input);
-					return Single.just(mp);
-				})
-				.map(prefs -> true)
-				.onErrorReturn(error -> {
-					log(error, "Error setting long value");
-					return false;
-				});
-	}
+    fun saveLong(key: String, value: Long) {
+        coroutineScope.launch {
+            try {
+                val prefsKey = longPreferencesKey(key)
+                context.dataStore.edit { prefs -> prefs[prefsKey] = value }
+            } catch (e: Exception) {
+                log(e, "error saving long")
+            }
+        }
+    }
 
-	public Single<Boolean> setLongValue(Preferences.Key<Long> key, long value) {
-		return dataStore.updateDataAsync(prefsIn -> {
-					MutablePreferences mp = prefsIn.toMutablePreferences();
-					mp.set(key, value);
-					return Single.just(mp);
-				})
-				.map(prefs -> true)
-				.onErrorReturn(error -> {
-					log(error, "Error setting long value");
-					return false;
-				});
-	}
+    suspend fun getLongOnce(key: String, defaultValue: Long = 0L): Long {
+        val prefsKey = longPreferencesKey(key)
+        return context.dataStore.data.map { prefs -> prefs[prefsKey] ?: defaultValue }.first()
+    }
 
-	public Single<String> getValue(Preferences.Key<String> key, String defaultReturnValue) {
-		return dataStore.data()
-				.firstOrError()
-				.map(prefs -> prefs.get(key) != null ? prefs.get(key) : defaultReturnValue)
-				.onErrorReturn(error -> {
-					log(error, "error getting value");
-					return defaultReturnValue;
-				});
-	}
-
-	public Single<Long> getLongValue(Preferences.Key<Long> key) {
-		return dataStore.data()
-				.firstOrError()
-				.map(prefs -> prefs.get(key) != null ? prefs.get(key) : 0L)
-				.onErrorReturn(error -> {
-					log(error, "error getting value");
-					return 0L;
-				});
-	}
+    fun getLongBlocking(key: String, defaultValue: Long): Long {
+        return runBlocking {
+            getLongOnce(key, defaultValue)
+        }
+    }
 }

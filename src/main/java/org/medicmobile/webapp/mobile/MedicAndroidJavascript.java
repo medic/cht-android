@@ -174,8 +174,8 @@ public class MedicAndroidJavascript {
 	@OptIn(markerClass = ExperimentalCoroutinesApi.class)
 	@JavascriptInterface
 	public void updateTaskNotificationStore(String notifications) {
-		AppDataStore appDataStore = AppDataStore.getInstance(parent);
-		appDataStore.setValue(AppNotificationManager.TASK_NOTIFICATIONS_KEY, notifications);
+		AppDataStore appDataStore = new AppDataStore(parent.getApplicationContext());
+		appDataStore.saveString(AppNotificationManager.TASK_NOTIFICATIONS_KEY, notifications);
 	}
 
 	@android.webkit.JavascriptInterface
