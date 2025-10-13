@@ -63,7 +63,6 @@ public class AppNotificationManagerTest {
 		appNotificationManager.cancelAllNotifications();
 		assertEquals(0, shadowNotificationManager.getAllNotifications().size());
 
-		Thread.sleep(1000);
 		appNotificationManager.showNotificationsFromJsArray(jsData);
 		assertEquals(0, shadowNotificationManager.getAllNotifications().size());
 
@@ -87,8 +86,6 @@ public class AppNotificationManagerTest {
 					%s
 				]
 				""".formatted(startOfDay + 1000, startOfDay, jsData);
-
-		Thread.sleep(1000);
 
 		appNotificationManager.cancelAllNotifications();
 		assertEquals(0, shadowNotificationManager.getAllNotifications().size());
