@@ -98,7 +98,8 @@ public class AppNotificationManager {
 
 	/**
 	 * @param dataArray JSONArray notifications sorted by readyAt in descending order
-	 * @throws JSONException Method is blocking don't run on UI thread
+	 * @throws JSONException
+	 * Method is blocking don't run on UI thread
 	 */
 	void showMultipleTaskNotifications(JSONArray dataArray) throws JSONException {
 		Intent intent = new Intent(context, EmbeddedBrowserActivity.class);

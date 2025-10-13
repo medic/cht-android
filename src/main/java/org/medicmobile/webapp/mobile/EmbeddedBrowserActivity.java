@@ -41,7 +41,6 @@ import androidx.core.view.ViewCompat;
 import java.util.Arrays;
 import java.util.Optional;
 
-
 @SuppressWarnings({ "PMD.GodClass", "PMD.TooManyMethods" })
 public class EmbeddedBrowserActivity extends Activity {
 

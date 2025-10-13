@@ -170,8 +170,6 @@ public class MedicAndroidJavascript {
 		}
 	}
 
-	//@SuppressLint("CheckResult")
-	@OptIn(markerClass = ExperimentalCoroutinesApi.class)
 	@JavascriptInterface
 	public void updateTaskNotificationStore(String notifications) {
 		AppDataStore appDataStore = new AppDataStore(parent.getApplicationContext());
