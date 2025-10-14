@@ -5,14 +5,11 @@ import static org.medicmobile.webapp.mobile.MedicLog.log;
 import android.content.Context;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.OptIn;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
 import org.json.JSONException;
 import org.medicmobile.webapp.mobile.util.AppDataStore;
-
-import kotlinx.coroutines.ExperimentalCoroutinesApi;
 
 public class NotificationWorker extends Worker {
 	public static final String NOTIFICATION_WORK_REQUEST_TAG = "cht_notification_tag";
@@ -23,7 +20,6 @@ public class NotificationWorker extends Worker {
 		super(context, workerParams);
 	}
 
-	@OptIn(markerClass = ExperimentalCoroutinesApi.class)
 	@NonNull
 	@Override
 	public Result doWork() {
