@@ -50,14 +50,22 @@ class AppDataStore(private val context: Context) {
         }
     }
 
-    fun saveLong(key: String, value: Long) {
-        coroutineScope.launch {
+    suspend fun saveLongSuspending(key: String, value: Long) {
             try {
                 val prefsKey = longPreferencesKey(key)
                 context.dataStore.edit { prefs -> prefs[prefsKey] = value }
             } catch (e: Exception) {
                 log(e, "error saving long")
             }
+    }
+
+    fun saveLong(key: String, value: Long) {
+        coroutineScope.launch { saveLongSuspending(key, value) }
+    }
+
+    fun saveLongBlocking(key: String, value: Long) {
+        runBlocking {
+            saveLongSuspending(key, value)
         }
     }
 

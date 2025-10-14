@@ -96,6 +96,11 @@ public class AppNotificationManager {
 		manager.cancelAll();
 	}
 
+	/**
+	 * @param jsArrayString string notifications sorted by readyAt in descending order
+	 * @throws JSONException throws JSONException
+	 * Method is blocking don't run on UI thread
+	 */
 	public void showNotificationsFromJsArray(String jsArrayString) throws JSONException {
 		JSONArray dataArray = Utils.parseJSArrayData(jsArrayString);
 		if (dataArray.length() == 0) {
@@ -104,12 +109,7 @@ public class AppNotificationManager {
 		showMultipleTaskNotifications(dataArray);
 	}
 
-	/**
-	 * @param dataArray JSONArray notifications sorted by readyAt in descending order
-	 * @throws JSONException throws JSONException
-	 * Method is blocking don't run on UI thread
-	 */
-	void showMultipleTaskNotifications(JSONArray dataArray) throws JSONException {
+	private void showMultipleTaskNotifications(JSONArray dataArray) throws JSONException {
 		Intent intent = new Intent(context, EmbeddedBrowserActivity.class);
 		intent.setData(Uri.parse(appUrl.concat("/#/tasks")));
 		long startOfDay = getStartOfDay();
@@ -125,7 +125,11 @@ public class AppNotificationManager {
 				showNotification(intent, notificationId + i, title, contentText);
 			}
 		}
-		appDataStore.saveLong(LATEST_NOTIFICATION_TIMESTAMP_KEY, dataArray.getJSONObject(0).getLong("readyAt"));
+		saveLatestNotificationTimestamp(dataArray.getJSONObject(0).getLong("readyAt"));
+	}
+
+	public void saveLatestNotificationTimestamp(long value){
+		appDataStore.saveLong(LATEST_NOTIFICATION_TIMESTAMP_KEY, value);
 	}
 
 	public long getStartOfDay() {
