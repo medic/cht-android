@@ -140,7 +140,6 @@ public class AppNotificationManager {
 
 	private long getLatestStoredTimestamp(long startOfDay) {
 		if (isNewDay(startOfDay)) {
-			appDataStore.saveLong(TASK_NOTIFICATION_DAY_KEY, startOfDay);
 			return 0;
 		}
 		return appDataStore.getLongBlocking(LATEST_NOTIFICATION_TIMESTAMP_KEY, 0);
@@ -148,7 +147,11 @@ public class AppNotificationManager {
 
 	private boolean isNewDay(long startOfDay) {
 		long storedNotificationDay = appDataStore.getLongBlocking(TASK_NOTIFICATION_DAY_KEY, 0);
-		return startOfDay != storedNotificationDay;
+		if (getStartOfDay() != storedNotificationDay) {
+			appDataStore.saveLong(TASK_NOTIFICATION_DAY_KEY, startOfDay);
+			return true;
+		}
+		return false;
 	}
 
 	void showNotification(Intent intent, int id, String title, String contentText) {
