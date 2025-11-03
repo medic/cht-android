@@ -115,8 +115,6 @@ public class AppNotificationManager {
 	private void showMultipleTaskNotifications(JSONArray dataArray) throws JSONException {
 		Intent intent = new Intent(context, EmbeddedBrowserActivity.class);
 		intent.setData(Uri.parse(TextUtils.concat(appUrl, "/#/tasks").toString()));
-		long startOfDay = getStartOfDay();
-		long latestStoredTimestamp = getLatestStoredTimestamp(startOfDay);
 		long maxNotifications = appDataStore.getLongBlocking(MAX_NOTIFICATIONS_TO_SHOW_KEY, 8);
 		int counter = 0;
 		for (int i = 0; i < dataArray.length(); i++) {
@@ -124,11 +122,11 @@ public class AppNotificationManager {
 			long readyAt = notification.getLong("readyAt");
 			long endDate = notification.getLong("endDate");
 			long dueDate = notification.getLong("dueDate");
-			if (readyAt > latestStoredTimestamp && dueDate <= startOfDay && endDate >= startOfDay) {
-				int notificationId = (int) (readyAt % Integer.MAX_VALUE);
+			if (isValidNotification(readyAt, dueDate, endDate)) {
+				int notificationId = notification.getString("_id").hashCode();
 				String contentText = notification.getString("contentText");
 				String title = notification.getString("title");
-				showNotification(intent, notificationId + i, title, contentText);
+				showNotification(intent, notificationId, title, contentText);
 				counter++;
 			}
 			if (counter >= maxNotifications) {
@@ -136,6 +134,12 @@ public class AppNotificationManager {
 			}
 		}
 		saveLatestNotificationTimestamp(dataArray.getJSONObject(0).getLong("readyAt"));
+	}
+
+	private boolean isValidNotification(long readyAt, long dueDate, long endDate) {
+		long startOfDay = getStartOfDay();
+		long latestStoredTimestamp = getLatestStoredTimestamp(startOfDay);
+		return readyAt > latestStoredTimestamp && dueDate <= startOfDay && endDate >= startOfDay;
 	}
 
 	public void saveLatestNotificationTimestamp(long value){
