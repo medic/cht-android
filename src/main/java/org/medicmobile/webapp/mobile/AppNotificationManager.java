@@ -12,6 +12,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
+import android.text.TextUtils;
 
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
@@ -36,15 +37,17 @@ public class AppNotificationManager {
 	public static final String TASK_NOTIFICATIONS_KEY = "task_notifications";
 	public static final String TASK_NOTIFICATION_DAY_KEY = "cht_task_notification_day";
 	public static final String LATEST_NOTIFICATION_TIMESTAMP_KEY = "cht_task_notification_timestamp";
+	public static final String MAX_NOTIFICATIONS_TO_SHOW_KEY = "cht_max_task_notifications";
 
 	private final Context context;
 	private final NotificationManager manager;
 	private final String appUrl;
 	private final AppDataStore appDataStore;
 
-	public AppNotificationManager(Context context, String appUrl) {
+	public AppNotificationManager(Context context) {
 		this.context = context.getApplicationContext();
-		this.appUrl = appUrl;
+		SettingsStore settings = SettingsStore.in(context);
+		this.appUrl = settings.getAppUrl();
 		manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 		appDataStore = new AppDataStore(this.context);
 		createNotificationChannel();
@@ -111,18 +114,25 @@ public class AppNotificationManager {
 
 	private void showMultipleTaskNotifications(JSONArray dataArray) throws JSONException {
 		Intent intent = new Intent(context, EmbeddedBrowserActivity.class);
-		intent.setData(Uri.parse(appUrl.concat("/#/tasks")));
+		intent.setData(Uri.parse(TextUtils.concat(appUrl, "/#/tasks").toString()));
 		long startOfDay = getStartOfDay();
 		long latestStoredTimestamp = getLatestStoredTimestamp(startOfDay);
+		long maxNotifications = appDataStore.getLongBlocking(MAX_NOTIFICATIONS_TO_SHOW_KEY, 8);
+		int counter = 0;
 		for (int i = 0; i < dataArray.length(); i++) {
 			JSONObject notification = dataArray.getJSONObject(i);
 			long readyAt = notification.getLong("readyAt");
 			long endDate = notification.getLong("endDate");
-			if (readyAt > latestStoredTimestamp && endDate >= startOfDay) {
+			long dueDate = notification.getLong("dueDate");
+			if (readyAt > latestStoredTimestamp && dueDate <= startOfDay && endDate >= startOfDay) {
 				int notificationId = (int) (readyAt % Integer.MAX_VALUE);
 				String contentText = notification.getString("contentText");
 				String title = notification.getString("title");
 				showNotification(intent, notificationId + i, title, contentText);
+				counter++;
+			}
+			if (counter >= maxNotifications) {
+				break;
 			}
 		}
 		saveLatestNotificationTimestamp(dataArray.getJSONObject(0).getLong("readyAt"));

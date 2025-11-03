@@ -24,10 +24,8 @@ public class NotificationWorker extends Worker {
 	@Override
 	public Result doWork() {
 		Context context = getApplicationContext();
-		SettingsStore settings = SettingsStore.in(context);
-		String appUrl = settings.getAppUrl();
 		AppDataStore appDataStore = new AppDataStore(context);
-		AppNotificationManager appNotificationManager = new AppNotificationManager(context, appUrl);
+		AppNotificationManager appNotificationManager = new AppNotificationManager(context);
 		try {
 			String result = appDataStore
 					.getStringBlocking(AppNotificationManager.TASK_NOTIFICATIONS_KEY, "[]");

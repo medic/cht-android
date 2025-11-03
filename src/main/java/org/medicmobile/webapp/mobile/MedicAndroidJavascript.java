@@ -168,8 +168,9 @@ public class MedicAndroidJavascript {
 	}
 
 	@JavascriptInterface
-	public void updateTaskNotificationStore(String notifications) {
+	public void updateTaskNotificationStore(String notifications, int maxNotifications) {
 		AppDataStore appDataStore = new AppDataStore(parent.getApplicationContext());
+		appDataStore.saveLong(AppNotificationManager.MAX_NOTIFICATIONS_TO_SHOW_KEY, maxNotifications);
 		appDataStore.saveString(AppNotificationManager.TASK_NOTIFICATIONS_KEY, notifications);
 	}
 

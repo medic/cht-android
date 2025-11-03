@@ -249,7 +249,7 @@ public class EmbeddedBrowserActivity extends Activity {
 	}
 
 	private void initializeNotifications() {
-		AppNotificationManager appNotificationManager = new AppNotificationManager(this, appUrl);
+		AppNotificationManager appNotificationManager = new AppNotificationManager(this);
 		appNotificationManager.cancelAllNotifications();
 		if (!appNotificationManager.hasNotificationPermission()) {
 			appNotificationManager.requestNotificationPermission(this);
