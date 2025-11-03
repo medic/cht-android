@@ -27,7 +27,7 @@ import org.json.JSONObject;
 import org.medicmobile.webapp.mobile.util.AppDataStore;
 
 import java.time.LocalDate;
-import java.time.ZoneOffset;
+import java.time.ZoneId;
 import java.util.concurrent.TimeUnit;
 
 public class AppNotificationManager {
@@ -147,8 +147,8 @@ public class AppNotificationManager {
 	}
 
 	public long getStartOfDay() {
-		return LocalDate.now(ZoneOffset.UTC)
-				.atStartOfDay(ZoneOffset.UTC)
+		return LocalDate.now()
+				.atStartOfDay(ZoneId.systemDefault())
 				.toInstant().toEpochMilli();
 	}
 
