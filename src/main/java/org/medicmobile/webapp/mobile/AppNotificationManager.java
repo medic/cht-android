@@ -116,13 +116,14 @@ public class AppNotificationManager {
 		Intent intent = new Intent(context, EmbeddedBrowserActivity.class);
 		intent.setData(Uri.parse(TextUtils.concat(appUrl, "/#/tasks").toString()));
 		long maxNotifications = appDataStore.getLongBlocking(MAX_NOTIFICATIONS_TO_SHOW_KEY, 8);
+		long latestStoredTimestamp = getLatestStoredTimestamp(getStartOfDay());
 		int counter = 0;
 		for (int i = 0; i < dataArray.length(); i++) {
 			JSONObject notification = dataArray.getJSONObject(i);
 			long readyAt = notification.getLong("readyAt");
 			long endDate = notification.getLong("endDate");
 			long dueDate = notification.getLong("dueDate");
-			if (isValidNotification(readyAt, dueDate, endDate)) {
+			if (isValidNotification(latestStoredTimestamp, readyAt, dueDate, endDate)) {
 				int notificationId = notification.getString("_id").hashCode();
 				String contentText = notification.getString("contentText");
 				String title = notification.getString("title");
@@ -136,13 +137,12 @@ public class AppNotificationManager {
 		saveLatestNotificationTimestamp(dataArray.getJSONObject(0).getLong("readyAt"));
 	}
 
-	private boolean isValidNotification(long readyAt, long dueDate, long endDate) {
+	private boolean isValidNotification(long latestStoredTimestamp, long readyAt, long dueDate, long endDate) {
 		long startOfDay = getStartOfDay();
-		long latestStoredTimestamp = getLatestStoredTimestamp(startOfDay);
 		return readyAt > latestStoredTimestamp && dueDate <= startOfDay && endDate >= startOfDay;
 	}
 
-	public void saveLatestNotificationTimestamp(long value){
+	public void saveLatestNotificationTimestamp(long value) {
 		appDataStore.saveLong(LATEST_NOTIFICATION_TIMESTAMP_KEY, value);
 	}
 

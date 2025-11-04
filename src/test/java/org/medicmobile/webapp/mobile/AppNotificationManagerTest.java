@@ -46,12 +46,13 @@ public class AppNotificationManagerTest {
 		appDataStore.saveString(AppNotificationManager.TASK_NOTIFICATIONS_KEY, "[]");
 		appDataStore.saveLong(AppNotificationManager.TASK_NOTIFICATION_DAY_KEY, 0);
 		appDataStore.saveLong(AppNotificationManager.LATEST_NOTIFICATION_TIMESTAMP_KEY, 0);
+		appDataStore.saveLong(AppNotificationManager.MAX_NOTIFICATIONS_TO_SHOW_KEY, 8);
 	}
 
 	@Test
 	public void showsAndDismissesAllNotifications() throws JSONException {
 		long taskDate = startOfDay;
-		String jsData = "[" + getJSTaskNotificationString(taskDate) + "]";
+		String jsData = "[" + getJSTaskNotificationString(taskDate, taskDate, taskDate) + "]";
 		appNotificationManager.showNotificationsFromJsArray(jsData);
 		assertEquals(2, shadowNotificationManager.getAllNotifications().size());
 		appNotificationManager.cancelAllNotifications();
@@ -63,7 +64,7 @@ public class AppNotificationManagerTest {
 
 	@Test
 	public void showsOnlyMaxAllowedNotifications() throws JSONException {
-		String jsData = "[" + getJSTaskNotificationString(startOfDay) + "]";
+		String jsData = "[" + getJSTaskNotificationString(startOfDay, startOfDay, startOfDay) + "]";
 		appDataStore.saveLongBlocking(AppNotificationManager.MAX_NOTIFICATIONS_TO_SHOW_KEY, 1);
 		appNotificationManager.showNotificationsFromJsArray(jsData);
 		assertEquals(1, shadowNotificationManager.getAllNotifications().size());
@@ -71,35 +72,24 @@ public class AppNotificationManagerTest {
 
 	@Test
 	public void showsNotificationsOnNewDay() throws JSONException {
-		long taskReadyAtDate = startOfDay;
-		long taskEndDate = startOfDay + DAY_IN_MILLIS;
-		long taskDueDate = startOfDay;
-		String jsData = """
-					[{
-						"_id": "id_new_day",
-						"readyAt": %d,
-						"title": "Task for report past end date",
-						"contentText": "You have task past end date",
-						"endDate": %d,
-						"dueDate": %d
-					}]
-				""".formatted(taskReadyAtDate, taskEndDate, taskDueDate);
+		long taskDate = startOfDay;
+		String jsData = "[" + getJSTaskNotificationString(taskDate, taskDate, taskDate + DAY_IN_MILLIS) + "]";
 		assertEquals(0, appDataStore.getLongBlocking(AppNotificationManager.LATEST_NOTIFICATION_TIMESTAMP_KEY, 0));
 		appNotificationManager.showNotificationsFromJsArray(jsData);
-		assertEquals(1, shadowNotificationManager.getAllNotifications().size());
+		assertEquals(2, shadowNotificationManager.getAllNotifications().size());
 
 		appNotificationManager.cancelAllNotifications();
 		//move 1 day
 		when(appNotificationManager.getStartOfDay()).thenReturn(startOfDay + DAY_IN_MILLIS);
 
 		appNotificationManager.showNotificationsFromJsArray(jsData);
-		assertEquals(1, shadowNotificationManager.getAllNotifications().size());
-		assertEquals(taskReadyAtDate, appDataStore.getLongBlocking(AppNotificationManager.LATEST_NOTIFICATION_TIMESTAMP_KEY, 0));
+		assertEquals(2, shadowNotificationManager.getAllNotifications().size());
+		assertEquals(taskDate, appDataStore.getLongBlocking(AppNotificationManager.LATEST_NOTIFICATION_TIMESTAMP_KEY, 0));
 	}
 
 	@Test
 	public void notShowTasksMoreThanOnceSameDay() throws JSONException {
-		String jsData = "[" + getJSTaskNotificationString(startOfDay) + "]";
+		String jsData = "[" + getJSTaskNotificationString(startOfDay, startOfDay, startOfDay) + "]";
 
 		appNotificationManager.showNotificationsFromJsArray(jsData);
 		assertEquals(2, shadowNotificationManager.getAllNotifications().size());
@@ -112,7 +102,7 @@ public class AppNotificationManagerTest {
 
 	@Test
 	public void showsOnlyNewNotifications() throws JSONException {
-		String jsData = getJSTaskNotificationString(startOfDay);
+		String jsData = getJSTaskNotificationString(startOfDay, startOfDay, startOfDay);
 
 		appNotificationManager.showNotificationsFromJsArray("[" + jsData + "]");
 		assertEquals(2, shadowNotificationManager.getAllNotifications().size());
@@ -156,6 +146,7 @@ public class AppNotificationManagerTest {
 		appNotificationManager.showNotificationsFromJsArray(jsTaskDueTomorrow);
 		assertEquals(1, shadowNotificationManager.getAllNotifications().size());
 	}
+
 	@Test
 	public void notShowTasksPastEndDate() throws JSONException {
 		long taskReadyAtDate = startOfDay - DAY_IN_MILLIS;
@@ -183,8 +174,7 @@ public class AppNotificationManagerTest {
 	}
 
 	//should be ordered by readyAt in descending order cht returns them ordered like this
-	//Returns notifications for tasks created today and end today (1 day tasks)
-	private String getJSTaskNotificationString(long taskDate) {
+	private String getJSTaskNotificationString(long readyAt, long dueDate, long endDate) {
 		return """
 					{
 						"_id": "id_01",
@@ -202,6 +192,6 @@ public class AppNotificationManagerTest {
 						"endDate": %d,
 						"dueDate": %d
 					}
-				""".formatted(taskDate, taskDate, taskDate, taskDate, taskDate, taskDate);
+				""".formatted(readyAt, endDate, dueDate, readyAt, endDate, dueDate);
 	}
 }
