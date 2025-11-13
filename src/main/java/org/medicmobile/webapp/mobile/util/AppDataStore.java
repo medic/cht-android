@@ -5,6 +5,7 @@ import static org.medicmobile.webapp.mobile.MedicLog.log;
 import android.content.Context;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.OptIn;
 import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler;
 import androidx.datastore.preferences.core.MutablePreferences;
 import androidx.datastore.preferences.core.Preferences;
@@ -15,6 +16,7 @@ import androidx.datastore.rxjava3.RxDataStore;
 
 import io.reactivex.rxjava3.core.Single;
 
+@OptIn(markerClass = kotlinx.coroutines.ExperimentalCoroutinesApi.class)
 public class AppDataStore {
 	private static final String DATASTORE_NAME = "cht_datastore";
 	private static AppDataStore instance;
