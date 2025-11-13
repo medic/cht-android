@@ -24,7 +24,7 @@ public class NotificationWorker extends Worker {
 	@Override
 	public Result doWork() {
 		Context context = getApplicationContext();
-		AppDataStore appDataStore = new AppDataStore(context);
+		AppDataStore appDataStore = AppDataStore.getInstance(context);
 		AppNotificationManager appNotificationManager = new AppNotificationManager(context);
 		try {
 			String result = appDataStore

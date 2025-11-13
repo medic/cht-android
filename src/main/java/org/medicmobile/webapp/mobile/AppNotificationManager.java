@@ -49,7 +49,7 @@ public class AppNotificationManager {
 		SettingsStore settings = SettingsStore.in(context);
 		this.appUrl = settings.getAppUrl();
 		manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-		appDataStore = new AppDataStore(this.context);
+		appDataStore = AppDataStore.getInstance(this.context);
 		createNotificationChannel();
 	}
 
@@ -115,7 +115,7 @@ public class AppNotificationManager {
 	private void showMultipleTaskNotifications(JSONArray dataArray) throws JSONException {
 		Intent intent = new Intent(context, EmbeddedBrowserActivity.class);
 		intent.setData(Uri.parse(TextUtils.concat(appUrl, "/#/tasks").toString()));
-		long maxNotifications = appDataStore.getLongBlocking(MAX_NOTIFICATIONS_TO_SHOW_KEY, 8);
+		long maxNotifications = appDataStore.getLongBlocking(MAX_NOTIFICATIONS_TO_SHOW_KEY, 8L);
 		long latestStoredTimestamp = getLatestStoredTimestamp(getStartOfDay());
 		int counter = 0;
 		for (int i = 0; i < dataArray.length(); i++) {
@@ -156,11 +156,11 @@ public class AppNotificationManager {
 		if (isNewDay(startOfDay)) {
 			return 0;
 		}
-		return appDataStore.getLongBlocking(LATEST_NOTIFICATION_TIMESTAMP_KEY, 0);
+		return appDataStore.getLongBlocking(LATEST_NOTIFICATION_TIMESTAMP_KEY, 0L);
 	}
 
 	private boolean isNewDay(long startOfDay) {
-		long storedNotificationDay = appDataStore.getLongBlocking(TASK_NOTIFICATION_DAY_KEY, 0);
+		long storedNotificationDay = appDataStore.getLongBlocking(TASK_NOTIFICATION_DAY_KEY, 0L);
 		if (getStartOfDay() != storedNotificationDay) {
 			appDataStore.saveLong(TASK_NOTIFICATION_DAY_KEY, startOfDay);
 			return true;
