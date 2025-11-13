@@ -66,11 +66,12 @@ jobs:
         ANDROID_SECRETS_IV: ${{ secrets.ANDROID_SECRETS_IV_CHT_RCI_TEST }}
       run: make org=cht_rci_test keydec
 
-    - name: Unpack secrets cht_rci_test_cht4
+
+    - name: Unpack secrets cht_rci_training
       env:
-        ANDROID_SECRETS_KEY: ${{ secrets.ANDROID_SECRETS_KEY_CHT_RCI_TEST_CHT4 }}
-        ANDROID_SECRETS_IV: ${{ secrets.ANDROID_SECRETS_IV_CHT_RCI_TEST_CHT4 }}
-      run: make org=cht_rci_test_cht4 keydec
+        ANDROID_SECRETS_KEY: ${{ secrets.ANDROID_SECRETS_KEY_CHT_RCI_TRAINING }}
+        ANDROID_SECRETS_IV: ${{ secrets.ANDROID_SECRETS_IV_CHT_RCI_TRAINING }}
+      run: make org=cht_rci_training keydec
 
     - name: Assemble unbranded
       uses: maierj/fastlane-action@v1.4.0
@@ -302,15 +303,18 @@ jobs:
         ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_CHT_RCI_TEST }}
 
 
-    - name: Assemble cht_rci_test_cht4
-      uses: maierj/fastlane-action@v1.4.0
-      with:
-        lane: build
-        options: '{ "flavor": "cht_rci_test_cht4" }'
-      env:
-        ANDROID_KEYSTORE_PATH: cht_rci_test_cht4.keystore
-        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_CHT_RCI_TEST_CHT4 }}
-        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_CHT_RCI_TEST_CHT4 }}
+    - name: Assemble cht_rci_training
+          uses: maierj/fastlane-action@v1.4.0
+          with:
+            lane: build
+            options: '{ "flavor": "cht_rci_training" }'
+          env:
+            ANDROID_KEYSTORE_PATH: cht_rci_training.keystore
+            ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_CHT_RCI_TRAINING }}
+            ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_CHT_RCI_TRAINING }}
+
+
+
 
     - name: Bundle alerte_niger
       uses: maierj/fastlane-action@v1.4.0
@@ -353,15 +357,18 @@ jobs:
         ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_CHT_RCI_TEST }}
 
 
-    - name: Bundle cht_rci_test_cht4
+- name: Bundle cht_rci_training
       uses: maierj/fastlane-action@v1.4.0
       with:
         lane: bundle
-        options: '{ "flavor": "cht_rci_test_cht4" }'
+        options: '{ "flavor": "cht_rci_training" }'
       env:
-        ANDROID_KEYSTORE_PATH: cht_rci_test_cht4.keystore
-        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_CHT_RCI_TEST_CHT4 }}
-        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_CHT_RCI_TEST_CHT4 }}
+        ANDROID_KEYSTORE_PATH: cht_rci_training.keystore
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_CHT_RCI_TRAINING }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_CHT_RCI_TRAINING }}
+
+
+
 
     - name: Unpack secrets moh_civ_uat
       env:
@@ -704,6 +711,37 @@ jobs:
         ANDROID_SECRETS_KEY: ${{ secrets.ANDROID_SECRETS_KEY_MUSOMALI_TEST }}
         ANDROID_SECRETS_IV: ${{ secrets.ANDROID_SECRETS_IV_MUSOMALI_TEST }}
       run: make org=musomali_test keydec
+
+
+
+
+
+- name: Assemble musomali_training
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: build
+        options: '{ "flavor": "musomali_training" }'
+      env:
+        ANDROID_KEYSTORE_PATH: musomali_training.keystore
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_MUSOMALI_TRAINING }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_MUSOMALI_TRAINING }}
+
+ - name: Bundle musomali_training
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: bundle
+        options: '{ "flavor": "musomali_training" }'
+      env:
+        ANDROID_KEYSTORE_PATH: musomali_training.keystore
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_MUSOMALI_TRAINING }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_MUSOMALI_TRAINING }}
+
+- name: Unpack secrets musomali_training
+      env:
+        ANDROID_SECRETS_KEY: ${{ secrets.ANDROID_SECRETS_KEY_MUSOMALI_TRAINING }}
+        ANDROID_SECRETS_IV: ${{ secrets.ANDROID_SECRETS_IV_MUSOMALI_TRAINING }}
+      run: make org=musomali_training keydec
+
 
 
 

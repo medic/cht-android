@@ -324,6 +324,11 @@ android {
       applicationId = 'org.musohealth.webapp.mobile.musomali_test'
     }
 
+    musomali_training {
+      dimension = 'brand'
+      applicationId = 'org.musohealth.webapp.mobile.musomali_training'
+    }
+
 
     pih_malawi {
       dimension = 'brand'
@@ -403,6 +408,11 @@ android {
     cht_rci_test_cht4 {
       dimension = 'brand'
       applicationId = 'org.musohealth.webapp.mobile.cht_rci_test_cht4'
+    }
+
+    cht_rci_training {
+      dimension = 'brand'
+      applicationId = 'org.musohealth.webapp.mobile.cht_rci_training'
     }
 
     moh_mali_chw {
