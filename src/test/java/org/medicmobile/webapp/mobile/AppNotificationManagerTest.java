@@ -37,16 +37,16 @@ public class AppNotificationManagerTest {
 		shadowNotificationManager = Shadows.shadowOf(testNotificationManager);
 		appNotificationManager = spy(new AppNotificationManager(context));
 		startOfDay = appNotificationManager.getStartOfDay();
-		appDataStore = new AppDataStore(context);
+		appDataStore = AppDataStore.getInstance(context);
 		useBlockingDataStoreGet();
 	}
 
 	@After
 	public void resetDataStore() {
 		appDataStore.saveString(AppNotificationManager.TASK_NOTIFICATIONS_KEY, "[]");
-		appDataStore.saveLong(AppNotificationManager.TASK_NOTIFICATION_DAY_KEY, 0);
-		appDataStore.saveLong(AppNotificationManager.LATEST_NOTIFICATION_TIMESTAMP_KEY, 0);
-		appDataStore.saveLong(AppNotificationManager.MAX_NOTIFICATIONS_TO_SHOW_KEY, 8);
+		appDataStore.saveLong(AppNotificationManager.TASK_NOTIFICATION_DAY_KEY, 0L);
+		appDataStore.saveLong(AppNotificationManager.LATEST_NOTIFICATION_TIMESTAMP_KEY, 0L);
+		appDataStore.saveLong(AppNotificationManager.MAX_NOTIFICATIONS_TO_SHOW_KEY, 8L);
 	}
 
 	@Test
@@ -58,14 +58,14 @@ public class AppNotificationManagerTest {
 		appNotificationManager.cancelAllNotifications();
 		assertEquals(0, shadowNotificationManager.getAllNotifications().size());
 
-		assertEquals(appDataStore.getLongBlocking(AppNotificationManager.LATEST_NOTIFICATION_TIMESTAMP_KEY, 99), taskDate);
-		assertEquals(appDataStore.getLongBlocking(AppNotificationManager.TASK_NOTIFICATION_DAY_KEY, 99), startOfDay);
+		assertEquals(appDataStore.getLongBlocking(AppNotificationManager.LATEST_NOTIFICATION_TIMESTAMP_KEY, 99L), taskDate);
+		assertEquals(appDataStore.getLongBlocking(AppNotificationManager.TASK_NOTIFICATION_DAY_KEY, 99L), startOfDay);
 	}
 
 	@Test
 	public void showsOnlyMaxAllowedNotifications() throws JSONException {
 		String jsData = "[" + getJSTaskNotificationString(startOfDay, startOfDay, startOfDay) + "]";
-		appDataStore.saveLongBlocking(AppNotificationManager.MAX_NOTIFICATIONS_TO_SHOW_KEY, 1);
+		appDataStore.saveLongBlocking(AppNotificationManager.MAX_NOTIFICATIONS_TO_SHOW_KEY, 1L);
 		appNotificationManager.showNotificationsFromJsArray(jsData);
 		assertEquals(1, shadowNotificationManager.getAllNotifications().size());
 	}
@@ -74,7 +74,7 @@ public class AppNotificationManagerTest {
 	public void showsNotificationsOnNewDay() throws JSONException {
 		long taskDate = startOfDay;
 		String jsData = "[" + getJSTaskNotificationString(taskDate, taskDate, taskDate + DAY_IN_MILLIS) + "]";
-		assertEquals(0, appDataStore.getLongBlocking(AppNotificationManager.LATEST_NOTIFICATION_TIMESTAMP_KEY, 0));
+		assertEquals(0, appDataStore.getLongBlocking(AppNotificationManager.LATEST_NOTIFICATION_TIMESTAMP_KEY, 0L));
 		appNotificationManager.showNotificationsFromJsArray(jsData);
 		assertEquals(2, shadowNotificationManager.getAllNotifications().size());
 
@@ -84,7 +84,7 @@ public class AppNotificationManagerTest {
 
 		appNotificationManager.showNotificationsFromJsArray(jsData);
 		assertEquals(2, shadowNotificationManager.getAllNotifications().size());
-		assertEquals(taskDate, appDataStore.getLongBlocking(AppNotificationManager.LATEST_NOTIFICATION_TIMESTAMP_KEY, 0));
+		assertEquals(taskDate, appDataStore.getLongBlocking(AppNotificationManager.LATEST_NOTIFICATION_TIMESTAMP_KEY, 0L));
 	}
 
 	@Test
