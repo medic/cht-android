@@ -11,33 +11,36 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v3
 
       - name: Prepare output directory
-        run: mkdir output
+        run: mkdir -p output
 
-      # Step 1: Decrypt keystore from CI secrets
-      - name: Decrypt keystore
+      - name: Unpack keystore and PEPK
         env:
           ANDROID_SECRETS_KEY: ${{ secrets.ANDROID_SECRETS_KEY }}
           ANDROID_SECRETS_IV: ${{ secrets.ANDROID_SECRETS_IV }}
-        run: make org=medic keydec
+        run: |
+          echo "Decrypting keystore tarball..."
+          make org=medic keydec
+          echo "Files after extraction:"
+          ls -l
 
-      # Step 2: Copy keystore to artifact folder
-      - name: Copy keystore
-        run: cp medic.keystore output/release.keystore
+      - name: Copy keystore and private key to output
+        run: |
+          cp medic.keystore output/release.keystore
+          cp medic_private_key.pepk output/private_key.pepk
+          chmod 600 output/*
 
-      # Step 3: Save passwords & alias to a file
-      - name: Save signing variables
+      - name: Save passwords and alias
         run: |
           echo "ANDROID_KEYSTORE_PASSWORD=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" >> output/signing.txt
-          echo "ANDROID_KEY_ALIAS=${{ secrets.ANDROID_KEY_ALIAS }}" >> output/signing.txt
           echo "ANDROID_KEY_PASSWORD=${{ secrets.ANDROID_KEY_PASSWORD }}" >> output/signing.txt
+          echo "ANDROID_KEY_ALIAS=${{ secrets.ANDROID_KEY_ALIAS }}" >> output/signing.txt
           echo "ANDROID_KEYSTORE_PATH=output/release.keystore" >> output/signing.txt
 
-      # Step 4: Upload artifact
-      - name: Upload artifact
+      - name: Upload signing materials
         uses: actions/upload-artifact@v4
         with:
           name: signing-materials
