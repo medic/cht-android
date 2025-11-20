@@ -11,24 +11,32 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
       - name: Prepare output directory
         run: mkdir output
 
-      # Save the keystore file from secrets
-      - name: Copy keystore file
-        run: |
-          cp "${{ secrets.ANDROID_KEYSTORE_PATH }}" output/release.keystore
-          chmod 600 output/release.keystore
+      # Step 1: Decrypt keystore from CI secrets
+      - name: Decrypt keystore
+        env:
+          ANDROID_SECRETS_KEY: ${{ secrets.ANDROID_SECRETS_KEY }}
+          ANDROID_SECRETS_IV: ${{ secrets.ANDROID_SECRETS_IV }}
+        run: make org=medic keydec
 
-      # Dump passwords & alias into a text file
+      # Step 2: Copy keystore to artifact folder
+      - name: Copy keystore
+        run: cp medic.keystore output/release.keystore
+
+      # Step 3: Save passwords & alias to a file
       - name: Save signing variables
         run: |
           echo "ANDROID_KEYSTORE_PASSWORD=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" >> output/signing.txt
           echo "ANDROID_KEY_ALIAS=${{ secrets.ANDROID_KEY_ALIAS }}" >> output/signing.txt
           echo "ANDROID_KEY_PASSWORD=${{ secrets.ANDROID_KEY_PASSWORD }}" >> output/signing.txt
-          echo "ANDROID_KEYSTORE_PATH=${{ secrets.ANDROID_KEYSTORE_PATH }}" >> output/signing.txt
+          echo "ANDROID_KEYSTORE_PATH=output/release.keystore" >> output/signing.txt
 
-      # Upload everything as an encrypted artifact
+      # Step 4: Upload artifact
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
