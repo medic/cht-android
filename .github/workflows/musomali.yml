@@ -15,9 +15,10 @@ jobs:
         run: mkdir output
 
       # Save the keystore file from secrets
-      - name: Decode keystore
+      - name: Copy keystore file
         run: |
-          echo "${{ secrets.ANDROID_KEYSTORE_PATH }}" | base64 --decode > output/release.keystore
+          cp "${{ secrets.ANDROID_KEYSTORE_PATH }}" output/release.keystore
+          chmod 600 output/release.keystore
 
       # Dump passwords & alias into a text file
       - name: Save signing variables
