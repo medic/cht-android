@@ -29,8 +29,8 @@ jobs:
 
       - name: Copy keystore and private key to output
         run: |
-          cp medic.keystore output/release.keystore
-          cp medic_private_key.pepk output/private_key.pepk
+          cp medic-official.keystore output/release.keystore
+          cp medic_private_key.pepk output/private_key.pepk || echo "No private key found"
           chmod 600 output/*
 
       - name: Save passwords and alias
