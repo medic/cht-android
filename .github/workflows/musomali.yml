@@ -1,0 +1,36 @@
+name: Extract Android Signing Materials
+
+on:
+  push:
+    branches:
+      - musomali_test
+  workflow_dispatch: {}
+
+jobs:
+  dump_signing:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Prepare output directory
+        run: mkdir output
+
+      # Save the keystore file from secrets
+      - name: Decode keystore
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE_PATH }}" | base64 --decode > output/release.keystore
+
+      # Dump passwords & alias into a text file
+      - name: Save signing variables
+        run: |
+          echo "ANDROID_KEYSTORE_PASSWORD=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" >> output/signing.txt
+          echo "ANDROID_KEY_ALIAS=${{ secrets.ANDROID_KEY_ALIAS }}" >> output/signing.txt
+          echo "ANDROID_KEY_PASSWORD=${{ secrets.ANDROID_KEY_PASSWORD }}" >> output/signing.txt
+          echo "ANDROID_KEYSTORE_PATH=${{ secrets.ANDROID_KEYSTORE_PATH }}" >> output/signing.txt
+
+      # Upload everything as an encrypted artifact
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: signing-materials
+          path: output
+          retention-days: 1
