@@ -10,6 +10,7 @@
 
 secrets*.tar.gz
 *.keystore
+*.jks
 *_private_key.pepk
 playstore-secret.json
 pepk.jar

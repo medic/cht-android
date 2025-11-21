@@ -168,8 +168,10 @@ ifndef ANDROID_SECRETS_IV
 	$(eval ANDROID_KEYSTORE_PASSWORD := $(shell echo ${${VARNAME}}))
 	$(eval VARNAME=ANDROID_KEY_PASSWORD_${ORG_UPPER})
 	$(eval ANDROID_KEY_PASSWORD := $(shell echo ${${VARNAME}}))
-	$(eval ANDROID_KEY_ALIAS := "medicmobile")
-	$(eval ANDROID_KEYSTORE_PATH := "${org}.keystore")
+	$(eval VARNAME=ANDROID_KEY_ALIAS_${ORG_UPPER})
+	$(eval ANDROID_KEY_ALIAS := $(shell echo ${${VARNAME}}))
+	$(eval VARNAME=ANDROID_KEYSTORE_PATH_${ORG_UPPER})
+	$(eval ANDROID_KEYSTORE_PATH := $(shell echo ${${VARNAME}}))
 endif
 
 check-keystore-exist:

@@ -319,6 +319,17 @@ android {
       applicationId = 'org.medicmobile.webapp.mobile.musomali'
     }
 
+    musomali_test {
+      dimension = 'brand'
+      applicationId = 'org.musohealth.webapp.mobile.musomali_test'
+    }
+
+    musomali_training {
+      dimension = 'brand'
+      applicationId = 'org.musohealth.webapp.mobile.musomali_training'
+    }
+
+
     pih_malawi {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.pih_malawi'
@@ -386,7 +397,22 @@ android {
     
     cht_rci {
       dimension = 'brand'
-      applicationId = 'org.medicmobile.webapp.mobile.cht_rci'
+      applicationId = 'org.musohealth.webapp.mobile.cht_rci'
+    }
+
+    cht_rci_test {
+      dimension = 'brand'
+      applicationId = 'org.musohealth.webapp.mobile.cht_rci_test'
+    }
+
+    cht_rci_test_cht4 {
+      dimension = 'brand'
+      applicationId = 'org.musohealth.webapp.mobile.cht_rci_test_cht4'
+    }
+
+    cht_rci_training {
+      dimension = 'brand'
+      applicationId = 'org.musohealth.webapp.mobile.cht_rci_training'
     }
 
     moh_mali_chw {
@@ -415,6 +441,7 @@ android {
       applicationId = 'org.medicmobile.webapp.mobile.moh_mali_chw_training_three'
       buildConfigField "boolean", "IS_TRAINING_APP", 'true'
     }
+
     moh_togo_uat {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.moh_togo_uat'
