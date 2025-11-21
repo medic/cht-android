@@ -316,7 +316,7 @@ android {
 
     musomali {
       dimension = 'brand'
-      applicationId = 'org.musohealth.webapp.mobile.musomali'
+      applicationId = 'org.medicmobile.webapp.mobile.musomali'
     }
 
     musomali_test {
