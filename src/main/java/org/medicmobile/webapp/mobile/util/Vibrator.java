@@ -1,11 +1,13 @@
 package org.medicmobile.webapp.mobile.util;
 
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.os.Build;
 import android.os.VibrationEffect;
 import android.os.VibratorManager;
 
+@SuppressLint("UseRequiresApi")
 public class Vibrator {
 	protected final Context context;
 

@@ -17,6 +17,7 @@
   <uses-permission android:name="android.permission.VIBRATE"/>
   <uses-permission android:name="com.android.launcher.permission.INSTALL_SHORTCUT"/>
   <uses-permission android:name="com.android.launcher.permission.UNINSTALL_SHORTCUT"/>
+  <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
 
   <!-- READ_EXTERNAL_STORAGE is required if users want to include photos from their phone  -->
   <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32"/>
@@ -50,7 +51,8 @@
         <action android:name="android.intent.action.VIEW" />
         <category android:name="android.intent.category.DEFAULT" />
         <category android:name="android.intent.category.BROWSABLE" />
-        <data android:scheme="@string/scheme" android:host="@string/app_host" android:pathPattern=".*"/>
+        <data android:scheme="@string/scheme" android:host="@string/app_host" android:pathPattern=".*"
+            tools:ignore="AppLinkUrlError" />
       </intent-filter>
     </activity>
     <activity android:name="ConnectionErrorActivity"
@@ -92,6 +94,10 @@
         android:resource="@xml/file_paths">
       </meta-data>
     </provider>
+    <service android:name="androidx.work.impl.background.systemjob.SystemJobService"
+        android:permission="android.permission.BIND_JOB_SERVICE"
+        android:exported="true"
+        tools:targetApi="23" />
   </application>
 
   <queries>
