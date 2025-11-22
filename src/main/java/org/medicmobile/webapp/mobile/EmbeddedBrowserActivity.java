@@ -19,6 +19,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.Build;
@@ -33,13 +34,14 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.ViewCompat;
 
 import java.util.Arrays;
 import java.util.Optional;
 
-@SuppressWarnings({ "PMD.GodClass", "PMD.TooManyMethods" })
+@SuppressWarnings({"PMD.GodClass", "PMD.TooManyMethods"})
 public class EmbeddedBrowserActivity extends Activity {
 
 	private WebView container;
@@ -50,22 +52,24 @@ public class EmbeddedBrowserActivity extends Activity {
 	private SmsSender smsSender;
 	private ChtExternalAppHandler chtExternalAppHandler;
 	private boolean isMigrationRunning = false;
+	private AppNotificationManager appNotificationManager;
 
 	private static final ValueCallback<String> IGNORE_RESULT = new ValueCallback<String>() {
 		public void onReceiveValue(String result) { /* ignore */ }
 	};
 	private final ValueCallback<String> backButtonHandler = new ValueCallback<String>() {
 		public void onReceiveValue(String result) {
-			if(!"true".equals(result)) {
+			if (!"true".equals(result)) {
 				EmbeddedBrowserActivity.this.moveTaskToBack(false);
 			}
 		}
 	};
 
 
-//> ACTIVITY LIFECYCLE METHODS
+	//> ACTIVITY LIFECYCLE METHODS
 	@SuppressLint("ClickableViewAccessibility")
-	@Override public void onCreate(Bundle savedInstanceState) {
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
 		trace(this, "Starting webview...");
@@ -76,7 +80,7 @@ public class EmbeddedBrowserActivity extends Activity {
 
 		try {
 			this.smsSender = SmsSender.createInstance(this);
-		} catch(Exception ex) {
+		} catch (Exception ex) {
 			error(ex, "Failed to create SmsSender.");
 		}
 
@@ -106,9 +110,9 @@ public class EmbeddedBrowserActivity extends Activity {
 		container = findViewById(R.id.wbvMain);
 
 		getFragmentManager()
-			.beginTransaction()
-			.add(new OpenSettingsDialogFragment(), OpenSettingsDialogFragment.class.getName())
-			.commit();
+				.beginTransaction()
+				.add(new OpenSettingsDialogFragment(), OpenSettingsDialogFragment.class.getName())
+				.commit();
 
 		configureUserAgent();
 
@@ -124,6 +128,8 @@ public class EmbeddedBrowserActivity extends Activity {
 		}
 
 		registerRetryConnectionBroadcastReceiver();
+
+		initializeNotifications();
 
 		String recentNavigation = settings.getLastUrl();
 		Intent appLinkIntent = getIntent();
@@ -141,7 +147,8 @@ public class EmbeddedBrowserActivity extends Activity {
 	}
 
 	@Override
-	protected void onNewIntent(Intent intent) {
+	protected void onNewIntent(@NonNull Intent intent) {
+		super.onNewIntent(intent);
 		Uri appLinkData = intent.getData();
 		browseTo(appLinkData);
 	}
@@ -155,8 +162,8 @@ public class EmbeddedBrowserActivity extends Activity {
 			log(this, "onStart() :: Running Crosswalk migration ...");
 			isMigrationRunning = true;
 			Intent intent = new Intent(this, UpgradingActivity.class)
-				.putExtra("isClosable", false)
-				.putExtra("backPressedMessage", getString(R.string.waitMigration));
+					.putExtra("isClosable", false)
+					.putExtra("backPressedMessage", getString(R.string.waitMigration));
 			startActivity(intent);
 			xWalkMigration.run();
 		} else {
@@ -184,7 +191,9 @@ public class EmbeddedBrowserActivity extends Activity {
 		super.onStop();
 	}
 
-	@Override public void onBackPressed() {
+
+	@Override
+	public void onBackPressed() {
 		trace(this, "onBackPressed()");
 		container.evaluateJavascript(
 				"angular.element(document.body).injector().get('AndroidApi').v1.back()",
@@ -192,7 +201,31 @@ public class EmbeddedBrowserActivity extends Activity {
 	}
 
 	@Override
+	protected void onResume() {
+		super.onResume();
+		appNotificationManager.stopNotificationWorker();
+		appNotificationManager.startForegroundNotificationHandler();
+	}
+
+	@Override
+	protected void onPause() {
+		appNotificationManager.stopForegroundNotificationHandler();
+		appNotificationManager.startNotificationWorker();
+		super.onPause();
+	}
+
+	@Override
+	public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+		if (requestCode == AppNotificationManager.REQUEST_NOTIFICATION_PERMISSION && grantResults.length > 0 &&
+				grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+			initializeNotifications();
+		}
+	}
+
+	@Override
 	protected void onActivityResult(int requestCd, int resultCode, Intent intent) {
+		super.onActivityResult(requestCd, resultCode, intent);
 		Optional<RequestCode> requestCodeOpt = RequestCode.valueOf(requestCd);
 
 		if (!requestCodeOpt.isPresent()) {
@@ -230,11 +263,19 @@ public class EmbeddedBrowserActivity extends Activity {
 		} catch (Exception ex) {
 			String action = intent == null ? null : intent.getAction();
 			warn(ex, "Problem handling intent %s (%s) with requestCode=%s & resultCode=%s",
-				intent, action, requestCode.name(), resultCode);
+					intent, action, requestCode.name(), resultCode);
 		}
 	}
 
-//> ACCESSORS
+	private void initializeNotifications() {
+		NotificationForegroundHandler foregroundNotificationHandler = new NotificationForegroundHandler(container);
+		appNotificationManager = new AppNotificationManager(this, foregroundNotificationHandler);
+		appNotificationManager.cancelAllNotifications();
+		appNotificationManager.requestNotificationPermission(this);
+		appNotificationManager.startForegroundNotificationHandler();
+	}
+
+	//> ACCESSORS
 	MrdtSupport getMrdtSupport() {
 		return this.mrdt;
 	}
@@ -247,7 +288,7 @@ public class EmbeddedBrowserActivity extends Activity {
 		return this.chtExternalAppHandler;
 	}
 
-//> PUBLIC API
+	//> PUBLIC API
 	public void evaluateJavascript(final String js) {
 		evaluateJavascript(js, true);
 	}
@@ -288,13 +329,13 @@ public class EmbeddedBrowserActivity extends Activity {
 
 		trace(this, "getLocationPermissions() :: Fine or Coarse location not granted before, requesting access...");
 		startActivityForResult(
-			new Intent(this, RequestLocationPermissionActivity.class),
-			RequestCode.ACCESS_LOCATION_PERMISSION.getCode()
+				new Intent(this, RequestLocationPermissionActivity.class),
+				RequestCode.ACCESS_LOCATION_PERMISSION.getCode()
 		);
 		return false;
 	}
 
-//> PRIVATE HELPERS
+	//> PRIVATE HELPERS
 	private void locationRequestResolved() {
 		evaluateJavascript("window.CHTCore.AndroidApi.v1.locationPermissionRequestResolved();");
 	}
@@ -327,10 +368,10 @@ public class EmbeddedBrowserActivity extends Activity {
 		}
 
 		trace(
-			this,
-			"EmbeddedBrowserActivity :: No handling for trigger: %s, requestCode: %s",
-			triggerClass,
-			RequestCode.ACCESS_STORAGE_PERMISSION.name()
+				this,
+				"EmbeddedBrowserActivity :: No handling for trigger: %s, requestCode: %s",
+				triggerClass,
+				RequestCode.ACCESS_STORAGE_PERMISSION.name()
 		);
 	}
 
@@ -351,7 +392,8 @@ public class EmbeddedBrowserActivity extends Activity {
 
 	private void setUpUiClient(WebView container) {
 		container.setWebChromeClient(new WebChromeClient() {
-			@Override public boolean onConsoleMessage(ConsoleMessage cm) {
+			@Override
+			public boolean onConsoleMessage(ConsoleMessage cm) {
 				if (!DEBUG) {
 					return super.onConsoleMessage(cm);
 				}
@@ -359,12 +401,14 @@ public class EmbeddedBrowserActivity extends Activity {
 				return true;
 			}
 
-			@Override public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, FileChooserParams fileChooserParams) {
+			@Override
+			public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, FileChooserParams fileChooserParams) {
 				filePickerHandler.openPicker(fileChooserParams, filePathCallback);
 				return true;
 			}
 
-			@Override public void onGeolocationPermissionsShowPrompt(final String origin, final GeolocationPermissions.Callback callback) {
+			@Override
+			public void onGeolocationPermissionsShowPrompt(final String origin, final GeolocationPermissions.Callback callback) {
 				callback.invoke(origin, true, true);
 			}
 		});
@@ -402,7 +446,8 @@ public class EmbeddedBrowserActivity extends Activity {
 
 	private void registerRetryConnectionBroadcastReceiver() {
 		BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
-			@Override public void onReceive(Context context, Intent intent) {
+			@Override
+			public void onReceive(Context context, Intent intent) {
 				String action = intent.getAction();
 				if (action.equals("retryConnection")) {
 					// user fixed the connection and asked the app
@@ -412,14 +457,14 @@ public class EmbeddedBrowserActivity extends Activity {
 			}
 		};
 		ContextCompat.registerReceiver(
-			getApplicationContext(),
-			broadcastReceiver,
-			new IntentFilter("retryConnection"),
-			ContextCompat.RECEIVER_NOT_EXPORTED
+				getApplicationContext(),
+				broadcastReceiver,
+				new IntentFilter("retryConnection"),
+				ContextCompat.RECEIVER_NOT_EXPORTED
 		);
 	}
 
-//> ENUMS
+	//> ENUMS
 	public enum RequestCode {
 		ACCESS_LOCATION_PERMISSION(100),
 		ACCESS_STORAGE_PERMISSION(101),
@@ -436,9 +481,9 @@ public class EmbeddedBrowserActivity extends Activity {
 
 		public static Optional<RequestCode> valueOf(int code) {
 			return Arrays
-				.stream(RequestCode.values())
-				.filter(e -> e.getCode() == code)
-				.findFirst();
+					.stream(RequestCode.values())
+					.filter(e -> e.getCode() == code)
+					.findFirst();
 		}
 
 		public int getCode() {

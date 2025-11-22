@@ -1,5 +1,11 @@
 package org.medicmobile.webapp.mobile;
 
+import static org.medicmobile.webapp.mobile.MedicLog.log;
+import static java.util.Calendar.DAY_OF_MONTH;
+import static java.util.Calendar.MONTH;
+import static java.util.Calendar.YEAR;
+import static java.util.Locale.UK;
+
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.app.ActivityManager.MemoryInfo;
@@ -10,11 +16,15 @@ import android.net.NetworkCapabilities;
 import android.net.NetworkInfo;
 import android.net.TrafficStats;
 import android.net.Uri;
-import android.os.Process;
-import android.widget.DatePicker;
 import android.os.Build;
 import android.os.Environment;
+import android.os.Process;
 import android.os.StatFs;
+import android.webkit.JavascriptInterface;
+import android.widget.DatePicker;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -31,15 +41,6 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import static java.util.Calendar.DAY_OF_MONTH;
-import static java.util.Calendar.MONTH;
-import static java.util.Calendar.YEAR;
-import static java.util.Locale.UK;
-import static org.medicmobile.webapp.mobile.MedicLog.log;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
@@ -74,14 +75,14 @@ public class MedicAndroidJavascript {
 		this.connectivityManager = connectivityManager;
 	}
 
-//> JavascriptInterface METHODS
+	//> JavascriptInterface METHODS
 	@android.webkit.JavascriptInterface
 	public String getAppVersion() {
 		try {
 			return parent.getPackageManager()
 					.getPackageInfo(parent.getPackageName(), 0)
 					.versionName;
-		} catch(Exception ex) {
+		} catch (Exception ex) {
 			return jsonError("Error fetching app version: ", ex);
 		}
 	}
@@ -89,8 +90,8 @@ public class MedicAndroidJavascript {
 	@android.webkit.JavascriptInterface
 	public void playAlert() {
 		try {
-			if(soundAlert != null) soundAlert.trigger();
-		} catch(Exception ex) {
+			if (soundAlert != null) soundAlert.trigger();
+		} catch (Exception ex) {
 			logException(ex);
 		}
 	}
@@ -107,7 +108,7 @@ public class MedicAndroidJavascript {
 							TrafficStats.getUidRxBytes(uid),
 							TrafficStats.getUidTxBytes(uid)))
 					.toString();
-		} catch(Exception ex) {
+		} catch (Exception ex) {
 			return jsonError("Problem fetching data usage stats.");
 		}
 	}
@@ -127,7 +128,7 @@ public class MedicAndroidJavascript {
 	public void datePicker(final String targetElement) {
 		try {
 			datePicker(targetElement, Calendar.getInstance());
-		} catch(Exception ex) {
+		} catch (Exception ex) {
 			logException(ex);
 		}
 	}
@@ -139,18 +140,24 @@ public class MedicAndroidJavascript {
 			Calendar c = Calendar.getInstance();
 			c.setTime(dateFormat.parse(initialDate));
 			datePicker(targetElement, c);
-		} catch(ParseException ex) {
+		} catch (ParseException ex) {
 			datePicker(targetElement);
-		} catch(Exception ex) {
+		} catch (Exception ex) {
 			logException(ex);
 		}
+	}
+
+	@JavascriptInterface
+	public void onGetNotificationResult(String result) throws JSONException {
+		AppNotificationManager appNotificationManager = new AppNotificationManager(parent);
+		appNotificationManager.showNotificationsFromJsArray(result);
 	}
 
 	@android.webkit.JavascriptInterface
 	public boolean mrdt_available() {
 		try {
 			return mrdt.isAppInstalled();
-		} catch(Exception ex) {
+		} catch (Exception ex) {
 			logException(ex);
 			return false;
 		}
@@ -160,7 +167,7 @@ public class MedicAndroidJavascript {
 	public void mrdt_verify() {
 		try {
 			mrdt.startVerify();
-		} catch(Exception ex) {
+		} catch (Exception ex) {
 			logException(ex);
 		}
 	}
@@ -171,16 +178,16 @@ public class MedicAndroidJavascript {
 	}
 
 	/**
-	 * @param id id associated with this message, e.g. a pouchdb docId
+	 * @param id          id associated with this message, e.g. a pouchdb docId
 	 * @param destination the recipient phone number for this message
-	 * @param content the text content of the SMS to be sent
+	 * @param content     the text content of the SMS to be sent
 	 */
 	@android.webkit.JavascriptInterface
 	public void sms_send(String id, String destination, String content) throws Exception {
 		try {
 			// TODO we may need to do this on a background thread to avoid the browser UI from blocking while the SMS is being sent.  Check.
 			smsSender.send(new SmsSender.Sms(id, destination, content));
-		} catch(Exception ex) {
+		} catch (Exception ex) {
 			logException(ex);
 			throw ex;
 		}
@@ -226,7 +233,7 @@ public class MedicAndroidJavascript {
 			PackageInfo packageInfo = parent
 					.getPackageManager()
 					.getPackageInfo(parent.getPackageName(), 0);
-			long versionCode = Build.VERSION.SDK_INT < Build.VERSION_CODES.P ? (long)packageInfo.versionCode : packageInfo.getLongVersionCode();
+			long versionCode = Build.VERSION.SDK_INT < Build.VERSION_CODES.P ? (long) packageInfo.versionCode : packageInfo.getLongVersionCode();
 
 			JSONObject appObject = new JSONObject();
 			appObject.put("version", packageInfo.versionName);
@@ -303,7 +310,7 @@ public class MedicAndroidJavascript {
 		}
 	}
 
-//> PRIVATE HELPER METHODS
+	//> PRIVATE HELPER METHODS
 	private void datePicker(String targetElement, Calendar initialDate) {
 		// Remove single-quotes from the `targetElement` CSS selecter, as
 		// we'll be using these to enclose the entire string in JS.  We
@@ -336,9 +343,9 @@ public class MedicAndroidJavascript {
 	}
 
 	private static HashMap getCPUInfo() throws IOException {
-		try(
-			Reader fileReader = new InputStreamReader(new FileInputStream("/proc/cpuinfo"), StandardCharsets.UTF_8);
-			BufferedReader bufferedReader = new BufferedReader(fileReader);
+		try (
+				Reader fileReader = new InputStreamReader(new FileInputStream("/proc/cpuinfo"), StandardCharsets.UTF_8);
+				BufferedReader bufferedReader = new BufferedReader(fileReader);
 		) {
 			String line;
 			HashMap output = new HashMap();
@@ -376,7 +383,7 @@ public class MedicAndroidJavascript {
 		parent.errorToJsConsole("Exception thrown in JavascriptInterface function: %s", stacktrace);
 	}
 
-//> STATIC HELPERS
+	//> STATIC HELPERS
 	private static String jsonError(String message, Exception ex) {
 		return jsonError(message + ex.getClass() + ": " + ex.getMessage());
 	}
