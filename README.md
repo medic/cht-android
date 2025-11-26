@@ -1,27 +1,27 @@
-CHT Android App
-===============
+# CHT Android
 
-The cht-android application is a thin Android wrapper to load the [CHT Core Framework](https://github.com/medic/cht-core/) web application in a Webview native container.
+![GitHub license](https://img.shields.io/github/license/medic/cht-android)
+![GitHub release](https://img.shields.io/github/v/release/medic/cht-android)
+[![Discourse](https://img.shields.io/badge/discourse-join-blue)](https://forum.communityhealthtoolkit.org/)
+
+CHT Android application is a thin Android wrapper to load the [CHT Core Framework](https://github.com/medic/cht-core/) web application in a Webview native container.
 
 The repository contains “flavored” configurations, where each “flavor” or “brand” is an app. This allows the application to be hardcoded to a specific CHT deployment and have a partner specific logo and display name. The app also provides some deeper integration with other android apps and native phone functions that are otherwise unavailable to webapps.
 
-
-## Release notes
+## Release Notes
 
 Checkout the release notes in the [Changelog](CHANGELOG.md) page, our you can see the full release history with the installable files for sideloading [here](https://github.com/medic/cht-android/releases).
 
-
 ## Development
 
-Development guides are available in the "Android" section of the [Community Health Toolkit Docs Site](https://docs.communityhealthtoolkit.org/core/guides/android/). You will find instructions of how to setup your development environment, build and test new features, creates new branded apps, release, publish... and so on.
+Development guides are available in the "Android" section of the [Community Health Toolkit Docs Site](https://docs.communityhealthtoolkit.org/building/branding/publishing/). You will find instructions of how to setup your development environment, build and test new features, creates new branded apps, release, and publish.
 
-## Settings page
+## Settings Page
 To open the app's Settings page, tap 5 times with one finger on the screen and then swipe right with two fingers, make sure to do this sequence fast. Once opened, you can change the URL of the CHT server and click "Save" to save the changes and close the Settings page.
 
 ## Copyright
 
 Copyright 2013-2025 Medic Mobile, Inc. <hello@medic.org>.
-
 
 ## License
 
