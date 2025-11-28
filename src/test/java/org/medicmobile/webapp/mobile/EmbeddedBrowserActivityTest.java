@@ -19,17 +19,25 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Application;
 import android.content.Intent;
 import android.net.Uri;
 
 import androidx.core.content.ContextCompat;
+import androidx.test.core.app.ApplicationProvider;
 import androidx.test.espresso.intent.Intents;
 import androidx.test.espresso.intent.matcher.IntentMatchers;
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
+import androidx.work.Configuration;
+import androidx.work.testing.WorkManagerTestInitHelper;
 
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.RuleChain;
+import org.junit.rules.TestRule;
+import org.junit.runner.Description;
 import org.junit.runner.RunWith;
+import org.junit.runners.model.Statement;
 import org.mockito.MockedStatic;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.shadows.ShadowActivity;
@@ -37,8 +45,26 @@ import org.robolectric.shadows.ShadowActivity;
 @RunWith(RobolectricTestRunner.class)
 public class EmbeddedBrowserActivityTest {
 
+	private final ActivityScenarioRule<EmbeddedBrowserActivity> scenarioRule = new ActivityScenarioRule<>(EmbeddedBrowserActivity.class);
+
+	public static class WorkManagerInitRule implements TestRule {
+		@Override
+		public Statement apply(Statement base, Description description) {
+			return new Statement() {
+				@Override
+				public void evaluate() throws Throwable {
+					Application context = ApplicationProvider.getApplicationContext();
+					// Initialize WorkManager for testing
+					Configuration config = new Configuration.Builder().build();
+					WorkManagerTestInitHelper.initializeTestWorkManager(context, config);
+					base.evaluate();
+				}
+			};
+		}
+	}
+
 	@Rule
-	public ActivityScenarioRule<EmbeddedBrowserActivity> scenarioRule = new ActivityScenarioRule<>(EmbeddedBrowserActivity.class);
+	public TestRule ruleChain = RuleChain.outerRule(new WorkManagerInitRule()).around(scenarioRule);
 
 	@Test
 	public void isMigrationRunning_returnsFlagCorrectly() {
