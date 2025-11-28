@@ -85,6 +85,14 @@ public class ChtExternalApp {
 
 	//> PRIVATE
 
+	private Serializable getSerializableValue(Object value) {
+		// ODK does not have boolean data type
+		if (value instanceof String strValue && ("true".equals(strValue) || "false".equals(strValue))) {
+			return Boolean.parseBoolean(strValue);
+		}
+		return (Serializable) value;
+	}
+
 	private void setIntentExtras(Intent intent, String key, JSONObject data) {
 		try {
 			Object value = data.get(key);
@@ -99,7 +107,7 @@ public class ChtExternalApp {
 				return;
 			}
 
-			intent.putExtra(key, (Serializable) value);
+			intent.putExtra(key, getSerializableValue(value));
 
 		} catch (Exception exception) {
 			error(exception, "ChtExternalApp :: Problem setting intent extras. Key=%s, Data=%s", key, data);
