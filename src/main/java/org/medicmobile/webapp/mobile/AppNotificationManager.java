@@ -90,7 +90,6 @@ public class AppNotificationManager {
 	}
 
 	public void stopNotificationWorker() {
-		appDataStore.saveString(TASK_NOTIFICATIONS_KEY, "[]");
 		WorkManager.getInstance(context).cancelAllWorkByTag(NotificationWorker.NOTIFICATION_WORK_REQUEST_TAG);
 		log(context, "stopNotificationWorker() :: Stopped notification work manager");
 	}
