@@ -445,6 +445,16 @@ android {
       applicationId = 'org.medicmobile.webapp.mobile.moh_civ_uat'
     }
 
+    moh_civ_coach {
+      dimension = 'brand'
+      applicationId = 'org.medicmobile.webapp.mobile.moh_civ_coach'
+    }
+
+    moh_civ_coach_uat {
+      dimension = 'brand'
+      applicationId = 'org.medicmobile.webapp.mobile.moh_civ_coach_uat'
+    }
+
     moh_nepal_mhealth {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.moh_nepal_mhealth'
@@ -476,6 +486,7 @@ dependencies {
   implementation fileTree(dir: 'libs', include: ['*.jar'])
   implementation platform('org.jetbrains.kotlin:kotlin-bom:1.9.24')
   implementation 'androidx.browser:browser:1.8.0'
+  implementation 'androidx.appcompat:appcompat:1.7.1'
   implementation 'androidx.core:core:1.13.1'
   implementation 'androidx.activity:activity:1.9.0'
   implementation 'androidx.fragment:fragment:1.7.1'

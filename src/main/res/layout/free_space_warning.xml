@@ -37,7 +37,7 @@
 					style="@style/standardButton"
 					android:text="@string/btnQuit"
 					android:onClick="evtQuit"
-					tools:ignore="OnClick"
+					tools:ignore="OnClick,UsingOnClickInXml"
 					android:layout_toStartOf="@+id/btnFreeSpaceContinue"
 					android:layout_alignParentBottom="true"/>
 			<!-- OnClick is ignored because lint generates error
@@ -47,7 +47,7 @@
 					style="@style/standardButton"
 					android:text="@string/btnContinue"
 					android:onClick="evtContinue"
-					tools:ignore="OnClick"
+					tools:ignore="OnClick,UsingOnClickInXml"
 					android:layout_alignParentEnd="true"
 					android:layout_alignParentBottom="true"/>
 		</RelativeLayout>
