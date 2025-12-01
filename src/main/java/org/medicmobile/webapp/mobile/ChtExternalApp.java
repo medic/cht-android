@@ -344,7 +344,14 @@ public class ChtExternalApp {
 
 		private Optional<List<?>> asPrimitiveList(Object value) {
 			if (value != null && value.getClass().isArray()) {
-				value = List.of(((Object[]) value));
+				// Java utility methods are not great when mixing primitive and object arrays.
+				// So, we manually convert any array to a List<Object>.
+				int len = java.lang.reflect.Array.getLength(value);
+				List<Object> list = new ArrayList<>(len);
+				for (int i = 0; i < len; i++) {
+					list.add(java.lang.reflect.Array.get(value, i));
+				}
+				value = list;
 			}
 			if (
 				!(value instanceof List)

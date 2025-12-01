@@ -265,16 +265,16 @@ public class ChtExternalAppTest {
 		intent.putExtra("a.string.array", new String[]{"some text", "another text"});
 
 		String expectedJsonData = "{" +
-				"\"an.int.array\":[5,9]," +
+				"\"an.int.array\":\"5 9\"," +
 				"\"a.double\":2.8," +
 				"\"a.long\":2147483649," +
 				"\"a.string\":\"some text\"," +
 				"\"an.int\":5," +
-				"\"a.boolean.array\":[true,false,true]," +
+				"\"a.boolean.array\":\"true false true\"," +
 				"\"a.boolean\":true," +
-				"\"a.string.array\":[\"some text\",\"another text\"]," +
-				"\"a.long.array\":[2147483649,2147483700]," +
-				"\"a.double.array\":[2.8,5.5]" +
+				"\"a.string.array\":\"some_text another_text\"," +
+				"\"a.long.array\":\"2147483649 2147483700\"," +
+				"\"a.double.array\":\"2.8 5.5\"" +
 				"}";
 
 		//> WHEN
@@ -326,7 +326,7 @@ public class ChtExternalAppTest {
 		String expectedJsonData = "{" +
 				"\"people\":[" +
 					"{" +
-						"\"relatives\":[\"Pepe\",\"John\",\"Matt\"]," +
+						"\"relatives\":\"Pepe John Matt\"," +
 						"\"name\":\"Anna\"" +
 					"}," +
 					"{" +
@@ -343,9 +343,9 @@ public class ChtExternalAppTest {
 					"\"a.boolean\":true," +
 					"\"more.details\":{" +
 						"\"a.null\":null," +
-						"\"a.boolean.array\":[true,false,true]," +
+						"\"a.boolean.array\":\"true false true\"," +
 						"\"a.description\":\"some awesome data\"," +
-						"\"a.double.array\":[2.8,5.5]" +
+						"\"a.double.array\":\"2.8 5.5\"" +
 					"}" +
 				"}" +
 				"}";
