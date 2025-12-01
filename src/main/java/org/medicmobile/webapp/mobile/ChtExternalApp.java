@@ -259,7 +259,7 @@ public class ChtExternalApp {
 				bundle
 						.keySet()
 						.iterator()
-						.forEachRemaining(key -> setValueInJson(key, json, bundle));
+						.forEachRemaining(key -> setValueInJsonSafe(key, json, bundle));
 				return json;
 
 			} catch (Exception exception) {
@@ -269,53 +269,56 @@ public class ChtExternalApp {
 			return null;
 		}
 
-		private void setValueInJson(String key, JSONObject json, Bundle bundle) {
-			try {
-				Object value = bundle.get(key);
+		private void setValueInJson(String key, JSONObject json, Bundle bundle) throws IOException, JSONException {
+			Object value = bundle.get(key); // NOSONAR
 
-				if (value instanceof Bitmap) {
-					json.put(key, parseBitmapImageToBase64((Bitmap) value, false));
-					return;
-				}
+			if (value instanceof Bitmap bitmap) {
+				json.put(key, parseBitmapImageToBase64(bitmap, false));
+				return;
+			}
 
-				if (value instanceof Bundle) {
-					json.put(key, parseBundleToJson((Bundle) value));
-					return;
-				}
+			if (value instanceof Bundle b) {
+				json.put(key, parseBundleToJson(b));
+				return;
+			}
 
-				if (isBundleList(value)) {
-					JSONArray jsonArray = ((List<Bundle>) value)
-							.stream()
-							.map(this::parseBundleToJson)
-							.collect(Collector.of(JSONArray::new, JSONArray::put, JSONArray::put));
-
-					json.put(key, jsonArray);
-					return;
-				}
-
-				Optional<List<?>> primitiveListOpt = asPrimitiveList(value);
-				if (primitiveListOpt.isPresent()) {
-					// ODK/Enketo models a primitive multi-value list (e.g. a select_multiple question) as a
-					// space-delimited string.
-					String nodeList = primitiveListOpt
+			if (isBundleList(value)) {
+				JSONArray jsonArray = ((List<Bundle>) value)
 						.stream()
-						.flatMap(List::stream)
-						.map(Object::toString)
-						.map(s -> s.replace(" ", "_"))
-						.collect(Collectors.joining(" "));
-					json.put(key, nodeList);
-					return;
-				}
+						.map(this::parseBundleToJson)
+						.collect(Collector.of(JSONArray::new, JSONArray::put, JSONArray::put));
 
-				Optional<Uri> imagePath = getImageUri(value);
-				if (imagePath.isPresent()) {
-					boolean keepFullResolution = bundle.getBoolean("sampleImage", false);
-					json.put(key, getImageFromStoragePath(imagePath.get(), keepFullResolution));
-					return;
-				}
+				json.put(key, jsonArray);
+				return;
+			}
 
-				json.put(key, JSONObject.wrap(value));
+			Optional<List<?>> primitiveListOpt = asPrimitiveList(value);
+			if (primitiveListOpt.isPresent()) {
+				// ODK/Enketo models a primitive multi-value list (e.g. a select_multiple question) as a
+				// space-delimited string.
+				String nodeList = primitiveListOpt
+					.stream()
+					.flatMap(List::stream)
+					.map(Object::toString)
+					.map(s -> s.replace(" ", "_"))
+					.collect(Collectors.joining(" "));
+				json.put(key, nodeList);
+				return;
+			}
 
+			Optional<Uri> imagePath = getImageUri(value);
+			if (imagePath.isPresent()) {
+				boolean keepFullResolution = bundle.getBoolean("sampleImage", false);
+				json.put(key, getImageFromStoragePath(imagePath.get(), keepFullResolution));
+				return;
+			}
+
+			json.put(key, JSONObject.wrap(value));
+		}
+
+		private void setValueInJsonSafe(String key, JSONObject json, Bundle bundle) {
+			try {
+				setValueInJson(key, json, bundle);
 			} catch (Exception exception) {
 				error(exception, "ChtExternalApp :: Problem parsing bundle to json. Key=%s, Bundle=%s", key, bundle);
 			}
@@ -342,26 +345,24 @@ public class ChtExternalApp {
 				value instanceof Character;
 		}
 
-		private Optional<List<?>> asPrimitiveList(Object value) {
-			if (value != null && value.getClass().isArray()) {
-				// Java utility methods are not great when mixing primitive and object arrays.
-				// So, we manually convert any array to a List<Object>.
-				int len = java.lang.reflect.Array.getLength(value);
-				List<Object> list = new ArrayList<>(len);
-				for (int i = 0; i < len; i++) {
-					list.add(java.lang.reflect.Array.get(value, i));
-				}
-				value = list;
+		private List<?> getArrayAsList(Object array) {
+			int len = java.lang.reflect.Array.getLength(array);
+			List<Object> list = new ArrayList<>(len);
+			for (int i = 0; i < len; i++) {
+				list.add(java.lang.reflect.Array.get(array, i));
 			}
-			if (
-				!(value instanceof List)
-				|| ((List<?>) value).isEmpty()
-				|| !isPrimitive(((List<?>) value).get(0))
-			) {
-				return Optional.empty();
-			}
+			return list;
+		}
 
-			return Optional.of((List<?>) value);
+		private Optional<List<?>> asPrimitiveList(Object value) {
+			return Optional
+				.ofNullable(value)
+				.map(v -> v.getClass().isArray() ? getArrayAsList(v) : v)
+				.filter(List.class::isInstance)
+				.map(v -> (List<?>) v)
+				.filter(v -> !v.isEmpty())
+				.filter(v -> isPrimitive(v.get(0)))
+				.map(v -> (List<?>) v);
 		}
 
 		private Optional<Uri> getImageUri(Object value) {
