@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 public class ChtExternalApp {
 
@@ -258,7 +259,7 @@ public class ChtExternalApp {
 				bundle
 						.keySet()
 						.iterator()
-						.forEachRemaining(key -> setValueInJson(key, json, bundle));
+						.forEachRemaining(key -> setValueInJsonSafe(key, json, bundle));
 				return json;
 
 			} catch (Exception exception) {
@@ -268,38 +269,56 @@ public class ChtExternalApp {
 			return null;
 		}
 
-		private void setValueInJson(String key, JSONObject json, Bundle bundle) {
+		private void setValueInJson(String key, JSONObject json, Bundle bundle) throws IOException, JSONException {
+			Object value = bundle.get(key); // NOSONAR
+
+			if (value instanceof Bitmap bitmap) {
+				json.put(key, parseBitmapImageToBase64(bitmap, false));
+				return;
+			}
+
+			if (value instanceof Bundle b) {
+				json.put(key, parseBundleToJson(b));
+				return;
+			}
+
+			if (isBundleList(value)) {
+				JSONArray jsonArray = ((List<Bundle>) value)
+						.stream()
+						.map(this::parseBundleToJson)
+						.collect(Collector.of(JSONArray::new, JSONArray::put, JSONArray::put));
+
+				json.put(key, jsonArray);
+				return;
+			}
+
+			Optional<List<?>> primitiveListOpt = asPrimitiveList(value);
+			if (primitiveListOpt.isPresent()) {
+				// ODK/Enketo models a primitive multi-value list (e.g. a select_multiple question) as a
+				// space-delimited string.
+				String nodeList = primitiveListOpt
+					.stream()
+					.flatMap(List::stream)
+					.map(Object::toString)
+					.map(s -> s.replace(" ", "_"))
+					.collect(Collectors.joining(" "));
+				json.put(key, nodeList);
+				return;
+			}
+
+			Optional<Uri> imagePath = getImageUri(value);
+			if (imagePath.isPresent()) {
+				boolean keepFullResolution = bundle.getBoolean("sampleImage", false);
+				json.put(key, getImageFromStoragePath(imagePath.get(), keepFullResolution));
+				return;
+			}
+
+			json.put(key, JSONObject.wrap(value));
+		}
+
+		private void setValueInJsonSafe(String key, JSONObject json, Bundle bundle) {
 			try {
-				Object value = bundle.get(key);
-
-				if (value instanceof Bitmap) {
-					json.put(key, parseBitmapImageToBase64((Bitmap) value));
-					return;
-				}
-
-				if (value instanceof Bundle) {
-					json.put(key, parseBundleToJson((Bundle) value));
-					return;
-				}
-
-				if (isBundleList(value)) {
-					JSONArray jsonArray = ((List<Bundle>) value)
-							.stream()
-							.map(this::parseBundleToJson)
-							.collect(Collector.of(JSONArray::new, JSONArray::put, JSONArray::put));
-
-					json.put(key, jsonArray);
-					return;
-				}
-
-				Optional<Uri> imagePath = getImageUri(value);
-				if (imagePath.isPresent()) {
-					json.put(key, getImageFromStoragePath(imagePath.get()));
-					return;
-				}
-
-				json.put(key, JSONObject.wrap(value));
-
+				setValueInJson(key, json, bundle);
 			} catch (Exception exception) {
 				error(exception, "ChtExternalApp :: Problem parsing bundle to json. Key=%s, Bundle=%s", key, bundle);
 			}
@@ -313,6 +332,37 @@ public class ChtExternalApp {
 			List<?> list = (List<?>) value; // Avoid casting many times to same type.
 
 			return !list.isEmpty() && list.get(0) instanceof Bundle;
+		}
+
+		private boolean isPrimitive(Object value) {
+			return value instanceof String ||
+				value instanceof Integer ||
+				value instanceof Long ||
+				value instanceof Double ||
+				value instanceof Float ||
+				value instanceof Boolean ||
+				value instanceof Short ||
+				value instanceof Character;
+		}
+
+		private List<?> getArrayAsList(Object array) {
+			int len = java.lang.reflect.Array.getLength(array);
+			List<Object> list = new ArrayList<>(len);
+			for (int i = 0; i < len; i++) {
+				list.add(java.lang.reflect.Array.get(array, i));
+			}
+			return list;
+		}
+
+		private Optional<List<?>> asPrimitiveList(Object value) {
+			return Optional
+				.ofNullable(value)
+				.map(v -> v.getClass().isArray() ? getArrayAsList(v) : v)
+				.filter(List.class::isInstance)
+				.map(v -> (List<?>) v)
+				.filter(v -> !v.isEmpty())
+				.filter(v -> isPrimitive(v.get(0)))
+				.map(v -> (List<?>) v);
 		}
 
 		private Optional<Uri> getImageUri(Object value) {
@@ -329,7 +379,7 @@ public class ChtExternalApp {
 			return getUriFromFilePath(path);
 		}
 
-		private String getImageFromStoragePath(Uri filePath) {
+		private String getImageFromStoragePath(Uri filePath, boolean keepFullResolution) {
 			trace(this, "ChtExternalApp :: Retrieving image from storage path.");
 
 			try (
@@ -339,7 +389,7 @@ public class ChtExternalApp {
 					InputStream file = new FileInputStream(parcelFileDescriptor.getFileDescriptor());
 			){
 				Bitmap imgBitmap = BitmapFactory.decodeStream(file);
-				return parseBitmapImageToBase64(imgBitmap);
+				return parseBitmapImageToBase64(imgBitmap, keepFullResolution);
 
 			} catch (Exception exception) {
 				error(exception, "ChtExternalApp :: Failed to process image file from path: %s", filePath);
@@ -348,10 +398,11 @@ public class ChtExternalApp {
 			return null;
 		}
 
-		private String parseBitmapImageToBase64(Bitmap imgBitmap) throws IOException {
+		private String parseBitmapImageToBase64(Bitmap imgBitmap, boolean keepFullResolution) throws IOException {
 			try (ByteArrayOutputStream outputFile = new ByteArrayOutputStream()) {
 				trace(this, "ChtExternalApp :: Compressing image file.");
-				imgBitmap.compress(Bitmap.CompressFormat.JPEG, 75, outputFile);
+				int quality = keepFullResolution ? 100 : 75;
+				imgBitmap.compress(Bitmap.CompressFormat.JPEG, quality, outputFile);
 
 				trace(this, "ChtExternalApp :: Encoding image file to Base64.");
 				byte[] imageBytes = outputFile.toByteArray();
