@@ -5,13 +5,11 @@ import static android.app.Activity.RESULT_CANCELED;
 import static android.app.Activity.RESULT_OK;
 import static android.content.pm.PackageManager.PERMISSION_DENIED;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.medicmobile.webapp.mobile.EmbeddedBrowserActivity.RequestCode;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.matches;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -36,8 +34,6 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.RobolectricTestRunner;
-
-import java.util.regex.Pattern;
 
 @RunWith(RobolectricTestRunner.class)
 public class ChtExternalAppHandlerTest {
@@ -158,19 +154,18 @@ public class ChtExternalAppHandlerTest {
 			//> GIVEN
 			Intent intent = new Intent();
 			intent.putExtra("name", "Eric");
-			intent.putExtra("duration", 0L);
 			ChtExternalAppHandler chtExternalAppHandler = new ChtExternalAppHandler(contextMock);
 			String expectedMessageWarn = "ChtExternalAppHandler :: Bad result code: %s. The external app either: " +
-				"explicitly returned this result, did not return any result or crashed during the operation. \\[\\{\"duration\":\\d+,\"name\":\"Eric\"}]";
+				"explicitly returned this result, did not return any result or crashed during the operation. [{\"name\":\"Eric\"}]";
 			String expectedMessageConsole = "ChtExternalAppHandler :: Bad result code: " + RESULT_CANCELED + ". The external app either: " +
-				"explicitly returned this result, did not return any result or crashed during the operation. \\[\\{\"duration\":\\d+,\"name\":\"Eric\"}]";
+				"explicitly returned this result, did not return any result or crashed during the operation. [{\"name\":\"Eric\"}]";
 
 			//> WHEN
 			String script = chtExternalAppHandler.processResult(RESULT_CANCELED, intent);
 
 			//> THEN
-			assertTrue(Pattern.matches("console\\.error\\('" + expectedMessageConsole + "'\\)", script));
-			medicLogMock.verify(() -> MedicLog.warn(eq(chtExternalAppHandler), matches(expectedMessageWarn), eq(RESULT_CANCELED)));
+			assertEquals("console.error('" + expectedMessageConsole + "')", script);
+			medicLogMock.verify(() -> MedicLog.warn(eq(chtExternalAppHandler), eq(expectedMessageWarn), eq(RESULT_CANCELED)));
 		}
 	}
 
