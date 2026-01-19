@@ -71,6 +71,29 @@ public class AppNotificationManagerTest {
 	}
 
 	@Test
+	public void respectsNotificationsOrderAndStoreLatestReadyAtTimestamp() throws JSONException {
+		long latestReadyAtTimestamp = startOfDay + 1000 * 60;
+		String jsData = getJSTaskNotificationString(startOfDay, startOfDay, startOfDay);
+		String newNotificationData = """
+				[
+					%s,
+					{
+						"_id": "id_new",
+						"readyAt": %d,
+						"title": "Task for report 3",
+						"contentText": "You have a Task 1",
+						"endDate": %d,
+						"dueDate": %d
+					}
+				]
+				""".formatted(jsData, latestReadyAtTimestamp, startOfDay, startOfDay);
+		appDataStore.saveLongBlocking(AppNotificationManager.MAX_NOTIFICATIONS_TO_SHOW_KEY, 1L);
+		appNotificationManager.showNotificationsFromJsArray(newNotificationData);
+		assertEquals(1, shadowNotificationManager.getAllNotifications().size());
+		assertEquals(latestReadyAtTimestamp, appDataStore.getLongBlocking(AppNotificationManager.LATEST_NOTIFICATION_TIMESTAMP_KEY, 0L));
+	}
+
+	@Test
 	public void showsNotificationsOnNewDay() throws JSONException {
 		long taskDate = startOfDay;
 		String jsData = "[" + getJSTaskNotificationString(taskDate, taskDate, taskDate + DAY_IN_MILLIS) + "]";
