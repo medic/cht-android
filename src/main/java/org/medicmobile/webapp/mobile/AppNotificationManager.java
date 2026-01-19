@@ -117,9 +117,15 @@ public class AppNotificationManager {
 		long maxNotifications = appDataStore.getLongBlocking(MAX_NOTIFICATIONS_TO_SHOW_KEY, 8L);
 		long latestStoredTimestamp = getLatestStoredTimestamp(getStartOfDay());
 		int counter = 0;
+		long latestReadyAt = 0;
 		for (int i = 0; i < dataArray.length(); i++) {
 			JSONObject notification = dataArray.getJSONObject(i);
 			long readyAt = notification.getLong("readyAt");
+			latestReadyAt = Math.max(latestReadyAt, readyAt);
+			if (counter >= maxNotifications) {
+				continue;
+			}
+
 			long endDate = notification.getLong("endDate");
 			long dueDate = notification.getLong("dueDate");
 			if (isValidNotification(latestStoredTimestamp, readyAt, dueDate, endDate)) {
@@ -129,11 +135,8 @@ public class AppNotificationManager {
 				showNotification(intent, notificationId, title, contentText);
 				counter++;
 			}
-			if (counter >= maxNotifications) {
-				break;
-			}
 		}
-		saveLatestNotificationTimestamp(dataArray.getJSONObject(0).getLong("readyAt"));
+		saveLatestNotificationTimestamp(latestReadyAt);
 	}
 
 	private boolean isValidNotification(long latestStoredTimestamp, long readyAt, long dueDate, long endDate) {
