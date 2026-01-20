@@ -19,6 +19,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.Build;
@@ -33,6 +34,7 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.ViewCompat;
 
@@ -124,6 +126,8 @@ public class EmbeddedBrowserActivity extends Activity {
 		}
 
 		registerRetryConnectionBroadcastReceiver();
+
+		initializeNotifications();
 
 		String recentNavigation = settings.getLastUrl();
 		Intent appLinkIntent = getIntent();
@@ -232,6 +236,27 @@ public class EmbeddedBrowserActivity extends Activity {
 			warn(ex, "Problem handling intent %s (%s) with requestCode=%s & resultCode=%s",
 				intent, action, requestCode.name(), resultCode);
 		}
+	}
+
+
+	@Override
+	public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+		if (requestCode == AppNotificationManager.REQUEST_NOTIFICATION_PERMISSION && grantResults.length > 0 &&
+				grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+			initializeNotifications();
+		}
+	}
+
+	private void initializeNotifications() {
+		AppNotificationManager appNotificationManager = new AppNotificationManager(this);
+		appNotificationManager.cancelAllNotifications();
+		if (!appNotificationManager.hasNotificationPermission()) {
+			appNotificationManager.requestNotificationPermission(this);
+			appNotificationManager.stopNotificationWorker();
+			return;
+		}
+		appNotificationManager.startNotificationWorker();
 	}
 
 //> ACCESSORS

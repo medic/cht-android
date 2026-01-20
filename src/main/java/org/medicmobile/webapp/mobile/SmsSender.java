@@ -17,6 +17,7 @@ import static org.medicmobile.webapp.mobile.MedicLog.trace;
 import static org.medicmobile.webapp.mobile.MedicLog.warn;
 import static java.lang.Integer.toHexString;
 
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
@@ -33,6 +34,7 @@ import java.util.ArrayList;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+@SuppressLint("UseRequiresApi")
 class SmsSender {
 	private static final int UNUSED_REQUEST_CODE = 0;
 	private static final String DEFAULT_SMSC = null;
