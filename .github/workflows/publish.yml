@@ -239,6 +239,16 @@ jobs:
         ANDROID_SECRETS_IV: ${{ secrets.ANDROID_SECRETS_IV_MOH_KENYA_ECHIS }}
       run: make org=moh_kenya_echis keydec
 
+    - name: Assemble moh_kenya_echis
+      uses: maierj/fastlane-action@v1.4.0
+      with:
+        lane: build
+        options: '{ "flavor": "moh_kenya_echis" }'
+      env:
+        ANDROID_KEYSTORE_PATH: moh_kenya_echis.keystore
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD_MOH_KENYA_ECHIS }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD_MOH_KENYA_ECHIS }}
+
     - name: Bundle moh_kenya_echis
       uses: maierj/fastlane-action@v1.4.0
       with:
