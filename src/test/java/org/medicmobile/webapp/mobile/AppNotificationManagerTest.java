@@ -196,7 +196,6 @@ public class AppNotificationManagerTest {
 		}).when(appNotificationManager).saveLatestNotificationTimestamp(anyLong());
 	}
 
-	//should be ordered by readyAt in descending order cht returns them ordered like this
 	private String getJSTaskNotificationString(long readyAt, long dueDate, long endDate) {
 		return """
 					{

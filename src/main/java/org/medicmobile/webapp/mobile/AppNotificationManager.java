@@ -99,7 +99,7 @@ public class AppNotificationManager {
 	}
 
 	/**
-	 * @param jsArrayString string notifications sorted by readyAt in descending order
+	 * @param jsArrayString string notifications
 	 * @throws JSONException throws JSONException
 	 * Method is blocking don't run on UI thread
 	 */
