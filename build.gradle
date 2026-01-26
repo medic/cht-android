@@ -410,6 +410,11 @@ android {
       applicationId = 'org.medicmobile.webapp.mobile.moh_kenya_echis'
     }
 
+    chis_kenya {
+      dimension = 'brand'
+      applicationId = 'org.medicmobile.webapp.mobile.chis_kenya'
+    }
+
     moh_mali_chw_training_three {
       dimension = 'brand'
       applicationId = 'org.medicmobile.webapp.mobile.moh_mali_chw_training_three'
