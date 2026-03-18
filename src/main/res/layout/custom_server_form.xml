@@ -11,12 +11,14 @@
 
   <EditText
     android:id="@+id/txtAppUrl"
-    android:layout_width="wrap_content"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:layout_centerVertical="true"
     android:autofillHints=""
     android:hint="@string/txtAppUrl"
     android:inputType="textUri"
-    android:padding="32dp" />
+    android:padding="32dp"
+    android:textSize="18sp" />
   <!-- OnClick is ignored because lint generates error
 	     incorrectly.  Test with future build tool versions
 	     to see if this exception can be removed -->
