@@ -1,0 +1,408 @@
+package org.medicmobile.webapp.mobile.p2p;
+
+import android.util.Log;
+
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.HashMap;
+import java.util.Map;
+
+import fi.iki.elonen.NanoHTTPD;
+
+/**
+ * Local HTTP server for P2P sync using NanoHTTPD.
+ * Runs on the Supervisor's phone, serving sync endpoints to connected CHWs.
+ *
+ * Endpoints:
+ *   POST /_p2p/auth         → AuthEndpoint (no session required)
+ *   GET  /_p2p/get-ids      → GetIdsEndpoint
+ *   POST /_p2p/bulk-get     → BulkGetEndpoint
+ *   POST /_p2p/accept-docs  → AcceptDocsEndpoint
+ *   GET  /_p2p/get-deletes  → GetDeletesEndpoint
+ *   GET  /_p2p/status       → StatusEndpoint (no auth required)
+ *
+ * All endpoints except /status require a valid JWT in the
+ * Authorization: Bearer header. The /auth endpoint validates the JWT
+ * and creates a session; subsequent endpoints check that a session exists.
+ */
+public class LocalHttpServer extends NanoHTTPD {
+
+    private static final String TAG = "LocalHttpServer";
+    private static final int DEFAULT_PORT = 8443;
+    private static final String CONTENT_TYPE_JSON = "application/json";
+    private static final String P2P_PREFIX = "/_p2p/";
+
+    private final P2pAuthenticator authenticator;
+    private final P2pConfig config;
+    private final ScopeManifest supervisorScope;
+
+    // Endpoint handlers
+    private final AuthEndpoint authEndpoint;
+    private final GetIdsEndpoint getIdsEndpoint;
+    private final BulkGetEndpoint bulkGetEndpoint;
+    private final AcceptDocsEndpoint acceptDocsEndpoint;
+    private final GetDeletesEndpoint getDeletesEndpoint;
+    private final StatusEndpoint statusEndpoint;
+
+    // Active session — only one CHW session at a time
+    private volatile P2pSession activeSession;
+    private volatile int connectedPeers;
+
+    // Callback to notify P2pManager when sync completes (for tracker persistence)
+    private volatile SessionCompleteCallback sessionCompleteCallback;
+
+    /**
+     * Callback interface for sync session completion notifications.
+     * Allows P2pManager to be notified when a peer signals sync-complete,
+     * so the tracker can record the session for history persistence.
+     */
+    public interface SessionCompleteCallback {
+        void onSessionComplete(P2pSession session);
+    }
+
+    /**
+     * Create a LocalHttpServer with default port (8443).
+     */
+    public LocalHttpServer(P2pAuthenticator authenticator, P2pConfig config,
+                           ScopeManifest supervisorScope, PouchDbBridge bridge,
+                           TransitDocCallback transitCallback) {
+        this(DEFAULT_PORT, authenticator, config, supervisorScope, bridge,
+                transitCallback);
+    }
+
+    /**
+     * Create a LocalHttpServer on a specific port.
+     */
+    public LocalHttpServer(int port, P2pAuthenticator authenticator, P2pConfig config,
+                           ScopeManifest supervisorScope, PouchDbBridge bridge,
+                           TransitDocCallback transitCallback) {
+        super(port);
+
+        if (authenticator == null) {
+            throw new IllegalArgumentException("authenticator must not be null");
+        }
+        if (config == null) {
+            throw new IllegalArgumentException("config must not be null");
+        }
+        if (supervisorScope == null) {
+            throw new IllegalArgumentException("supervisorScope must not be null");
+        }
+        if (bridge == null) {
+            throw new IllegalArgumentException("bridge must not be null");
+        }
+
+        this.authenticator = authenticator;
+        this.config = config;
+        this.supervisorScope = supervisorScope;
+        this.activeSession = null;
+        this.connectedPeers = 0;
+
+        // Initialize endpoint handlers
+        this.authEndpoint = new AuthEndpoint(authenticator, config, supervisorScope);
+        this.getIdsEndpoint = new GetIdsEndpoint(bridge);
+        this.bulkGetEndpoint = new BulkGetEndpoint(bridge);
+        this.acceptDocsEndpoint = new AcceptDocsEndpoint(bridge, transitCallback,
+                supervisorScope, config);
+        this.getDeletesEndpoint = new GetDeletesEndpoint();
+        this.statusEndpoint = new StatusEndpoint();
+    }
+
+    /**
+     * Start the HTTP server.
+     *
+     * @throws IOException if the server cannot bind to the port
+     */
+    public void startServer() throws IOException {
+        start(NanoHTTPD.SOCKET_READ_TIMEOUT, false);
+        Log.i(TAG, "P2P HTTP server started on port " + getListeningPort());
+    }
+
+    /**
+     * Stop the HTTP server and clean up the active session.
+     */
+    public void stopServer() {
+        if (activeSession != null && activeSession.getState() == P2pSession.State.ACTIVE) {
+            activeSession.fail("server_stopped");
+        }
+        stop();
+        activeSession = null;
+        connectedPeers = 0;
+        Log.i(TAG, "P2P HTTP server stopped");
+    }
+
+    /**
+     * Get the currently active P2P session, or null if none.
+     */
+    public P2pSession getActiveSession() {
+        return activeSession;
+    }
+
+    /**
+     * Set a callback to be notified when a sync session completes.
+     */
+    public void setSessionCompleteCallback(SessionCompleteCallback callback) {
+        this.sessionCompleteCallback = callback;
+    }
+
+    /**
+     * Get the number of connected peers (0 or 1).
+     */
+    public int getConnectedPeerCount() {
+        return connectedPeers;
+    }
+
+    /**
+     * Get the port this server is listening on.
+     */
+    public int getPort() {
+        return getListeningPort();
+    }
+
+    @Override
+    public Response serve(IHTTPSession session) {
+        String uri = session.getUri();
+        Method method = session.getMethod();
+
+        Log.d(TAG, method + " " + uri);
+
+        // Respond to Android/iOS captive portal checks with HTTP 204
+        // This prevents the OS from thinking the hotspot has no internet
+        // and auto-disconnecting the WiFi
+        if (uri.contains("generate_204") || uri.contains("gen_204")
+                || uri.contains("connectivitycheck") || uri.contains("captive-portal")) {
+            Log.d(TAG, "Captive portal check intercepted: " + uri);
+            return newFixedLengthResponse(Response.Status.NO_CONTENT, "text/plain", "");
+        }
+
+        // Only serve /_p2p/ endpoints
+        if (!uri.startsWith(P2P_PREFIX)) {
+            return jsonResponse(Response.Status.NOT_FOUND, errorJson("not_found"));
+        }
+
+        String endpoint = uri.substring(P2P_PREFIX.length());
+
+        // GET /_p2p/status — no auth required
+        if ("status".equals(endpoint) && method == Method.GET) {
+            return handleStatus();
+        }
+
+        // POST /_p2p/auth — validates JWT, creates session
+        if ("auth".equals(endpoint) && method == Method.POST) {
+            return handleAuth(session);
+        }
+
+        // All other endpoints require an active session with valid auth
+        if (activeSession == null || activeSession.getState() != P2pSession.State.ACTIVE) {
+            return jsonResponse(Response.Status.UNAUTHORIZED, errorJson("no_active_session"));
+        }
+
+        // Check session timeout (G12)
+        if (activeSession.isTimedOut()) {
+            activeSession.fail("session_timeout");
+            activeSession = null;
+            return jsonResponse(Response.Status.UNAUTHORIZED, errorJson("session_timeout"));
+        }
+
+        // Route to endpoint handlers
+        switch (endpoint) {
+            case "get-ids":
+                if (method == Method.GET) {
+                    return handleGetIds();
+                }
+                break;
+
+            case "bulk-get":
+                if (method == Method.POST) {
+                    return handleBulkGet(session);
+                }
+                break;
+
+            case "accept-docs":
+                if (method == Method.POST) {
+                    return handleAcceptDocs(session);
+                }
+                break;
+
+            case "get-deletes":
+                if (method == Method.GET) {
+                    return handleGetDeletes();
+                }
+                break;
+
+            case "sync-complete":
+                if (method == Method.POST) {
+                    return handleSyncComplete(session);
+                }
+                break;
+
+            default:
+                return jsonResponse(Response.Status.NOT_FOUND, errorJson("unknown_endpoint"));
+        }
+
+        // Method not allowed for the endpoint
+        return jsonResponse(Response.Status.METHOD_NOT_ALLOWED,
+                errorJson("method_not_allowed: " + method + " " + uri));
+    }
+
+    // --- Endpoint handlers ---
+
+    private Response handleStatus() {
+        JSONObject body = statusEndpoint.handle(activeSession, connectedPeers);
+        return jsonResponse(Response.Status.OK, body);
+    }
+
+    private synchronized Response handleAuth(IHTTPSession session) {
+        // Only allow one session at a time
+        if (activeSession != null && activeSession.getState() == P2pSession.State.ACTIVE) {
+            return jsonResponse(Response.Status.CONFLICT,
+                    errorJson("session_already_active"));
+        }
+
+        String requestBody = readRequestBody(session);
+        AuthEndpoint.AuthResponse authResponse = authEndpoint.handle(requestBody);
+
+        Response.IStatus status = authResponse.getStatusCode() == 200
+                ? Response.Status.OK : Response.Status.UNAUTHORIZED;
+
+        if (authResponse.isSuccess()) {
+            activeSession = authResponse.getSession();
+            connectedPeers = 1;
+            Log.i(TAG, "Session established: " + activeSession.getSessionId());
+        }
+
+        return jsonResponse(status, authResponse.getBody());
+    }
+
+    private Response handleGetIds() {
+        JSONObject body = getIdsEndpoint.handle(activeSession);
+        return jsonResponse(Response.Status.OK, body);
+    }
+
+    private Response handleBulkGet(IHTTPSession session) {
+        String requestBody = readRequestBody(session);
+        JSONObject body = bulkGetEndpoint.handle(requestBody, activeSession);
+        return jsonResponse(Response.Status.OK, body);
+    }
+
+    private Response handleAcceptDocs(IHTTPSession session) {
+        String requestBody = readRequestBody(session);
+        JSONObject body = acceptDocsEndpoint.handle(requestBody, activeSession);
+        return jsonResponse(Response.Status.OK, body);
+    }
+
+    private Response handleGetDeletes() {
+        JSONObject body = getDeletesEndpoint.handle();
+        return jsonResponse(Response.Status.OK, body);
+    }
+
+    private synchronized Response handleSyncComplete(IHTTPSession session) {
+        if (activeSession == null) {
+            return jsonResponse(Response.Status.BAD_REQUEST, errorJson("no_active_session"));
+        }
+        try {
+            String requestBody = readRequestBody(session);
+            JSONObject body = new JSONObject(requestBody);
+            // Peer reports its counts — log for diagnostics but do NOT add bytes
+            // to session (AcceptDocsEndpoint already tracked bytes when accepting docs)
+            int docsPushed = body.optInt("docs_pushed", 0);
+            long bytesTransferred = body.optLong("bytes_transferred", 0);
+            activeSession.complete();
+            Log.i(TAG, "Sync completed by peer: " + docsPushed + " docs, "
+                    + bytesTransferred + " bytes");
+
+            // Notify P2pManager so tracker can record the session for history
+            if (sessionCompleteCallback != null) {
+                try {
+                    sessionCompleteCallback.onSessionComplete(activeSession);
+                } catch (Exception callbackErr) {
+                    Log.e(TAG, "Error in session complete callback", callbackErr);
+                }
+            }
+
+            JSONObject response = new JSONObject();
+            response.put("ok", true);
+            return jsonResponse(Response.Status.OK, response);
+        } catch (Exception e) {
+            Log.e(TAG, "Error handling sync-complete", e);
+            return jsonResponse(Response.Status.INTERNAL_ERROR, errorJson("sync_complete_failed"));
+        }
+    }
+
+    // --- Helpers ---
+
+    /**
+     * Read the full request body from a NanoHTTPD session.
+     * NanoHTTPD requires calling parseBody() first for POST requests.
+     */
+    private String readRequestBody(IHTTPSession session) {
+        try {
+            Map<String, String> bodyMap = new HashMap<>();
+            session.parseBody(bodyMap);
+            // NanoHTTPD stores POST body under "postData" key
+            String postData = bodyMap.get("postData");
+            if (postData != null) {
+                return postData;
+            }
+            // Fallback: try reading from the input stream directly
+            long contentLength = getContentLength(session);
+            if (contentLength > 0) {
+                BufferedReader reader = new BufferedReader(
+                        new InputStreamReader(session.getInputStream()));
+                StringBuilder sb = new StringBuilder();
+                char[] buffer = new char[4096];
+                int read;
+                long remaining = contentLength;
+                while (remaining > 0 && (read = reader.read(buffer, 0,
+                        (int) Math.min(buffer.length, remaining))) != -1) {
+                    sb.append(buffer, 0, read);
+                    remaining -= read;
+                }
+                return sb.toString();
+            }
+            return "";
+        } catch (IOException | ResponseException e) {
+            Log.e(TAG, "Error reading request body", e);
+            return "";
+        }
+    }
+
+    /**
+     * Extract Content-Length from request headers.
+     */
+    private long getContentLength(IHTTPSession session) {
+        String contentLengthStr = session.getHeaders().get("content-length");
+        if (contentLengthStr != null) {
+            try {
+                return Long.parseLong(contentLengthStr);
+            } catch (NumberFormatException e) {
+                return 0;
+            }
+        }
+        return 0;
+    }
+
+    /**
+     * Build a JSON error response body.
+     */
+    private JSONObject errorJson(String error) {
+        try {
+            JSONObject json = new JSONObject();
+            json.put("ok", false);
+            json.put("error", error);
+            return json;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to build error JSON", e);
+        }
+    }
+
+    /**
+     * Build a NanoHTTPD Response with JSON content type.
+     */
+    private Response jsonResponse(Response.IStatus status, JSONObject body) {
+        String bodyStr = body != null ? body.toString() : "{}";
+        return newFixedLengthResponse(status, CONTENT_TYPE_JSON, bodyStr);
+    }
+}

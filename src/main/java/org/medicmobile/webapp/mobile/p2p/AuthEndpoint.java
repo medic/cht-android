@@ -1,0 +1,178 @@
+package org.medicmobile.webapp.mobile.p2p;
+
+import android.util.Log;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+/**
+ * POST /_p2p/auth — Verify CHW's JWT and establish a P2P session.
+ *
+ * Request body:
+ *   { "p2p_token": "jwt...", "device_id": "uuid" }
+ *
+ * Success response (200):
+ *   { "ok": true, "session_id": "uuid", "user_id": "chw_alice", "scope": {...} }
+ *
+ * Failure response (401):
+ *   { "ok": false, "error": "token_expired | peer_not_allowed | token_invalid | device_revoked" }
+ *
+ * Guards: G6 (JWT signature), G7 (not expired), G8 (not revoked), G9 (peer allowed)
+ */
+public final class AuthEndpoint {
+
+    private static final String TAG = "AuthEndpoint";
+
+    private final P2pAuthenticator authenticator;
+    private final P2pConfig config;
+    private final ScopeManifest supervisorScope;
+
+    public AuthEndpoint(P2pAuthenticator authenticator, P2pConfig config,
+                        ScopeManifest supervisorScope) {
+        this.authenticator = authenticator;
+        this.config = config;
+        this.supervisorScope = supervisorScope;
+    }
+
+    /**
+     * Handle POST /_p2p/auth request.
+     *
+     * @param requestBody The raw JSON request body string
+     * @return AuthResponse containing the HTTP status code and JSON body
+     */
+    public AuthResponse handle(String requestBody) {
+        try {
+            return doHandle(requestBody);
+        } catch (JSONException e) {
+            Log.e(TAG, "Malformed auth request", e);
+            return AuthResponse.error(400, "malformed_request");
+        }
+    }
+
+    private AuthResponse doHandle(String requestBody) throws JSONException {
+        if (requestBody == null || requestBody.isEmpty()) {
+            return AuthResponse.error(400, "empty_request");
+        }
+
+        JSONObject body = new JSONObject(requestBody);
+        String p2pToken = body.optString("p2p_token", null);
+        String deviceId = body.optString("device_id", null);
+
+        if (p2pToken == null || p2pToken.isEmpty()) {
+            return AuthResponse.error(400, "missing_token");
+        }
+        if (deviceId == null || deviceId.isEmpty()) {
+            return AuthResponse.error(400, "missing_device_id");
+        }
+
+        // G6 + G7 + G8: Verify JWT, check expiry, check revocation
+        P2pAuthenticator.AuthResult authResult = authenticator.authenticate(p2pToken, deviceId);
+
+        if (!authResult.isAuthenticated()) {
+            Log.w(TAG, "Auth failed for device " + deviceId + ": " + authResult.getError());
+            return AuthResponse.error(401, authResult.getError());
+        }
+
+        // G9: Check if the peer is allowed to relay with this Supervisor
+        String userId = authResult.getUserId();
+        if (!authenticator.isPeerAllowed(authResult.getTokenPayload(), deviceId)) {
+            Log.w(TAG, "Peer not allowed: " + userId + " (device: " + deviceId + ")");
+            return AuthResponse.error(401, "peer_not_allowed");
+        }
+
+        // Check if role is allowed by config
+        String role = authResult.getRole();
+        if (!config.isRoleAllowed(role)) {
+            Log.w(TAG, "Role not allowed for P2P: " + role);
+            return AuthResponse.error(401, "role_not_allowed");
+        }
+
+        // Build peer scope from JWT payload
+        ScopeManifest peerScope = buildPeerScope(authResult);
+
+        // Create session
+        P2pSession session = new P2pSession(deviceId, userId, role, peerScope);
+        session.setState(P2pSession.State.ACTIVE);
+
+        Log.i(TAG, "Auth successful: user=" + userId + " session=" + session.getSessionId());
+
+        // Build success response
+        JSONObject responseBody = new JSONObject();
+        responseBody.put("ok", true);
+        responseBody.put("session_id", session.getSessionId());
+        responseBody.put("user_id", userId);
+        responseBody.put("facility_id", authResult.getFacilityId());
+
+        JSONObject scopeJson = new JSONObject();
+        scopeJson.put("facility_subtree_root", supervisorScope.getFacilitySubtreeRoot());
+        scopeJson.put("replication_depth", supervisorScope.getReplicationDepth());
+        responseBody.put("scope", scopeJson);
+
+        return AuthResponse.success(responseBody, session);
+    }
+
+    /**
+     * Build the CHW peer's scope manifest from their JWT payload.
+     */
+    private ScopeManifest buildPeerScope(P2pAuthenticator.AuthResult authResult) {
+        JSONObject payload = authResult.getTokenPayload();
+
+        String facilityId = authResult.getFacilityId();
+        int replicationDepth = payload.optInt("replication_depth", 2);
+
+        // Use supervisor's shared doc types as baseline
+        return new ScopeManifest(
+                facilityId,
+                replicationDepth,
+                supervisorScope.getSharedDocTypes(),
+                supervisorScope.getScopeVersion()
+        );
+    }
+
+    /**
+     * Response from the auth endpoint, carrying HTTP status + JSON body + optional session.
+     */
+    public static final class AuthResponse {
+        private final int statusCode;
+        private final JSONObject body;
+        private final P2pSession session; // non-null only on success
+
+        private AuthResponse(int statusCode, JSONObject body, P2pSession session) {
+            this.statusCode = statusCode;
+            this.body = body;
+            this.session = session;
+        }
+
+        static AuthResponse success(JSONObject body, P2pSession session) {
+            return new AuthResponse(200, body, session);
+        }
+
+        static AuthResponse error(int statusCode, String errorCode) {
+            try {
+                JSONObject body = new JSONObject();
+                body.put("ok", false);
+                body.put("error", errorCode);
+                return new AuthResponse(statusCode, body, null);
+            } catch (JSONException e) {
+                // Should never happen with simple string puts
+                throw new RuntimeException("Failed to build error response", e);
+            }
+        }
+
+        public int getStatusCode() {
+            return statusCode;
+        }
+
+        public JSONObject getBody() {
+            return body;
+        }
+
+        public P2pSession getSession() {
+            return session;
+        }
+
+        public boolean isSuccess() {
+            return session != null;
+        }
+    }
+}
