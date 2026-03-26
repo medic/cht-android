@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingLeft="16dp"
+    android:paddingRight="16dp">
+
+    <ImageView
+        android:id="@+id/p2pIcon"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="80dp"
+        android:contentDescription="@string/p2pRequestIconDescription"
+        android:scaleType="center"
+        android:src="@android:drawable/ic_menu_share" />
+
+    <TextView
+        android:id="@+id/p2pTitleText"
+        style="@android:style/Widget.DeviceDefault.Light.TextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/p2pIcon"
+        android:layout_marginTop="8dp"
+        android:gravity="center"
+        android:padding="10dp"
+        android:text="@string/p2pRequestTitle"
+        android:textSize="18sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/p2pMessageText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/p2pTitleText"
+        android:layout_marginTop="10dp"
+        android:gravity="center"
+        android:padding="20dp"
+        android:text="@string/p2pRequestMessage"
+        android:textSize="18sp" />
+
+    <LinearLayout
+        android:id="@+id/p2pButtons"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:paddingLeft="20dp"
+        android:paddingRight="20dp"
+        android:paddingBottom="20dp">
+
+        <Button
+            android:id="@+id/p2pNegativeButton"
+            style="@style/borderlessButton"
+            android:onClick="onClickNegative"
+            android:text="@string/p2pRequestDenyButton"
+            tools:ignore="OnClick,UsingOnClickInXml" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <Button
+            android:id="@+id/p2pOkButton"
+            style="@style/borderlessButton"
+            android:onClick="onClickOk"
+            android:text="@string/p2pRequestOkButton"
+            tools:ignore="OnClick,UsingOnClickInXml" />
+    </LinearLayout>
+
+</RelativeLayout>

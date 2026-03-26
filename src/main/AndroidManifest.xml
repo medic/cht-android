@@ -13,6 +13,7 @@
   <uses-feature android:name="android.hardware.location.network" android:required="false"/>
 
   <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+  <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE"/>
   <uses-permission android:name="android.permission.INTERNET"/>
   <uses-permission android:name="android.permission.VIBRATE"/>
   <uses-permission android:name="com.android.launcher.permission.INSTALL_SHORTCUT"/>
@@ -26,6 +27,16 @@
   <uses-permission android:name="android.permission.SEND_SMS"/>
   -->
 
+  <!-- P2P WiFi Hotspot Sync permissions -->
+  <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+  <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE"/>
+  <uses-permission android:name="android.permission.CAMERA"/>
+  <uses-permission android:name="android.permission.NEARBY_WIFI_DEVICES" android:minSdkVersion="33"/>
+  <uses-feature android:name="android.hardware.wifi" android:required="false"/>
+  <uses-feature android:name="android.hardware.camera" android:required="false"/>
+
   <application android:label="@string/app_name"
       android:icon="@mipmap/ic_launcher"
       android:allowBackup="false"
@@ -33,6 +44,7 @@
       android:fullBackupContent="@xml/backup_rules_sdk_30_and_lower"
       android:dataExtractionRules="@xml/backup_rules"
       android:largeHeap="true"
+      android:usesCleartextTraffic="true"
       tools:ignore="LockedOrientationActivity,UnusedAttribute">
     <activity android:name="StartupActivity" android:exported="true">
       <intent-filter>
@@ -98,6 +110,22 @@
         android:permission="android.permission.BIND_JOB_SERVICE"
         android:exported="true"
         tools:targetApi="23" />
+
+    <!-- P2P WiFi Hotspot Sync service + activity -->
+    <service android:name=".p2p.P2pForegroundService"
+        android:foregroundServiceType="connectedDevice"
+        android:exported="false"/>
+    <activity android:name="RequestP2pPermissionsActivity"
+        android:screenOrientation="portrait"
+        tools:ignore="DiscouragedApi"/>
+    <activity android:name=".p2p.QrScannerActivity"
+        android:screenOrientation="portrait"
+        tools:ignore="DiscouragedApi"/>
+    <activity android:name="com.journeyapps.barcodescanner.CaptureActivity"
+        android:screenOrientation="portrait"
+        android:stateNotNeeded="true"
+        android:theme="@style/zxing_CaptureTheme"
+        tools:replace="screenOrientation"/>
   </application>
 
   <queries>
