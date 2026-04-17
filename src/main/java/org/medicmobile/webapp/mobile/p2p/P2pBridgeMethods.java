@@ -588,9 +588,9 @@ public class P2pBridgeMethods {
 
                 // Start a tracker session for the peer (CHW) side
                 if (tracker != null) {
-                    String peerDeviceId = "supervisor-" + host;
-                    String peerUserId = "supervisor";
-                    tracker.startSession(peerDeviceId, peerUserId, "chw_supervisor", null);
+                    String peerDeviceId = "host-" + host;
+                    String peerUserId = "host";
+                    tracker.startSession(peerDeviceId, peerUserId, "host", null);
                 }
 
                 Log.i(TAG, "Client sync: authenticated, querying unsynced docs");

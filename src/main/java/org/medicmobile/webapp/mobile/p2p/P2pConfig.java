@@ -25,7 +25,7 @@ public class P2pConfig {
     private static final int DEFAULT_TOKEN_EXPIRY_DAYS = 30;
     private static final int DEFAULT_WIFI_HOTSPOT_IDLE_TIMEOUT_SEC = 300;
     private static final List<String> DEFAULT_ALLOWED_ROLES =
-            Collections.unmodifiableList(Arrays.asList("chw", "chw_supervisor"));
+            Collections.unmodifiableList(Collections.emptyList());
     private static final boolean DEFAULT_AUDIT_LOGGING = true;
 
     private final boolean enabled;
@@ -66,7 +66,8 @@ public class P2pConfig {
      *   "max_attachment_size_mb": 5,
      *   "token_expiry_days": 30,
      *   "wifi_hotspot_idle_timeout_sec": 300,
-     *   "allowed_roles": ["chw", "chw_supervisor"],
+     *   "host_roles": ["community_health_assistant"],
+     *   "peer_roles": ["community_health_volunteer"],
      *   "audit_logging": true
      * }
      */
