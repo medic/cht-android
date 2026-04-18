@@ -7,92 +7,92 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * GET /_p2p/get-ids — Return doc IDs from Supervisor's PouchDB,
- * filtered by the CHW's scope.
- *
- * Response (200):
- *   { "doc_ids": [{"_id": "...", "_rev": "..."}, ...], "total": number }
- *
- * The endpoint fetches all doc IDs from PouchDB via the bridge, then
- * filters them to only include docs relevant to the CHW's scope.
- * In practice, the Supervisor offers IDs that the CHW might want to pull.
- */
+	* GET /_p2p/get-ids — Return doc IDs from Supervisor's PouchDB,
+	* filtered by the CHW's scope.
+	*
+	* Response (200):
+	*   { "doc_ids": [{"_id": "...", "_rev": "..."}, ...], "total": number }
+	*
+	* The endpoint fetches all doc IDs from PouchDB via the bridge, then
+	* filters them to only include docs relevant to the CHW's scope.
+	* In practice, the Supervisor offers IDs that the CHW might want to pull.
+	*/
 public final class GetIdsEndpoint {
 
-    private static final String TAG = "GetIdsEndpoint";
+	private static final String TAG = "GetIdsEndpoint";
 
-    private final PouchDbBridge bridge;
+	private final PouchDbBridge bridge;
 
-    public GetIdsEndpoint(PouchDbBridge bridge) {
-        this.bridge = bridge;
-    }
+	public GetIdsEndpoint(PouchDbBridge bridge) {
+		this.bridge = bridge;
+	}
 
-    /**
-     * Handle GET /_p2p/get-ids request.
-     *
-     * @param session The active P2P session (provides CHW's scope)
-     * @return JSON response string
-     */
-    public JSONObject handle(P2pSession session) {
-        try {
-            return doHandle(session);
-        } catch (JSONException e) {
-            Log.e(TAG, "Error building get-ids response", e);
-            return errorResponse("internal_error");
-        }
-    }
+	/**
+		* Handle GET /_p2p/get-ids request.
+		*
+		* @param session The active P2P session (provides CHW's scope)
+		* @return JSON response string
+		*/
+	public JSONObject handle(P2pSession session) {
+		try {
+			return doHandle(session);
+		} catch (JSONException e) {
+			Log.e(TAG, "Error building get-ids response", e);
+			return errorResponse("internal_error");
+		}
+	}
 
-    private JSONObject doHandle(P2pSession session) throws JSONException {
-        if (session == null) {
-            return errorResponse("no_active_session");
-        }
+	private JSONObject doHandle(P2pSession session) throws JSONException {
+		if (session == null) {
+			return errorResponse("no_active_session");
+		}
 
-        String allIdsJson = bridge.getAllDocIds();
-        if (allIdsJson == null || allIdsJson.isEmpty()) {
-            return buildEmptyResponse();
-        }
+		String allIdsJson = bridge.getAllDocIds();
+		if (allIdsJson == null || allIdsJson.isEmpty()) {
+			return buildEmptyResponse();
+		}
 
-        JSONArray allIds = new JSONArray(allIdsJson);
-        JSONArray filteredIds = filterSystemDocs(allIds);
+		JSONArray allIds = new JSONArray(allIdsJson);
+		JSONArray filteredIds = filterSystemDocs(allIds);
 
-        JSONObject response = new JSONObject();
-        response.put("doc_ids", filteredIds);
-        response.put("total", filteredIds.length());
+		JSONObject response = new JSONObject();
+		response.put("doc_ids", filteredIds);
+		response.put("total", filteredIds.length());
 
-        Log.d(TAG, "get-ids returning " + filteredIds.length() + " doc IDs"
-                + " (filtered from " + allIds.length() + " total)");
+		Log.d(TAG, "get-ids returning " + filteredIds.length() + " doc IDs" +
+				" (filtered from " + allIds.length() + " total)");
 
-        session.updateLastActivity();
-        return response;
-    }
+		session.updateLastActivity();
+		return response;
+	}
 
-    private JSONObject buildEmptyResponse() throws JSONException {
-        JSONObject response = new JSONObject();
-        response.put("doc_ids", new JSONArray());
-        response.put("total", 0);
-        return response;
-    }
+	private JSONObject buildEmptyResponse() throws JSONException {
+		JSONObject response = new JSONObject();
+		response.put("doc_ids", new JSONArray());
+		response.put("total", 0);
+		return response;
+	}
 
-    private JSONArray filterSystemDocs(JSONArray allIds) throws JSONException {
-        JSONArray filteredIds = new JSONArray();
-        for (int i = 0; i < allIds.length(); i++) {
-            JSONObject idEntry = allIds.getJSONObject(i);
-            String docId = idEntry.optString("_id", "");
-            if (!docId.startsWith("_design/") && !docId.startsWith("_local/")) {
-                filteredIds.put(idEntry);
-            }
-        }
-        return filteredIds;
-    }
+	private JSONArray filterSystemDocs(JSONArray allIds) throws JSONException {
+		JSONArray filteredIds = new JSONArray();
+		for (int i = 0; i < allIds.length(); i++) {
+			JSONObject idEntry = allIds.getJSONObject(i);
+			String docId = idEntry.optString("_id", "");
+			if (!docId.startsWith("_design/") && !docId.startsWith("_local/")) {
+				filteredIds.put(idEntry);
+			}
+		}
+		return filteredIds;
+	}
 
-    private JSONObject errorResponse(String error) {
-        try {
-            JSONObject response = new JSONObject();
-            response.put("ok", false);
-            response.put("error", error);
-            return response;
-        } catch (JSONException e) {
-            throw new IllegalStateException("Failed to build error response", e);
-        }
-    }
+	private JSONObject errorResponse(String error) {
+		try {
+			JSONObject response = new JSONObject();
+			response.put("ok", false);
+			response.put("error", error);
+			return response;
+		} catch (JSONException e) {
+			throw new IllegalStateException("Failed to build error response", e);
+		}
+	}
 }
