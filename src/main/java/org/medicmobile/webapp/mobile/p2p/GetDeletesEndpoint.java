@@ -27,7 +27,7 @@ public final class GetDeletesEndpoint {
             response.put("doc_ids", new JSONArray());
             return response;
         } catch (JSONException e) {
-            throw new RuntimeException("Failed to build get-deletes response", e);
+            throw new IllegalStateException("Failed to build get-deletes response", e);
         }
     }
 }

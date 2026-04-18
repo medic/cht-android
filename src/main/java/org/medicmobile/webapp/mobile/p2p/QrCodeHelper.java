@@ -47,52 +47,54 @@ public final class QrCodeHelper {
     private static final int QR_SIZE = 512; // pixels
     private static final String PAYLOAD_TYPE = "cht-p2p";
     private static final int PAYLOAD_VERSION = 1;
-    private static final long MAX_TIMESTAMP_DRIFT_MS = 10 * 60 * 1000; // G18: 10 minutes
+    private static final long MAX_TIMESTAMP_DRIFT_MS = 10L * 60 * 1000; // G18: 10 minutes
 
     private QrCodeHelper() {
         // Static utility class
     }
 
     /**
+     * Hotspot credentials grouped for QR code generation.
+     */
+    public static final class HotspotCredentials {
+        final String ssid;
+        final String password;
+        final String ipAddress;
+        final int port;
+        final String tlsFingerprint;
+
+        public HotspotCredentials(String ssid, String password, String ipAddress,
+                                  int port, String tlsFingerprint) {
+            this.ssid = ssid;
+            this.password = password;
+            this.ipAddress = ipAddress;
+            this.port = port;
+            this.tlsFingerprint = tlsFingerprint;
+        }
+    }
+
+    /**
      * Generate a QR code bitmap from hotspot credentials.
      *
-     * @param ssid           the WiFi hotspot SSID
-     * @param password       the WiFi hotspot WPA2 password
-     * @param ipAddress      the supervisor device IP on the hotspot network
-     * @param port           the HTTPS port for the P2P HTTP server
-     * @param tlsFingerprint SHA-256 fingerprint of the server's TLS certificate
+     * @param creds hotspot credentials
      * @return QR code bitmap, or null if generation fails
      */
-    public static Bitmap generateQrCode(String ssid, String password,
-                                         String ipAddress, int port,
-                                         String tlsFingerprint) {
-        try {
-            String payload = buildPayload(ssid, password, ipAddress, port, tlsFingerprint);
-            return encodeQrBitmap(payload, QR_SIZE);
-        } catch (Exception e) {
-            Log.e(TAG, "Failed to generate QR code", e);
-            return null;
-        }
+    public static Bitmap generateQrCode(HotspotCredentials creds) {
+        return generateQrCode(creds, QR_SIZE);
     }
 
     /**
      * Generate a QR code bitmap with custom dimensions.
      *
-     * @param ssid           the WiFi hotspot SSID
-     * @param password       the WiFi hotspot WPA2 password
-     * @param ipAddress      the supervisor device IP on the hotspot network
-     * @param port           the HTTPS port for the P2P HTTP server
-     * @param tlsFingerprint SHA-256 fingerprint of the server's TLS certificate
-     * @param size           bitmap width and height in pixels
+     * @param creds hotspot credentials
+     * @param size  bitmap width and height in pixels
      * @return QR code bitmap, or null if generation fails
      */
-    public static Bitmap generateQrCode(String ssid, String password,
-                                         String ipAddress, int port,
-                                         String tlsFingerprint, int size) {
+    public static Bitmap generateQrCode(HotspotCredentials creds, int size) {
         try {
-            String payload = buildPayload(ssid, password, ipAddress, port, tlsFingerprint);
+            String payload = buildPayload(creds);
             return encodeQrBitmap(payload, size);
-        } catch (Exception e) {
+        } catch (WriterException | JSONException e) {
             Log.e(TAG, "Failed to generate QR code", e);
             return null;
         }
@@ -113,10 +115,22 @@ public final class QrCodeHelper {
             bitmap.recycle();
             String base64 = Base64.encodeToString(baos.toByteArray(), Base64.NO_WRAP);
             return "data:image/png;base64," + base64;
-        } catch (Exception e) {
+        } catch (WriterException e) {
             Log.e(TAG, "Failed to generate QR data URL", e);
             return null;
         }
+    }
+
+    /**
+     * Build the QR payload JSON string from hotspot credentials.
+     *
+     * @param creds hotspot credentials
+     * @return JSON string matching CONTRACT.md Section 9 format
+     * @throws JSONException if JSON construction fails
+     */
+    public static String buildPayload(HotspotCredentials creds) throws JSONException {
+        return buildPayload(creds.ssid, creds.password, creds.ipAddress,
+                creds.port, creds.tlsFingerprint);
     }
 
     /**
@@ -133,6 +147,22 @@ public final class QrCodeHelper {
     public static String buildPayload(String ssid, String password,
                                        String ipAddress, int port,
                                        String tlsFingerprint) throws JSONException {
+        validatePayloadParams(ssid, password, ipAddress, port);
+
+        JSONObject payload = new JSONObject();
+        payload.put("type", PAYLOAD_TYPE);
+        payload.put("v", PAYLOAD_VERSION);
+        payload.put("ssid", ssid);
+        payload.put("pwd", password);
+        payload.put("ip", ipAddress);
+        payload.put("port", port);
+        payload.put("tls", tlsFingerprint != null ? tlsFingerprint : "");
+        payload.put("ts", System.currentTimeMillis());
+        return payload.toString();
+    }
+
+    private static void validatePayloadParams(String ssid, String password,
+                                               String ipAddress, int port) {
         if (ssid == null || ssid.isEmpty()) {
             throw new IllegalArgumentException("ssid must not be null or empty");
         }
@@ -145,17 +175,6 @@ public final class QrCodeHelper {
         if (port <= 0 || port > 65535) {
             throw new IllegalArgumentException("port must be between 1 and 65535, got: " + port);
         }
-
-        JSONObject payload = new JSONObject();
-        payload.put("type", PAYLOAD_TYPE);
-        payload.put("v", PAYLOAD_VERSION);
-        payload.put("ssid", ssid);
-        payload.put("pwd", password);
-        payload.put("ip", ipAddress);
-        payload.put("port", port);
-        payload.put("tls", tlsFingerprint != null ? tlsFingerprint : "");
-        payload.put("ts", System.currentTimeMillis());
-        return payload.toString();
     }
 
     /**

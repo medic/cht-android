@@ -96,7 +96,7 @@ public class P2pNotificationChannel {
             builder.setProgress(0, 0, true);
         }
 
-        builder.setContentTitle("P2P Sync")
+        builder.setContentTitle(CHANNEL_NAME)
                 .setContentText(text)
                 .setSmallIcon(android.R.drawable.stat_notify_sync)
                 .setOngoing(true)

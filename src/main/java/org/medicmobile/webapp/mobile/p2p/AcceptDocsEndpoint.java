@@ -32,6 +32,8 @@ public final class AcceptDocsEndpoint {
 
     private static final String TAG = "AcceptDocsEndpoint";
     private static final int MAX_BATCH_SIZE = 500;
+    private static final String KEY_ID = "_id";
+    private static final String KEY_ERROR = "error";
 
     private final PouchDbBridge bridge;
     private final TransitDocCallback transitCallback;
@@ -76,103 +78,109 @@ public final class AcceptDocsEndpoint {
             return buildResponse(0, 0, 0, new JSONArray());
         }
 
-        // Guard: limit batch size
         if (docs.length() > MAX_BATCH_SIZE) {
             return errorResponse("batch_too_large: max " + MAX_BATCH_SIZE + " docs per request");
         }
 
         // Phase 1: Accept all valid docs
-        List<JSONObject> acceptedDocs = new ArrayList<>();
         JSONArray errors = new JSONArray();
-        long totalBytes = 0;
+        List<JSONObject> acceptedDocs = new ArrayList<>();
+        long totalBytes = validateAndAcceptDocs(docs, acceptedDocs, errors);
 
-        for (int i = 0; i < docs.length(); i++) {
-            JSONObject doc = docs.getJSONObject(i);
-            String docId = doc.optString("_id", "<unknown>");
-
-            // Rule 5: reject _deleted docs (additive only)
-            if (doc.optBoolean("_deleted", false)) {
-                JSONObject err = new JSONObject();
-                err.put("id", docId);
-                err.put("reason", "deleted_not_allowed");
-                errors.put(err);
-                continue;
-            }
-
-            // Check individual doc size limit
-            int docSize = doc.toString().length();
-            if (docSize > config.getMaxDocSizeBytes()) {
-                JSONObject err = new JSONObject();
-                err.put("id", docId);
-                err.put("reason", "doc_too_large: " + docSize + " bytes");
-                errors.put(err);
-                continue;
-            }
-
-            totalBytes += docSize;
-            acceptedDocs.add(doc);
-        }
-
-        // Enforce cumulative relay size limit before writing
+        // Enforce cumulative relay size limit
         long maxRelayBytes = config.getMaxRelaySizeBytes();
         if (maxRelayBytes > 0 && (session.getBytesTransferred() + totalBytes) > maxRelayBytes) {
             return errorResponse("relay_size_exceeded: max " + (maxRelayBytes / (1024 * 1024)) + " MB");
         }
 
-        // Hydrate truncated parent lineages so server-side auth doesn't reject docs
         if (!acceptedDocs.isEmpty()) {
             hydrateParentLineage(acceptedDocs);
+            writeDocsToPouchDb(acceptedDocs);
+            trackAcceptedDocs(acceptedDocs, session);
         }
 
-        // Write all accepted docs to PouchDB
-        if (!acceptedDocs.isEmpty()) {
-            JSONArray docsToWrite = new JSONArray();
-            for (JSONObject doc : acceptedDocs) {
-                docsToWrite.put(doc);
-            }
-            String writeResult = bridge.writeDocs(docsToWrite.toString());
-            Log.i(TAG, "writeDocs: " + acceptedDocs.size() + " docs, result="
-                    + (writeResult != null ? writeResult.substring(0, Math.min(200, writeResult.length())) : "null"));
-        }
-
-        // Track ALL accepted doc IDs for post-sync purge (decoupled from transit classification)
-        if (!acceptedDocs.isEmpty() && transitCallback != null) {
-            List<String> allAcceptedIds = new ArrayList<>();
-            for (JSONObject doc : acceptedDocs) {
-                String docId = doc.optString("_id", "");
-                if (!docId.isEmpty()) {
-                    allAcceptedIds.add(docId);
-                }
-            }
-            if (!allAcceptedIds.isEmpty()) {
-                transitCallback.trackTransitDocs(
-                        allAcceptedIds,
-                        session.getPeerDeviceId(),
-                        session.getPeerUserId()
-                );
-                Log.i(TAG, "Tracked " + allAcceptedIds.size() + " accepted doc IDs for purge");
-            }
-        }
-
-        // Phase 2: Classify transit docs using contacts_by_depth view
-        int transitCount = 0;
-        if (!acceptedDocs.isEmpty()) {
-            transitCount = classifyTransitDocs(acceptedDocs, session);
-        }
+        // Phase 2: Classify transit docs
+        int transitCount = acceptedDocs.isEmpty() ? 0 : classifyTransitDocs(acceptedDocs, session);
         int inScopeCount = acceptedDocs.size() - transitCount;
 
-        // Update session counters
-        session.incrementDocsPulled(inScopeCount);
-        session.incrementTransitDocs(transitCount);
-        session.incrementDocsRejected(errors.length());
-        session.addBytesTransferred(totalBytes);
-        session.updateLastActivity();
+        updateSessionCounters(session, inScopeCount, transitCount, errors.length(), totalBytes);
 
         Log.i(TAG, "accept-docs: in_scope=" + inScopeCount
                 + " transit=" + transitCount
                 + " rejected=" + errors.length());
 
         return buildResponse(inScopeCount, transitCount, errors.length(), errors);
+    }
+
+    private long validateAndAcceptDocs(JSONArray docs, List<JSONObject> acceptedDocs,
+                                       JSONArray errors) throws JSONException {
+        long totalBytes = 0;
+        for (int i = 0; i < docs.length(); i++) {
+            JSONObject doc = docs.getJSONObject(i);
+            String docId = doc.optString(KEY_ID, "<unknown>");
+
+            if (doc.optBoolean("_deleted", false)) {
+                addError(errors, docId, "deleted_not_allowed");
+                continue;
+            }
+
+            int docSize = doc.toString().length();
+            if (docSize > config.getMaxDocSizeBytes()) {
+                addError(errors, docId, "doc_too_large: " + docSize + " bytes");
+                continue;
+            }
+
+            totalBytes += docSize;
+            acceptedDocs.add(doc);
+        }
+        return totalBytes;
+    }
+
+    private void addError(JSONArray errors, String docId, String reason) throws JSONException {
+        JSONObject err = new JSONObject();
+        err.put("id", docId);
+        err.put("reason", reason);
+        errors.put(err);
+    }
+
+    private void writeDocsToPouchDb(List<JSONObject> acceptedDocs) {
+        JSONArray docsToWrite = new JSONArray();
+        for (JSONObject doc : acceptedDocs) {
+            docsToWrite.put(doc);
+        }
+        String writeResult = bridge.writeDocs(docsToWrite.toString());
+        Log.i(TAG, "writeDocs: " + acceptedDocs.size() + " docs, result="
+                + (writeResult != null ? writeResult.substring(0, Math.min(200, writeResult.length())) : "null"));
+    }
+
+    private void trackAcceptedDocs(List<JSONObject> acceptedDocs, P2pSession session) {
+        if (transitCallback == null) {
+            return;
+        }
+        List<String> allAcceptedIds = new ArrayList<>();
+        for (JSONObject doc : acceptedDocs) {
+            String docId = doc.optString(KEY_ID, "");
+            if (!docId.isEmpty()) {
+                allAcceptedIds.add(docId);
+            }
+        }
+        if (!allAcceptedIds.isEmpty()) {
+            transitCallback.trackTransitDocs(
+                    allAcceptedIds,
+                    session.getPeerDeviceId(),
+                    session.getPeerUserId()
+            );
+            Log.i(TAG, "Tracked " + allAcceptedIds.size() + " accepted doc IDs for purge");
+        }
+    }
+
+    private void updateSessionCounters(P2pSession session, int inScopeCount, int transitCount,
+                                       int rejectedCount, long totalBytes) {
+        session.incrementDocsPulled(inScopeCount);
+        session.incrementTransitDocs(transitCount);
+        session.incrementDocsRejected(rejectedCount);
+        session.addBytesTransferred(totalBytes);
+        session.updateLastActivity();
     }
 
     /**
@@ -190,7 +198,7 @@ public final class AcceptDocsEndpoint {
             // Build a map of docs in the current batch (by _id) for quick lookup
             Map<String, JSONObject> batchMap = new HashMap<>();
             for (JSONObject doc : docs) {
-                String id = doc.optString("_id", "");
+                String id = doc.optString(KEY_ID, "");
                 if (!id.isEmpty()) {
                     batchMap.put(id, doc);
                 }
@@ -200,8 +208,8 @@ public final class AcceptDocsEndpoint {
             Set<String> terminalParentIds = new HashSet<>();
             for (JSONObject doc : docs) {
                 JSONObject deepest = getDeepestParent(doc);
-                if (deepest != null && deepest.has("_id") && !deepest.has("parent")) {
-                    String parentId = deepest.getString("_id");
+                if (deepest != null && deepest.has(KEY_ID) && !deepest.has("parent")) {
+                    String parentId = deepest.getString(KEY_ID);
                     // Only fetch if not already in the batch
                     if (!batchMap.containsKey(parentId)) {
                         terminalParentIds.add(parentId);
@@ -221,8 +229,8 @@ public final class AcceptDocsEndpoint {
             int hydrated = 0;
             for (JSONObject doc : docs) {
                 JSONObject deepest = getDeepestParent(doc);
-                if (deepest != null && deepest.has("_id") && !deepest.has("parent")) {
-                    String parentId = deepest.getString("_id");
+                if (deepest != null && deepest.has(KEY_ID) && !deepest.has("parent")) {
+                    String parentId = deepest.getString(KEY_ID);
                     JSONObject cachedParent = parentChainCache.get(parentId);
                     if (cachedParent != null && cachedParent.has("parent")) {
                         // Attach the parent's parent chain to extend the lineage
@@ -235,7 +243,7 @@ public final class AcceptDocsEndpoint {
             if (hydrated > 0) {
                 Log.i(TAG, "Hydrated parent lineage for " + hydrated + " docs");
             }
-        } catch (Exception e) {
+        } catch (JSONException e) {
             Log.e(TAG, "Error hydrating parent lineage, docs will be written as-is", e);
         }
     }
@@ -294,12 +302,12 @@ public final class AcceptDocsEndpoint {
                 JSONObject fetched = fetchedDocs.optJSONObject(i);
                 if (fetched == null) continue;
 
-                String id = fetched.optString("_id", "");
+                String id = fetched.optString(KEY_ID, "");
                 if (id.isEmpty()) continue;
 
                 // Build a lightweight parent reference (just _id + parent chain)
                 JSONObject parentRef = new JSONObject();
-                parentRef.put("_id", id);
+                parentRef.put(KEY_ID, id);
 
                 JSONObject fetchedParent = fetched.optJSONObject("parent");
                 if (fetchedParent != null) {
@@ -307,8 +315,8 @@ public final class AcceptDocsEndpoint {
 
                     // Check if this parent's chain is also truncated
                     JSONObject deepest = getDeepestParent(fetched);
-                    if (deepest != null && deepest.has("_id") && !deepest.has("parent")) {
-                        String nextId = deepest.getString("_id");
+                    if (deepest != null && deepest.has(KEY_ID) && !deepest.has("parent")) {
+                        String nextId = deepest.getString(KEY_ID);
                         if (!cache.containsKey(nextId) && !batchMap.containsKey(nextId)) {
                             nextIds.add(nextId);
                         }
@@ -329,8 +337,8 @@ public final class AcceptDocsEndpoint {
             for (Map.Entry<String, JSONObject> entry : cache.entrySet()) {
                 JSONObject cached = entry.getValue();
                 JSONObject deepest = getDeepestParent(cached);
-                if (deepest != null && deepest.has("_id") && !deepest.has("parent")) {
-                    String parentId = deepest.getString("_id");
+                if (deepest != null && deepest.has(KEY_ID) && !deepest.has("parent")) {
+                    String parentId = deepest.getString(KEY_ID);
                     JSONObject parentCached = cache.get(parentId);
                     if (parentCached != null && parentCached.has("parent")) {
                         deepest.put("parent", cloneParentChain(parentCached.getJSONObject("parent")));
@@ -347,7 +355,7 @@ public final class AcceptDocsEndpoint {
      */
     private JSONObject cloneParentChain(JSONObject parent) throws JSONException {
         JSONObject clone = new JSONObject();
-        clone.put("_id", parent.getString("_id"));
+        clone.put(KEY_ID, parent.getString(KEY_ID));
         JSONObject next = parent.optJSONObject("parent");
         if (next != null) {
             clone.put("parent", cloneParentChain(next));
@@ -394,7 +402,7 @@ public final class AcceptDocsEndpoint {
             // Classify each accepted doc
             List<String> transitDocIds = new ArrayList<>();
             for (JSONObject doc : acceptedDocs) {
-                String docId = doc.optString("_id", "");
+                String docId = doc.optString(KEY_ID, "");
                 String type = doc.optString("type", "");
 
                 if (isContactType(type)) {
@@ -418,7 +426,7 @@ public final class AcceptDocsEndpoint {
 
             return transitDocIds.size();
 
-        } catch (Exception e) {
+        } catch (JSONException e) {
             Log.e(TAG, "Error classifying transit docs, treating all as in-scope", e);
             return 0;
         }
@@ -446,7 +454,7 @@ public final class AcceptDocsEndpoint {
         // Try contact._id first (most common for reports about a person)
         JSONObject contact = doc.optJSONObject("contact");
         if (contact != null) {
-            String contactId = contact.optString("_id", null);
+            String contactId = contact.optString(KEY_ID, null);
             if (contactId != null) return contactId;
         }
 
@@ -483,10 +491,10 @@ public final class AcceptDocsEndpoint {
         try {
             JSONObject response = new JSONObject();
             response.put("ok", false);
-            response.put("error", error);
+            response.put(KEY_ERROR, error);
             return response;
         } catch (JSONException e) {
-            throw new RuntimeException("Failed to build error response", e);
+            throw new IllegalStateException("Failed to build error response", e);
         }
     }
 }

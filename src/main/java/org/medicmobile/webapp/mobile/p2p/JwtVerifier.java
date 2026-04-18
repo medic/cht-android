@@ -1,6 +1,5 @@
 package org.medicmobile.webapp.mobile.p2p;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.security.KeyFactory;
@@ -47,24 +46,33 @@ public final class JwtVerifier {
             throw new JwtVerificationException("token_malformed: expected 3 parts, got " + parts.length);
         }
 
-        // Decode header
+        verifyHeader(parts[0]);
+        verifySignature(parts[0], parts[1], parts[2]);
+        JSONObject payload = decodePayload(parts[1]);
+        verifyExpiry(payload);
+
+        return payload;
+    }
+
+    private void verifyHeader(String headerPart) throws JwtVerificationException {
         JSONObject header;
         try {
-            header = new JSONObject(new String(base64UrlDecode(parts[0])));
+            header = new JSONObject(new String(base64UrlDecode(headerPart)));
         } catch (Exception e) {
             throw new JwtVerificationException("token_malformed: invalid header");
         }
 
-        // G6: Verify algorithm is ES256
         String alg = header.optString("alg", "");
         if (!"ES256".equals(alg)) {
             throw new JwtVerificationException("token_invalid: unsupported algorithm " + alg);
         }
+    }
 
-        // G6: Verify ECDSA signature
+    private void verifySignature(String headerPart, String payloadPart, String signaturePart)
+            throws JwtVerificationException {
         try {
-            byte[] signatureInput = (parts[0] + "." + parts[1]).getBytes("UTF-8");
-            byte[] signatureBytes = base64UrlDecode(parts[2]);
+            byte[] signatureInput = (headerPart + "." + payloadPart).getBytes("UTF-8");
+            byte[] signatureBytes = base64UrlDecode(signaturePart);
             byte[] derSignature = rawToDer(signatureBytes);
 
             Signature sig = Signature.getInstance("SHA256withECDSA");
@@ -79,23 +87,22 @@ public final class JwtVerifier {
         } catch (Exception e) {
             throw new JwtVerificationException("token_invalid: " + e.getMessage());
         }
+    }
 
-        // Decode payload
-        JSONObject payload;
+    private JSONObject decodePayload(String payloadPart) throws JwtVerificationException {
         try {
-            payload = new JSONObject(new String(base64UrlDecode(parts[1])));
+            return new JSONObject(new String(base64UrlDecode(payloadPart)));
         } catch (Exception e) {
             throw new JwtVerificationException("token_malformed: invalid payload");
         }
+    }
 
-        // G7: Check expiry
+    private static void verifyExpiry(JSONObject payload) throws JwtVerificationException {
         long exp = payload.optLong("exp", 0);
         long now = System.currentTimeMillis() / 1000;
         if (exp > 0 && exp < now) {
             throw new JwtVerificationException("token_expired");
         }
-
-        return payload;
     }
 
     /**

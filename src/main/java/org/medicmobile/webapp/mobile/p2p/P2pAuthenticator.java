@@ -54,16 +54,17 @@ public final class P2pAuthenticator {
 
         String role = payload.optString("role", null);
 
-        // Handle facility_id as either string or array (CHT wraps in array via forceArray)
-        Object rawFacility = payload.opt("facility_id");
-        String facilityId = null;
-        if (rawFacility instanceof JSONArray) {
-            facilityId = ((JSONArray) rawFacility).optString(0, null);
-        } else if (rawFacility != null) {
-            facilityId = rawFacility.toString();
-        }
+        String facilityId = extractFacilityId(payload);
 
         return AuthResult.success(payload, userId, role, facilityId);
+    }
+
+    private String extractFacilityId(JSONObject payload) {
+        Object rawFacility = payload.opt("facility_id");
+        if (rawFacility instanceof JSONArray) {
+            return ((JSONArray) rawFacility).optString(0, null);
+        }
+        return rawFacility != null ? rawFacility.toString() : null;
     }
 
     /**
@@ -103,22 +104,30 @@ public final class P2pAuthenticator {
         private final String role;
         private final String facilityId;
 
-        private AuthResult(boolean authenticated, String error, JSONObject tokenPayload,
-                           String userId, String role, String facilityId) {
-            this.authenticated = authenticated;
+        private AuthResult(String error) {
+            this.authenticated = false;
             this.error = error;
-            this.tokenPayload = tokenPayload;
+            this.tokenPayload = null;
+            this.userId = null;
+            this.role = null;
+            this.facilityId = null;
+        }
+
+        private AuthResult(JSONObject payload, String userId, String role, String facilityId) {
+            this.authenticated = true;
+            this.error = null;
+            this.tokenPayload = payload;
             this.userId = userId;
             this.role = role;
             this.facilityId = facilityId;
         }
 
         public static AuthResult success(JSONObject payload, String userId, String role, String facilityId) {
-            return new AuthResult(true, null, payload, userId, role, facilityId);
+            return new AuthResult(payload, userId, role, facilityId);
         }
 
         public static AuthResult failure(String error) {
-            return new AuthResult(false, error, null, null, null, null);
+            return new AuthResult(error);
         }
 
         public boolean isAuthenticated() {

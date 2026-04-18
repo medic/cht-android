@@ -318,6 +318,7 @@ public class MedicAndroidJavascript {
 	}
 
 //> P2P SYNC BRIDGE METHODS
+	private static final String P2P_NOT_INITIALIZED = "P2P not initialized";
 	private org.medicmobile.webapp.mobile.p2p.P2pBridgeMethods p2pBridge;
 
 	public void setP2pBridge(org.medicmobile.webapp.mobile.p2p.P2pBridgeMethods bridge) {
@@ -326,13 +327,13 @@ public class MedicAndroidJavascript {
 
 	@android.webkit.JavascriptInterface
 	public String p2pStartHostMode() {
-		if (p2pBridge == null) return jsonError("P2P not initialized");
+		if (p2pBridge == null) return jsonError(P2P_NOT_INITIALIZED);
 		return p2pBridge.p2pStartHostMode();
 	}
 
 	@android.webkit.JavascriptInterface
 	public String p2pStartClientMode(String qrPayloadJson) {
-		if (p2pBridge == null) return jsonError("P2P not initialized");
+		if (p2pBridge == null) return jsonError(P2P_NOT_INITIALIZED);
 		return p2pBridge.p2pStartClientMode(qrPayloadJson);
 	}
 
@@ -343,7 +344,7 @@ public class MedicAndroidJavascript {
 
 	@android.webkit.JavascriptInterface
 	public String p2pGetStatus() {
-		if (p2pBridge == null) return jsonError("P2P not initialized");
+		if (p2pBridge == null) return jsonError(P2P_NOT_INITIALIZED);
 		return p2pBridge.p2pGetStatus();
 	}
 
@@ -366,7 +367,7 @@ public class MedicAndroidJavascript {
 
 	@android.webkit.JavascriptInterface
 	public String p2pPurgeTransitDocs() {
-		if (p2pBridge == null) return jsonError("P2P not initialized");
+		if (p2pBridge == null) return jsonError(P2P_NOT_INITIALIZED);
 		return p2pBridge.p2pPurgeTransitDocs();
 	}
 
@@ -388,7 +389,7 @@ public class MedicAndroidJavascript {
 
 	@android.webkit.JavascriptInterface
 	public String p2pGetCapability() {
-		if (p2pBridge == null) return jsonError("P2P not initialized");
+		if (p2pBridge == null) return jsonError(P2P_NOT_INITIALIZED);
 		return p2pBridge.p2pGetCapability();
 	}
 
@@ -405,7 +406,7 @@ public class MedicAndroidJavascript {
 
 	@android.webkit.JavascriptInterface
 	public String p2pInitialize(String configJson) {
-		if (p2pBridge == null) return jsonError("P2P not initialized");
+		if (p2pBridge == null) return jsonError(P2P_NOT_INITIALIZED);
 		return p2pBridge.p2pInitialize(configJson);
 	}
 
@@ -416,19 +417,19 @@ public class MedicAndroidJavascript {
 
 	@android.webkit.JavascriptInterface
 	public String p2pRetrySync() {
-		if (p2pBridge == null) return jsonError("P2P not initialized");
+		if (p2pBridge == null) return jsonError(P2P_NOT_INITIALIZED);
 		return p2pBridge.p2pRetrySync();
 	}
 
 	@android.webkit.JavascriptInterface
 	public String p2pProceedSync() {
-		if (p2pBridge == null) return jsonError("P2P not initialized");
+		if (p2pBridge == null) return jsonError(P2P_NOT_INITIALIZED);
 		return p2pBridge.p2pProceedSync();
 	}
 
 	@android.webkit.JavascriptInterface
 	public String p2pIsActive() {
-		if (p2pBridge == null) return jsonError("P2P not initialized");
+		if (p2pBridge == null) return jsonError(P2P_NOT_INITIALIZED);
 		return p2pBridge.p2pIsActive();
 	}
 

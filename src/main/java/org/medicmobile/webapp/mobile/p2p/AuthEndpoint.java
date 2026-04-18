@@ -65,7 +65,16 @@ public final class AuthEndpoint {
             return AuthResponse.error(400, "missing_device_id");
         }
 
-        // G6 + G7 + G8: Verify JWT, check expiry, check revocation
+        AuthResponse authCheckResult = verifyAuthAndPermissions(p2pToken, deviceId);
+        if (authCheckResult != null) {
+            return authCheckResult;
+        }
+
+        P2pAuthenticator.AuthResult authResult = authenticator.authenticate(p2pToken, deviceId);
+        return buildSuccessResponse(authResult, deviceId);
+    }
+
+    private AuthResponse verifyAuthAndPermissions(String p2pToken, String deviceId) {
         P2pAuthenticator.AuthResult authResult = authenticator.authenticate(p2pToken, deviceId);
 
         if (!authResult.isAuthenticated()) {
@@ -73,30 +82,32 @@ public final class AuthEndpoint {
             return AuthResponse.error(401, authResult.getError());
         }
 
-        // G9: Check if the peer is allowed to relay with this Supervisor
         String userId = authResult.getUserId();
         if (!authenticator.isPeerAllowed(authResult.getTokenPayload(), deviceId)) {
             Log.w(TAG, "Peer not allowed: " + userId + " (device: " + deviceId + ")");
             return AuthResponse.error(401, "peer_not_allowed");
         }
 
-        // Check if role is allowed by config
         String role = authResult.getRole();
         if (!config.isRoleAllowed(role)) {
             Log.w(TAG, "Role not allowed for P2P: " + role);
             return AuthResponse.error(401, "role_not_allowed");
         }
 
-        // Build peer scope from JWT payload
+        return null;
+    }
+
+    private AuthResponse buildSuccessResponse(P2pAuthenticator.AuthResult authResult,
+                                               String deviceId) throws JSONException {
+        String userId = authResult.getUserId();
+        String role = authResult.getRole();
         ScopeManifest peerScope = buildPeerScope(authResult);
 
-        // Create session
         P2pSession session = new P2pSession(deviceId, userId, role, peerScope);
         session.setState(P2pSession.State.ACTIVE);
 
         Log.i(TAG, "Auth successful: user=" + userId + " session=" + session.getSessionId());
 
-        // Build success response
         JSONObject responseBody = new JSONObject();
         responseBody.put("ok", true);
         responseBody.put("session_id", session.getSessionId());
@@ -155,7 +166,7 @@ public final class AuthEndpoint {
                 return new AuthResponse(statusCode, body, null);
             } catch (JSONException e) {
                 // Should never happen with simple string puts
-                throw new RuntimeException("Failed to build error response", e);
+                throw new IllegalStateException("Failed to build error response", e);
             }
         }
 

@@ -101,7 +101,7 @@ public class P2pSession {
         return lastActivityAt;
     }
 
-    public State getState() {
+    public synchronized State getState() {
         return state;
     }
 
@@ -284,12 +284,8 @@ public class P2pSession {
                 return "completed";
             case FAILED:
                 return "failed";
-            case AUTHENTICATING:
-            case ACTIVE:
-            case COMPLETING:
-                return "in_progress";
             default:
-                return "unknown";
+                return "in_progress";
         }
     }
 }

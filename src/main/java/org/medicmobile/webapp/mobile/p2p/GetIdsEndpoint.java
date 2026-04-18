@@ -47,33 +47,13 @@ public final class GetIdsEndpoint {
             return errorResponse("no_active_session");
         }
 
-        // Get all doc IDs from PouchDB
         String allIdsJson = bridge.getAllDocIds();
         if (allIdsJson == null || allIdsJson.isEmpty()) {
-            JSONObject response = new JSONObject();
-            response.put("doc_ids", new JSONArray());
-            response.put("total", 0);
-            return response;
+            return buildEmptyResponse();
         }
 
         JSONArray allIds = new JSONArray(allIdsJson);
-
-        // Filter: skip _design/ and _local/ docs, include only docs
-        // that a CHW might need (shared types + docs in their facility subtree).
-        // Full scope filtering requires doc content, which is expensive.
-        // Here we do a lightweight pre-filter on doc ID patterns.
-        JSONArray filteredIds = new JSONArray();
-        for (int i = 0; i < allIds.length(); i++) {
-            JSONObject idEntry = allIds.getJSONObject(i);
-            String docId = idEntry.optString("_id", "");
-
-            // Skip system docs
-            if (docId.startsWith("_design/") || docId.startsWith("_local/")) {
-                continue;
-            }
-
-            filteredIds.put(idEntry);
-        }
+        JSONArray filteredIds = filterSystemDocs(allIds);
 
         JSONObject response = new JSONObject();
         response.put("doc_ids", filteredIds);
@@ -86,6 +66,25 @@ public final class GetIdsEndpoint {
         return response;
     }
 
+    private JSONObject buildEmptyResponse() throws JSONException {
+        JSONObject response = new JSONObject();
+        response.put("doc_ids", new JSONArray());
+        response.put("total", 0);
+        return response;
+    }
+
+    private JSONArray filterSystemDocs(JSONArray allIds) throws JSONException {
+        JSONArray filteredIds = new JSONArray();
+        for (int i = 0; i < allIds.length(); i++) {
+            JSONObject idEntry = allIds.getJSONObject(i);
+            String docId = idEntry.optString("_id", "");
+            if (!docId.startsWith("_design/") && !docId.startsWith("_local/")) {
+                filteredIds.put(idEntry);
+            }
+        }
+        return filteredIds;
+    }
+
     private JSONObject errorResponse(String error) {
         try {
             JSONObject response = new JSONObject();
@@ -93,7 +92,7 @@ public final class GetIdsEndpoint {
             response.put("error", error);
             return response;
         } catch (JSONException e) {
-            throw new RuntimeException("Failed to build error response", e);
+            throw new IllegalStateException("Failed to build error response", e);
         }
     }
 }

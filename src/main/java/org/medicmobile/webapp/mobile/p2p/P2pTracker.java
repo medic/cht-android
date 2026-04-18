@@ -23,6 +23,7 @@ import java.util.List;
 public class P2pTracker {
 
     private static final String TAG = "P2pTracker";
+    private static final String KEY_SESSIONS = "sessions";
 
     private final List<P2pSession> completedSessions = new ArrayList<>();
     private P2pSession currentSession;
@@ -100,7 +101,7 @@ public class P2pTracker {
      * FORMAT from CONTRACT.md Section 5:
      * {
      *   "_id": "_local/p2p-sync-log",
-     *   "sessions": [
+     *   KEY_SESSIONS: [
      *     {
      *       "session_id": "uuid",
      *       "peer_device_id": "supervisor-device-uuid",
@@ -119,7 +120,7 @@ public class P2pTracker {
     public JSONObject buildSyncLog() throws JSONException {
         JSONObject log = new JSONObject();
         log.put("_id", "_local/p2p-sync-log");
-        log.put("sessions", buildSessionsArray());
+        log.put(KEY_SESSIONS, buildSessionsArray());
         return log;
     }
 
@@ -129,7 +130,7 @@ public class P2pTracker {
      * FORMAT from CONTRACT.md Section 5:
      * {
      *   "_id": "_local/p2p-relay-log",
-     *   "sessions": [
+     *   KEY_SESSIONS: [
      *     {
      *       "session_id": "uuid",
      *       "source_device_id": "chw-device-uuid",
@@ -153,7 +154,7 @@ public class P2pTracker {
         for (P2pSession session : completedSessions) {
             sessions.put(buildRelaySessionEntry(session));
         }
-        log.put("sessions", sessions);
+        log.put(KEY_SESSIONS, sessions);
         return log;
     }
 
@@ -167,9 +168,9 @@ public class P2pTracker {
         // We only load completed session count for telemetry purposes.
         // Actual session objects are not reconstructed — they are historical data.
         // The JSON is passed through directly when building telemetry.
-        if (logJson.has("sessions")) {
+        if (logJson.has(KEY_SESSIONS)) {
             Log.i(TAG, "Loaded sync log with "
-                    + logJson.getJSONArray("sessions").length() + " historical sessions");
+                    + logJson.getJSONArray(KEY_SESSIONS).length() + " historical sessions");
         }
     }
 

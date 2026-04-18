@@ -5,7 +5,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -38,19 +37,32 @@ public class P2pConfig {
     private final List<String> allowedRoles;
     private final boolean auditLogging;
 
-    private P2pConfig(boolean enabled, boolean wifiHotspotEnabled, int maxRelaySizeMb,
-                      int maxDocSizeKb, int maxAttachmentSizeMb, int tokenExpiryDays,
-                      int wifiHotspotIdleTimeoutSec, List<String> allowedRoles,
-                      boolean auditLogging) {
-        this.enabled = enabled;
-        this.wifiHotspotEnabled = wifiHotspotEnabled;
-        this.maxRelaySizeMb = maxRelaySizeMb;
-        this.maxDocSizeKb = maxDocSizeKb;
-        this.maxAttachmentSizeMb = maxAttachmentSizeMb;
-        this.tokenExpiryDays = tokenExpiryDays;
-        this.wifiHotspotIdleTimeoutSec = wifiHotspotIdleTimeoutSec;
-        this.allowedRoles = Collections.unmodifiableList(new ArrayList<>(allowedRoles));
-        this.auditLogging = auditLogging;
+    private P2pConfig(Builder builder) {
+        this.enabled = builder.enabled;
+        this.wifiHotspotEnabled = builder.wifiHotspotEnabled;
+        this.maxRelaySizeMb = builder.maxRelaySizeMb;
+        this.maxDocSizeKb = builder.maxDocSizeKb;
+        this.maxAttachmentSizeMb = builder.maxAttachmentSizeMb;
+        this.tokenExpiryDays = builder.tokenExpiryDays;
+        this.wifiHotspotIdleTimeoutSec = builder.wifiHotspotIdleTimeoutSec;
+        this.allowedRoles = Collections.unmodifiableList(new ArrayList<>(builder.allowedRoles));
+        this.auditLogging = builder.auditLogging;
+    }
+
+    static class Builder {
+        boolean enabled = DEFAULT_ENABLED;
+        boolean wifiHotspotEnabled = DEFAULT_WIFI_HOTSPOT_ENABLED;
+        int maxRelaySizeMb = DEFAULT_MAX_RELAY_SIZE_MB;
+        int maxDocSizeKb = DEFAULT_MAX_DOC_SIZE_KB;
+        int maxAttachmentSizeMb = DEFAULT_MAX_ATTACHMENT_SIZE_MB;
+        int tokenExpiryDays = DEFAULT_TOKEN_EXPIRY_DAYS;
+        int wifiHotspotIdleTimeoutSec = DEFAULT_WIFI_HOTSPOT_IDLE_TIMEOUT_SEC;
+        List<String> allowedRoles = new ArrayList<>(DEFAULT_ALLOWED_ROLES);
+        boolean auditLogging = DEFAULT_AUDIT_LOGGING;
+
+        P2pConfig build() {
+            return new P2pConfig(this);
+        }
     }
 
     /**
@@ -76,42 +88,30 @@ public class P2pConfig {
             return defaults();
         }
 
-        boolean enabled = p2pSyncSection.optBoolean("enabled", DEFAULT_ENABLED);
+        Builder builder = new Builder();
+        builder.enabled = p2pSyncSection.optBoolean("enabled", DEFAULT_ENABLED);
 
-        boolean wifiHotspot = DEFAULT_WIFI_HOTSPOT_ENABLED;
         JSONObject transports = p2pSyncSection.optJSONObject("transports");
         if (transports != null) {
-            wifiHotspot = transports.optBoolean("wifi_hotspot", DEFAULT_WIFI_HOTSPOT_ENABLED);
+            builder.wifiHotspotEnabled = transports.optBoolean("wifi_hotspot", DEFAULT_WIFI_HOTSPOT_ENABLED);
         }
 
-        int maxRelaySizeMb = p2pSyncSection.optInt("max_relay_size_mb", DEFAULT_MAX_RELAY_SIZE_MB);
-        int maxDocSizeKb = p2pSyncSection.optInt("max_doc_size_kb", DEFAULT_MAX_DOC_SIZE_KB);
-        int maxAttachmentSizeMb = p2pSyncSection.optInt("max_attachment_size_mb", DEFAULT_MAX_ATTACHMENT_SIZE_MB);
-        int tokenExpiryDays = p2pSyncSection.optInt("token_expiry_days", DEFAULT_TOKEN_EXPIRY_DAYS);
-        int idleTimeoutSec = p2pSyncSection.optInt("wifi_hotspot_idle_timeout_sec", DEFAULT_WIFI_HOTSPOT_IDLE_TIMEOUT_SEC);
-        boolean auditLogging = p2pSyncSection.optBoolean("audit_logging", DEFAULT_AUDIT_LOGGING);
+        builder.maxRelaySizeMb = p2pSyncSection.optInt("max_relay_size_mb", DEFAULT_MAX_RELAY_SIZE_MB);
+        builder.maxDocSizeKb = p2pSyncSection.optInt("max_doc_size_kb", DEFAULT_MAX_DOC_SIZE_KB);
+        builder.maxAttachmentSizeMb = p2pSyncSection.optInt("max_attachment_size_mb", DEFAULT_MAX_ATTACHMENT_SIZE_MB);
+        builder.tokenExpiryDays = p2pSyncSection.optInt("token_expiry_days", DEFAULT_TOKEN_EXPIRY_DAYS);
+        builder.wifiHotspotIdleTimeoutSec = p2pSyncSection.optInt("wifi_hotspot_idle_timeout_sec", DEFAULT_WIFI_HOTSPOT_IDLE_TIMEOUT_SEC);
+        builder.auditLogging = p2pSyncSection.optBoolean("audit_logging", DEFAULT_AUDIT_LOGGING);
+        builder.allowedRoles = parseRoles(p2pSyncSection.optJSONArray("allowed_roles"));
 
-        List<String> allowedRoles = parseRoles(p2pSyncSection.optJSONArray("allowed_roles"));
-
-        return new P2pConfig(enabled, wifiHotspot, maxRelaySizeMb, maxDocSizeKb,
-                maxAttachmentSizeMb, tokenExpiryDays, idleTimeoutSec, allowedRoles, auditLogging);
+        return builder.build();
     }
 
     /**
      * Create a config with all default values (CONTRACT.md Section 4).
      */
     public static P2pConfig defaults() {
-        return new P2pConfig(
-                DEFAULT_ENABLED,
-                DEFAULT_WIFI_HOTSPOT_ENABLED,
-                DEFAULT_MAX_RELAY_SIZE_MB,
-                DEFAULT_MAX_DOC_SIZE_KB,
-                DEFAULT_MAX_ATTACHMENT_SIZE_MB,
-                DEFAULT_TOKEN_EXPIRY_DAYS,
-                DEFAULT_WIFI_HOTSPOT_IDLE_TIMEOUT_SEC,
-                DEFAULT_ALLOWED_ROLES,
-                DEFAULT_AUDIT_LOGGING
-        );
+        return new Builder().build();
     }
 
     // --- Getters ---

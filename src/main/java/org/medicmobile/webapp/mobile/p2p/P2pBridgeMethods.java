@@ -8,6 +8,8 @@ import android.os.Build;
 import android.util.Log;
 import android.webkit.JavascriptInterface;
 
+import java.io.IOException;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -35,6 +37,16 @@ import java.util.concurrent.atomic.AtomicReference;
 public class P2pBridgeMethods {
 
     private static final String TAG = "P2pBridgeMethods";
+    private static final String KEY_OK = "ok";
+    private static final String KEY_ERROR = "error";
+    private static final String KEY_STATUS = "status";
+    private static final String STATE_IDLE = "idle";
+    private static final String STATE_CONNECTING = "connecting";
+    private static final String STATE_WAITING_WIFI = "waiting_wifi";
+    private static final String STATE_PREVIEW = "preview";
+    private static final String STATE_SYNCING = "syncing";
+    private static final String STATE_COMPLETED = "completed";
+    private static final String STATE_FAILED = "failed";
     private static final long HOST_START_TIMEOUT_SEC = 30;
     private static final long CLIENT_START_TIMEOUT_SEC = 15;
 
@@ -63,7 +75,7 @@ public class P2pBridgeMethods {
     private volatile int clientDocsSynced = 0;
     private volatile int clientTotalDocs = 0;
     private volatile long clientBytesTransferred = 0;
-    private volatile String clientSyncState = "idle"; // idle, waiting_wifi, connecting, syncing, completed, failed
+    private volatile String clientSyncState = STATE_IDLE; // idle, waiting_wifi, connecting, syncing, completed, failed
     private volatile String clientSyncError = null;
 
     // Cached peer connection info (set after QR scan, used when WiFi connects)
@@ -203,7 +215,7 @@ public class P2pBridgeMethods {
             Log.e(TAG, "Host start interrupted", e);
             p2pManager.shutdown();
             return errorJson("interrupted");
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             Log.e(TAG, "Error starting supervisor mode", e);
             return errorJson("start_failed: " + e.getMessage());
         }
@@ -248,7 +260,7 @@ public class P2pBridgeMethods {
             // Store connection info for sync after WiFi connects
             cachedPeerHost = host;
             cachedPeerPort = port;
-            clientSyncState = "connecting";
+            clientSyncState = STATE_CONNECTING;
 
             Log.i(TAG, "Client mode: auto-connecting to SSID=" + ssid
                     + " then sync with " + host + ":" + port);
@@ -260,7 +272,7 @@ public class P2pBridgeMethods {
                     Log.i(TAG, "WiFi connected to host, starting client sync");
                     cachedPeerHost = ip;
                     cachedPeerPort = pt;
-                    clientSyncState = "connecting";
+                    clientSyncState = STATE_CONNECTING;
                     startClientSync(ip, pt);
                 }
 
@@ -268,25 +280,33 @@ public class P2pBridgeMethods {
                 public void onError(String error) {
                     if (error != null && error.contains("wifi_connection_failed")) {
                         Log.w(TAG, "WiFi auto-connect failed, falling back to manual");
-                        clientSyncState = "waiting_wifi";
+                        clientSyncState = STATE_WAITING_WIFI;
                     } else {
                         Log.e(TAG, "Client mode error: " + error);
                         clientSyncError = error;
-                        clientSyncState = "failed";
+                        clientSyncState = STATE_FAILED;
                     }
                 }
 
                 @Override
-                public void onConnected(String hostId) {}
+                public void onConnected(String hostId) {
+                    Log.d(TAG, "Client connected to host: " + hostId);
+                }
 
                 @Override
-                public void onPreviewReady(int contactCount, int reportCount, int totalCount) {}
+                public void onPreviewReady(int contactCount, int reportCount, int totalCount) {
+                    Log.d(TAG, "Preview ready: " + totalCount + " docs");
+                }
 
                 @Override
-                public void onSyncProgress(int docsSynced, int totalDocs) {}
+                public void onSyncProgress(int docsSynced, int totalDocs) {
+                    Log.d(TAG, "Sync progress: " + docsSynced + "/" + totalDocs);
+                }
 
                 @Override
-                public void onSyncComplete(P2pSession session) {}
+                public void onSyncComplete(P2pSession session) {
+                    Log.d(TAG, "Sync complete: " + session);
+                }
             });
 
             // Return immediately — WiFi connection is async
@@ -299,9 +319,9 @@ public class P2pBridgeMethods {
             result.put("port", port);
             return result.toString();
 
-        } catch (Exception e) {
+        } catch (JSONException e) {
             Log.e(TAG, "Error starting client mode", e);
-            clientSyncState = "failed";
+            clientSyncState = STATE_FAILED;
             return errorJson("start_failed: " + e.getMessage());
         }
     }
@@ -362,7 +382,7 @@ public class P2pBridgeMethods {
                 Log.w(TAG, "No subnet match for " + targetPrefix + "*, using fallback WiFi: " + fallbackWifi);
                 return fallbackWifi;
             }
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             Log.w(TAG, "Failed to find WiFi network", e);
         }
         Log.w(TAG, "No WiFi network found at all");
@@ -397,17 +417,17 @@ public class P2pBridgeMethods {
             Log.d(TAG, "p2pCheckConnection: host=" + cachedPeerHost + ":" + cachedPeerPort
                     + " reachable=" + reachable + " wifiNet=" + (wifiNetwork != null));
 
-            if (reachable && "waiting_wifi".equals(clientSyncState)) {
+            if (reachable && STATE_WAITING_WIFI.equals(clientSyncState)) {
                 Log.i(TAG, "Host reachable at " + cachedPeerHost + ":" + cachedPeerPort
                         + " — starting sync");
-                clientSyncState = "connecting";
+                clientSyncState = STATE_CONNECTING;
                 startClientSync(cachedPeerHost, cachedPeerPort);
             }
 
             JSONObject result = new JSONObject();
             result.put("connected", reachable);
             return result.toString();
-        } catch (Exception e) {
+        } catch (JSONException e) {
             Log.w(TAG, "p2pCheckConnection error", e);
             return "{\"connected\":false}";
         }
@@ -428,7 +448,7 @@ public class P2pBridgeMethods {
             }
 
             // Reset state for retry
-            clientSyncState = "connecting";
+            clientSyncState = STATE_CONNECTING;
             clientSyncError = null;
             clientDocsSynced = 0;
             clientTotalDocs = 0;
@@ -443,7 +463,7 @@ public class P2pBridgeMethods {
             JSONObject result = new JSONObject();
             result.put("ok", true);
             return result.toString();
-        } catch (Exception e) {
+        } catch (JSONException e) {
             Log.e(TAG, "Error retrying sync", e);
             return errorJson("retry_failed: " + e.getMessage());
         }
@@ -474,7 +494,7 @@ public class P2pBridgeMethods {
                     new Thread(() -> {
                         try {
                             savePrebuiltLogToPouchDb(logToSave, docId);
-                        } catch (Exception e) {
+                        } catch (RuntimeException e) {
                             Log.e(TAG, "Error saving sync log on stop", e);
                         }
                     }, "P2pSaveSyncLog").start();
@@ -492,7 +512,7 @@ public class P2pBridgeMethods {
                     new Thread(() -> {
                         try {
                             saveTransitStateToPouchDb(transitState);
-                        } catch (Exception e) {
+                        } catch (RuntimeException e) {
                             Log.e(TAG, "Error saving transit state on stop", e);
                         }
                     }, "P2pSaveTransitState").start();
@@ -501,7 +521,7 @@ public class P2pBridgeMethods {
 
             cachedQrDataUrl = null;
             clientSyncRunning = false;
-            clientSyncState = "idle";
+            clientSyncState = STATE_IDLE;
             clientSyncError = null;
             clientDocsSynced = 0;
             clientTotalDocs = 0;
@@ -515,7 +535,7 @@ public class P2pBridgeMethods {
             if (p2pManager != null) {
                 p2pManager.shutdown();
             }
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             Log.e(TAG, "Error stopping P2P", e);
         }
     }
@@ -534,7 +554,7 @@ public class P2pBridgeMethods {
         clientSyncRunning = true;
         new Thread(() -> {
             try {
-                clientSyncState = "connecting";
+                clientSyncState = STATE_CONNECTING;
                 clientSyncError = null;
                 P2pSyncClient client = new P2pSyncClient(host, port);
                 // Bind to WiFi network — same reason as in p2pCheckConnection
@@ -560,7 +580,7 @@ public class P2pBridgeMethods {
                     Log.e(TAG, "Server unreachable after 10 attempts");
                     clientSyncError = "Server unreachable after 10 attempts at " + host + ":" + port
                             + ". WiFi network=" + (wifiNet != null ? wifiNet.toString() : "none");
-                    clientSyncState = "failed";
+                    clientSyncState = STATE_FAILED;
                     return;
                 }
 
@@ -568,7 +588,7 @@ public class P2pBridgeMethods {
                 if (cachedJwt == null || cachedJwt.isEmpty()) {
                     Log.e(TAG, "No JWT token cached, cannot authenticate with host");
                     clientSyncError = "No authentication token. Please re-initialize P2P sync.";
-                    clientSyncState = "failed";
+                    clientSyncState = STATE_FAILED;
                     return;
                 }
 
@@ -582,7 +602,7 @@ public class P2pBridgeMethods {
                 if (authError != null) {
                     Log.e(TAG, "Client sync: authentication failed: " + authError);
                     clientSyncError = "Authentication failed: " + authError;
-                    clientSyncState = "failed";
+                    clientSyncState = STATE_FAILED;
                     return;
                 }
 
@@ -640,16 +660,21 @@ public class P2pBridgeMethods {
                         + contacts + " contacts, " + reports + " reports) — awaiting user confirmation");
 
                 // Set state to preview — webapp will show counts and wait for user
-                clientSyncState = "preview";
+                clientSyncState = STATE_PREVIEW;
 
-            } catch (Exception e) {
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                Log.e(TAG, "Client sync interrupted during preview phase", e);
+                clientSyncError = "Sync interrupted";
+                clientSyncState = STATE_FAILED;
+            } catch (JSONException | IOException e) {
                 Log.e(TAG, "Client sync failed during preview phase", e);
                 clientSyncError = "Sync error: " + e.getMessage();
-                clientSyncState = "failed";
+                clientSyncState = STATE_FAILED;
             } finally {
                 // Do NOT clear clientSyncRunning here — we're still in preview
                 // It will be cleared when proceedClientSync completes or user cancels
-                if (!"preview".equals(clientSyncState)) {
+                if (!STATE_PREVIEW.equals(clientSyncState)) {
                     clientSyncRunning = false;
                 }
             }
@@ -671,7 +696,7 @@ public class P2pBridgeMethods {
             if (activeSyncClient == null) {
                 return errorJson("no_active_client: connection lost");
             }
-            if (!"preview".equals(clientSyncState)) {
+            if (!STATE_PREVIEW.equals(clientSyncState)) {
                 return errorJson("invalid_state: expected preview, got " + clientSyncState);
             }
 
@@ -682,7 +707,7 @@ public class P2pBridgeMethods {
 
             new Thread(() -> {
                 try {
-                    clientSyncState = "syncing";
+                    clientSyncState = STATE_SYNCING;
                     int totalDocs = docEntries.length();
                     clientTotalDocs = totalDocs;
 
@@ -732,7 +757,7 @@ public class P2pBridgeMethods {
                     try {
                         client.syncComplete(pushed, clientBytesTransferred);
                         Log.i(TAG, "Client sync: sent sync-complete to Supervisor");
-                    } catch (Exception e) {
+                    } catch (JSONException | IOException e) {
                         Log.w(TAG, "Client sync: failed to signal sync-complete (non-fatal)", e);
                     }
 
@@ -749,20 +774,20 @@ public class P2pBridgeMethods {
                         tracker.completeSession();
                     }
 
-                    clientSyncState = "completed";
+                    clientSyncState = STATE_COMPLETED;
                     Log.i(TAG, "Client sync: completed successfully");
 
                     // Save sync history to PouchDB (peer/CHW side)
                     try {
                         saveSyncLogToPouchDb(false);
-                    } catch (Exception saveErr) {
+                    } catch (RuntimeException saveErr) {
                         Log.e(TAG, "Client sync: failed to save sync log", saveErr);
                     }
 
-                } catch (Exception e) {
+                } catch (JSONException | IOException e) {
                     Log.e(TAG, "Client sync failed", e);
                     clientSyncError = "Sync error: " + e.getMessage();
-                    clientSyncState = "failed";
+                    clientSyncState = STATE_FAILED;
                 } finally {
                     clientSyncRunning = false;
                 }
@@ -771,7 +796,7 @@ public class P2pBridgeMethods {
             JSONObject result = new JSONObject();
             result.put("ok", true);
             return result.toString();
-        } catch (Exception e) {
+        } catch (JSONException e) {
             Log.e(TAG, "Error proceeding with sync", e);
             return errorJson("proceed_failed: " + e.getMessage());
         }
@@ -790,101 +815,18 @@ public class P2pBridgeMethods {
             }
 
             JSONObject status = new JSONObject();
-
-            // Derive state from P2pManager and tracker
-            String state = "idle";
-            if (tracker != null && tracker.hasActiveSession()) {
-                P2pSession session = tracker.getCurrentSession();
-                state = session.getState().name().toLowerCase();
-                status.put("docs_synced", session.getDocsPushed() + session.getDocsPulled());
-                status.put("total_docs", session.getDocsPushed() + session.getDocsPulled()
-                        + session.getTransitDocs());
-                status.put("bytes_transferred", session.getBytesTransferred());
-            } else {
-                status.put("docs_synced", 0);
-                status.put("total_docs", 0);
-                status.put("bytes_transferred", 0);
-            }
-
-            if (p2pManager.isHostModeActive()) {
-                int peerCount = p2pManager.getConnectedPeerCount();
-                P2pSession httpSession = p2pManager.getHttpSession();
-                if (httpSession != null && httpSession.getState() == P2pSession.State.COMPLETED) {
-                    state = "completed";
-                    int sessionDocs = httpSession.getDocsPulled() + httpSession.getTransitDocs();
-                    status.put("docs_synced", sessionDocs);
-                    status.put("total_docs", sessionDocs);
-                    status.put("bytes_transferred", httpSession.getBytesTransferred());
-                } else if (peerCount > 0 && httpSession != null
-                        && httpSession.getState() == P2pSession.State.ACTIVE) {
-                    // Fix 5: Also check transitDocs — if ALL docs are transit,
-                    // docsPulled/docsPushed may be 0 but sync IS happening.
-                    if (httpSession.getDocsPulled() > 0 || httpSession.getDocsPushed() > 0
-                            || httpSession.getTransitDocs() > 0) {
-                        state = "syncing";
-                        int sessionDocs = httpSession.getDocsPulled() + httpSession.getTransitDocs();
-                        status.put("docs_synced", sessionDocs);
-                        status.put("total_docs", sessionDocs);
-                        status.put("bytes_transferred", httpSession.getBytesTransferred());
-                    } else {
-                        state = "peer_connected";
-                    }
-                } else if ("idle".equals(state)) {
-                    state = "waiting";
-                }
-                // Fix 4: Log host session counters for diagnostics
-                if (httpSession != null) {
-                    Log.d(TAG, "Host status: state=" + state
-                            + " pulled=" + httpSession.getDocsPulled()
-                            + " transit=" + httpSession.getTransitDocs()
-                            + " bytes=" + httpSession.getBytesTransferred());
-                }
-            } else if (p2pManager.isClientModeActive()) {
-                // Use client sync state from the background sync thread
-                state = clientSyncState;
-                status.put("docs_synced", clientDocsSynced);
-                status.put("total_docs", clientTotalDocs);
-                status.put("bytes_transferred", clientBytesTransferred);
-                // Include preview counts when in preview state
-                if ("preview".equals(state)) {
-                    status.put("preview_contacts", previewContactCount);
-                    status.put("preview_reports", previewReportCount);
-                    status.put("preview_total", clientTotalDocs);
-                }
-            }
+            String state = populateTrackerState(status);
+            state = populateModeState(status, state);
 
             status.put("state", state);
             if (clientSyncError != null) {
-                status.put("error", clientSyncError);
+                status.put(KEY_ERROR, clientSyncError);
             }
             status.put("initialized", p2pManager.isInitialized());
 
-            // Hotspot
-            JSONObject managerStatus = p2pManager.getStatusJson();
-            status.put("hotspot_active", managerStatus.optBoolean("hotspot_active", false));
-            // Pass hotspot SSID and password for display restoration
-            String ssid = managerStatus.optString("hotspot_ssid", null);
-            if (ssid != null) {
-                status.put("hotspot_ssid", ssid);
-            }
-            String pwd = p2pManager.getHotspotPassword();
-            if (pwd != null) {
-                status.put("hotspot_password", pwd);
-            }
+            populateHotspotInfo(status);
+            populateConnectedPeers(status);
 
-            // Connected peers from HTTP server
-            int peerCount = p2pManager.getConnectedPeerCount();
-            JSONArray peersArray = new JSONArray();
-            if (peerCount > 0) {
-                P2pSession httpSession = p2pManager.getHttpSession();
-                if (httpSession != null) {
-                    peersArray.put(httpSession.getPeerUserId() != null
-                            ? httpSession.getPeerUserId() : "peer");
-                }
-            }
-            status.put("connected_peers", peersArray);
-
-            // QR code data URL for webapp display
             if (cachedQrDataUrl != null) {
                 status.put("qr_code_data_url", cachedQrDataUrl);
             }
@@ -894,6 +836,108 @@ public class P2pBridgeMethods {
             Log.e(TAG, "Error building status JSON", e);
             return buildIdleStatus();
         }
+    }
+
+    private String populateTrackerState(JSONObject status) throws JSONException {
+        if (tracker != null && tracker.hasActiveSession()) {
+            P2pSession session = tracker.getCurrentSession();
+            status.put("docs_synced", session.getDocsPushed() + session.getDocsPulled());
+            status.put("total_docs", session.getDocsPushed() + session.getDocsPulled()
+                    + session.getTransitDocs());
+            status.put("bytes_transferred", session.getBytesTransferred());
+            return session.getState().name().toLowerCase();
+        }
+        status.put("docs_synced", 0);
+        status.put("total_docs", 0);
+        status.put("bytes_transferred", 0);
+        return STATE_IDLE;
+    }
+
+    private String populateModeState(JSONObject status, String state) throws JSONException {
+        if (p2pManager.isHostModeActive()) {
+            return populateHostModeState(status, state);
+        }
+        if (p2pManager.isClientModeActive()) {
+            return populateClientModeState(status);
+        }
+        return state;
+    }
+
+    private String populateHostModeState(JSONObject status, String state) throws JSONException {
+        int peerCount = p2pManager.getConnectedPeerCount();
+        P2pSession httpSession = p2pManager.getHttpSession();
+
+        if (httpSession != null && httpSession.getState() == P2pSession.State.COMPLETED) {
+            int sessionDocs = httpSession.getDocsPulled() + httpSession.getTransitDocs();
+            status.put("docs_synced", sessionDocs);
+            status.put("total_docs", sessionDocs);
+            status.put("bytes_transferred", httpSession.getBytesTransferred());
+            state = STATE_COMPLETED;
+        } else if (peerCount > 0 && httpSession != null
+                && httpSession.getState() == P2pSession.State.ACTIVE) {
+            state = deriveActiveHostState(status, httpSession);
+        } else if (STATE_IDLE.equals(state)) {
+            state = "waiting";
+        }
+
+        if (httpSession != null) {
+            Log.d(TAG, "Host status: state=" + state
+                    + " pulled=" + httpSession.getDocsPulled()
+                    + " transit=" + httpSession.getTransitDocs()
+                    + " bytes=" + httpSession.getBytesTransferred());
+        }
+        return state;
+    }
+
+    private String deriveActiveHostState(JSONObject status, P2pSession httpSession) throws JSONException {
+        if (httpSession.getDocsPulled() > 0 || httpSession.getDocsPushed() > 0
+                || httpSession.getTransitDocs() > 0) {
+            int sessionDocs = httpSession.getDocsPulled() + httpSession.getTransitDocs();
+            status.put("docs_synced", sessionDocs);
+            status.put("total_docs", sessionDocs);
+            status.put("bytes_transferred", httpSession.getBytesTransferred());
+            return STATE_SYNCING;
+        }
+        return "peer_connected";
+    }
+
+    private String populateClientModeState(JSONObject status) throws JSONException {
+        String state = clientSyncState;
+        status.put("docs_synced", clientDocsSynced);
+        status.put("total_docs", clientTotalDocs);
+        status.put("bytes_transferred", clientBytesTransferred);
+        if (STATE_PREVIEW.equals(state)) {
+            status.put("preview_contacts", previewContactCount);
+            status.put("preview_reports", previewReportCount);
+            status.put("preview_total", clientTotalDocs);
+        }
+        return state;
+    }
+
+    private void populateHotspotInfo(JSONObject status) throws JSONException {
+        JSONObject managerStatus = p2pManager.getStatusJson();
+        status.put("hotspot_active", managerStatus.optBoolean("hotspot_active", false));
+        String ssid = managerStatus.optString("hotspot_ssid", null);
+        if (ssid != null) {
+            status.put("hotspot_ssid", ssid);
+        }
+        String pwd = p2pManager.getHotspotPassword();
+        if (pwd != null) {
+            status.put("hotspot_password", pwd);
+        }
+    }
+
+    private void populateConnectedPeers(JSONObject status) throws JSONException {
+        int peerCount = p2pManager.getConnectedPeerCount();
+        JSONArray peersArray = new JSONArray();
+        if (peerCount > 0) {
+            P2pSession httpSession = p2pManager.getHttpSession();
+            if (httpSession != null) {
+                peersArray.put(httpSession.getPeerUserId() != null
+                        ? httpSession.getPeerUserId() : "peer");
+            }
+        }
+        status.put("connected_peers", peersArray);
     }
 
     /**
@@ -916,7 +960,7 @@ public class P2pBridgeMethods {
                 array.put(docId);
             }
             return array.toString();
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             Log.e(TAG, "Error getting transit doc IDs", e);
             return "[]";
         }
@@ -1071,38 +1115,7 @@ public class P2pBridgeMethods {
 
             result.put("capable", capable);
             result.put("capability", capability.name().toLowerCase());
-
-            switch (capability) {
-                case FULLY_SUPPORTED:
-                    result.put("reason", JSONObject.NULL);
-                    break;
-                case SUPPORTED_NO_CAMERA:
-                    result.put("reason", "No camera available. QR scanning disabled; "
-                            + "Host mode only.");
-                    break;
-                case UNSUPPORTED_API_LEVEL:
-                    result.put("reason", "Android 8.0 (API 26) or higher required. "
-                            + "Current API level: " + Build.VERSION.SDK_INT);
-                    break;
-                case NO_WIFI_HARDWARE:
-                    result.put("reason", "WiFi hardware not available on this device.");
-                    break;
-                case LOW_RAM_WARNING:
-                    result.put("reason", "Low RAM detected. P2P sync may be slow.");
-                    break;
-                case LOW_STORAGE:
-                    result.put("reason", "Insufficient storage. Free up space before syncing.");
-                    break;
-                case LOW_BATTERY_WARNING:
-                    result.put("reason", "Low battery. Charge device before starting P2P sync.");
-                    break;
-                case PERMISSION_NEEDED:
-                    result.put("reason", "WiFi permissions required. Please grant permissions.");
-                    break;
-                case LOCATION_SERVICES_OFF:
-                    result.put("reason", "Location services must be enabled to start WiFi hotspot. Please turn on Location in Settings.");
-                    break;
-            }
+            result.put("reason", getCapabilityReason(capability));
 
             result.put("api_level", Build.VERSION.SDK_INT);
             result.put("manufacturer", OemBatteryHelper.getManufacturer());
@@ -1187,57 +1200,7 @@ public class P2pBridgeMethods {
                 Log.d(TAG, "JWT token cached for P2P auth");
             }
 
-            // PouchDB bridge — evaluates JS in the WebView to access PouchDB
-            PouchDbBridge realBridge = new PouchDbBridge() {
-                @Override
-                public String getAllDocIds() {
-                    return evalPouchDb(
-                        "window.CHTCore.DB.get().allDocs().then(function(result) {" +
-                        "  return JSON.stringify(result.rows.map(function(r) {" +
-                        "    return { _id: r.id, _rev: r.value.rev };" +
-                        "  }));" +
-                        "})"
-                    );
-                }
-
-                @Override
-                public String getDocsByIds(String idsJson) {
-                    String escaped = idsJson.replace("\\", "\\\\").replace("'", "\\'");
-                    return evalPouchDb(
-                        "window.CHTCore.DB.get().allDocs({ keys: JSON.parse('" + escaped + "'), include_docs: true }).then(function(result) {" +
-                        "  return JSON.stringify(result.rows.filter(function(r) { return r.doc; }).map(function(r) { return r.doc; }));" +
-                        "})"
-                    );
-                }
-
-                @Override
-                public String writeDocs(String docsJson) {
-                    String escaped = docsJson.replace("\\", "\\\\").replace("'", "\\'");
-                    return evalPouchDb(
-                        "window.CHTCore.DB.get().bulkDocs(JSON.parse('" + escaped + "'), { new_edits: false }).then(function(result) {" +
-                        "  return JSON.stringify(result);" +
-                        "})"
-                    );
-                }
-
-                @Override
-                public String queryContactsByDepth(String facilityId, int maxDepth) {
-                    String escapedFacility = facilityId.replace("\\", "\\\\").replace("'", "\\'");
-                    return evalPouchDb(
-                        "window.CHTCore.DB.get().query('medic-client/contacts_by_depth', {" +
-                        "  startkey: ['" + escapedFacility + "']," +
-                        "  endkey: ['" + escapedFacility + "', " + maxDepth + ", {}]" +
-                        "}).then(function(result) {" +
-                        "  var ids = [];" +
-                        "  var seen = {};" +
-                        "  result.rows.forEach(function(r) {" +
-                        "    if (!seen[r.id]) { seen[r.id] = true; ids.push(r.id); }" +
-                        "  });" +
-                        "  return JSON.stringify(ids);" +
-                        "})"
-                    );
-                }
-            };
+            PouchDbBridge realBridge = createPouchDbBridge();
             p2pManager.initialize(config, serverPublicKey, revocationList,
                     scopeManifest, realBridge, deviceId, userId);
 
@@ -1251,7 +1214,7 @@ public class P2pBridgeMethods {
         } catch (JSONException e) {
             Log.e(TAG, "Invalid config JSON", e);
             return errorJson("invalid_config: " + e.getMessage());
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             Log.e(TAG, "Unexpected error during P2P initialization", e);
             return errorJson("init_error: " + e.getMessage());
         }
@@ -1267,7 +1230,7 @@ public class P2pBridgeMethods {
             JSONObject result = new JSONObject();
             result.put("active", p2pManager.isHostModeActive() || p2pManager.isClientModeActive());
             return result.toString();
-        } catch (Exception e) {
+        } catch (JSONException e) {
             return errorJson("check_failed: " + e.getMessage());
         }
     }
@@ -1375,7 +1338,7 @@ public class P2pBridgeMethods {
 
             String result = evalPouchDb(js);
             Log.i(TAG, "saveSyncLogToPouchDb: saved " + docId + " result=" + result);
-        } catch (Exception e) {
+        } catch (JSONException e) {
             Log.e(TAG, "saveSyncLogToPouchDb: failed to save", e);
         }
     }
@@ -1423,7 +1386,7 @@ public class P2pBridgeMethods {
 
             String result = evalPouchDb(js);
             Log.i(TAG, "savePrebuiltLogToPouchDb: saved " + docId + " result=" + result);
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             Log.e(TAG, "savePrebuiltLogToPouchDb: failed to save", e);
         }
     }
@@ -1459,16 +1422,96 @@ public class P2pBridgeMethods {
 
             String result = evalPouchDb(js);
             Log.i(TAG, "saveTransitStateToPouchDb: saved " + docId + " result=" + result);
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             Log.e(TAG, "saveTransitStateToPouchDb: failed to save", e);
+        }
+    }
+
+    private PouchDbBridge createPouchDbBridge() {
+        return new PouchDbBridge() {
+            @Override
+            public String getAllDocIds() {
+                return evalPouchDb(
+                    "window.CHTCore.DB.get().allDocs().then(function(result) {" +
+                    "  return JSON.stringify(result.rows.map(function(r) {" +
+                    "    return { _id: r.id, _rev: r.value.rev };" +
+                    "  }));" +
+                    "})"
+                );
+            }
+
+            @Override
+            public String getDocsByIds(String idsJson) {
+                String escaped = idsJson.replace("\\", "\\\\").replace("'", "\\'");
+                return evalPouchDb(
+                    "window.CHTCore.DB.get().allDocs({ keys: JSON.parse('" + escaped + "'), include_docs: true }).then(function(result) {" +
+                    "  return JSON.stringify(result.rows.filter(function(r) { return r.doc; }).map(function(r) { return r.doc; }));" +
+                    "})"
+                );
+            }
+
+            @Override
+            public String writeDocs(String docsJson) {
+                String escaped = docsJson.replace("\\", "\\\\").replace("'", "\\'");
+                return evalPouchDb(
+                    "window.CHTCore.DB.get().bulkDocs(JSON.parse('" + escaped + "'), { new_edits: false }).then(function(result) {" +
+                    "  return JSON.stringify(result);" +
+                    "})"
+                );
+            }
+
+            @Override
+            public String queryContactsByDepth(String facilityId, int maxDepth) {
+                String escapedFacility = facilityId.replace("\\", "\\\\").replace("'", "\\'");
+                return evalPouchDb(
+                    "window.CHTCore.DB.get().query('medic-client/contacts_by_depth', {" +
+                    "  startkey: ['" + escapedFacility + "']," +
+                    "  endkey: ['" + escapedFacility + "', " + maxDepth + ", {}]" +
+                    "}).then(function(result) {" +
+                    "  var ids = [];" +
+                    "  var seen = {};" +
+                    "  result.rows.forEach(function(r) {" +
+                    "    if (!seen[r.id]) { seen[r.id] = true; ids.push(r.id); }" +
+                    "  });" +
+                    "  return JSON.stringify(ids);" +
+                    "})"
+                );
+            }
+        };
+    }
+
+    private Object getCapabilityReason(P2pManager.P2pCapability capability) {
+        switch (capability) {
+            case FULLY_SUPPORTED:
+                return JSONObject.NULL;
+            case SUPPORTED_NO_CAMERA:
+                return "No camera available. QR scanning disabled; Host mode only.";
+            case UNSUPPORTED_API_LEVEL:
+                return "Android 8.0 (API 26) or higher required. Current API level: "
+                        + Build.VERSION.SDK_INT;
+            case NO_WIFI_HARDWARE:
+                return "WiFi hardware not available on this device.";
+            case LOW_RAM_WARNING:
+                return "Low RAM detected. P2P sync may be slow.";
+            case LOW_STORAGE:
+                return "Insufficient storage. Free up space before syncing.";
+            case LOW_BATTERY_WARNING:
+                return "Low battery. Charge device before starting P2P sync.";
+            case PERMISSION_NEEDED:
+                return "WiFi permissions required. Please grant permissions.";
+            case LOCATION_SERVICES_OFF:
+                return "Location services must be enabled to start WiFi hotspot. "
+                        + "Please turn on Location in Settings.";
+            default:
+                return JSONObject.NULL;
         }
     }
 
     private String errorJson(String error) {
         try {
             JSONObject json = new JSONObject();
-            json.put("ok", false);
-            json.put("error", error);
+            json.put(KEY_OK, false);
+            json.put(KEY_ERROR, error);
             return json.toString();
         } catch (JSONException e) {
             Log.e(TAG, "Error building error JSON", e);

@@ -27,6 +27,7 @@ public final class BulkGetEndpoint {
 
     private static final String TAG = "BulkGetEndpoint";
     private static final int MAX_BATCH_SIZE = 500;
+    private static final String KEY_ERROR = "error";
 
     private final PouchDbBridge bridge;
 
@@ -63,75 +64,16 @@ public final class BulkGetEndpoint {
             return response;
         }
 
-        // Guard: limit batch size to prevent memory issues
         if (requestedDocs.length() > MAX_BATCH_SIZE) {
             return errorResponse("batch_too_large: max " + MAX_BATCH_SIZE + " docs per request");
         }
 
-        // Extract IDs from request
-        JSONArray idsArray = new JSONArray();
-        for (int i = 0; i < requestedDocs.length(); i++) {
-            JSONObject docReq = requestedDocs.getJSONObject(i);
-            String id = docReq.optString("id", null);
-            if (id != null) {
-                idsArray.put(id);
-            }
-        }
+        JSONArray idsArray = extractDocIds(requestedDocs);
+        JSONObject docMap = fetchAndIndexDocs(idsArray);
+        long[] totalBytes = { 0 };
+        JSONArray results = buildBulkGetResults(idsArray, docMap, totalBytes);
 
-        // Fetch docs from PouchDB via bridge
-        String docsJson = bridge.getDocsByIds(idsArray.toString());
-        JSONArray fetchedDocs = (docsJson != null && !docsJson.isEmpty())
-                ? new JSONArray(docsJson) : new JSONArray();
-
-        // Build a lookup map: _id -> doc
-        JSONObject docMap = new JSONObject();
-        for (int i = 0; i < fetchedDocs.length(); i++) {
-            JSONObject doc = fetchedDocs.getJSONObject(i);
-            String docId = doc.optString("_id", null);
-            if (docId != null) {
-                docMap.put(docId, doc);
-            }
-        }
-
-        // Build CouchDB _bulk_get format response
-        JSONArray results = new JSONArray();
-        long totalBytes = 0;
-
-        for (int i = 0; i < idsArray.length(); i++) {
-            String requestedId = idsArray.getString(i);
-            JSONObject result = new JSONObject();
-            result.put("id", requestedId);
-
-            JSONArray docsArray = new JSONArray();
-
-            if (docMap.has(requestedId)) {
-                JSONObject doc = docMap.getJSONObject(requestedId);
-                JSONObject okWrapper = new JSONObject();
-                okWrapper.put("ok", doc);
-                docsArray.put(okWrapper);
-
-                totalBytes += doc.toString().length();
-            } else {
-                // Doc not found
-                JSONObject errorWrapper = new JSONObject();
-                JSONObject errorDetail = new JSONObject();
-                errorDetail.put("id", requestedId);
-                errorDetail.put("error", "not_found");
-                errorDetail.put("reason", "missing");
-                errorWrapper.put("error", errorDetail);
-                docsArray.put(errorWrapper);
-            }
-
-            result.put("docs", docsArray);
-            results.put(result);
-        }
-
-        // Update session counters
-        if (session != null) {
-            session.incrementDocsPushed(docMap.length());
-            session.addBytesTransferred(totalBytes);
-            session.updateLastActivity();
-        }
+        updateSessionCounters(session, docMap.length(), totalBytes[0]);
 
         Log.d(TAG, "bulk-get returning " + docMap.length() + " docs"
                 + " (" + (idsArray.length() - docMap.length()) + " not found)");
@@ -141,14 +83,85 @@ public final class BulkGetEndpoint {
         return response;
     }
 
+    private JSONArray extractDocIds(JSONArray requestedDocs) throws JSONException {
+        JSONArray idsArray = new JSONArray();
+        for (int i = 0; i < requestedDocs.length(); i++) {
+            JSONObject docReq = requestedDocs.getJSONObject(i);
+            String id = docReq.optString("id", null);
+            if (id != null) {
+                idsArray.put(id);
+            }
+        }
+        return idsArray;
+    }
+
+    private JSONObject fetchAndIndexDocs(JSONArray idsArray) throws JSONException {
+        String docsJson = bridge.getDocsByIds(idsArray.toString());
+        JSONArray fetchedDocs = (docsJson != null && !docsJson.isEmpty())
+                ? new JSONArray(docsJson) : new JSONArray();
+
+        JSONObject docMap = new JSONObject();
+        for (int i = 0; i < fetchedDocs.length(); i++) {
+            JSONObject doc = fetchedDocs.getJSONObject(i);
+            String docId = doc.optString("_id", null);
+            if (docId != null) {
+                docMap.put(docId, doc);
+            }
+        }
+        return docMap;
+    }
+
+    private JSONArray buildBulkGetResults(JSONArray idsArray, JSONObject docMap,
+                                          long[] totalBytes) throws JSONException {
+        JSONArray results = new JSONArray();
+        for (int i = 0; i < idsArray.length(); i++) {
+            String requestedId = idsArray.getString(i);
+            JSONObject result = new JSONObject();
+            result.put("id", requestedId);
+
+            JSONArray docsArray = new JSONArray();
+            if (docMap.has(requestedId)) {
+                JSONObject doc = docMap.getJSONObject(requestedId);
+                JSONObject okWrapper = new JSONObject();
+                okWrapper.put("ok", doc);
+                docsArray.put(okWrapper);
+                totalBytes[0] += doc.toString().length();
+            } else {
+                docsArray.put(buildNotFoundError(requestedId));
+            }
+
+            result.put("docs", docsArray);
+            results.put(result);
+        }
+        return results;
+    }
+
+    private JSONObject buildNotFoundError(String docId) throws JSONException {
+        JSONObject errorWrapper = new JSONObject();
+        JSONObject errorDetail = new JSONObject();
+        errorDetail.put("id", docId);
+        errorDetail.put(KEY_ERROR, "not_found");
+        errorDetail.put("reason", "missing");
+        errorWrapper.put(KEY_ERROR, errorDetail);
+        return errorWrapper;
+    }
+
+    private void updateSessionCounters(P2pSession session, int docCount, long totalBytes) {
+        if (session != null) {
+            session.incrementDocsPushed(docCount);
+            session.addBytesTransferred(totalBytes);
+            session.updateLastActivity();
+        }
+    }
+
     private JSONObject errorResponse(String error) {
         try {
             JSONObject response = new JSONObject();
             response.put("ok", false);
-            response.put("error", error);
+            response.put(KEY_ERROR, error);
             return response;
         } catch (JSONException e) {
-            throw new RuntimeException("Failed to build error response", e);
+            throw new IllegalStateException("Failed to build error response", e);
         }
     }
 }

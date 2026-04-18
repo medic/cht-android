@@ -53,7 +53,7 @@ public class P2pManager {
     // QR payload constants (CONTRACT.md Section 9)
     private static final String QR_TYPE = "cht-p2p";
     private static final int QR_VERSION = 1;
-    private static final long QR_MAX_AGE_MS = 10 * 60 * 1000; // G18: 10 minutes
+    private static final long QR_MAX_AGE_MS = 10L * 60 * 1000; // G18: 10 minutes
 
     // Device resource thresholds
     private static final int MIN_API_LEVEL = Build.VERSION_CODES.O; // API 26
@@ -285,7 +285,7 @@ public class P2pManager {
 
         } catch (JwtVerifier.JwtVerificationException e) {
             throw new P2pInitException("Failed to initialize JWT verifier: " + e.getMessage());
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             throw new P2pInitException("Initialization failed: " + e.getMessage());
         }
     }
@@ -363,10 +363,7 @@ public class P2pManager {
 
         // Step 1: Capability check
         P2pCapability capability = checkCapability();
-        if (capability == P2pCapability.UNSUPPORTED_API_LEVEL
-                || capability == P2pCapability.NO_WIFI_HARDWARE
-                || capability == P2pCapability.LOW_STORAGE
-                || capability == P2pCapability.PERMISSION_NEEDED) {
+        if (isHardBlock(capability)) {
             callback.onError("device_not_capable: " + capability.name());
             return;
         }
@@ -395,7 +392,7 @@ public class P2pManager {
             hostModeActive = true;
             startHotspotForSupervisor(callback);
 
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             Log.e(TAG, "Failed to start supervisor mode", e);
             hostModeActive = false;
             if (mutexAcquired) {
@@ -403,7 +400,7 @@ public class P2pManager {
             }
             try {
                 P2pForegroundService.stop(context);
-            } catch (Exception ignored) {
+            } catch (RuntimeException ignored) {
                 // Best-effort cleanup
             }
             callback.onError("supervisor_start_failed: " + e.getMessage());
@@ -435,7 +432,7 @@ public class P2pManager {
                     Log.i(TAG, "Supervisor mode ready, QR generated");
                     callback.onQrCodeReady(qrPayload);
 
-                } catch (Exception e) {
+                } catch (IOException | JSONException e) {
                     Log.e(TAG, "Failed after hotspot started", e);
                     shutdownInternal(true);
                     callback.onError("server_start_failed: " + e.getMessage());
@@ -449,7 +446,7 @@ public class P2pManager {
                 syncMutex.release();
                 try {
                     P2pForegroundService.stop(context);
-                } catch (Exception ignored) {
+                } catch (RuntimeException ignored) {
                     // Best-effort cleanup
                 }
                 callback.onError("hotspot_failed: " + reason);
@@ -786,7 +783,7 @@ public class P2pManager {
             try {
                 httpServer.stopServer();
                 Log.d(TAG, "HTTP server stopped");
-            } catch (Exception e) {
+            } catch (RuntimeException e) {
                 Log.e(TAG, "Error stopping HTTP server", e);
             }
             httpServer = null;
@@ -797,7 +794,7 @@ public class P2pManager {
             try {
                 hotspotManager.stopHotspot();
                 Log.d(TAG, "Hotspot stopped");
-            } catch (Exception e) {
+            } catch (RuntimeException e) {
                 Log.e(TAG, "Error stopping hotspot", e);
             }
             hotspotManager = null;
@@ -806,7 +803,7 @@ public class P2pManager {
         // 3. Stop foreground service
         try {
             P2pForegroundService.stop(context);
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             Log.e(TAG, "Error stopping foreground service", e);
         }
 
@@ -815,7 +812,7 @@ public class P2pManager {
             try {
                 syncMutex.release();
                 Log.d(TAG, "Sync mutex released");
-            } catch (Exception e) {
+            } catch (RuntimeException e) {
                 Log.e(TAG, "Error releasing sync mutex", e);
             }
         }
@@ -832,7 +829,7 @@ public class P2pManager {
         if (notificationChannel != null) {
             try {
                 notificationChannel.dismiss();
-            } catch (Exception e) {
+            } catch (RuntimeException e) {
                 Log.e(TAG, "Error dismissing notification", e);
             }
         }
@@ -845,7 +842,7 @@ public class P2pManager {
                 if (cm != null) {
                     cm.unregisterNetworkCallback(wifiNetworkCallback);
                 }
-            } catch (Exception e) {
+            } catch (RuntimeException e) {
                 Log.e(TAG, "Error cleaning up WiFi callback", e);
             }
             wifiNetworkCallback = null;
@@ -1181,6 +1178,14 @@ public class P2pManager {
     // Private Helpers
     // -----------------------------------------------------------------------
 
+    private boolean isHardBlock(P2pCapability capability) {
+        return capability == P2pCapability.UNSUPPORTED_API_LEVEL
+                || capability == P2pCapability.NO_WIFI_HARDWARE
+                || capability == P2pCapability.LOW_STORAGE
+                || capability == P2pCapability.PERMISSION_NEEDED
+                || capability == P2pCapability.LOCATION_SERVICES_OFF;
+    }
+
     private void ensureInitialized() {
         if (!initialized) {
             throw new IllegalStateException(
@@ -1232,7 +1237,7 @@ public class P2pManager {
                 Log.d(TAG, "Transit state ready for persistence ("
                         + transitDocManager.getPendingPushCount() + " pending docs)");
             }
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             Log.e(TAG, "Failed to save transit state", e);
         }
     }
@@ -1274,7 +1279,7 @@ public class P2pManager {
             StatFs stat = new StatFs(Environment.getDataDirectory().getPath());
             long availableBytes = stat.getAvailableBlocksLong() * stat.getBlockSizeLong();
             return availableBytes / (1024 * 1024);
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             Log.w(TAG, "Failed to check storage", e);
             return Long.MAX_VALUE; // Don't block on check failure
         }
@@ -1289,7 +1294,7 @@ public class P2pManager {
                 am.getMemoryInfo(memInfo);
                 return memInfo.totalMem / (1024 * 1024);
             }
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             Log.w(TAG, "Failed to check RAM", e);
         }
         return 0;
@@ -1302,7 +1307,7 @@ public class P2pManager {
             if (bm != null) {
                 return bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY);
             }
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             Log.w(TAG, "Failed to check battery", e);
         }
         return -1; // Unknown

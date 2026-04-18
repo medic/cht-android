@@ -31,6 +31,7 @@ import java.nio.charset.StandardCharsets;
 public class P2pSyncClient {
 
     private static final String TAG = "P2pSyncClient";
+    private static final String CONTENT_TYPE_JSON = "application/json";
     private static final int CONNECT_TIMEOUT_MS = 10_000;
     private static final int READ_TIMEOUT_MS = 30_000;
 
@@ -104,31 +105,38 @@ public class P2pSyncClient {
      * @return JSONArray of doc objects from results
      */
     public JSONArray bulkGet(JSONArray docIds) throws IOException, JSONException {
-        // Convert string IDs to {id: "..."} format expected by BulkGetEndpoint
+        JSONArray docsArray = buildBulkGetRequest(docIds);
+
+        JSONObject body = new JSONObject();
+        body.put("docs", docsArray);
+
+        JSONObject response = postJson("/bulk-get", body, sessionToken);
+        return extractDocsFromBulkGetResponse(response);
+    }
+
+    private JSONArray buildBulkGetRequest(JSONArray docIds) throws JSONException {
         JSONArray docsArray = new JSONArray();
         for (int i = 0; i < docIds.length(); i++) {
             JSONObject entry = new JSONObject();
             entry.put("id", docIds.getString(i));
             docsArray.put(entry);
         }
+        return docsArray;
+    }
 
-        JSONObject body = new JSONObject();
-        body.put("docs", docsArray);
-
-        JSONObject response = postJson("/bulk-get", body, sessionToken);
-
-        // Extract actual doc bodies from CouchDB _bulk_get format
+    private JSONArray extractDocsFromBulkGetResponse(JSONObject response) throws JSONException {
         JSONArray results = response.optJSONArray("results");
         JSONArray docs = new JSONArray();
-        if (results != null) {
-            for (int i = 0; i < results.length(); i++) {
-                JSONObject result = results.getJSONObject(i);
-                JSONArray resultDocs = result.optJSONArray("docs");
-                if (resultDocs != null && resultDocs.length() > 0) {
-                    JSONObject firstDoc = resultDocs.getJSONObject(0);
-                    if (firstDoc.has("ok")) {
-                        docs.put(firstDoc.getJSONObject("ok"));
-                    }
+        if (results == null) {
+            return docs;
+        }
+        for (int i = 0; i < results.length(); i++) {
+            JSONObject result = results.getJSONObject(i);
+            JSONArray resultDocs = result.optJSONArray("docs");
+            if (resultDocs != null && resultDocs.length() > 0) {
+                JSONObject firstDoc = resultDocs.getJSONObject(0);
+                if (firstDoc.has("ok")) {
+                    docs.put(firstDoc.getJSONObject("ok"));
                 }
             }
         }
@@ -188,7 +196,7 @@ public class P2pSyncClient {
             } finally {
                 conn.disconnect();
             }
-        } catch (Exception e) {
+        } catch (IOException e) {
             Log.d(TAG, "isReachable(" + baseUrl + "): " + e.getClass().getSimpleName()
                     + ": " + e.getMessage());
             return false;
@@ -216,7 +224,7 @@ public class P2pSyncClient {
             conn.setRequestMethod("GET");
             conn.setConnectTimeout(CONNECT_TIMEOUT_MS);
             conn.setReadTimeout(READ_TIMEOUT_MS);
-            conn.setRequestProperty("Accept", "application/json");
+            conn.setRequestProperty("Accept", CONTENT_TYPE_JSON);
             if (sessionToken != null) {
                 conn.setRequestProperty("Authorization", "Bearer " + sessionToken);
             }
@@ -239,8 +247,8 @@ public class P2pSyncClient {
             conn.setConnectTimeout(CONNECT_TIMEOUT_MS);
             conn.setReadTimeout(READ_TIMEOUT_MS);
             conn.setDoOutput(true);
-            conn.setRequestProperty("Content-Type", "application/json");
-            conn.setRequestProperty("Accept", "application/json");
+            conn.setRequestProperty("Content-Type", CONTENT_TYPE_JSON);
+            conn.setRequestProperty("Accept", CONTENT_TYPE_JSON);
             if (token != null) {
                 conn.setRequestProperty("Authorization", "Bearer " + token);
             }

@@ -33,31 +33,34 @@ public class OemBatteryHelper {
      *
      * @return the risk level based on known OEM behavior
      */
+    private static final String[][] EXTREME_BRANDS = { {"tecno"}, {"infinix"}, {"itel"} };
+    private static final String[][] HIGH_BRANDS = {
+        {"samsung"}, {"huawei"}, {"xiaomi"}, {"oppo"}, {"vivo"}, {"realme"}, {"oneplus"}
+    };
+    private static final String[][] MEDIUM_BRANDS = { {"nokia"}, {"motorola"}, {"lenovo"} };
+
     public static RiskLevel getRiskLevel() {
         String manufacturer = Build.MANUFACTURER.toLowerCase();
 
-        // Transsion brands (dominant in Africa) — most aggressive
-        if (manufacturer.contains("tecno") || manufacturer.contains("infinix")
-                || manufacturer.contains("itel")) {
+        if (matchesBrand(manufacturer, EXTREME_BRANDS)) {
             return RiskLevel.EXTREME;
         }
-
-        // Major OEMs with aggressive battery management
-        if (manufacturer.contains("samsung") || manufacturer.contains("huawei")
-                || manufacturer.contains("xiaomi") || manufacturer.contains("oppo")
-                || manufacturer.contains("vivo") || manufacturer.contains("realme")
-                || manufacturer.contains("oneplus")) {
+        if (matchesBrand(manufacturer, HIGH_BRANDS)) {
             return RiskLevel.HIGH;
         }
-
-        // Moderate
-        if (manufacturer.contains("nokia") || manufacturer.contains("motorola")
-                || manufacturer.contains("lenovo")) {
+        if (matchesBrand(manufacturer, MEDIUM_BRANDS)) {
             return RiskLevel.MEDIUM;
         }
-
-        // Google Pixel, stock Android, unknown
         return RiskLevel.LOW;
+    }
+
+    private static boolean matchesBrand(String manufacturer, String[][] brands) {
+        for (String[] brand : brands) {
+            if (manufacturer.contains(brand[0])) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -68,54 +71,59 @@ public class OemBatteryHelper {
      */
     public static String getGuidance() {
         String manufacturer = Build.MANUFACTURER.toLowerCase();
+        return getGuidanceForManufacturer(manufacturer);
+    }
 
-        if (manufacturer.contains("tecno") || manufacturer.contains("infinix")
-                || manufacturer.contains("itel")) {
+    private static String getGuidanceForManufacturer(String manufacturer) {
+        if (matchesBrand(manufacturer, EXTREME_BRANDS)) {
             return "Go to Phone Master > Battery Manager > " +
                     "tap this app > select 'Allow background activity'. " +
                     "Also: Settings > Apps > this app > Battery > Unrestricted.";
         }
 
-        if (manufacturer.contains("samsung")) {
-            return "Go to Settings > Battery and device care > Battery > " +
-                    "Background usage limits > Never sleeping apps > Add this app.";
+        String specific = getSpecificBrandGuidance(manufacturer);
+        if (specific != null) {
+            return specific;
         }
 
-        if (manufacturer.contains("huawei")) {
-            return "Go to Settings > Battery > App launch > " +
-                    "find this app > disable 'Manage automatically' > " +
-                    "enable all three toggles (Auto-launch, Secondary launch, Run in background).";
-        }
-
-        if (manufacturer.contains("xiaomi")) {
-            return "Go to Settings > Apps > Manage apps > this app > " +
-                    "Battery saver > No restrictions. " +
-                    "Also enable Autostart in Security app.";
-        }
-
-        if (manufacturer.contains("oppo") || manufacturer.contains("realme")) {
-            return "Go to Settings > Battery > this app > " +
-                    "Allow background activity. " +
-                    "Also: Settings > App management > this app > Battery > Allow.";
-        }
-
-        if (manufacturer.contains("vivo")) {
-            return "Go to Settings > Battery > High background power consumption > " +
-                    "enable for this app.";
-        }
-
-        if (manufacturer.contains("oneplus")) {
-            return "Go to Settings > Battery > Battery optimization > " +
-                    "this app > Don't optimize.";
-        }
-
-        if (manufacturer.contains("nokia") || manufacturer.contains("motorola")) {
+        if (matchesBrand(manufacturer, MEDIUM_BRANDS)) {
             return "Go to Settings > Apps & notifications > this app > " +
                     "Battery > Unrestricted.";
         }
 
         return "Go to Settings > Battery > this app > " +
                 "disable battery optimization for reliable P2P sync.";
+    }
+
+    private static String getSpecificBrandGuidance(String manufacturer) {
+        if (manufacturer.contains("samsung")) {
+            return "Go to Settings > Battery and device care > Battery > " +
+                    "Background usage limits > Never sleeping apps > Add this app.";
+        }
+        if (manufacturer.contains("huawei")) {
+            return "Go to Settings > Battery > App launch > " +
+                    "find this app > disable 'Manage automatically' > " +
+                    "enable all three toggles (Auto-launch, Secondary launch, Run in background).";
+        }
+        if (manufacturer.contains("xiaomi")) {
+            return "Go to Settings > Apps > Manage apps > this app > " +
+                    "Battery saver > No restrictions. " +
+                    "Also enable Autostart in Security app.";
+        }
+        if (manufacturer.contains("oppo") || manufacturer.contains("realme")) {
+            return "Go to Settings > Battery > this app > " +
+                    "Allow background activity. " +
+                    "Also: Settings > App management > this app > Battery > Allow.";
+        }
+        if (manufacturer.contains("vivo")) {
+            return "Go to Settings > Battery > High background power consumption > " +
+                    "enable for this app.";
+        }
+        if (manufacturer.contains("oneplus")) {
+            return "Go to Settings > Battery > Battery optimization > " +
+                    "this app > Don't optimize.";
+        }
+        return null;
     }
 
     /**
