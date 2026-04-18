@@ -228,6 +228,12 @@ public class EmbeddedBrowserActivity extends Activity {
 				case ACCESS_SEND_SMS_PERMISSION:
 					this.smsSender.resumeProcess(resultCode);
 					return;
+				case ACCESS_P2P_PERMISSION:
+					p2pPermissionResolved(resultCode);
+					return;
+				case P2P_QR_SCAN:
+					processP2pQrScanResult(resultCode, intent);
+					return;
 				default:
 					trace(this, "onActivityResult() :: no handling for requestCode=%s", requestCode.name());
 			}
@@ -320,6 +326,37 @@ public class EmbeddedBrowserActivity extends Activity {
 	}
 
 //> PRIVATE HELPERS
+	public boolean getP2pPermissions() {
+		String[] perms = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+				? new String[]{ "android.permission.CAMERA", ACCESS_FINE_LOCATION, "android.permission.NEARBY_WIFI_DEVICES" }
+				: new String[]{ "android.permission.CAMERA", ACCESS_FINE_LOCATION };
+
+		boolean allGranted = true;
+		for (String perm : perms) {
+			if (ContextCompat.checkSelfPermission(this, perm) != PERMISSION_GRANTED) {
+				allGranted = false;
+				break;
+			}
+		}
+
+		if (allGranted) {
+			trace(this, "getP2pPermissions() :: All P2P permissions already granted");
+			return true;
+		}
+
+		trace(this, "getP2pPermissions() :: P2P permissions not granted, requesting access...");
+		startActivityForResult(
+			new Intent(this, RequestP2pPermissionsActivity.class),
+			RequestCode.ACCESS_P2P_PERMISSION.getCode()
+		);
+		return false;
+	}
+
+	private void p2pPermissionResolved(int resultCode) {
+		String granted = resultCode == RESULT_OK ? "true" : "false";
+		evaluateJavascript("window.CHTCore.AndroidApi.v1.p2pPermissionRequestResolved(" + granted + ");");
+	}
+
 	private void locationRequestResolved() {
 		evaluateJavascript("window.CHTCore.AndroidApi.v1.locationPermissionRequestResolved();");
 	}
@@ -406,6 +443,18 @@ public class EmbeddedBrowserActivity extends Activity {
 
 		maj.setConnectivityManager((ConnectivityManager) this.getSystemService(Context.CONNECTIVITY_SERVICE));
 
+		// Initialize P2P bridge (singleton — survives activity recreation)
+		org.medicmobile.webapp.mobile.p2p.P2pManager p2pManager =
+				org.medicmobile.webapp.mobile.p2p.P2pManager.getInstance(this);
+		org.medicmobile.webapp.mobile.p2p.TransitDocManager transitDocManager =
+				new org.medicmobile.webapp.mobile.p2p.TransitDocManager();
+		org.medicmobile.webapp.mobile.p2p.P2pTracker tracker =
+				new org.medicmobile.webapp.mobile.p2p.P2pTracker();
+		org.medicmobile.webapp.mobile.p2p.P2pBridgeMethods p2pBridge =
+				new org.medicmobile.webapp.mobile.p2p.P2pBridgeMethods(p2pManager, transitDocManager, tracker);
+		maj.setP2pBridge(p2pBridge);
+		p2pBridge.setWebView(container);
+
 		container.addJavascriptInterface(maj, "medicmobile_android");
 	}
 
@@ -444,6 +493,43 @@ public class EmbeddedBrowserActivity extends Activity {
 		);
 	}
 
+	/**
+	 * Launch ZXing QR scanner for P2P peer connection.
+	 * The scan result is returned via JavaScript callback.
+	 */
+	public void scanP2pQrCode() {
+		trace(this, "scanP2pQrCode() :: launching ZXing scanner");
+		com.journeyapps.barcodescanner.ScanOptions options =
+				new com.journeyapps.barcodescanner.ScanOptions();
+		options.setDesiredBarcodeFormats(com.journeyapps.barcodescanner.ScanOptions.QR_CODE);
+		options.setPrompt("Scan the Supervisor's QR code");
+		options.setCameraId(0);
+		options.setBeepEnabled(true);
+		options.setOrientationLocked(true);
+		com.journeyapps.barcodescanner.ScanContract scanContract =
+				new com.journeyapps.barcodescanner.ScanContract();
+		Intent scanIntent = scanContract.createIntent(this, options);
+		startActivityForResult(scanIntent, RequestCode.P2P_QR_SCAN.getCode());
+	}
+
+	private void processP2pQrScanResult(int resultCode, Intent intent) {
+		if (resultCode != RESULT_OK || intent == null) {
+			trace(this, "processP2pQrScanResult() :: scan cancelled or no result");
+			evaluateJavascript("window.CHTCore.P2p.onQrScanResult(null);");
+			return;
+		}
+		com.journeyapps.barcodescanner.ScanIntentResult result =
+				com.journeyapps.barcodescanner.ScanIntentResult.parseActivityResult(resultCode, intent);
+		String contents = result.getContents();
+		if (contents == null || contents.isEmpty()) {
+			evaluateJavascript("window.CHTCore.P2p.onQrScanResult(null);");
+			return;
+		}
+		// Escape for JavaScript string
+		String escaped = contents.replace("\\", "\\\\").replace("'", "\\'").replace("\n", "\\n");
+		evaluateJavascript("window.CHTCore.P2p.onQrScanResult('" + escaped + "');");
+	}
+
 //> ENUMS
 	public enum RequestCode {
 		ACCESS_LOCATION_PERMISSION(100),
@@ -451,7 +537,9 @@ public class EmbeddedBrowserActivity extends Activity {
 		ACCESS_SEND_SMS_PERMISSION(102),
 		CHT_EXTERNAL_APP_ACTIVITY(103),
 		GRAB_MRDT_PHOTO_ACTIVITY(104),
-		FILE_PICKER_ACTIVITY(105);
+		FILE_PICKER_ACTIVITY(105),
+		ACCESS_P2P_PERMISSION(106),
+		P2P_QR_SCAN(107);
 
 		private final int requestCode;
 

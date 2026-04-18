@@ -58,6 +58,12 @@
 	<string name="waitMigration">Please wait until the migration process is finished</string>
   <string name="usingTrainingApp">Use only during training</string>
 
+  <string name="p2pRequestTitle">P2P Sync permissions</string>
+  <string name="p2pRequestMessage">%s needs camera access to scan QR codes and WiFi access to sync data with nearby devices. To permit access select \"Allow\", and then confirm the next prompts.</string>
+  <string name="p2pRequestOkButton">Allow</string>
+  <string name="p2pRequestDenyButton">Deny</string>
+  <string name="p2pRequestIconDescription">P2P sync icon</string>
+
   <string name="domainAppAssociationTitle">Link domain with %s?</string>
   <string name="domainAppAssociationMessage">This ensures all links will open in your app for a better experience.</string>
   <string name="domainAppAssociationIconDescription">Domain Icon</string>

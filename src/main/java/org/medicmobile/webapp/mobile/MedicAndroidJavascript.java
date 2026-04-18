@@ -126,6 +126,11 @@ public class MedicAndroidJavascript {
 	}
 
 	@android.webkit.JavascriptInterface
+	public boolean getP2pPermissions() {
+		return this.parent.getP2pPermissions();
+	}
+
+	@android.webkit.JavascriptInterface
 	public void datePicker(final String targetElement) {
 		try {
 			datePicker(targetElement, Calendar.getInstance());
@@ -310,6 +315,127 @@ public class MedicAndroidJavascript {
 			logException(ex);
 			return jsonError("Problem fetching device info: ", ex);
 		}
+	}
+
+//> P2P SYNC BRIDGE METHODS
+	private static final String P2P_NOT_INITIALIZED = "P2P not initialized";
+	private org.medicmobile.webapp.mobile.p2p.P2pBridgeMethods p2pBridge;
+
+	public void setP2pBridge(org.medicmobile.webapp.mobile.p2p.P2pBridgeMethods bridge) {
+		this.p2pBridge = bridge;
+	}
+
+	@android.webkit.JavascriptInterface
+	public String p2pStartHostMode() {
+		if (p2pBridge == null) return jsonError(P2P_NOT_INITIALIZED);
+		return p2pBridge.p2pStartHostMode();
+	}
+
+	@android.webkit.JavascriptInterface
+	public String p2pStartClientMode(String qrPayloadJson) {
+		if (p2pBridge == null) return jsonError(P2P_NOT_INITIALIZED);
+		return p2pBridge.p2pStartClientMode(qrPayloadJson);
+	}
+
+	@android.webkit.JavascriptInterface
+	public void p2pStop() {
+		if (p2pBridge != null) p2pBridge.p2pStop();
+	}
+
+	@android.webkit.JavascriptInterface
+	public String p2pGetStatus() {
+		if (p2pBridge == null) return jsonError(P2P_NOT_INITIALIZED);
+		return p2pBridge.p2pGetStatus();
+	}
+
+	@android.webkit.JavascriptInterface
+	public String p2pCheckConnection() {
+		if (p2pBridge == null) return "{\"connected\":false}";
+		return p2pBridge.p2pCheckConnection();
+	}
+
+	@android.webkit.JavascriptInterface
+	public String p2pGetTransitDocIds() {
+		if (p2pBridge == null) return "[]";
+		return p2pBridge.p2pGetTransitDocIds();
+	}
+
+	@android.webkit.JavascriptInterface
+	public boolean p2pIsTransitDoc(String docId) {
+		return p2pBridge != null && p2pBridge.p2pIsTransitDoc(docId);
+	}
+
+	@android.webkit.JavascriptInterface
+	public String p2pPurgeTransitDocs() {
+		if (p2pBridge == null) return jsonError(P2P_NOT_INITIALIZED);
+		return p2pBridge.p2pPurgeTransitDocs();
+	}
+
+	@android.webkit.JavascriptInterface
+	public void p2pConfirmBatchPurged(String batchId) {
+		if (p2pBridge != null) p2pBridge.p2pConfirmBatchPurged(batchId);
+	}
+
+	@android.webkit.JavascriptInterface
+	public String p2pGetSyncHistory() {
+		if (p2pBridge == null) return "{}";
+		return p2pBridge.p2pGetSyncHistory();
+	}
+
+	@android.webkit.JavascriptInterface
+	public boolean p2pHasStaleTransitDocs() {
+		return p2pBridge != null && p2pBridge.p2pHasStaleTransitDocs();
+	}
+
+	@android.webkit.JavascriptInterface
+	public String p2pGetCapability() {
+		if (p2pBridge == null) return jsonError(P2P_NOT_INITIALIZED);
+		return p2pBridge.p2pGetCapability();
+	}
+
+	@android.webkit.JavascriptInterface
+	public String p2pGetBatteryGuidance() {
+		if (p2pBridge == null) return "";
+		return p2pBridge.p2pGetBatteryGuidance();
+	}
+
+	@android.webkit.JavascriptInterface
+	public boolean p2pNeedsBatteryGuidance() {
+		return p2pBridge != null && p2pBridge.p2pNeedsBatteryGuidance();
+	}
+
+	@android.webkit.JavascriptInterface
+	public String p2pInitialize(String configJson) {
+		if (p2pBridge == null) return jsonError(P2P_NOT_INITIALIZED);
+		return p2pBridge.p2pInitialize(configJson);
+	}
+
+	@android.webkit.JavascriptInterface
+	public void p2pScanQrCode() {
+		this.parent.scanP2pQrCode();
+	}
+
+	@android.webkit.JavascriptInterface
+	public String p2pRetrySync() {
+		if (p2pBridge == null) return jsonError(P2P_NOT_INITIALIZED);
+		return p2pBridge.p2pRetrySync();
+	}
+
+	@android.webkit.JavascriptInterface
+	public String p2pProceedSync() {
+		if (p2pBridge == null) return jsonError(P2P_NOT_INITIALIZED);
+		return p2pBridge.p2pProceedSync();
+	}
+
+	@android.webkit.JavascriptInterface
+	public String p2pIsActive() {
+		if (p2pBridge == null) return jsonError(P2P_NOT_INITIALIZED);
+		return p2pBridge.p2pIsActive();
+	}
+
+	@android.webkit.JavascriptInterface
+	public void p2pAsyncCallback(String callbackId, String result) {
+		if (p2pBridge != null) p2pBridge.p2pAsyncCallback(callbackId, result);
 	}
 
 //> PRIVATE HELPER METHODS
