@@ -52,8 +52,8 @@ public class QrScannerActivity extends Activity {
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
         outState.putBoolean("scannerLaunched", scannerLaunched);
+        super.onSaveInstanceState(outState);
     }
 
     /**

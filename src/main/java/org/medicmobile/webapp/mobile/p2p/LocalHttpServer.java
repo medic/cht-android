@@ -349,7 +349,7 @@ public class LocalHttpServer extends NanoHTTPD {
             // Fallback: try reading from the input stream directly
             long contentLength = getContentLength(session);
             if (contentLength > 0) {
-                BufferedReader reader = new BufferedReader(
+                BufferedReader reader = new BufferedReader( //NOPMD - CloseResource: stream owned by NanoHTTPD session
                         new InputStreamReader(session.getInputStream()));
                 StringBuilder sb = new StringBuilder();
                 char[] buffer = new char[4096];

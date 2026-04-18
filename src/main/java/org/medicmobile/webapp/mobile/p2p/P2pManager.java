@@ -1171,6 +1171,7 @@ public class P2pManager {
 
     /** Thrown when P2P initialization fails. */
     public static class P2pInitException extends Exception {
+        private static final long serialVersionUID = 1L;
         public P2pInitException(String message) {
             super(message);
         }

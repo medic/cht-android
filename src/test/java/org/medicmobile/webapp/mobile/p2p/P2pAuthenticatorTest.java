@@ -310,8 +310,8 @@ public class P2pAuthenticatorTest {
         try {
             manifest.getSharedDocTypes().add("clinic");
             fail("Should not be able to modify shared doc types");
-        } catch (UnsupportedOperationException e) {
-            // expected
+        } catch (UnsupportedOperationException expected) {
+            assertNotNull("Should throw UnsupportedOperationException", expected);
         }
     }
 }

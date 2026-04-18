@@ -185,6 +185,7 @@ public final class JwtVerifier {
      * Exception thrown when JWT verification fails.
      */
     public static class JwtVerificationException extends Exception {
+        private static final long serialVersionUID = 1L;
         public JwtVerificationException(String message) {
             super(message);
         }

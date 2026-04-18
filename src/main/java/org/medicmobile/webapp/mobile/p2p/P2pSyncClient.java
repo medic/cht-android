@@ -261,20 +261,17 @@ public class P2pSyncClient {
     }
 
     private String readBody(HttpURLConnection conn, int code) throws IOException {
-        BufferedReader reader;
-        if (code >= 200 && code < 400) {
-            reader = new BufferedReader(new InputStreamReader(conn.getInputStream(),
-                    StandardCharsets.UTF_8));
-        } else {
-            reader = new BufferedReader(new InputStreamReader(conn.getErrorStream(),
-                    StandardCharsets.UTF_8));
+        InputStream stream = (code >= 200 && code < 400)
+                ? conn.getInputStream()
+                : conn.getErrorStream();
+        try (BufferedReader reader = new BufferedReader(
+                new InputStreamReader(stream, StandardCharsets.UTF_8))) {
+            StringBuilder sb = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                sb.append(line);
+            }
+            return sb.toString();
         }
-        StringBuilder sb = new StringBuilder();
-        String line;
-        while ((line = reader.readLine()) != null) {
-            sb.append(line);
-        }
-        reader.close();
-        return sb.toString();
     }
 }
