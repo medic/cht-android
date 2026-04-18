@@ -20,6 +20,7 @@ import java.util.Set;
  *   "updated_at": ISO8601
  * }
  */
+@SuppressWarnings("java:S6206") // Records require Java 16+; project targets Java 8
 public final class RevocationList {
 
     private final Set<String> revokedDevices;
@@ -36,25 +37,20 @@ public final class RevocationList {
      * Parse from the server's revocation-list response.
      */
     public static RevocationList fromJson(JSONObject json) throws JSONException {
-        int version = json.optInt("version", 0);
+        int ver = json.optInt("version", 0);
+        Set<String> devices = parseStringSet(json.optJSONArray("revoked_devices"));
+        Set<String> users = parseStringSet(json.optJSONArray("revoked_users"));
+        return new RevocationList(ver, devices, users);
+    }
 
-        Set<String> devices = new HashSet<>();
-        JSONArray devicesArray = json.optJSONArray("revoked_devices");
-        if (devicesArray != null) {
-            for (int i = 0; i < devicesArray.length(); i++) {
-                devices.add(devicesArray.getString(i));
+    private static Set<String> parseStringSet(JSONArray array) throws JSONException {
+        Set<String> result = new HashSet<>();
+        if (array != null) {
+            for (int i = 0; i < array.length(); i++) {
+                result.add(array.getString(i));
             }
         }
-
-        Set<String> users = new HashSet<>();
-        JSONArray usersArray = json.optJSONArray("revoked_users");
-        if (usersArray != null) {
-            for (int i = 0; i < usersArray.length(); i++) {
-                users.add(usersArray.getString(i));
-            }
-        }
-
-        return new RevocationList(version, devices, users);
+        return result;
     }
 
     /** Returns an empty revocation list for first-time use. */

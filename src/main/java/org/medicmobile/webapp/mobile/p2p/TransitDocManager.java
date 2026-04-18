@@ -1,6 +1,5 @@
 package org.medicmobile.webapp.mobile.p2p;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -34,8 +33,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 public final class TransitDocManager {
 
     static final String TRANSIT_DOC_ID = "_local/p2p-transit-docs";
-    private static final long MAX_LOCAL_DOC_SIZE = 1024 * 1024; // G26: 1MB
+    private static final long MAX_LOCAL_DOC_SIZE = 1024L * 1024; // G26: 1MB
     private static final long STALE_THRESHOLD_MS = 30L * 24 * 60 * 60 * 1000; // G27: 30 days
+    private static final String KEY_PUSHED_AT = "pushed_at";
+    private static final String KEY_PURGED_AT = "purged_at";
 
     private final Map<String, TransitBatch> batches = new ConcurrentHashMap<>();
     private final Map<String, String> transitIndex = new ConcurrentHashMap<>(); // docId -> batchId
@@ -52,45 +53,57 @@ public final class TransitDocManager {
             return;
         }
 
-        // Parse batches
-        JSONObject batchesJson = transitDoc.optJSONObject("batches");
-        if (batchesJson != null) {
-            Iterator<String> keys = batchesJson.keys();
-            while (keys.hasNext()) {
-                String batchId = keys.next();
-                JSONObject batchJson = batchesJson.getJSONObject(batchId);
-                TransitBatch batch = new TransitBatch(
-                        batchId,
-                        batchJson.optString("source_device_id", ""),
-                        batchJson.optString("source_user", ""),
-                        batchJson.optLong("received_at", 0)
-                );
-                batch.docCount = batchJson.optInt("doc_count", 0);
-                batch.pushedToServer = batchJson.optBoolean("pushed_to_server", false);
-                batch.pushedAt = !batchJson.isNull("pushed_at") ? batchJson.getLong("pushed_at") : null;
-                batch.purged = batchJson.optBoolean("purged", false);
-                batch.purgedAt = !batchJson.isNull("purged_at") ? batchJson.getLong("purged_at") : null;
-                batches.put(batchId, batch);
-            }
-        }
+        loadBatches(transitDoc.optJSONObject("batches"));
+        loadTransitIndex(transitDoc.optJSONObject("transit_index"));
+        loadStats(transitDoc.optJSONObject("stats"));
+    }
 
-        // Parse transit index
-        JSONObject indexJson = transitDoc.optJSONObject("transit_index");
-        if (indexJson != null) {
-            Iterator<String> keys = indexJson.keys();
-            while (keys.hasNext()) {
-                String docId = keys.next();
-                transitIndex.put(docId, indexJson.getString(docId));
-            }
+    private void loadBatches(JSONObject batchesJson) throws JSONException {
+        if (batchesJson == null) {
+            return;
         }
+        Iterator<String> keys = batchesJson.keys();
+        while (keys.hasNext()) {
+            String batchId = keys.next();
+            JSONObject batchJson = batchesJson.getJSONObject(batchId);
+            TransitBatch batch = parseBatch(batchId, batchJson);
+            batches.put(batchId, batch);
+        }
+    }
 
-        // Parse stats
-        JSONObject stats = transitDoc.optJSONObject("stats");
-        if (stats != null) {
-            totalReceived.set(stats.optInt("total_received", 0));
-            totalPushed.set(stats.optInt("total_pushed", 0));
-            totalPurged.set(stats.optInt("total_purged", 0));
+    private TransitBatch parseBatch(String batchId, JSONObject batchJson) throws JSONException {
+        TransitBatch batch = new TransitBatch(
+                batchId,
+                batchJson.optString("source_device_id", ""),
+                batchJson.optString("source_user", ""),
+                batchJson.optLong("received_at", 0)
+        );
+        batch.docCount = batchJson.optInt("doc_count", 0);
+        batch.pushedToServer = batchJson.optBoolean("pushed_to_server", false);
+        batch.pushedAt = !batchJson.isNull(KEY_PUSHED_AT) ? batchJson.getLong(KEY_PUSHED_AT) : null;
+        batch.purged = batchJson.optBoolean("purged", false);
+        batch.purgedAt = !batchJson.isNull(KEY_PURGED_AT) ? batchJson.getLong(KEY_PURGED_AT) : null;
+        return batch;
+    }
+
+    private void loadTransitIndex(JSONObject indexJson) throws JSONException {
+        if (indexJson == null) {
+            return;
         }
+        Iterator<String> keys = indexJson.keys();
+        while (keys.hasNext()) {
+            String docId = keys.next();
+            transitIndex.put(docId, indexJson.getString(docId));
+        }
+    }
+
+    private void loadStats(JSONObject stats) {
+        if (stats == null) {
+            return;
+        }
+        totalReceived.set(stats.optInt("total_received", 0));
+        totalPushed.set(stats.optInt("total_pushed", 0));
+        totalPurged.set(stats.optInt("total_purged", 0));
     }
 
     /**
@@ -233,9 +246,9 @@ public final class TransitDocManager {
             batchJson.put("received_at", b.receivedAt);
             batchJson.put("doc_count", b.docCount);
             batchJson.put("pushed_to_server", b.pushedToServer);
-            batchJson.put("pushed_at", b.pushedAt != null ? b.pushedAt : JSONObject.NULL);
+            batchJson.put(KEY_PUSHED_AT, b.pushedAt != null ? b.pushedAt : JSONObject.NULL);
             batchJson.put("purged", b.purged);
-            batchJson.put("purged_at", b.purgedAt != null ? b.purgedAt : JSONObject.NULL);
+            batchJson.put(KEY_PURGED_AT, b.purgedAt != null ? b.purgedAt : JSONObject.NULL);
             batchesJson.put(entry.getKey(), batchJson);
         }
         doc.put("batches", batchesJson);

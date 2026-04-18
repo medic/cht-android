@@ -108,7 +108,9 @@ public final class JwtVerifier {
     /**
      * Parse a PEM-encoded public key to a Java PublicKey object.
      */
-    private static PublicKey parsePemPublicKey(String pem) throws Exception {
+    private static PublicKey parsePemPublicKey(String pem)
+            throws java.security.NoSuchAlgorithmException,
+                   java.security.spec.InvalidKeySpecException {
         String cleaned = pem
                 .replace("-----BEGIN PUBLIC KEY-----", "")
                 .replace("-----END PUBLIC KEY-----", "")
@@ -128,9 +130,11 @@ public final class JwtVerifier {
                 .replace('-', '+')
                 .replace('_', '/');
         // Add padding if needed
-        switch (base64.length() % 4) {
-            case 2: base64 += "=="; break;
-            case 3: base64 += "="; break;
+        int remainder = base64.length() % 4;
+        if (remainder == 2) {
+            base64 += "==";
+        } else if (remainder == 3) {
+            base64 += "=";
         }
         return android.util.Base64.decode(base64, android.util.Base64.DEFAULT);
     }

@@ -40,7 +40,7 @@ public final class StatusEndpoint {
             response.put("connected_peers", connectedPeers);
             return response;
         } catch (JSONException e) {
-            throw new RuntimeException("Failed to build status response", e);
+            throw new IllegalStateException("Failed to build status response", e);
         }
     }
 }

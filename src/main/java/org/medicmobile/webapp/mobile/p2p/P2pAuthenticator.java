@@ -59,6 +59,7 @@ public final class P2pAuthenticator {
         return AuthResult.success(payload, userId, role, facilityId);
     }
 
+    @SuppressWarnings("java:S6201") // Pattern matching instanceof requires Java 16+
     private String extractFacilityId(JSONObject payload) {
         Object rawFacility = payload.opt("facility_id");
         if (rawFacility instanceof JSONArray) {
@@ -78,13 +79,14 @@ public final class P2pAuthenticator {
         if (tokenPayload == null || peerId == null) {
             return false;
         }
+        return isInAllowedPeersList(tokenPayload, peerId);
+    }
 
+    private boolean isInAllowedPeersList(JSONObject tokenPayload, String peerId) {
         JSONArray allowedPeers = tokenPayload.optJSONArray("allowed_relay_peers");
-        // null or empty = no restrictions, allow all peers
         if (allowedPeers == null || allowedPeers.length() == 0) {
             return true;
         }
-
         for (int i = 0; i < allowedPeers.length(); i++) {
             if (peerId.equals(allowedPeers.optString(i))) {
                 return true;
