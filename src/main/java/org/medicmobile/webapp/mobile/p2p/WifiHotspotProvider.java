@@ -65,51 +65,68 @@ public class WifiHotspotProvider implements HotspotProvider {
         }
 
         try {
-            wifiManager.startLocalOnlyHotspot(new WifiManager.LocalOnlyHotspotCallback() {
-                @Override
-                public void onStarted(WifiManager.LocalOnlyHotspotReservation hotspotReservation) {
-                    reservation = hotspotReservation;
-                    running = true;
-
-                    String ssid = extractSsid(hotspotReservation);
-                    String password = extractPassword(hotspotReservation);
-                    String ip = detectHotspotIpWithRetry();
-
-                    if (ip == null) {
-                        Log.e(TAG, "Hotspot started but could not detect IP — aborting");
-                        running = false;
-                        try { hotspotReservation.close(); } catch (Exception ignored) {}
-                        reservation = null;
-                        callback.onFailed("Could not detect hotspot IP address. "
-                                + "Please restart P2P sync.");
-                        return;
-                    }
-
-                    Log.i(TAG, "LocalOnlyHotspot started: SSID=" + ssid + ", IP=" + ip);
-                    callback.onStarted(ssid, password, ip);
-                }
-
-                @Override
-                public void onStopped() {
-                    Log.i(TAG, "LocalOnlyHotspot stopped by system");
-                    running = false;
-                    reservation = null;
-                }
-
-                @Override
-                public void onFailed(int reason) {
-                    running = false;
-                    String reasonStr = mapFailureReason(reason);
-                    Log.e(TAG, "LocalOnlyHotspot failed: " + reasonStr);
-                    callback.onFailed(reasonStr);
-                }
-            }, new Handler(Looper.getMainLooper()));
+            wifiManager.startLocalOnlyHotspot(createHotspotCallback(callback),
+                    new Handler(Looper.getMainLooper()));
         } catch (SecurityException e) {
             Log.e(TAG, "Hotspot SecurityException", e);
             callback.onFailed("security_exception: " + e.getMessage());
         } catch (Exception e) {
             Log.e(TAG, "Failed to start hotspot", e);
             callback.onFailed("Unexpected error: " + e.getMessage());
+        }
+    }
+
+    private WifiManager.LocalOnlyHotspotCallback createHotspotCallback(HotspotCallback callback) {
+        return new WifiManager.LocalOnlyHotspotCallback() {
+            @Override
+            public void onStarted(WifiManager.LocalOnlyHotspotReservation hotspotReservation) {
+                reservation = hotspotReservation;
+                running = true;
+
+                String ssid = extractSsid(hotspotReservation);
+                String password = extractPassword(hotspotReservation);
+                String ip = detectHotspotIpWithRetry();
+
+                if (ip == null) {
+                    handleIpDetectionFailure(hotspotReservation, callback);
+                    return;
+                }
+
+                Log.i(TAG, "LocalOnlyHotspot started: SSID=" + ssid + ", IP=" + ip);
+                callback.onStarted(ssid, password, ip);
+            }
+
+            @Override
+            public void onStopped() {
+                Log.i(TAG, "LocalOnlyHotspot stopped by system");
+                running = false;
+                reservation = null;
+            }
+
+            @Override
+            public void onFailed(int reason) {
+                running = false;
+                String reasonStr = mapFailureReason(reason);
+                Log.e(TAG, "LocalOnlyHotspot failed: " + reasonStr);
+                callback.onFailed(reasonStr);
+            }
+        };
+    }
+
+    private void handleIpDetectionFailure(WifiManager.LocalOnlyHotspotReservation hotspotReservation,
+                                           HotspotCallback callback) {
+        Log.e(TAG, "Hotspot started but could not detect IP — aborting");
+        running = false;
+        closeReservationQuietly(hotspotReservation);
+        reservation = null;
+        callback.onFailed("Could not detect hotspot IP address. Please restart P2P sync.");
+    }
+
+    private static void closeReservationQuietly(WifiManager.LocalOnlyHotspotReservation res) {
+        try {
+            res.close();
+        } catch (Exception e) {
+            Log.w(TAG, "Error closing hotspot reservation during cleanup", e);
         }
     }
 
@@ -170,10 +187,19 @@ public class WifiHotspotProvider implements HotspotProvider {
             }
             if (attempt < IP_DETECT_MAX_RETRIES) {
                 Log.d(TAG, "Hotspot IP not ready, retry " + attempt + "/" + IP_DETECT_MAX_RETRIES);
-                try { Thread.sleep(IP_DETECT_RETRY_DELAY_MS); } catch (InterruptedException ignored) {}
+                sleepForRetry();
             }
         }
         return null;
+    }
+
+    private static void sleepForRetry() {
+        try {
+            Thread.sleep(IP_DETECT_RETRY_DELAY_MS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            Log.w(TAG, "IP detection retry interrupted");
+        }
     }
 
     /**
@@ -184,52 +210,84 @@ public class WifiHotspotProvider implements HotspotProvider {
      */
     private static String detectHotspotIp() {
         try {
-            // Phase 1: Try known hotspot interface names first (fast path)
-            for (String ifName : KNOWN_HOTSPOT_INTERFACES) {
-                NetworkInterface nif = NetworkInterface.getByName(ifName);
-                if (nif != null && nif.isUp()) {
-                    String ip = getIpv4Address(nif);
-                    if (ip != null) {
-                        Log.i(TAG, "Detected hotspot IP: " + ip + " on " + ifName);
-                        return ip;
-                    }
-                }
+            String ip = detectFromKnownInterfaces();
+            if (ip != null) {
+                return ip;
             }
-
-            // Phase 2: Enumerate all interfaces, prefer non-wlan0
-            String wlan0Ip = null;
-            Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
-            if (interfaces != null) {
-                while (interfaces.hasMoreElements()) {
-                    NetworkInterface nif = interfaces.nextElement();
-                    String name = nif.getName();
-                    if (!nif.isUp() || nif.isLoopback()) {
-                        continue;
-                    }
-                    String ip = getIpv4Address(nif);
-                    if (ip != null) {
-                        if ("wlan0".equals(name)) {
-                            // Save as fallback — some devices reuse wlan0 for hotspot
-                            wlan0Ip = ip;
-                            Log.d(TAG, "Found wlan0 IP: " + ip + " (saving as fallback)");
-                            continue;
-                        }
-                        Log.i(TAG, "Detected hotspot IP: " + ip + " on " + name);
-                        return ip;
-                    }
-                }
-            }
-
-            // Phase 3: Fall back to wlan0 if no other interface found
-            if (wlan0Ip != null) {
-                Log.i(TAG, "Using wlan0 fallback IP: " + wlan0Ip);
-                return wlan0Ip;
-            }
+            return detectFromAllInterfaces();
         } catch (Exception e) {
             Log.w(TAG, "Error detecting hotspot IP", e);
         }
         Log.e(TAG, "Could not detect hotspot IP from any network interface");
         return null;
+    }
+
+    /** Phase 1: Try known hotspot interface names (fast path). */
+    private static String detectFromKnownInterfaces() throws Exception {
+        for (String ifName : KNOWN_HOTSPOT_INTERFACES) {
+            NetworkInterface nif = NetworkInterface.getByName(ifName);
+            if (nif != null && nif.isUp()) {
+                String ip = getIpv4Address(nif);
+                if (ip != null) {
+                    Log.i(TAG, "Detected hotspot IP: " + ip + " on " + ifName);
+                    return ip;
+                }
+            }
+        }
+        return null;
+    }
+
+    /** Phase 2: Enumerate all interfaces, prefer non-wlan0. Falls back to wlan0. */
+    private static String detectFromAllInterfaces() throws Exception {
+        String wlan0Ip = null;
+        Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+        if (interfaces == null) {
+            return null;
+        }
+
+        while (interfaces.hasMoreElements()) {
+            NetworkInterface nif = interfaces.nextElement();
+            if (!nif.isUp() || nif.isLoopback()) {
+                // skip inactive/loopback interfaces
+            } else {
+                String ip = getIpFromInterface(nif);
+                if (ip != null) {
+                    return ip;
+                }
+                wlan0Ip = getWlan0Fallback(nif, wlan0Ip);
+            }
+        }
+
+        if (wlan0Ip != null) {
+            Log.i(TAG, "Using wlan0 fallback IP: " + wlan0Ip);
+        }
+        return wlan0Ip;
+    }
+
+    /** Get IP from a non-wlan0 interface, or null if wlan0 or no IP. */
+    private static String getIpFromInterface(NetworkInterface nif) {
+        String name = nif.getName();
+        if ("wlan0".equals(name)) {
+            return null;
+        }
+        String ip = getIpv4Address(nif);
+        if (ip != null) {
+            Log.i(TAG, "Detected hotspot IP: " + ip + " on " + name);
+        }
+        return ip;
+    }
+
+    /** Save wlan0 IP as fallback if this is the wlan0 interface. */
+    private static String getWlan0Fallback(NetworkInterface nif, String currentFallback) {
+        if (!"wlan0".equals(nif.getName())) {
+            return currentFallback;
+        }
+        String ip = getIpv4Address(nif);
+        if (ip != null) {
+            Log.d(TAG, "Found wlan0 IP: " + ip + " (saving as fallback)");
+            return ip;
+        }
+        return currentFallback;
     }
 
     private static String getIpv4Address(NetworkInterface nif) {

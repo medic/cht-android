@@ -95,33 +95,32 @@ public class OemBatteryHelper {
                 "disable battery optimization for reliable P2P sync.";
     }
 
+    private static final String[][] BRAND_GUIDANCE = {
+        {"samsung", "Go to Settings > Battery and device care > Battery > "
+                + "Background usage limits > Never sleeping apps > Add this app."},
+        {"huawei", "Go to Settings > Battery > App launch > "
+                + "find this app > disable 'Manage automatically' > "
+                + "enable all three toggles (Auto-launch, Secondary launch, Run in background)."},
+        {"xiaomi", "Go to Settings > Apps > Manage apps > this app > "
+                + "Battery saver > No restrictions. "
+                + "Also enable Autostart in Security app."},
+        {"oppo", "Go to Settings > Battery > this app > "
+                + "Allow background activity. "
+                + "Also: Settings > App management > this app > Battery > Allow."},
+        {"realme", "Go to Settings > Battery > this app > "
+                + "Allow background activity. "
+                + "Also: Settings > App management > this app > Battery > Allow."},
+        {"vivo", "Go to Settings > Battery > High background power consumption > "
+                + "enable for this app."},
+        {"oneplus", "Go to Settings > Battery > Battery optimization > "
+                + "this app > Don't optimize."},
+    };
+
     private static String getSpecificBrandGuidance(String manufacturer) {
-        if (manufacturer.contains("samsung")) {
-            return "Go to Settings > Battery and device care > Battery > " +
-                    "Background usage limits > Never sleeping apps > Add this app.";
-        }
-        if (manufacturer.contains("huawei")) {
-            return "Go to Settings > Battery > App launch > " +
-                    "find this app > disable 'Manage automatically' > " +
-                    "enable all three toggles (Auto-launch, Secondary launch, Run in background).";
-        }
-        if (manufacturer.contains("xiaomi")) {
-            return "Go to Settings > Apps > Manage apps > this app > " +
-                    "Battery saver > No restrictions. " +
-                    "Also enable Autostart in Security app.";
-        }
-        if (manufacturer.contains("oppo") || manufacturer.contains("realme")) {
-            return "Go to Settings > Battery > this app > " +
-                    "Allow background activity. " +
-                    "Also: Settings > App management > this app > Battery > Allow.";
-        }
-        if (manufacturer.contains("vivo")) {
-            return "Go to Settings > Battery > High background power consumption > " +
-                    "enable for this app.";
-        }
-        if (manufacturer.contains("oneplus")) {
-            return "Go to Settings > Battery > Battery optimization > " +
-                    "this app > Don't optimize.";
+        for (String[] entry : BRAND_GUIDANCE) {
+            if (manufacturer.contains(entry[0])) {
+                return entry[1];
+            }
         }
         return null;
     }

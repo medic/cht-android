@@ -137,6 +137,7 @@ public class SyncMutexTest {
     @Test
     public void testTouchActivityWhenIdleDoesNotThrow() {
         mutex.touchActivity(); // should not throw even when idle
+        assertFalse("Mutex should remain idle after touch", mutex.isActive());
     }
 
     // ========================================================================

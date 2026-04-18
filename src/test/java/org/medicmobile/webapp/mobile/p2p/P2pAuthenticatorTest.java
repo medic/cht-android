@@ -232,7 +232,7 @@ public class P2pAuthenticatorTest {
     public void testIsPeerAllowedNullPayloadReturnsFalse() {
         // Null payload check
         JSONObject nullPayload = null;
-        assertTrue("Null payload should be handled safely", nullPayload == null);
+        assertNull("Null payload should be handled safely", nullPayload);
     }
 
     // ========================================================================
@@ -303,15 +303,10 @@ public class P2pAuthenticatorTest {
         assertNotEquals(a, b);
     }
 
-    @Test
+    @Test(expected = UnsupportedOperationException.class)
     public void testScopeManifestDocTypesImmutable() {
         ScopeManifest manifest = new ScopeManifest("hc-1", 1,
                 Collections.singletonList("person"), "2026-03-23");
-        try {
-            manifest.getSharedDocTypes().add("clinic");
-            fail("Should not be able to modify shared doc types");
-        } catch (UnsupportedOperationException expected) {
-            assertNotNull("Should throw UnsupportedOperationException", expected);
-        }
+        manifest.getSharedDocTypes().add("clinic");
     }
 }

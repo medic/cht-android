@@ -1,6 +1,5 @@
 package org.medicmobile.webapp.mobile.p2p;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Arrays;
@@ -28,13 +27,15 @@ import java.util.Set;
 public final class ScopeGuard {
 
     private static final String TAG = "ScopeGuard";
+    private static final String TYPE_DATA_RECORD = "data_record";
+    private static final String REJECT_BRANCH_MISMATCH = "branch_mismatch";
 
     /**
      * Allowed top-level doc types for P2P sync.
      * "contact" is included because CHT uses it as a generic type with contact_type subtypes.
      */
     private static final Set<String> ALLOWED_DOC_TYPES = new HashSet<>(Arrays.asList(
-            "data_record",
+            TYPE_DATA_RECORD,
             "contact",
             "person",
             "clinic",
@@ -69,18 +70,27 @@ public final class ScopeGuard {
      */
     public ValidationResult classify(JSONObject doc, ScopeManifest senderScope,
                                      ScopeManifest receiverScope, Map<String, String> parentIndex) {
-        try {
-            return doClassify(doc, senderScope, receiverScope, parentIndex);
-        } catch (JSONException e) {
-            return ValidationResult.reject("malformed_doc: " + e.getMessage());
+        // Step 1: Reject invalid or system docs
+        ValidationResult basicCheck = rejectInvalidDocs(doc);
+        if (basicCheck != null) {
+            return basicCheck;
         }
+
+        String docId = doc.optString("_id", null);
+        String docType = doc.optString("type", null);
+        String parentId = getParentId(doc);
+
+        // Step 2: Verify sender scope
+        ValidationResult senderCheck = checkSenderScope(docId, docType, parentId, senderScope, parentIndex);
+        if (senderCheck != null) {
+            return senderCheck;
+        }
+
+        // Step 3: Classify against receiver scope
+        return classifyForReceiver(docId, docType, parentId, receiverScope, parentIndex);
     }
 
-    private ValidationResult doClassify(JSONObject doc, ScopeManifest senderScope,
-                                        ScopeManifest receiverScope, Map<String, String> parentIndex)
-            throws JSONException {
-
-        // Step 1: Extract _id and reject system docs
+    private ValidationResult rejectInvalidDocs(JSONObject doc) {
         String docId = doc.optString("_id", null);
         if (docId == null || docId.isEmpty()) {
             return ValidationResult.reject("missing_id");
@@ -92,52 +102,56 @@ public final class ScopeGuard {
             return ValidationResult.reject("local_doc");
         }
 
-        // Step 2: Reject docs with disallowed types
         String docType = doc.optString("type", null);
         if (docType == null || !ALLOWED_DOC_TYPES.contains(docType)) {
             return ValidationResult.reject("disallowed_type: " + docType);
         }
 
-        // Step 3: Rule 5 — reject deletions
         if (doc.optBoolean("_deleted", false)) {
             return ValidationResult.reject("deletion_not_allowed");
         }
+        return null;
+    }
 
-        // Step 4: Get the parent ID from the doc
-        String parentId = getParentId(doc);
-
-        // Step 5: Verify sender scope — doc must be within sender's facility subtree
-        if (isContactType(docType)) {
-            if (!isWithinFacilitySubtree(docId, senderScope.getFacilitySubtreeRoot(), parentIndex)) {
-                return ValidationResult.reject("sender_scope_violation: not in sender facility subtree");
-            }
-        } else if ("data_record".equals(docType)) {
-            if (parentId != null && !isWithinFacilitySubtree(parentId, senderScope.getFacilitySubtreeRoot(), parentIndex)) {
-                return ValidationResult.reject("sender_scope_violation: report parent not in sender facility subtree");
-            }
+    private ValidationResult checkSenderScope(String docId, String docType, String parentId,
+                                              ScopeManifest senderScope, Map<String, String> parentIndex) {
+        if (isContactType(docType)
+                && !isWithinFacilitySubtree(docId, senderScope.getFacilitySubtreeRoot(), parentIndex)) {
+            return ValidationResult.reject("sender_scope_violation: not in sender facility subtree");
         }
-
-        // Step 6: Check receiver scope — doc must be within receiver's facility subtree
-        if (isContactType(docType)) {
-            if (!isWithinFacilitySubtree(docId, receiverScope.getFacilitySubtreeRoot(), parentIndex)) {
-                return ValidationResult.reject("branch_mismatch");
-            }
-            int depth = getDepthFromFacility(docId, receiverScope.getFacilitySubtreeRoot(), parentIndex);
-            if (depth < 0) {
-                return ValidationResult.reject("branch_mismatch");
-            }
-            if (depth <= receiverScope.getReplicationDepth()) {
-                return ValidationResult.accept(DocScope.IN_SCOPE);
-            }
-            return ValidationResult.accept(DocScope.TRANSIT);
+        if (TYPE_DATA_RECORD.equals(docType)
+                && parentId != null
+                && !isWithinFacilitySubtree(parentId, senderScope.getFacilitySubtreeRoot(), parentIndex)) {
+            return ValidationResult.reject("sender_scope_violation: report parent not in sender facility subtree");
         }
+        return null;
+    }
 
-        if ("data_record".equals(docType)) {
+    private ValidationResult classifyForReceiver(String docId, String docType, String parentId,
+                                                 ScopeManifest receiverScope, Map<String, String> parentIndex) {
+        if (isContactType(docType)) {
+            return classifyContact(docId, receiverScope, parentIndex);
+        }
+        if (TYPE_DATA_RECORD.equals(docType)) {
             return classifyDataRecord(parentId, receiverScope, parentIndex);
         }
-
         // Shared doc types (form, translation, resources) — always in scope if type is allowed
         return ValidationResult.accept(DocScope.IN_SCOPE);
+    }
+
+    private ValidationResult classifyContact(String docId, ScopeManifest receiverScope,
+                                             Map<String, String> parentIndex) {
+        if (!isWithinFacilitySubtree(docId, receiverScope.getFacilitySubtreeRoot(), parentIndex)) {
+            return ValidationResult.reject(REJECT_BRANCH_MISMATCH);
+        }
+        int depth = getDepthFromFacility(docId, receiverScope.getFacilitySubtreeRoot(), parentIndex);
+        if (depth < 0) {
+            return ValidationResult.reject(REJECT_BRANCH_MISMATCH);
+        }
+        if (depth <= receiverScope.getReplicationDepth()) {
+            return ValidationResult.accept(DocScope.IN_SCOPE);
+        }
+        return ValidationResult.accept(DocScope.TRANSIT);
     }
 
     /**
@@ -154,13 +168,13 @@ public final class ScopeGuard {
 
         // Check if parent is within receiver's facility subtree
         if (!isWithinFacilitySubtree(parentId, receiverScope.getFacilitySubtreeRoot(), parentIndex)) {
-            return ValidationResult.reject("branch_mismatch");
+            return ValidationResult.reject(REJECT_BRANCH_MISMATCH);
         }
 
         // Get the parent contact's depth from receiver's facility root
         int parentDepth = getDepthFromFacility(parentId, receiverScope.getFacilitySubtreeRoot(), parentIndex);
         if (parentDepth < 0) {
-            return ValidationResult.reject("branch_mismatch");
+            return ValidationResult.reject(REJECT_BRANCH_MISMATCH);
         }
 
         // Special case: if the direct parent contact is in-scope, report is in-scope too
@@ -172,6 +186,8 @@ public final class ScopeGuard {
         return ValidationResult.accept(DocScope.TRANSIT);
     }
 
+    private static final int MAX_PARENT_CHAIN_DEPTH = 20;
+
     /**
      * Check if a doc is within a facility subtree by walking its parent chain.
      * Returns true if the parent chain reaches the facilityRoot.
@@ -181,28 +197,7 @@ public final class ScopeGuard {
      * @param parentIndex  Map of docId -> parentId
      */
     boolean isWithinFacilitySubtree(String docId, String facilityRoot, Map<String, String> parentIndex) {
-        if (docId == null) {
-            return false;
-        }
-        if (docId.equals(facilityRoot)) {
-            return true;
-        }
-
-        String current = docId;
-        int maxDepth = 20; // safety limit to prevent infinite loops
-        for (int i = 0; i < maxDepth; i++) {
-            String parentId = parentIndex.get(current);
-            if (parentId == null) {
-                // Reached the top without finding facilityRoot
-                return false;
-            }
-            if (parentId.equals(facilityRoot)) {
-                return true;
-            }
-            current = parentId;
-        }
-
-        return false;
+        return getDepthFromFacility(docId, facilityRoot, parentIndex) >= 0;
     }
 
     /**
@@ -221,14 +216,21 @@ public final class ScopeGuard {
         if (docId.equals(facilityRoot)) {
             return 0;
         }
+        return walkParentChain(docId, facilityRoot, parentIndex);
+    }
 
+    /**
+     * Walk the parent chain from docId, counting depth until facilityRoot is found.
+     *
+     * @return depth >= 1 if facilityRoot is found, or -1 if not in subtree
+     */
+    private int walkParentChain(String docId, String facilityRoot, Map<String, String> parentIndex) {
         String current = docId;
         int depth = 0;
-        int maxDepth = 20; // safety limit
-        for (int i = 0; i < maxDepth; i++) {
+        for (int i = 0; i < MAX_PARENT_CHAIN_DEPTH; i++) {
             String parentId = parentIndex.get(current);
             if (parentId == null) {
-                return -1; // not in subtree
+                return -1;
             }
             depth++;
             if (parentId.equals(facilityRoot)) {
@@ -236,7 +238,6 @@ public final class ScopeGuard {
             }
             current = parentId;
         }
-
         return -1;
     }
 

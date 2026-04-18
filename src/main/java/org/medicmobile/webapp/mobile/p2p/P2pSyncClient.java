@@ -131,16 +131,19 @@ public class P2pSyncClient {
             return docs;
         }
         for (int i = 0; i < results.length(); i++) {
-            JSONObject result = results.getJSONObject(i);
-            JSONArray resultDocs = result.optJSONArray("docs");
-            if (resultDocs != null && resultDocs.length() > 0) {
-                JSONObject firstDoc = resultDocs.getJSONObject(0);
-                if (firstDoc.has("ok")) {
-                    docs.put(firstDoc.getJSONObject("ok"));
-                }
-            }
+            extractFirstOkDoc(results.getJSONObject(i), docs);
         }
         return docs;
+    }
+
+    private void extractFirstOkDoc(JSONObject result, JSONArray docs) throws JSONException {
+        JSONArray resultDocs = result.optJSONArray("docs");
+        if (resultDocs != null && resultDocs.length() > 0) {
+            JSONObject firstDoc = resultDocs.getJSONObject(0);
+            if (firstDoc.has("ok")) {
+                docs.put(firstDoc.getJSONObject("ok"));
+            }
+        }
     }
 
     /**

@@ -100,11 +100,8 @@ public class LocalHttpServer extends NanoHTTPD {
     /**
      * Create a LocalHttpServer with default port (8443).
      */
-    public LocalHttpServer(P2pAuthenticator authenticator, P2pConfig config,
-                           ScopeManifest supervisorScope, PouchDbBridge bridge,
-                           TransitDocCallback transitCallback) {
-        this(DEFAULT_PORT, new ServerDeps(authenticator, config, supervisorScope,
-                bridge, transitCallback));
+    public LocalHttpServer(ServerDeps deps) {
+        this(DEFAULT_PORT, deps);
     }
 
     /**
@@ -196,6 +193,10 @@ public class LocalHttpServer extends NanoHTTPD {
             return jsonResponse(Response.Status.NOT_FOUND, errorJson("not_found"));
         }
 
+        return handleP2pRequest(uri, method, session);
+    }
+
+    private Response handleP2pRequest(String uri, Method method, IHTTPSession session) {
         String endpoint = uri.substring(P2P_PREFIX.length());
 
         if ("status".equals(endpoint) && method == Method.GET) {
@@ -231,27 +232,29 @@ public class LocalHttpServer extends NanoHTTPD {
     }
 
     private Response routeEndpoint(String endpoint, Method method, IHTTPSession session) {
-        switch (endpoint) {
-            case "get-ids":
-                if (method == Method.GET) return handleGetIds();
-                break;
-            case "bulk-get":
-                if (method == Method.POST) return handleBulkGet(session);
-                break;
-            case "accept-docs":
-                if (method == Method.POST) return handleAcceptDocs(session);
-                break;
-            case "get-deletes":
-                if (method == Method.GET) return handleGetDeletes();
-                break;
-            case "sync-complete":
-                if (method == Method.POST) return handleSyncComplete(session);
-                break;
-            default:
-                return jsonResponse(Response.Status.NOT_FOUND, errorJson("unknown_endpoint"));
+        Response response = dispatchEndpoint(endpoint, method, session);
+        if (response != null) {
+            return response;
         }
         return jsonResponse(Response.Status.METHOD_NOT_ALLOWED,
                 errorJson("method_not_allowed: " + method + " " + session.getUri()));
+    }
+
+    private Response dispatchEndpoint(String endpoint, Method method, IHTTPSession session) {
+        switch (endpoint) {
+            case "get-ids":
+                return method == Method.GET ? handleGetIds() : null;
+            case "bulk-get":
+                return method == Method.POST ? handleBulkGet(session) : null;
+            case "accept-docs":
+                return method == Method.POST ? handleAcceptDocs(session) : null;
+            case "get-deletes":
+                return method == Method.GET ? handleGetDeletes() : null;
+            case "sync-complete":
+                return method == Method.POST ? handleSyncComplete(session) : null;
+            default:
+                return jsonResponse(Response.Status.NOT_FOUND, errorJson("unknown_endpoint"));
+        }
     }
 
     // --- Endpoint handlers ---
@@ -349,32 +352,34 @@ public class LocalHttpServer extends NanoHTTPD {
         try {
             Map<String, String> bodyMap = new HashMap<>();
             session.parseBody(bodyMap);
-            // NanoHTTPD stores POST body under "postData" key
             String postData = bodyMap.get("postData");
             if (postData != null) {
                 return postData;
             }
-            // Fallback: try reading from the input stream directly
-            long contentLength = getContentLength(session);
-            if (contentLength > 0) {
-                BufferedReader reader = new BufferedReader( //NOPMD - CloseResource: stream owned by NanoHTTPD session
-                        new InputStreamReader(session.getInputStream()));
-                StringBuilder sb = new StringBuilder();
-                char[] buffer = new char[4096];
-                int read;
-                long remaining = contentLength;
-                while (remaining > 0 && (read = reader.read(buffer, 0,
-                        (int) Math.min(buffer.length, remaining))) != -1) {
-                    sb.append(buffer, 0, read);
-                    remaining -= read;
-                }
-                return sb.toString();
-            }
-            return "";
+            return readFromInputStream(session);
         } catch (IOException | ResponseException e) {
             Log.e(TAG, "Error reading request body", e);
             return "";
         }
+    }
+
+    private String readFromInputStream(IHTTPSession session) throws IOException {
+        long contentLength = getContentLength(session);
+        if (contentLength <= 0) {
+            return "";
+        }
+        BufferedReader reader = new BufferedReader( //NOPMD - CloseResource: stream owned by NanoHTTPD session
+                new InputStreamReader(session.getInputStream()));
+        StringBuilder sb = new StringBuilder();
+        char[] buffer = new char[4096];
+        int read;
+        long remaining = contentLength;
+        while (remaining > 0 && (read = reader.read(buffer, 0,
+                (int) Math.min(buffer.length, remaining))) != -1) {
+            sb.append(buffer, 0, read);
+            remaining -= read;
+        }
+        return sb.toString();
     }
 
     /**

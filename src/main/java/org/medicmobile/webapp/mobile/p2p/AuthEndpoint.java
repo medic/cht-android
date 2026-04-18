@@ -50,20 +50,14 @@ public final class AuthEndpoint {
     }
 
     private AuthResponse doHandle(String requestBody) throws JSONException {
-        if (requestBody == null || requestBody.isEmpty()) {
-            return AuthResponse.error(400, "empty_request");
+        AuthResponse validationError = validateAuthRequest(requestBody);
+        if (validationError != null) {
+            return validationError;
         }
 
         JSONObject body = new JSONObject(requestBody);
         String p2pToken = body.optString("p2p_token", null);
         String deviceId = body.optString("device_id", null);
-
-        if (p2pToken == null || p2pToken.isEmpty()) {
-            return AuthResponse.error(400, "missing_token");
-        }
-        if (deviceId == null || deviceId.isEmpty()) {
-            return AuthResponse.error(400, "missing_device_id");
-        }
 
         AuthResponse authCheckResult = verifyAuthAndPermissions(p2pToken, deviceId);
         if (authCheckResult != null) {
@@ -72,6 +66,22 @@ public final class AuthEndpoint {
 
         P2pAuthenticator.AuthResult authResult = authenticator.authenticate(p2pToken, deviceId);
         return buildSuccessResponse(authResult, deviceId);
+    }
+
+    private AuthResponse validateAuthRequest(String requestBody) throws JSONException {
+        if (requestBody == null || requestBody.isEmpty()) {
+            return AuthResponse.error(400, "empty_request");
+        }
+        JSONObject body = new JSONObject(requestBody);
+        String p2pToken = body.optString("p2p_token", null);
+        String deviceId = body.optString("device_id", null);
+        if (p2pToken == null || p2pToken.isEmpty()) {
+            return AuthResponse.error(400, "missing_token");
+        }
+        if (deviceId == null || deviceId.isEmpty()) {
+            return AuthResponse.error(400, "missing_device_id");
+        }
+        return null;
     }
 
     private AuthResponse verifyAuthAndPermissions(String p2pToken, String deviceId) {

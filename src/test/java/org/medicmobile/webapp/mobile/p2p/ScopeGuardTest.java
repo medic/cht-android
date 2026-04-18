@@ -17,6 +17,7 @@ import static org.junit.Assert.*;
  *
  * G22: classify() MUST be deterministic — same input always produces same output.
  */
+@SuppressWarnings("java:S5976") // Parameterized tests not warranted: each case has distinct setup and semantics
 public class ScopeGuardTest {
 
     private ScopeGuard scopeGuard;

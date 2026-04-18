@@ -55,6 +55,9 @@ public class P2pManager {
     private static final int QR_VERSION = 1;
     private static final long QR_MAX_AGE_MS = 10L * 60 * 1000; // G18: 10 minutes
 
+    // Emulator detection
+    private static final String GENERIC_BRAND = "generic";
+
     // Device resource thresholds
     private static final int MIN_API_LEVEL = Build.VERSION_CODES.O; // API 26
     private static final long MIN_RAM_MB = 1024; // 1 GB
@@ -218,7 +221,7 @@ public class P2pManager {
 
         if (initialized) {
             Log.w(TAG, "Already initialized, re-initializing");
-            shutdownInternal(false);
+            shutdownInternal();
         }
 
         if (config == null) {
@@ -354,7 +357,7 @@ public class P2pManager {
         if (hostModeActive) {
             // Allow re-entry: shutdown previous supervisor mode first
             Log.w(TAG, "Supervisor mode already active, shutting down previous session");
-            shutdownInternal(false);
+            shutdownInternal();
         }
         if (clientModeActive) {
             Log.w(TAG, "CHW mode active, shutting down before starting supervisor");
@@ -422,7 +425,7 @@ public class P2pManager {
 
                 try {
                     // Step 6: Start HTTP server
-                    startHttpServer(ipAddress, callback);
+                    startHttpServer();
 
                     // Step 7: Generate QR payload
                     String qrPayload = buildQrPayload(ssid, password,
@@ -434,7 +437,7 @@ public class P2pManager {
 
                 } catch (IOException | JSONException e) {
                     Log.e(TAG, "Failed after hotspot started", e);
-                    shutdownInternal(true);
+                    shutdownInternal();
                     callback.onError("server_start_failed: " + e.getMessage());
                 }
             }
@@ -457,9 +460,7 @@ public class P2pManager {
     /**
      * Internal: create and start the LocalHttpServer.
      */
-    private void startHttpServer(String ipAddress,
-                                 final HostModeCallback callback)
-            throws IOException {
+    private void startHttpServer() throws IOException {
 
         // TransitDocCallback bridges AcceptDocsEndpoint -> TransitDocManager
         TransitDocCallback transitCallback = new TransitDocCallback() {
@@ -480,8 +481,8 @@ public class P2pManager {
         };
 
         httpServer = new LocalHttpServer(
-                authenticator, config, localScope, pouchDbBridge,
-                transitCallback);
+                new LocalHttpServer.ServerDeps(authenticator, config, localScope,
+                        pouchDbBridge, transitCallback));
 
         // Wire up session-complete callback so tracker records the session.
         // Host-side sessions are managed by LocalHttpServer, not tracker,
@@ -769,13 +770,13 @@ public class P2pManager {
      * Safe to call at any time, including if not initialized.
      */
     public void shutdown() {
-        shutdownInternal(true);
+        shutdownInternal();
     }
 
     /**
-     * Internal shutdown with option to report telemetry.
+     * Internal shutdown — tears down all P2P components cleanly.
      */
-    private void shutdownInternal(boolean reportTelemetry) {
+    private void shutdownInternal() {
         Log.i(TAG, "Shutting down P2P components");
 
         // 1. Stop HTTP server
@@ -1212,7 +1213,7 @@ public class P2pManager {
      * Best-effort emulator detection.
      */
     private boolean isEmulator() {
-        return Build.FINGERPRINT.startsWith("generic")
+        return Build.FINGERPRINT.startsWith(GENERIC_BRAND)
                 || Build.FINGERPRINT.startsWith("unknown")
                 || Build.MODEL.contains("google_sdk")
                 || Build.MODEL.contains("Emulator")
@@ -1220,8 +1221,8 @@ public class P2pManager {
                 || Build.MANUFACTURER.contains("Genymotion")
                 || "goldfish".equals(Build.HARDWARE)
                 || "ranchu".equals(Build.HARDWARE)
-                || Build.BRAND.startsWith("generic")
-                || Build.DEVICE.startsWith("generic");
+                || Build.BRAND.startsWith(GENERIC_BRAND)
+                || Build.DEVICE.startsWith(GENERIC_BRAND);
     }
 
     /**
@@ -1264,11 +1265,10 @@ public class P2pManager {
         }
 
         // API 33+: also needs NEARBY_WIFI_DEVICES
-        if (Build.VERSION.SDK_INT >= 33) {
-            if (ContextCompat.checkSelfPermission(context,
+        if (Build.VERSION.SDK_INT >= 33
+                && ContextCompat.checkSelfPermission(context,
                     "android.permission.NEARBY_WIFI_DEVICES") != PackageManager.PERMISSION_GRANTED) {
-                return false;
-            }
+            return false;
         }
 
         return true;

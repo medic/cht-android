@@ -213,13 +213,18 @@ public class P2pConfig {
         if (rolesArray == null || rolesArray.length() == 0) {
             return new ArrayList<>(DEFAULT_ALLOWED_ROLES);
         }
-        List<String> roles = new ArrayList<>(rolesArray.length());
-        for (int i = 0; i < rolesArray.length(); i++) {
-            String role = rolesArray.optString(i, null);
-            if (role != null && !role.isEmpty()) {
-                roles.add(role);
+        List<String> roles = extractNonEmptyStrings(rolesArray);
+        return roles.isEmpty() ? new ArrayList<>(DEFAULT_ALLOWED_ROLES) : roles;
+    }
+
+    private static List<String> extractNonEmptyStrings(JSONArray array) {
+        List<String> result = new ArrayList<>(array.length());
+        for (int i = 0; i < array.length(); i++) {
+            String value = array.optString(i, null);
+            if (value != null && !value.isEmpty()) {
+                result.add(value);
             }
         }
-        return roles.isEmpty() ? new ArrayList<>(DEFAULT_ALLOWED_ROLES) : roles;
+        return result;
     }
 }

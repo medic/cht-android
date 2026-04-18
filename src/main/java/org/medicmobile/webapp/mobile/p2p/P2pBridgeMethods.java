@@ -40,6 +40,13 @@ public class P2pBridgeMethods {
     private static final String KEY_OK = "ok";
     private static final String KEY_ERROR = "error";
     private static final String KEY_STATUS = "status";
+    private static final String KEY_SESSIONS = "sessions";
+    private static final String KEY_DOCS_SYNCED = "docs_synced";
+    private static final String KEY_TOTAL_DOCS = "total_docs";
+    private static final String KEY_BYTES_TRANSFERRED = "bytes_transferred";
+    private static final String SYNC_LOG_DOC_ID = "_local/p2p-sync-log";
+    private static final String RELAY_LOG_DOC_ID = "_local/p2p-relay-log";
+    private static final String LOG_RESULT_PREFIX = " result=";
     private static final String STATE_IDLE = "idle";
     private static final String STATE_CONNECTING = "connecting";
     private static final String STATE_WAITING_WIFI = "waiting_wifi";
@@ -182,8 +189,8 @@ public class P2pBridgeMethods {
                 public void onError(String error) {
                     try {
                         JSONObject response = new JSONObject();
-                        response.put("ok", false);
-                        response.put("error", error);
+                        response.put(KEY_OK, false);
+                        response.put(KEY_ERROR, error);
                         resultRef.set(response);
                     } catch (JSONException e) {
                         Log.e(TAG, "Error building error response", e);
@@ -480,43 +487,14 @@ public class P2pBridgeMethods {
             boolean wasHost = p2pManager != null && p2pManager.isHostModeActive();
             boolean wasPeer = p2pManager != null && p2pManager.isClientModeActive();
             if (wasHost || wasPeer) {
-                try {
-                    final JSONObject logToSave;
-                    final String docId;
-                    if (wasHost) {
-                        logToSave = tracker.buildRelayLog();
-                        docId = "_local/p2p-relay-log";
-                    } else {
-                        logToSave = tracker.buildSyncLog();
-                        docId = "_local/p2p-sync-log";
-                    }
-                    // Save pre-built data on background thread — immune to shutdown race
-                    new Thread(() -> {
-                        try {
-                            savePrebuiltLogToPouchDb(logToSave, docId);
-                        } catch (RuntimeException e) {
-                            Log.e(TAG, "Error saving sync log on stop", e);
-                        }
-                    }, "P2pSaveSyncLog").start();
-                } catch (JSONException e) {
-                    Log.e(TAG, "Error building sync log before shutdown", e);
-                }
+                saveSyncLogBeforeShutdown(wasHost);
             }
 
             // Persist transit state to PouchDB so it survives app restart (Gap 1 fix).
             // Without this, TransitDocManager state only lives in Java memory and is lost
             // on restart, so the webapp's purge service gets a 404 on _local/p2p-transit-docs.
             if (wasHost && p2pManager != null) {
-                final JSONObject transitState = p2pManager.getTransitStateJson();
-                if (transitState != null) {
-                    new Thread(() -> {
-                        try {
-                            saveTransitStateToPouchDb(transitState);
-                        } catch (RuntimeException e) {
-                            Log.e(TAG, "Error saving transit state on stop", e);
-                        }
-                    }, "P2pSaveTransitState").start();
-                }
+                persistTransitStateAsync();
             }
 
             cachedQrDataUrl = null;
@@ -537,6 +515,48 @@ public class P2pBridgeMethods {
             }
         } catch (RuntimeException e) {
             Log.e(TAG, "Error stopping P2P", e);
+        }
+    }
+
+    /**
+     * Build and save sync log to PouchDB on a background thread before shutdown.
+     */
+    private void saveSyncLogBeforeShutdown(boolean wasHost) {
+        try {
+            final JSONObject logToSave;
+            final String docId;
+            if (wasHost) {
+                logToSave = tracker.buildRelayLog();
+                docId = RELAY_LOG_DOC_ID;
+            } else {
+                logToSave = tracker.buildSyncLog();
+                docId = SYNC_LOG_DOC_ID;
+            }
+            new Thread(() -> {
+                try {
+                    savePrebuiltLogToPouchDb(logToSave, docId);
+                } catch (RuntimeException e) {
+                    Log.e(TAG, "Error saving sync log on stop", e);
+                }
+            }, "P2pSaveSyncLog").start();
+        } catch (JSONException e) {
+            Log.e(TAG, "Error building sync log before shutdown", e);
+        }
+    }
+
+    /**
+     * Persist transit state to PouchDB asynchronously.
+     */
+    private void persistTransitStateAsync() {
+        final JSONObject transitState = p2pManager.getTransitStateJson();
+        if (transitState != null) {
+            new Thread(() -> {
+                try {
+                    saveTransitStateToPouchDb(transitState);
+                } catch (RuntimeException e) {
+                    Log.e(TAG, "Error saving transit state on stop", e);
+                }
+            }, "P2pSaveTransitState").start();
         }
     }
 
@@ -753,36 +773,13 @@ public class P2pBridgeMethods {
                     Log.i(TAG, "Client sync: push complete, "
                             + pushed + " docs sent to Supervisor");
 
-                    // Signal completion to the Supervisor so host transitions to "completed"
-                    try {
-                        client.syncComplete(pushed, clientBytesTransferred);
-                        Log.i(TAG, "Client sync: sent sync-complete to Supervisor");
-                    } catch (JSONException | IOException e) {
-                        Log.w(TAG, "Client sync: failed to signal sync-complete (non-fatal)", e);
-                    }
-
-                    // No P2P checkpoint saved — only server seq matters.
-                    // Duplicate pushes are harmless (new_edits: false).
-
-                    // Update tracker session counters and complete
-                    if (tracker != null) {
-                        P2pSession trackerSession = tracker.getCurrentSession();
-                        if (trackerSession != null) {
-                            trackerSession.incrementDocsPushed(pushed);
-                            trackerSession.addBytesTransferred(clientBytesTransferred);
-                        }
-                        tracker.completeSession();
-                    }
+                    signalSyncComplete(client, pushed);
+                    updateTrackerAfterPush(pushed);
 
                     clientSyncState = STATE_COMPLETED;
                     Log.i(TAG, "Client sync: completed successfully");
 
-                    // Save sync history to PouchDB (peer/CHW side)
-                    try {
-                        saveSyncLogToPouchDb(false);
-                    } catch (RuntimeException saveErr) {
-                        Log.e(TAG, "Client sync: failed to save sync log", saveErr);
-                    }
+                    saveSyncLogSafe();
 
                 } catch (JSONException | IOException e) {
                     Log.e(TAG, "Client sync failed", e);
@@ -799,6 +796,43 @@ public class P2pBridgeMethods {
         } catch (JSONException e) {
             Log.e(TAG, "Error proceeding with sync", e);
             return errorJson("proceed_failed: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Signal sync completion to the Supervisor (non-fatal on failure).
+     */
+    private void signalSyncComplete(P2pSyncClient client, int pushed) {
+        try {
+            client.syncComplete(pushed, clientBytesTransferred);
+            Log.i(TAG, "Client sync: sent sync-complete to Supervisor");
+        } catch (JSONException | IOException e) {
+            Log.w(TAG, "Client sync: failed to signal sync-complete (non-fatal)", e);
+        }
+    }
+
+    /**
+     * Update tracker session counters after a successful push.
+     */
+    private void updateTrackerAfterPush(int pushed) {
+        if (tracker != null) {
+            P2pSession trackerSession = tracker.getCurrentSession();
+            if (trackerSession != null) {
+                trackerSession.incrementDocsPushed(pushed);
+                trackerSession.addBytesTransferred(clientBytesTransferred);
+            }
+            tracker.completeSession();
+        }
+    }
+
+    /**
+     * Save sync log to PouchDB, logging errors without throwing.
+     */
+    private void saveSyncLogSafe() {
+        try {
+            saveSyncLogToPouchDb(false);
+        } catch (RuntimeException saveErr) {
+            Log.e(TAG, "Client sync: failed to save sync log", saveErr);
         }
     }
 
@@ -841,15 +875,15 @@ public class P2pBridgeMethods {
     private String populateTrackerState(JSONObject status) throws JSONException {
         if (tracker != null && tracker.hasActiveSession()) {
             P2pSession session = tracker.getCurrentSession();
-            status.put("docs_synced", session.getDocsPushed() + session.getDocsPulled());
-            status.put("total_docs", session.getDocsPushed() + session.getDocsPulled()
+            status.put(KEY_DOCS_SYNCED, session.getDocsPushed() + session.getDocsPulled());
+            status.put(KEY_TOTAL_DOCS, session.getDocsPushed() + session.getDocsPulled()
                     + session.getTransitDocs());
-            status.put("bytes_transferred", session.getBytesTransferred());
+            status.put(KEY_BYTES_TRANSFERRED, session.getBytesTransferred());
             return session.getState().name().toLowerCase();
         }
-        status.put("docs_synced", 0);
-        status.put("total_docs", 0);
-        status.put("bytes_transferred", 0);
+        status.put(KEY_DOCS_SYNCED, 0);
+        status.put(KEY_TOTAL_DOCS, 0);
+        status.put(KEY_BYTES_TRANSFERRED, 0);
         return STATE_IDLE;
     }
 
@@ -869,9 +903,9 @@ public class P2pBridgeMethods {
 
         if (httpSession != null && httpSession.getState() == P2pSession.State.COMPLETED) {
             int sessionDocs = httpSession.getDocsPulled() + httpSession.getTransitDocs();
-            status.put("docs_synced", sessionDocs);
-            status.put("total_docs", sessionDocs);
-            status.put("bytes_transferred", httpSession.getBytesTransferred());
+            status.put(KEY_DOCS_SYNCED, sessionDocs);
+            status.put(KEY_TOTAL_DOCS, sessionDocs);
+            status.put(KEY_BYTES_TRANSFERRED, httpSession.getBytesTransferred());
             state = STATE_COMPLETED;
         } else if (peerCount > 0 && httpSession != null
                 && httpSession.getState() == P2pSession.State.ACTIVE) {
@@ -893,9 +927,9 @@ public class P2pBridgeMethods {
         if (httpSession.getDocsPulled() > 0 || httpSession.getDocsPushed() > 0
                 || httpSession.getTransitDocs() > 0) {
             int sessionDocs = httpSession.getDocsPulled() + httpSession.getTransitDocs();
-            status.put("docs_synced", sessionDocs);
-            status.put("total_docs", sessionDocs);
-            status.put("bytes_transferred", httpSession.getBytesTransferred());
+            status.put(KEY_DOCS_SYNCED, sessionDocs);
+            status.put(KEY_TOTAL_DOCS, sessionDocs);
+            status.put(KEY_BYTES_TRANSFERRED, httpSession.getBytesTransferred());
             return STATE_SYNCING;
         }
         return "peer_connected";
@@ -903,9 +937,9 @@ public class P2pBridgeMethods {
 
     private String populateClientModeState(JSONObject status) throws JSONException {
         String state = clientSyncState;
-        status.put("docs_synced", clientDocsSynced);
-        status.put("total_docs", clientTotalDocs);
-        status.put("bytes_transferred", clientBytesTransferred);
+        status.put(KEY_DOCS_SYNCED, clientDocsSynced);
+        status.put(KEY_TOTAL_DOCS, clientTotalDocs);
+        status.put(KEY_BYTES_TRANSFERRED, clientBytesTransferred);
         if (STATE_PREVIEW.equals(state)) {
             status.put("preview_contacts", previewContactCount);
             status.put("preview_reports", previewReportCount);
@@ -1298,13 +1332,13 @@ public class P2pBridgeMethods {
             String docId;
             if (isHost) {
                 log = tracker.buildRelayLog();
-                docId = "_local/p2p-relay-log";
+                docId = RELAY_LOG_DOC_ID;
             } else {
                 log = tracker.buildSyncLog();
-                docId = "_local/p2p-sync-log";
+                docId = SYNC_LOG_DOC_ID;
             }
 
-            JSONArray newSessions = log.optJSONArray("sessions");
+            JSONArray newSessions = log.optJSONArray(KEY_SESSIONS);
             if (newSessions == null || newSessions.length() == 0) {
                 Log.d(TAG, "saveSyncLogToPouchDb: no sessions to save");
                 return;
@@ -1337,7 +1371,7 @@ public class P2pBridgeMethods {
                 "})()";
 
             String result = evalPouchDb(js);
-            Log.i(TAG, "saveSyncLogToPouchDb: saved " + docId + " result=" + result);
+            Log.i(TAG, "saveSyncLogToPouchDb: saved " + docId + LOG_RESULT_PREFIX + result);
         } catch (JSONException e) {
             Log.e(TAG, "saveSyncLogToPouchDb: failed to save", e);
         }
@@ -1354,7 +1388,7 @@ public class P2pBridgeMethods {
             return;
         }
         try {
-            JSONArray newSessions = log.optJSONArray("sessions");
+            JSONArray newSessions = log.optJSONArray(KEY_SESSIONS);
             if (newSessions == null || newSessions.length() == 0) {
                 Log.d(TAG, "savePrebuiltLogToPouchDb: no sessions to save");
                 return;
@@ -1385,7 +1419,7 @@ public class P2pBridgeMethods {
                 "})()";
 
             String result = evalPouchDb(js);
-            Log.i(TAG, "savePrebuiltLogToPouchDb: saved " + docId + " result=" + result);
+            Log.i(TAG, "savePrebuiltLogToPouchDb: saved " + docId + LOG_RESULT_PREFIX + result);
         } catch (RuntimeException e) {
             Log.e(TAG, "savePrebuiltLogToPouchDb: failed to save", e);
         }
@@ -1421,7 +1455,7 @@ public class P2pBridgeMethods {
                 "})()";
 
             String result = evalPouchDb(js);
-            Log.i(TAG, "saveTransitStateToPouchDb: saved " + docId + " result=" + result);
+            Log.i(TAG, "saveTransitStateToPouchDb: saved " + docId + LOG_RESULT_PREFIX + result);
         } catch (RuntimeException e) {
             Log.e(TAG, "saveTransitStateToPouchDb: failed to save", e);
         }
@@ -1533,8 +1567,8 @@ public class P2pBridgeMethods {
     private String buildEmptySyncHistory() {
         try {
             JSONObject log = new JSONObject();
-            log.put("_id", "_local/p2p-sync-log");
-            log.put("sessions", new JSONArray());
+            log.put("_id", SYNC_LOG_DOC_ID);
+            log.put(KEY_SESSIONS, new JSONArray());
             return log.toString();
         } catch (JSONException e) {
             return "{\"_id\":\"_local/p2p-sync-log\",\"sessions\":[]}";

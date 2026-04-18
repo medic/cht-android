@@ -439,11 +439,13 @@ public class TransitDocManagerTest {
     @Test
     public void testMarkBatchPushedForNonexistentBatchIsSafe() {
         manager.markBatchPushed("nonexistent-batch"); // should not throw
+        assertEquals("No purgeable batches after marking nonexistent", 0, manager.getPurgeableBatchIds().size());
     }
 
     @Test
     public void testMarkBatchPurgedForNonexistentBatchIsSafe() {
         manager.markBatchPurged("nonexistent-batch"); // should not throw
+        assertEquals("No transit docs after purging nonexistent", 0, manager.getAllTransitDocIds().size());
     }
 
     @Test

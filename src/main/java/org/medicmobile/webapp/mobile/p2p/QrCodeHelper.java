@@ -16,7 +16,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.Map;
 
 /**
@@ -228,27 +228,7 @@ public final class QrCodeHelper {
         }
 
         // Required fields
-        String ssid = payload.optString("ssid", "");
-        if (ssid.isEmpty()) {
-            return ValidationResult.reject("missing required field: ssid");
-        }
-
-        String password = payload.optString("pwd", "");
-        if (password.isEmpty()) {
-            return ValidationResult.reject("missing required field: pwd");
-        }
-
-        String ip = payload.optString("ip", "");
-        if (ip.isEmpty()) {
-            return ValidationResult.reject("missing required field: ip");
-        }
-
-        int port = payload.optInt("port", 0);
-        if (port <= 0 || port > 65535) {
-            return ValidationResult.reject("invalid port: " + port);
-        }
-
-        return ValidationResult.accept(DocScope.IN_SCOPE);
+        return validateRequiredFields(payload);
     }
 
     /**
@@ -278,6 +258,30 @@ public final class QrCodeHelper {
     // --- Private helpers ---
 
     /**
+     * Validate required fields (ssid, pwd, ip, port) in the QR payload.
+     */
+    private static ValidationResult validateRequiredFields(JSONObject payload) {
+        if (isEmptyField(payload, "ssid")) {
+            return ValidationResult.reject("missing required field: ssid");
+        }
+        if (isEmptyField(payload, "pwd")) {
+            return ValidationResult.reject("missing required field: pwd");
+        }
+        if (isEmptyField(payload, "ip")) {
+            return ValidationResult.reject("missing required field: ip");
+        }
+        int port = payload.optInt("port", 0);
+        if (port <= 0 || port > 65535) {
+            return ValidationResult.reject("invalid port: " + port);
+        }
+        return ValidationResult.accept(DocScope.IN_SCOPE);
+    }
+
+    private static boolean isEmptyField(JSONObject obj, String key) {
+        return obj.optString(key, "").isEmpty();
+    }
+
+    /**
      * Encode a string into a QR code Bitmap using ZXing.
      *
      * @param content the string content to encode
@@ -286,7 +290,7 @@ public final class QrCodeHelper {
      * @throws WriterException if ZXing encoding fails
      */
     private static Bitmap encodeQrBitmap(String content, int size) throws WriterException {
-        Map<EncodeHintType, Object> hints = new HashMap<>();
+        Map<EncodeHintType, Object> hints = new EnumMap<>(EncodeHintType.class);
         hints.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.M);
         hints.put(EncodeHintType.CHARACTER_SET, "UTF-8");
         hints.put(EncodeHintType.MARGIN, 2);
