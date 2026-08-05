@@ -9,7 +9,7 @@ buildscript {
     google()
   }
   dependencies {
-    classpath 'com.android.tools.build:gradle:8.8.2'
+    classpath 'com.android.tools.build:gradle:8.10.1'
     classpath 'com.github.spotbugs.snom:spotbugs-gradle-plugin:6.1.13'
   }
 }
@@ -469,7 +469,11 @@ android {
 
   splits {
     abi {
-      enable !project.hasProperty('abi')
+      // ABI splits are unsupported alongside bundle tasks since AGP 8.9 and fail the
+      // build ("Sequence contains more than one matching element"), see
+      // https://issuetracker.google.com/issues/402800800
+      def isBuildingBundle = gradle.startParameter.taskNames.any { it.toLowerCase().contains('bundle') }
+      enable !project.hasProperty('abi') && !isBuildingBundle
       reset()
       include(
           'armeabi-v7a',
