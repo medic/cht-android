@@ -33,7 +33,8 @@
       android:fullBackupContent="@xml/backup_rules_sdk_30_and_lower"
       android:dataExtractionRules="@xml/backup_rules"
       android:largeHeap="true"
-      tools:ignore="LockedOrientationActivity,UnusedAttribute">
+      android:enableOnBackInvokedCallback="false"
+      tools:ignore="UnusedAttribute">
     <activity android:name="StartupActivity" android:exported="true">
       <intent-filter>
         <action android:name="android.intent.action.MAIN"/>
@@ -41,12 +42,10 @@
       </intent-filter>
     </activity>
     <activity android:name="EmbeddedBrowserActivity"
-      android:screenOrientation="portrait"
       android:configChanges="orientation|screenSize"
       android:launchMode="singleTask"
       android:theme="@style/Theme.AppCompat.NoActionBar"
-      android:exported="true"
-      tools:ignore="DiscouragedApi">
+      android:exported="true">
       <intent-filter android:autoVerify="true">
         <action android:name="android.intent.action.VIEW" />
         <category android:name="android.intent.category.DEFAULT" />
@@ -56,33 +55,17 @@
       </intent-filter>
     </activity>
     <activity android:name="ConnectionErrorActivity"
-        android:screenOrientation="portrait"
         android:configChanges="orientation|screenSize"
-        android:launchMode="singleTop"
-        tools:ignore="DiscouragedApi"/>
-    <activity android:name="FreeSpaceWarningActivity"
-        android:screenOrientation="portrait"
-        tools:ignore="DiscouragedApi"/>
-    <activity android:name="SettingsDialogActivity"
-        android:screenOrientation="portrait"
-        tools:ignore="DiscouragedApi"/>
-    <activity android:name="RequestLocationPermissionActivity"
-        android:screenOrientation="portrait"
-        tools:ignore="DiscouragedApi"/>
-    <activity android:name="RequestStoragePermissionActivity"
-        android:screenOrientation="portrait"
-       tools:ignore="DiscouragedApi"/>
-    <activity android:name="RequestSendSmsPermissionActivity"
-        android:screenOrientation="portrait"
-       tools:ignore="DiscouragedApi"/>
-    <activity android:name="DomainVerificationActivity"
-      android:screenOrientation="portrait"
-      tools:ignore="DiscouragedApi" />
+        android:launchMode="singleTop"/>
+    <activity android:name="FreeSpaceWarningActivity"/>
+    <activity android:name="SettingsDialogActivity"/>
+    <activity android:name="RequestLocationPermissionActivity"/>
+    <activity android:name="RequestStoragePermissionActivity"/>
+    <activity android:name="RequestSendSmsPermissionActivity"/>
+    <activity android:name="DomainVerificationActivity"/>
     <activity android:name="UpgradingActivity"
-      android:screenOrientation="portrait"
       android:configChanges="orientation|screenSize"
-      android:launchMode="singleTop"
-      tools:ignore="DiscouragedApi"/>
+      android:launchMode="singleTop"/>
 
     <provider
       android:name="androidx.core.content.FileProvider"
