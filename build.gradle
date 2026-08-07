@@ -99,7 +99,12 @@ def getVersionCode = {
 def getVersionName = {
   System.env.RELEASE_VERSION ?: 'SNAPSHOT'
 }
-
+java {
+  // Pins the JDK used to compile
+  toolchain {
+    languageVersion = JavaLanguageVersion.of(21)
+  }
+}
 android {
   compileSdk 36
   packagingOptions {
