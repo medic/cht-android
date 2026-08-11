@@ -7,7 +7,7 @@
 
 # Release notes
 
-## 1.8.0
+## 1.7.1
 
 * Android 16 support ([#437](https://github.com/medic/cht-android/pull/437))
 * Enlarge CHT server URL input field ([#427](https://github.com/medic/cht-android/pull/427))
