@@ -14,11 +14,16 @@ import androidx.datastore.preferences.core.PreferencesKeys;
 import androidx.datastore.preferences.rxjava3.RxPreferenceDataStoreBuilder;
 import androidx.datastore.rxjava3.RxDataStore;
 
+import org.medicmobile.webapp.mobile.AppNotificationManager;
+
+import java.util.concurrent.TimeUnit;
+
 import io.reactivex.rxjava3.core.Single;
 
 @OptIn(markerClass = kotlinx.coroutines.ExperimentalCoroutinesApi.class)
 public class AppDataStore {
 	private static final String DATASTORE_NAME = "cht_datastore";
+	private static final long WRITE_TIMEOUT_SECONDS = 5;
 	private static AppDataStore instance;
 	private final RxDataStore<Preferences> dataStore;
 
@@ -60,6 +65,11 @@ public class AppDataStore {
 		Preferences ignored = updateResult.blockingGet(); // NOSONAR
 	}
 
+	public void saveStringBlocking(String key, String value) {
+		Single<Preferences> updateResult = save(PreferencesKeys.stringKey(key), value);
+		Preferences ignored = updateResult.blockingGet(); // NOSONAR
+	}
+
 	private <T> T getBlocking(Key<T> key, @Nullable T defaultValue) {
 		return dataStore
 			.data()
@@ -76,5 +86,26 @@ public class AppDataStore {
 
 	public long getLongBlocking(String key, @Nullable Long defaultValue) {
 		return getBlocking(PreferencesKeys.longKey(key), defaultValue);
+	}
+
+	/**
+	 * Persists the task-notifications, settings and max-count in a single atomic transaction.
+	 */
+	public void saveTaskNotificationSettingsBlocking(String settings, String notifications) {
+		try {
+			Preferences ignored = dataStore // NOSONAR
+				.updateDataAsync(preferences -> {
+					MutablePreferences mutablePreferences = preferences.toMutablePreferences();
+					mutablePreferences.set(PreferencesKeys
+						.stringKey(AppNotificationManager.TASK_NOTIFICATION_SETTINGS_KEY), settings);
+					mutablePreferences.set(PreferencesKeys
+						.stringKey(AppNotificationManager.TASK_NOTIFICATIONS_KEY), notifications);
+					return Single.just(mutablePreferences);
+				})
+				.timeout(WRITE_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+				.blockingGet();
+		} catch (Exception e) {
+			log(e, "AppDataStore :: saving task notification settings failed/timed out");
+		}
 	}
 }
