@@ -5,9 +5,7 @@
   <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" tools:node="remove" />
 
   <application>
-    <activity android:name="AppUrlIntentActivity"
-      android:launchMode="singleInstance"
-      android:exported="true">
+    <activity android:name="EmbeddedBrowserActivity">
       <intent-filter android:autoVerify="true">
         <action android:name="android.intent.action.VIEW" />
         <category android:name="android.intent.category.DEFAULT" />
