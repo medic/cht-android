@@ -7,6 +7,32 @@
 
 # Release notes
 
+## 1.8.0
+
+* Android 16 support ([#437](https://github.com/medic/cht-android/pull/437))
+* Enlarge CHT server URL input field ([#427](https://github.com/medic/cht-android/pull/427))
+
+## 1.7.0
+
+### Features
+
+* Show Android notifications for tasks ([#414](https://github.com/medic/cht-android/pull/414))
+
+### Flavors
+
+* Add flavor for MoH Civ Coach CHWs ([#419](https://github.com/medic/cht-android/pull/419))
+
+### Fixes
+
+* Add notification bar theme color ([#413](https://github.com/medic/cht-android/pull/413))
+* Log intent response data when external app fails ([#410](https://github.com/medic/cht-android/pull/410))
+
+### Technical Improvements
+
+* Roll back to Gradle v8.8 ([#422](https://github.com/medic/cht-android/issues/422))
+* Revise README for clarity and corrections ([#420](https://github.com/medic/cht-android/pull/420))
+* Clean up inaccurate comments ([#425](https://github.com/medic/cht-android/pull/425))
+
 ## 1.6.0
 
 * Android 15 support ([#407](https://github.com/medic/cht-android/pull/407))

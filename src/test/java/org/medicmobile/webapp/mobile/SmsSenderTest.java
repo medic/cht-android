@@ -21,6 +21,7 @@ import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.telephony.SmsManager;
 
 import androidx.core.content.ContextCompat;
@@ -39,6 +40,7 @@ import org.mockito.junit.MockitoRule;
 import org.mockito.quality.Strictness;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
+import org.robolectric.util.ReflectionHelpers;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -76,6 +78,21 @@ public class SmsSenderTest {
 		smsSender = SmsSender.createInstance(parentMock);
 	}
 
+	/**
+	 * Robolectric no longer emulates SDK < 23, so tests covering the pre-M code
+	 * path (still reachable with minSdkVersion 21) have to force SDK_INT instead
+	 * of using {@code @Config(sdk = 22)}.
+	 */
+	private void withSdkInt(int sdkInt, Runnable body) {
+		int originalSdkInt = Build.VERSION.SDK_INT;
+		ReflectionHelpers.setStaticField(Build.VERSION.class, "SDK_INT", sdkInt);
+		try {
+			body.run();
+		} finally {
+			ReflectionHelpers.setStaticField(Build.VERSION.class, "SDK_INT", originalSdkInt);
+		}
+	}
+
 	@Test
 	public void createInstance() {
 		assertEquals(SmsSender.class, smsSender.getClass());
@@ -88,9 +105,8 @@ public class SmsSenderTest {
 	}
 
 	@Test
-	@Config(sdk = 22)
 	public void createInstance_LSmsSender() {
-		assertEquals(SmsSender.LSmsSender.class, smsSender.getClass());
+		withSdkInt(22, () -> assertEquals(SmsSender.LSmsSender.class, SmsSender.createInstance(parentMock).getClass()));
 	}
 
 	@Test
@@ -165,7 +181,6 @@ public class SmsSenderTest {
 	}
 
 	@Test
-	@Config(sdk = 22)
 	public void send_withPermissions_sendsMultipartTextMessage_LSmsSender() {
 		try (
 			MockedStatic<ContextCompat> contextCompatMock = mockStatic(ContextCompat.class);
@@ -173,6 +188,7 @@ public class SmsSenderTest {
 			MockedStatic<PendingIntent> pendingIntentMock = mockStatic(PendingIntent.class)
 		) {
 			//> GIVEN
+			withSdkInt(22, () -> smsSender = SmsSender.createInstance(parentMock));
 			contextCompatMock.when(() -> ContextCompat.checkSelfPermission(eq(parentMock), eq(SEND_SMS))).thenReturn(PERMISSION_GRANTED);
 			int expectedBroadcastFlags = FLAG_ONE_SHOT;
 			mockGetBroadcast(pendingIntentMock, expectedBroadcastFlags);

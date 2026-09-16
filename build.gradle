@@ -99,9 +99,14 @@ def getVersionCode = {
 def getVersionName = {
   System.env.RELEASE_VERSION ?: 'SNAPSHOT'
 }
-
+java {
+  // Pins the JDK used to compile
+  toolchain {
+    languageVersion = JavaLanguageVersion.of(21)
+  }
+}
 android {
-  compileSdk 35
+  compileSdk 36
   packagingOptions {
     resources {
       excludes += ['META-INF/LICENSE', 'META-INF/NOTICE']
@@ -114,7 +119,7 @@ android {
 
   defaultConfig {
     //noinspection OldTargetApi
-    targetSdkVersion 35
+    targetSdkVersion 36
     minSdkVersion 21 // Android 5.0
     versionCode getVersionCode()
     versionName getVersionName()
@@ -496,9 +501,9 @@ dependencies {
   compileOnly 'com.github.spotbugs:spotbugs-annotations:4.9.3'
   coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.5'
   testImplementation 'junit:junit:4.13.2'
-  testImplementation 'org.mockito:mockito-inline:5.2.0'
+  testImplementation 'org.mockito:mockito-core:5.23.0'
   testImplementation 'com.google.android:android-test:4.1.1.4'
-  testImplementation 'org.robolectric:robolectric:4.15.1'
+  testImplementation 'org.robolectric:robolectric:4.16.1'
   testImplementation 'androidx.test.espresso:espresso-core:3.7.0'
   testImplementation 'androidx.test.espresso:espresso-intents:3.7.0'
   testImplementation 'androidx.test.ext:junit:1.3.0'
