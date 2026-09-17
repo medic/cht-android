@@ -26,6 +26,7 @@ import android.widget.DatePicker;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.medicmobile.webapp.mobile.p2p.P2pManager;
+import org.medicmobile.webapp.mobile.p2p.P2pPeer;
 import org.medicmobile.webapp.mobile.util.AppDataStore;
 
 import java.io.BufferedReader;
@@ -54,6 +55,7 @@ public class MedicAndroidJavascript {
 	private final SmsSender smsSender;
 	private final ChtExternalAppHandler chtExternalAppHandler;
 	private final P2pManager p2pManager;
+	private final P2pPeer p2pPeer;
 
 	private ActivityManager activityManager;
 	private ConnectivityManager connectivityManager;
@@ -65,6 +67,7 @@ public class MedicAndroidJavascript {
 		this.smsSender = parent.getSmsSender();
 		this.chtExternalAppHandler = parent.getChtExternalAppHandler();
 		this.p2pManager = parent.getP2pManager();
+		this.p2pPeer = parent.getP2pPeer();
 	}
 
 	public void setAlert(Alert soundAlert) {
@@ -227,9 +230,56 @@ public class MedicAndroidJavascript {
 		}
 	}
 
+	/**
+	 * Whether this device can join a session. False below Android 10, where an app can no longer
+	 * connect to a network it did not create. A device may be able to join but not host, or the
+	 * reverse, so the webapp asks about each separately.
+	 */
+	@android.webkit.JavascriptInterface
+	public boolean p2p_join_available() {
+		return p2pPeer != null && P2pPeer.isJoinSupported();
+	}
+
+	/**
+	 * Opens the scanner. The result arrives on the webapp's resolveP2pPairing callback once the
+	 * device has joined and confirmed the host's certificate.
+	 */
+	@android.webkit.JavascriptInterface
+	public void p2p_scan_and_join() {
+		if(!p2p_join_available()) {
+			respondToPairing(false, "join_unsupported");
+			return;
+		}
+		if(!parent.getP2pPermissions()) {
+			respondToPairing(false, "permissions_required");
+			return;
+		}
+		parent.scanP2pQrCode();
+	}
+
+	@android.webkit.JavascriptInterface
+	public void p2p_leave_session() {
+		if(p2pPeer != null) {
+			p2pPeer.unpair();
+		}
+	}
+
 	@android.webkit.JavascriptInterface
 	public boolean p2p_is_hosting() {
 		return p2pManager != null && p2pManager.isHosting();
+	}
+
+	private void respondToPairing(boolean ok, String detail) {
+		parent.evaluateJavascript(String.format(
+				"try {" +
+						"const api = window.CHTCore.AndroidApi;" +
+						"if (api && api.v1 && api.v1.resolveP2pPairing) {" +
+						"  api.v1.resolveP2pPairing(%s, %s);" +
+						"}" +
+						"} catch (error) {" +
+						"  console.error('MedicAndroidJavascript :: P2P pairing result not delivered', error);" +
+						"}",
+				ok, JSONObject.quote(detail)));
 	}
 
 	private void respondToP2p(boolean ok, String detail) {

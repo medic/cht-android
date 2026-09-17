@@ -42,6 +42,8 @@ import java.util.Arrays;
 import java.util.Optional;
 
 import org.medicmobile.webapp.mobile.p2p.P2pManager;
+import org.medicmobile.webapp.mobile.p2p.P2pPeer;
+import org.medicmobile.webapp.mobile.p2p.QrScannerActivity;
 
 @SuppressWarnings({ "PMD.GodClass", "PMD.TooManyMethods" })
 public class EmbeddedBrowserActivity extends Activity {
@@ -53,6 +55,7 @@ public class EmbeddedBrowserActivity extends Activity {
 	private FilePickerHandler filePickerHandler;
 	private SmsSender smsSender;
 	private P2pManager p2pManager;
+	private P2pPeer p2pPeer;
 	private ChtExternalAppHandler chtExternalAppHandler;
 	private boolean isMigrationRunning = false;
 
@@ -85,13 +88,17 @@ public class EmbeddedBrowserActivity extends Activity {
 			error(ex, "Failed to create SmsSender.");
 		}
 
-		// Only devices that can host get a manager at all; the webapp asks before offering the option.
+		// Hosting and joining have different Android version floors, so each is created only where
+		// it can actually work and the webapp asks before offering either.
 		if(P2pManager.isHostSupported()) {
 			try {
 				this.p2pManager = P2pManager.create(this, Build.MODEL);
 			} catch(Exception ex) {
 				error(ex, "Failed to create P2pManager.");
 			}
+		}
+		if(P2pPeer.isJoinSupported()) {
+			this.p2pPeer = P2pPeer.create(this);
 		}
 
 		this.settings = SettingsStore.in(this);
@@ -243,6 +250,9 @@ public class EmbeddedBrowserActivity extends Activity {
 				case ACCESS_P2P_PERMISSIONS:
 					p2pPermissionsResolved(resultCode == RESULT_OK);
 					return;
+				case SCAN_P2P_QR_CODE:
+					p2pQrCodeScanned(resultCode, intent);
+					return;
 				default:
 					trace(this, "onActivityResult() :: no handling for requestCode=%s", requestCode.name());
 			}
@@ -285,6 +295,18 @@ public class EmbeddedBrowserActivity extends Activity {
 
 	P2pManager getP2pManager() {
 		return this.p2pManager;
+	}
+
+	P2pPeer getP2pPeer() {
+		return this.p2pPeer;
+	}
+
+	/** Opens the scanner so the user can read a host's QR code. */
+	void scanP2pQrCode() {
+		startActivityForResult(
+			new Intent(this, QrScannerActivity.class),
+			RequestCode.SCAN_P2P_QR_CODE.getCode()
+		);
 	}
 
 	ChtExternalAppHandler getChtExternalAppHandler() {
@@ -358,6 +380,39 @@ public class EmbeddedBrowserActivity extends Activity {
 	}
 
 //> PRIVATE HELPERS
+	/** Hands a scanned code to the peer, which joins and then checks the host is who it claims. */
+	private void p2pQrCodeScanned(int resultCode, Intent intent) {
+		if(resultCode != RESULT_OK || intent == null) {
+			evaluateJavascript(
+				"window.CHTCore.AndroidApi.v1.resolveP2pPairing(false, \"scan_cancelled\");");
+			return;
+		}
+
+		String payload = intent.getStringExtra(QrScannerActivity.EXTRA_QR_RESULT);
+		this.p2pPeer.pair(payload, new P2pPeer.PairCallback() {
+			@Override public void onPaired(String hostLabel) {
+				resolveP2pPairing(true, hostLabel);
+			}
+
+			@Override public void onFailed(String reason) {
+				resolveP2pPairing(false, reason);
+			}
+		});
+	}
+
+	private void resolveP2pPairing(boolean ok, String detail) {
+		evaluateJavascript(String.format(
+			"try {" +
+				"const api = window.CHTCore.AndroidApi;" +
+				"if (api && api.v1 && api.v1.resolveP2pPairing) {" +
+				"  api.v1.resolveP2pPairing(%s, %s);" +
+				"}" +
+				"} catch (error) {" +
+				"  console.error('EmbeddedBrowserActivity :: P2P pairing result not delivered', error);" +
+				"}",
+			ok, org.json.JSONObject.quote(detail)));
+	}
+
 	private void p2pPermissionsResolved(boolean granted) {
 		evaluateJavascript(String.format(
 			"window.CHTCore.AndroidApi.v1.p2pPermissionsResolved(%s);", granted));
@@ -495,7 +550,8 @@ public class EmbeddedBrowserActivity extends Activity {
 		CHT_EXTERNAL_APP_ACTIVITY(103),
 		GRAB_MRDT_PHOTO_ACTIVITY(104),
 		FILE_PICKER_ACTIVITY(105),
-		ACCESS_P2P_PERMISSIONS(106);
+		ACCESS_P2P_PERMISSIONS(106),
+		SCAN_P2P_QR_CODE(107);
 
 		private final int requestCode;
 
