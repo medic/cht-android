@@ -28,6 +28,7 @@ import java.util.Map;
 	*   "ssid": "CHT-P2P-a3f7",
 	*   "pwd": "randomPassword123",
 	*   "ip": "192.168.43.1",
+	*   "fp": "3A:7F:...:C2",          // SHA-256 of the host's public key, colon-separated hex
 	*   "port": 8443,
 	*   "ts": 1711152000000
 	* }
@@ -46,6 +47,8 @@ public final class QrCodeHelper {
 	private static final long MAX_TIMESTAMP_DRIFT_MS = 10L * 60 * 1000; // 10 minutes
 
 	// QR payload JSON keys
+	/** SHA-256 of the host's session certificate; the peer refuses anything else. */
+	private static final String KEY_FINGERPRINT = "fp";
 	private static final String KEY_SSID = "ssid";
 	private static final String KEY_PWD = "pwd";
 	private static final String KEY_IP = "ip";
@@ -65,12 +68,15 @@ public final class QrCodeHelper {
 		final String password;
 		final String ipAddress;
 		final int port;
+		final String certFingerprint;
 
-		public HotspotCredentials(String ssid, String password, String ipAddress, int port) {
+		public HotspotCredentials(String ssid, String password, String ipAddress, int port,
+									String certFingerprint) {
 			this.ssid = ssid;
 			this.password = password;
 			this.ipAddress = ipAddress;
 			this.port = port;
+			this.certFingerprint = certFingerprint;
 		}
 	}
 
@@ -110,8 +116,8 @@ public final class QrCodeHelper {
 		* @throws JSONException if JSON construction fails
 		*/
 	public static String buildPayload(HotspotCredentials creds) throws JSONException {
-		return buildPayload(creds.ssid, creds.password, creds.ipAddress,
-				creds.port);
+		return buildPayload(creds.ssid, creds.password, creds.ipAddress, creds.port,
+				creds.certFingerprint);
 	}
 
 	/**
@@ -124,9 +130,13 @@ public final class QrCodeHelper {
 		* @return JSON string matching
 		* @throws JSONException if JSON construction fails
 		*/
-	public static String buildPayload(String ssid, String password,
-										String ipAddress, int port) throws JSONException {
+	public static String buildPayload(String ssid, String password, String ipAddress, int port,
+										String certFingerprint) throws JSONException {
 		validatePayloadParams(ssid, password, ipAddress, port);
+		if (certFingerprint == null || certFingerprint.trim().isEmpty()) {
+			// a payload without one would pair over a connection nothing can verify
+			throw new JSONException("certFingerprint is required");
+		}
 
 		JSONObject payload = new JSONObject();
 		payload.put("type", PAYLOAD_TYPE);
@@ -134,6 +144,7 @@ public final class QrCodeHelper {
 		payload.put(KEY_SSID, ssid);
 		payload.put(KEY_PWD, password);
 		payload.put(KEY_IP, ipAddress);
+		payload.put(KEY_FINGERPRINT, certFingerprint);
 		payload.put(KEY_PORT, port);
 		payload.put(KEY_TS, System.currentTimeMillis());
 		return payload.toString();
@@ -234,6 +245,7 @@ public final class QrCodeHelper {
 					json.getString(KEY_PWD),
 					json.getString(KEY_IP),
 					json.getInt(KEY_PORT),
+					json.getString(KEY_FINGERPRINT),
 					json.getLong(KEY_TS)
 			);
 		} catch (JSONException e) {
@@ -245,7 +257,10 @@ public final class QrCodeHelper {
 	// --- Private helpers ---
 
 	/**
-		* Validate required fields (ssid, pwd, ip, port) in the QR payload.
+		* Validate required fields in the QR payload.
+		*
+		* The fingerprint counts as required: a payload without one would let a peer pair over a
+		* connection it cannot verify, which is the attack the pinning exists to stop.
 		*/
 	private static QrValidation validateRequiredFields(JSONObject payload) {
 		if (isEmptyField(payload, "ssid")) {
@@ -256,6 +271,9 @@ public final class QrCodeHelper {
 		}
 		if (isEmptyField(payload, "ip")) {
 			return QrValidation.reject("missing required field: ip");
+		}
+		if (isEmptyField(payload, KEY_FINGERPRINT)) {
+			return QrValidation.reject("missing required field: fp");
 		}
 		int port = payload.optInt(KEY_PORT, 0);
 		if (port <= 0 || port > 65535) {
@@ -323,15 +341,22 @@ public final class QrCodeHelper {
 		private final String password;
 		private final String ipAddress;
 		private final int port;
+		private final String certFingerprint;
 		private final long timestamp;
 
 		QrPayload(String ssid, String password, String ipAddress,
-					int port, long timestamp) {
+					int port, String certFingerprint, long timestamp) {
 			this.ssid = ssid;
 			this.password = password;
 			this.ipAddress = ipAddress;
 			this.port = port;
+			this.certFingerprint = certFingerprint;
 			this.timestamp = timestamp;
+		}
+
+		/** The certificate the host must present. Anything else means it is not the host. */
+		public String getCertFingerprint() {
+			return certFingerprint;
 		}
 
 		public String getSsid() {

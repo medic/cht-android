@@ -17,9 +17,10 @@ public class QrCodeHelperTest {
 	private static final String PASSWORD = "a-password";
 	private static final String IP = "192.168.49.1";
 	private static final int PORT = 8443;
+	private static final String FINGERPRINT = "AB:CD:EF:01:23:45";
 
 	private QrCodeHelper.HotspotCredentials credentials() {
-		return new QrCodeHelper.HotspotCredentials(SSID, PASSWORD, IP, PORT);
+		return new QrCodeHelper.HotspotCredentials(SSID, PASSWORD, IP, PORT, FINGERPRINT);
 	}
 
 	@Test public void buildPayload_carriesWhatAPeerNeedsToConnect() throws Exception {
@@ -47,6 +48,36 @@ public class QrCodeHelperTest {
 
 		assertFalse(result.isAccepted());
 		assertNotNull(result.getReason());
+	}
+
+	@Test public void buildPayload_carriesTheCertificateFingerprint() throws Exception {
+		JSONObject payload = new JSONObject(QrCodeHelper.buildPayload(credentials()));
+
+		assertEquals(FINGERPRINT, payload.getString("fp"));
+	}
+
+	/** Pairing without a fingerprint would mean trusting whatever answers on that IP. */
+	@Test public void buildPayload_refusesToBuildWithoutAFingerprint() {
+		org.junit.Assert.assertThrows(org.json.JSONException.class,
+				() -> QrCodeHelper.buildPayload(SSID, PASSWORD, IP, PORT, ""));
+		org.junit.Assert.assertThrows(org.json.JSONException.class,
+				() -> QrCodeHelper.buildPayload(SSID, PASSWORD, IP, PORT, null));
+	}
+
+	@Test public void validateQrPayload_rejectsAPayloadWithoutAFingerprint() throws Exception {
+		JSONObject payload = new JSONObject(QrCodeHelper.buildPayload(credentials()));
+		payload.remove("fp");
+
+		QrValidation result = QrCodeHelper.validateQrPayload(payload.toString());
+
+		assertFalse(result.isAccepted());
+		assertTrue(result.getReason(), result.getReason().contains("fp"));
+	}
+
+	@Test public void parsePayload_exposesTheFingerprintToPinAgainst() throws Exception {
+		QrCodeHelper.QrPayload parsed = QrCodeHelper.parsePayload(QrCodeHelper.buildPayload(credentials()));
+
+		assertEquals(FINGERPRINT, parsed.getCertFingerprint());
 	}
 
 	@Test public void validateQrPayload_rejectsAPayloadMissingTheSsid() throws Exception {

@@ -8,6 +8,8 @@ import android.net.wifi.WifiManager;
 
 import org.json.JSONException;
 
+import java.security.GeneralSecurityException;
+
 /**
 	* Owns a P2P pairing session on the host device.
 	*
@@ -25,22 +27,29 @@ public class P2pManager {
 
 	private final WifiHotspotManager hotspotManager;
 	private final LocalHttpServer server;
+	private final SessionCertificate certificate;
 
-	public P2pManager(WifiHotspotManager hotspotManager, LocalHttpServer server) {
-		if (hotspotManager == null || server == null) {
-			throw new IllegalArgumentException("hotspotManager and server must not be null");
+	public P2pManager(WifiHotspotManager hotspotManager, LocalHttpServer server,
+						SessionCertificate certificate) {
+		if (hotspotManager == null || server == null || certificate == null) {
+			throw new IllegalArgumentException("collaborators must not be null");
 		}
 		this.hotspotManager = hotspotManager;
 		this.server = server;
+		this.certificate = certificate;
 	}
 
-	/** Builds a manager wired to the real WiFi radio. */
-	public static P2pManager create(Context context, String deviceLabel) {
+	/**
+		* Builds a manager wired to the real WiFi radio, with a fresh TLS identity for the session.
+		*/
+	public static P2pManager create(Context context, String deviceLabel) throws GeneralSecurityException {
 		WifiManager wifiManager =
 				(WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+		SessionCertificate certificate = SessionCertificate.generate(deviceLabel);
 		return new P2pManager(
 				new WifiHotspotManager(new WifiHotspotProvider(wifiManager), IDLE_TIMEOUT_SEC),
-				new LocalHttpServer(deviceLabel));
+				new LocalHttpServer(deviceLabel, certificate),
+				certificate);
 	}
 
 	/** Whether this device can host at all. False on Android below 8.0. */
@@ -76,11 +85,11 @@ public class P2pManager {
 				}
 
 				try {
-					String payload = QrCodeHelper.buildPayload(
-							ssid, password, ipAddress, server.getListeningPort());
+					String payload = QrCodeHelper.buildPayload(ssid, password, ipAddress,
+							server.getListeningPort(), certificate.fingerprint());
 					log(P2pManager.class, "Hosting session ready on " + ipAddress);
 					callback.onReady(payload);
-				} catch (JSONException e) {
+				} catch (JSONException | GeneralSecurityException e) {
 					warn(e, "Could not build the pairing payload");
 					stopHosting();
 					callback.onFailed("payload_failed");
@@ -97,6 +106,7 @@ public class P2pManager {
 	public void stopHosting() {
 		server.stopServer();
 		hotspotManager.stopHotspot();
+		certificate.destroy();
 		log(P2pManager.class, "Hosting session stopped");
 	}
 

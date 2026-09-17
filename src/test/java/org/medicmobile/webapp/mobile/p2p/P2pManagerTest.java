@@ -29,8 +29,11 @@ public class P2pManagerTest {
 	private static final String PASSWORD = "a-password";
 	private static final String IP = "192.168.49.1";
 
+	private static final String FINGERPRINT = "AB:CD:EF:01:23:45";
+
 	private WifiHotspotManager hotspotManager;
 	private LocalHttpServer server;
+	private SessionCertificate certificate;
 	private P2pManager manager;
 	private P2pManager.HostingCallback callback;
 
@@ -38,7 +41,13 @@ public class P2pManagerTest {
 		hotspotManager = mock(WifiHotspotManager.class);
 		server = mock(LocalHttpServer.class);
 		when(server.getListeningPort()).thenReturn(8443);
-		manager = new P2pManager(hotspotManager, server);
+		certificate = mock(SessionCertificate.class);
+		try {
+			when(certificate.fingerprint()).thenReturn(FINGERPRINT);
+		} catch (Exception e) {
+			throw new IllegalStateException(e);
+		}
+		manager = new P2pManager(hotspotManager, server, certificate);
 		callback = mock(P2pManager.HostingCallback.class);
 	}
 
@@ -51,8 +60,9 @@ public class P2pManagerTest {
 	}
 
 	@Test public void constructor_rejectsMissingCollaborators() {
-		assertThrows(IllegalArgumentException.class, () -> new P2pManager(null, server));
-		assertThrows(IllegalArgumentException.class, () -> new P2pManager(hotspotManager, null));
+		assertThrows(IllegalArgumentException.class, () -> new P2pManager(null, server, certificate));
+		assertThrows(IllegalArgumentException.class, () -> new P2pManager(hotspotManager, null, certificate));
+		assertThrows(IllegalArgumentException.class, () -> new P2pManager(hotspotManager, server, null));
 	}
 
 	@Test @Config(sdk = 26)
@@ -68,6 +78,8 @@ public class P2pManagerTest {
 		org.junit.Assert.assertEquals(SSID, json.getString("ssid"));
 		org.junit.Assert.assertEquals(IP, json.getString("ip"));
 		org.junit.Assert.assertEquals(8443, json.getInt("port"));
+		// the peer needs this to know which certificate to accept
+		org.junit.Assert.assertEquals(FINGERPRINT, json.getString("fp"));
 	}
 
 	@Test @Config(sdk = 25)
@@ -111,6 +123,8 @@ public class P2pManagerTest {
 
 		verify(server).stopServer();
 		verify(hotspotManager).stopHotspot();
+		// the session identity must not outlive the session
+		verify(certificate).destroy();
 	}
 
 	@Test @Config(sdk = 26)

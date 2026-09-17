@@ -2,8 +2,8 @@ package org.medicmobile.webapp.mobile.p2p;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.json.JSONObject;
@@ -19,6 +19,16 @@ import fi.iki.elonen.NanoHTTPD;
 public class LocalHttpServerTest {
 
 	private static final String LABEL = "Supervisor phone";
+
+	private SessionCertificate certificate;
+
+	@org.junit.Before public void setUp() {
+		certificate = mock(SessionCertificate.class);
+	}
+
+	private LocalHttpServer server() {
+		return new LocalHttpServer(LABEL, certificate);
+	}
 
 	private NanoHTTPD.IHTTPSession request(NanoHTTPD.Method method, String uri) {
 		NanoHTTPD.IHTTPSession session = mock(NanoHTTPD.IHTTPSession.class);
@@ -40,14 +50,15 @@ public class LocalHttpServerTest {
 
 	@Test
 	public void constructor_rejectsAnEmptyLabel() {
-		assertThrows(IllegalArgumentException.class, () -> new LocalHttpServer(""));
-		assertThrows(IllegalArgumentException.class, () -> new LocalHttpServer("  "));
-		assertThrows(IllegalArgumentException.class, () -> new LocalHttpServer(null));
+		assertThrows(IllegalArgumentException.class, () -> new LocalHttpServer("", certificate));
+		assertThrows(IllegalArgumentException.class, () -> new LocalHttpServer("  ", certificate));
+		assertThrows(IllegalArgumentException.class, () -> new LocalHttpServer(null, certificate));
+		assertThrows(IllegalArgumentException.class, () -> new LocalHttpServer(LABEL, null));
 	}
 
 	@Test
 	public void status_identifiesTheHostSoAPeerCanConfirmWhatItReached() throws Exception {
-		LocalHttpServer server = new LocalHttpServer(LABEL);
+		LocalHttpServer server = server();
 
 		NanoHTTPD.Response response = server.serve(request(NanoHTTPD.Method.GET, "/_p2p/status"));
 
@@ -60,7 +71,7 @@ public class LocalHttpServerTest {
 
 	@Test
 	public void unknownPath_is404() throws Exception {
-		LocalHttpServer server = new LocalHttpServer(LABEL);
+		LocalHttpServer server = server();
 
 		NanoHTTPD.Response response = server.serve(request(NanoHTTPD.Method.GET, "/_p2p/anything-else"));
 
@@ -70,7 +81,7 @@ public class LocalHttpServerTest {
 	/** The data endpoints do not exist yet; a peer must not be able to reach one by guessing. */
 	@Test
 	public void dataEndpointsFromTheOldProtocolAreGone() throws Exception {
-		LocalHttpServer server = new LocalHttpServer(LABEL);
+		LocalHttpServer server = server();
 
 		for (String path : new String[] { "/_p2p/auth", "/_p2p/get-ids", "/_p2p/bulk-get", "/_p2p/accept-docs" }) {
 			NanoHTTPD.Response response = server.serve(request(NanoHTTPD.Method.POST, path));
@@ -80,7 +91,7 @@ public class LocalHttpServerTest {
 
 	@Test
 	public void statusOnlyAnswersGet() throws Exception {
-		LocalHttpServer server = new LocalHttpServer(LABEL);
+		LocalHttpServer server = server();
 
 		NanoHTTPD.Response response = server.serve(request(NanoHTTPD.Method.POST, "/_p2p/status"));
 
@@ -89,7 +100,7 @@ public class LocalHttpServerTest {
 
 	@Test
 	public void stopServer_isSafeWhenNeverStarted() {
-		new LocalHttpServer(LABEL).stopServer();
+		server().stopServer();
 	}
 
 	/** Port 0 asks the OS for a free port, which is what removes the "port already in use" failure. */
@@ -98,15 +109,28 @@ public class LocalHttpServerTest {
 		assertEquals(0, LocalHttpServer.EPHEMERAL_PORT);
 	}
 
+	/**
+		* Proves the server will not listen without TLS. Actually completing a handshake needs a
+		* keystore-backed certificate, so that is verified on a device rather than faked here.
+		*/
 	@Test
-	public void bindsAndReportsTheRealPortItGot() throws Exception {
-		LocalHttpServer server = new LocalHttpServer(LABEL);
+	public void startServer_refusesToListenIfTheCertificateIsUnusable() throws Exception {
+		when(certificate.sslServerSocketFactory())
+				.thenThrow(new java.security.GeneralSecurityException("no key"));
+
+		assertThrows(java.io.IOException.class, () -> server().startServer());
+	}
+
+	@Test
+	public void startServer_asksTheSessionCertificateForItsSocketFactory() throws Exception {
+		when(certificate.sslServerSocketFactory())
+				.thenThrow(new java.security.GeneralSecurityException("stop before binding"));
+
 		try {
-			server.startServer();
-			assertTrue("expected a real bound port, got " + server.getListeningPort(),
-					server.getListeningPort() > 0);
-		} finally {
-			server.stopServer();
+			server().startServer();
+		} catch (java.io.IOException expected) {
+			// we only care that TLS was set up before any socket was opened
 		}
+		verify(certificate).sslServerSocketFactory();
 	}
 }

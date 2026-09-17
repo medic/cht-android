@@ -7,6 +7,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.security.GeneralSecurityException;
 
 import fi.iki.elonen.NanoHTTPD;
 
@@ -16,10 +17,10 @@ import fi.iki.elonen.NanoHTTPD;
 	* Pairing only (#11281): it answers a status probe so a peer can confirm it reached the right
 	* device, and nothing else. The endpoints that carry data arrive with the transfer work.
 	*
-	* Everything is served over plain HTTP for now. The link is a local-only hotspot, so traffic
-	* never leaves the two devices, but that is not a substitute for transport security: a
-	* per-session certificate and fingerprint pinning are still to come, and until they land this
-	* server must not carry anything sensitive.
+	* Served over TLS using a {@link SessionCertificate}. The certificate is self-signed and
+	* deliberately untrusted by any CA: the peer pins it against the fingerprint printed in the QR
+	* code. Anyone else on the hotspot can reach this port, so the handshake is what identifies the
+	* host, not the network.
 	*/
 public class LocalHttpServer extends NanoHTTPD {
 
@@ -39,17 +40,22 @@ public class LocalHttpServer extends NanoHTTPD {
 	private static final int PROTOCOL_VERSION = 1;
 
 	private final String deviceLabel;
+	private final SessionCertificate certificate;
 
-	public LocalHttpServer(String deviceLabel) {
-		this(EPHEMERAL_PORT, deviceLabel);
+	public LocalHttpServer(String deviceLabel, SessionCertificate certificate) {
+		this(EPHEMERAL_PORT, deviceLabel, certificate);
 	}
 
-	public LocalHttpServer(int port, String deviceLabel) {
+	public LocalHttpServer(int port, String deviceLabel, SessionCertificate certificate) {
 		super(port);
 		if (deviceLabel == null || deviceLabel.trim().isEmpty()) {
 			throw new IllegalArgumentException("deviceLabel must not be empty");
 		}
+		if (certificate == null) {
+			throw new IllegalArgumentException("certificate must not be null");
+		}
 		this.deviceLabel = deviceLabel;
+		this.certificate = certificate;
 	}
 
 	/** Starts listening. Safe to call when already running. */
@@ -57,6 +63,11 @@ public class LocalHttpServer extends NanoHTTPD {
 		if (isAlive()) {
 			log(this, "Local server already running on port " + getListeningPort());
 			return;
+		}
+		try {
+			makeSecure(certificate.sslServerSocketFactory(), null);
+		} catch (GeneralSecurityException e) {
+			throw new IOException("Could not enable TLS on the local server", e);
 		}
 		start(NanoHTTPD.SOCKET_READ_TIMEOUT, false);
 		// the real port is only known once bound, and it is what goes into the QR payload
