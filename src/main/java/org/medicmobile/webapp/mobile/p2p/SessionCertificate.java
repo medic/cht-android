@@ -8,15 +8,21 @@ import android.security.keystore.KeyProperties;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.net.InetAddress;
 import java.security.GeneralSecurityException;
 import java.security.KeyPairGenerator;
 import java.security.KeyStore;
 import java.security.MessageDigest;
 import java.security.cert.Certificate;
+import java.util.Date;
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
 import javax.security.auth.x500.X500Principal;
 
 import fi.iki.elonen.NanoHTTPD;
@@ -39,8 +45,9 @@ import fi.iki.elonen.NanoHTTPD;
 public class SessionCertificate {
 
 	private static final String KEYSTORE = "AndroidKeyStore";
+	private static final String LOOPBACK = "127.0.0.1";
+	private static final int HANDSHAKE_TIMEOUT_MS = 5000;
 	private static final String ALIAS = "cht-p2p-session";
-	private static final char[] NO_PASSWORD = new char[0];
 
 	private final KeyStore keyStore;
 
@@ -62,16 +69,35 @@ public class SessionCertificate {
 
 		KeyPairGenerator generator =
 				KeyPairGenerator.getInstance(KeyProperties.KEY_ALGORITHM_RSA, KEYSTORE);
-		generator.initialize(new KeyGenParameterSpec.Builder(ALIAS, KeyProperties.PURPOSE_SIGN)
+		// Both purposes, because which one the handshake needs depends on the cipher suite the two
+		// devices agree on: a modern ECDHE suite has the server sign, an RSA key-transport suite has
+		// it decrypt. Allowing only signing would work on most devices and fail on some.
+		generator.initialize(new KeyGenParameterSpec.Builder(
+						ALIAS, KeyProperties.PURPOSE_SIGN | KeyProperties.PURPOSE_DECRYPT)
 				.setCertificateSubject(new X500Principal("CN=" + sanitise(deviceLabel)))
 				.setCertificateSerialNumber(BigInteger.ONE)
-				.setDigests(KeyProperties.DIGEST_SHA256)
+				.setCertificateNotBefore(notBefore())
+				.setCertificateNotAfter(notAfter())
+				.setDigests(KeyProperties.DIGEST_SHA256, KeyProperties.DIGEST_SHA1)
 				.setSignaturePaddings(KeyProperties.SIGNATURE_PADDING_RSA_PKCS1)
+				.setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_RSA_PKCS1)
 				.build());
 		generator.generateKeyPair();
 
+		SessionCertificate certificate = new SessionCertificate(keyStore);
+		certificate.assertUsableOnThisDevice();
 		log(SessionCertificate.class, "Generated a session certificate");
-		return new SessionCertificate(keyStore);
+		return certificate;
+	}
+
+	/** Backdated a little, so a peer whose clock runs slightly behind still accepts it. */
+	private static Date notBefore() {
+		return new Date(System.currentTimeMillis() - TimeUnit.HOURS.toMillis(1));
+	}
+
+	/** A session lasts minutes; a day is generous and keeps a leaked certificate short-lived. */
+	private static Date notAfter() {
+		return new Date(System.currentTimeMillis() + TimeUnit.DAYS.toMillis(1));
 	}
 
 	private static KeyStore loadKeyStore() throws GeneralSecurityException {
@@ -97,7 +123,9 @@ public class SessionCertificate {
 		try {
 			KeyManagerFactory keyManagers =
 					KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-			keyManagers.init(keyStore, NO_PASSWORD);
+			// null, not an empty array: keystore-backed keys are not password protected, and some
+			// implementations reject an empty password rather than treating it as none.
+			keyManagers.init(keyStore, null);
 			return NanoHTTPD.makeSSLSocketFactory(keyStore, keyManagers);
 		} catch (IOException e) {
 			throw new GeneralSecurityException("Could not build the TLS socket factory", e);
@@ -127,6 +155,54 @@ public class SessionCertificate {
 			hex.append(String.format(Locale.US, "%02X", b));
 		}
 		return hex.toString();
+	}
+
+	/**
+		* Completes a TLS handshake against ourselves, to prove this device can actually serve with
+		* this key before a hotspot is advertised.
+		*
+		* Building the socket factory only proves the key loads. Keystore keys are held by hardware
+		* on many devices, and whether one can sign a handshake is something only that device can
+		* answer. Doing it here costs a moment at session start and turns a mysterious failure later
+		* into a clear one now.
+		*/
+	void assertUsableOnThisDevice() throws GeneralSecurityException {
+		SSLServerSocketFactory serverFactory = sslServerSocketFactory();
+		String fingerprint = fingerprint();
+
+		try (SSLServerSocket serverSocket = (SSLServerSocket) serverFactory.createServerSocket(
+					0, 1, InetAddress.getByName(LOOPBACK))) {
+			serverSocket.setSoTimeout(HANDSHAKE_TIMEOUT_MS);
+			Thread server = acceptOneConnection(serverSocket);
+
+			// the peer's own pinning code, so this checks both halves of the handshake
+			SSLSocketFactory clientFactory = PinnedCertificateTrust.socketFactoryFor(fingerprint);
+			try (SSLSocket client =
+						(SSLSocket) clientFactory.createSocket(LOOPBACK, serverSocket.getLocalPort())) {
+				client.setSoTimeout(HANDSHAKE_TIMEOUT_MS);
+				client.startHandshake();
+			}
+			server.join(HANDSHAKE_TIMEOUT_MS);
+		} catch (IOException | InterruptedException e) {
+			Thread.currentThread().interrupt();
+			throw new GeneralSecurityException(
+					"This device cannot serve TLS with a keystore-backed key", e);
+		}
+	}
+
+	/** Accepts a single handshake in the background so the client above has something to talk to. */
+	private static Thread acceptOneConnection(SSLServerSocket serverSocket) {
+		Thread thread = new Thread(() -> {
+			try (SSLSocket accepted = (SSLSocket) serverSocket.accept()) {
+				accepted.startHandshake();
+			} catch (IOException e) {
+				// the client reports the failure; this side only has to not hang
+				warn(e, "Loopback handshake failed on the serving side");
+			}
+		}, "p2p-cert-selftest");
+		thread.setDaemon(true);
+		thread.start();
+		return thread;
 	}
 
 	/** Drops the key, so the session's identity cannot be reused. */

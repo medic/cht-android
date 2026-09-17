@@ -231,9 +231,10 @@ public class MedicAndroidJavascript {
 	}
 
 	/**
-	 * Whether this device can join a session. False below Android 10, where an app can no longer
-	 * connect to a network it did not create. A device may be able to join but not host, or the
-	 * reverse, so the webapp asks about each separately.
+	 * Whether this device can join a session.
+	 *
+	 * Joining works on every version the app supports, by one route or the other. Hosting does not,
+	 * so the webapp asks about each separately: a device can join without being able to host.
 	 */
 	@android.webkit.JavascriptInterface
 	public boolean p2p_join_available() {

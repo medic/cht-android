@@ -30,7 +30,7 @@ public class P2pPeer {
 		return new P2pPeer(HotspotJoiner.create(context));
 	}
 
-	/** Whether this device can join a session. False below Android 10. */
+	/** Whether this device can join a session. Every supported Android version can. */
 	public static boolean isJoinSupported() {
 		return HotspotJoiner.isSupported();
 	}
