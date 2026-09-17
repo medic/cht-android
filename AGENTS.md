@@ -84,7 +84,7 @@ secrets/                                      # encrypted per-org keystores (.ta
 
 Activity flow:
 - `StartupActivity` → free-space check → either `EmbeddedBrowserActivity` (if a server URL is configured) or `SettingsDialogActivity`. On Android 12+ it also triggers `DomainVerificationActivity` for app links.
-- `EmbeddedBrowserActivity` hosts the WebView. Wires up `UrlHandler` (WebViewClient), `MedicAndroidJavascript` (JS bridge), `FilePickerHandler`, `MrdtSupport`, `SmsSender`, `ChtExternalAppHandler`, `AppNotificationManager`, and on every `onStart()` checks for a leftover Crosswalk data directory, running `XWalkMigration` (via `UpgradingActivity`) if one is found — there is no first-launch guard.
+- `EmbeddedBrowserActivity` hosts the WebView. Wires up `UrlHandler` (WebViewClient), `MedicAndroidJavascript` (JS bridge), `FilePickerHandler`, `MrdtSupport`, `SmsSender`, `ChtExternalAppHandler`, `AppNotificationManager`, and on every `onStart()` checks for a leftover Crosswalk data directory; if one is found it shows `UpgradingActivity` as a wait screen and runs `XWalkMigration` itself — there is no first-launch guard.
 - `SettingsDialogActivity` shows the server picker (`res/xml/instances.xml`) and a custom URL form, validated by `AppUrlVerifier` against `/setup/poll`.
 - The hidden settings gesture (5 taps + 2-finger right-swipe) is implemented in `OpenSettingsDialogFragment` + `GestureHandler`.
 
