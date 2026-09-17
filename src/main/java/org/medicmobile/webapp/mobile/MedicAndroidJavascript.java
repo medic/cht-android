@@ -203,6 +203,12 @@ public class MedicAndroidJavascript {
 			respondToP2p(false, "hotspot_unsupported");
 			return;
 		}
+		// Asks if it is missing, and reports back through p2pPermissionsResolved so the webapp can
+		// retry. Without this the hotspot call fails with a SecurityException the user cannot act on.
+		if(!parent.getP2pPermissions()) {
+			respondToP2p(false, "permissions_required");
+			return;
+		}
 		p2pManager.startHosting(new P2pManager.HostingCallback() {
 			@Override public void onReady(String qrPayload) {
 				respondToP2p(true, qrPayload);

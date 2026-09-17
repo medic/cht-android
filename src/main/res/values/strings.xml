@@ -36,6 +36,11 @@
 	<string name="locRequestDenyButton">No thanks</string>
 	<string name="locRequestIconDescription">My location icon</string>
 
+	<string name="p2pRequestTitle">Nearby device sync</string>
+	<string name="p2pRequestMessage">%s needs permission to set up a direct connection with a nearby device, so reports can be shared when there is no network. To allow this select \"Turn on\", and then confirm the next prompt.</string>
+	<string name="p2pRequestOkButton">Turn on</string>
+	<string name="p2pRequestDenyButton">No thanks</string>
+
   <string name="storageRequestTitle">Storage access</string>
   <string name="storageRequestMessage">%s uploads files into reports to analyze and improve health outcomes in your area. To permit storage access select \"Allow\", and then grant storage access in the next prompt.</string>
   <string name="storageRequestAllowButton">Allow</string>

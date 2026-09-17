@@ -240,6 +240,9 @@ public class EmbeddedBrowserActivity extends Activity {
 				case ACCESS_SEND_SMS_PERMISSION:
 					this.smsSender.resumeProcess(resultCode);
 					return;
+				case ACCESS_P2P_PERMISSIONS:
+					p2pPermissionsResolved(resultCode == RESULT_OK);
+					return;
 				default:
 					trace(this, "onActivityResult() :: no handling for requestCode=%s", requestCode.name());
 			}
@@ -318,6 +321,25 @@ public class EmbeddedBrowserActivity extends Activity {
 		isMigrationRunning = migrationRunning;
 	}
 
+	/**
+	 * Whether a P2P session may start, asking for the permissions if it may not.
+	 *
+	 * Returns false while the request is in flight; the webapp retries once the user has answered.
+	 */
+	public boolean getP2pPermissions() {
+		if (RequestP2pPermissionsActivity.hasP2pPermissions(this)) {
+			trace(this, "getP2pPermissions() :: P2P permissions already granted");
+			return true;
+		}
+
+		trace(this, "getP2pPermissions() :: P2P permissions not granted before, requesting access...");
+		startActivityForResult(
+			new Intent(this, RequestP2pPermissionsActivity.class),
+			RequestCode.ACCESS_P2P_PERMISSIONS.getCode()
+		);
+		return false;
+	}
+
 	public boolean getLocationPermissions() {
 		boolean hasFineLocation = ContextCompat.checkSelfPermission(this, ACCESS_FINE_LOCATION) == PERMISSION_GRANTED;
 		boolean hasCoarseLocation = ContextCompat.checkSelfPermission(this, ACCESS_COARSE_LOCATION) == PERMISSION_GRANTED;
@@ -336,6 +358,11 @@ public class EmbeddedBrowserActivity extends Activity {
 	}
 
 //> PRIVATE HELPERS
+	private void p2pPermissionsResolved(boolean granted) {
+		evaluateJavascript(String.format(
+			"window.CHTCore.AndroidApi.v1.p2pPermissionsResolved(%s);", granted));
+	}
+
 	private void locationRequestResolved() {
 		evaluateJavascript("window.CHTCore.AndroidApi.v1.locationPermissionRequestResolved();");
 	}
@@ -467,7 +494,8 @@ public class EmbeddedBrowserActivity extends Activity {
 		ACCESS_SEND_SMS_PERMISSION(102),
 		CHT_EXTERNAL_APP_ACTIVITY(103),
 		GRAB_MRDT_PHOTO_ACTIVITY(104),
-		FILE_PICKER_ACTIVITY(105);
+		FILE_PICKER_ACTIVITY(105),
+		ACCESS_P2P_PERMISSIONS(106);
 
 		private final int requestCode;
 

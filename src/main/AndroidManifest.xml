@@ -31,8 +31,6 @@
   <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
   <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
   <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE"/>
-  <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
-  <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE"/>
   <uses-permission android:name="android.permission.CAMERA"/>
   <uses-permission android:name="android.permission.NEARBY_WIFI_DEVICES" android:minSdkVersion="33"/>
   <uses-feature android:name="android.hardware.wifi" android:required="false"/>
@@ -115,9 +113,10 @@
     <!-- P2P WiFi hotspot sync (#11281). No cleartext config is declared: the local server only
          RECEIVES requests, and cleartext policy applies to outbound ones. The transfer work adds
          TLS with a pinned per-session certificate, so cleartext is never needed. -->
-    <service android:name=".p2p.P2pForegroundService"
-        android:foregroundServiceType="connectedDevice"
-        android:exported="false"/>
+    <activity android:name="RequestP2pPermissionsActivity"
+        android:screenOrientation="portrait"
+        android:exported="false"
+        tools:ignore="DiscouragedApi,LockedOrientationActivity"/>
     <activity android:name=".p2p.QrScannerActivity"
         android:screenOrientation="portrait"
         android:exported="false"
