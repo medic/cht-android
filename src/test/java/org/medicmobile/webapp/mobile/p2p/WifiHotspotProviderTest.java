@@ -6,8 +6,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verifyNoInteractions;
 
+import android.location.LocationManager;
 import android.net.wifi.WifiManager;
 
 import org.junit.Test;
@@ -21,6 +23,22 @@ import org.robolectric.annotation.Config;
 	*/
 @RunWith(RobolectricTestRunner.class)
 public class WifiHotspotProviderTest {
+
+	/**
+		* Location switched on, which is the normal case; the off case has its own test.
+		*
+		* Only the provider check is stubbed: isLocationEnabled arrived in API 28 and these run
+		* below it, where even stubbing the method throws because it does not exist yet.
+		*/
+	private LocationManager locationManager() {
+		return locationManager(true);
+	}
+
+	private LocationManager locationManager(boolean on) {
+		LocationManager locationManager = mock(LocationManager.class);
+		when(locationManager.isProviderEnabled(org.mockito.ArgumentMatchers.anyString())).thenReturn(on);
+		return locationManager;
+	}
 
 	// Robolectric 4.16 ships no image below API 25, so the "old device" cases run at the highest
 	// SDK that still lacks LocalOnlyHotspot. The guard is a single >= 26 comparison, so this
@@ -47,7 +65,7 @@ public class WifiHotspotProviderTest {
 		WifiManager wifiManager = mock(WifiManager.class);
 		HotspotProvider.HotspotCallback callback = mock(HotspotProvider.HotspotCallback.class);
 
-		new WifiHotspotProvider(wifiManager).start(callback);
+		new WifiHotspotProvider(wifiManager, locationManager()).start(callback);
 
 		verify(callback).onFailed("hotspot_unsupported");
 		verifyNoInteractions(wifiManager);
@@ -58,7 +76,7 @@ public class WifiHotspotProviderTest {
 		WifiManager wifiManager = mock(WifiManager.class);
 		HotspotProvider.HotspotCallback callback = mock(HotspotProvider.HotspotCallback.class);
 
-		new WifiHotspotProvider(wifiManager).start(callback);
+		new WifiHotspotProvider(wifiManager, locationManager()).start(callback);
 
 		verify(wifiManager).startLocalOnlyHotspot(any(), any());
 		verify(callback, never()).onFailed("hotspot_unsupported");
@@ -66,7 +84,7 @@ public class WifiHotspotProviderTest {
 
 	@Test @Config(sdk = 26)
 	public void start_rejectsAMissingCallback() {
-		WifiHotspotProvider provider = new WifiHotspotProvider(mock(WifiManager.class));
+		WifiHotspotProvider provider = new WifiHotspotProvider(mock(WifiManager.class), locationManager());
 
 		try {
 			provider.start(null);
@@ -76,8 +94,37 @@ public class WifiHotspotProviderTest {
 		}
 	}
 
+	/**
+		* Granting location access is not the same as having it switched on, and the platform
+		* refuses either way. Saying which one it is saves the user guessing.
+		*/
+	@Test @Config(sdk = 26)
+	public void start_saysWhenLocationIsSwitchedOff() {
+		WifiManager wifiManager = mock(WifiManager.class);
+		HotspotProvider.HotspotCallback callback = mock(HotspotProvider.HotspotCallback.class);
+
+		new WifiHotspotProvider(wifiManager, locationManager(false)).start(callback);
+
+		verify(callback).onFailed("location_services_off");
+		verifyNoInteractions(wifiManager);
+	}
+
+	/** From API 28 the platform has a single answer, so that path is checked separately. */
+	@Test @Config(sdk = 28)
+	public void start_usesThePlatformLocationCheckFromApi28() {
+		WifiManager wifiManager = mock(WifiManager.class);
+		LocationManager locationManager = mock(LocationManager.class);
+		when(locationManager.isLocationEnabled()).thenReturn(false);
+		HotspotProvider.HotspotCallback callback = mock(HotspotProvider.HotspotCallback.class);
+
+		new WifiHotspotProvider(wifiManager, locationManager).start(callback);
+
+		verify(callback).onFailed("location_services_off");
+		verifyNoInteractions(wifiManager);
+	}
+
 	@Test @Config(sdk = 26)
 	public void isRunning_isFalseBeforeStarting() {
-		assertFalse(new WifiHotspotProvider(mock(WifiManager.class)).isRunning());
+		assertFalse(new WifiHotspotProvider(mock(WifiManager.class), locationManager()).isRunning());
 	}
 }

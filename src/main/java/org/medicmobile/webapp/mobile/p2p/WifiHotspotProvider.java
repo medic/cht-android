@@ -6,6 +6,7 @@ import static org.medicmobile.webapp.mobile.MedicLog.trace;
 import static org.medicmobile.webapp.mobile.MedicLog.warn;
 
 import android.net.wifi.SoftApConfiguration;
+import android.location.LocationManager;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Handler;
@@ -40,14 +41,16 @@ public class WifiHotspotProvider implements HotspotProvider {
 	private static final long IP_DETECT_RETRY_DELAY_MS = 500; // 15 × 500ms = 7.5s max
 
 	private final WifiManager wifiManager;
+	private final LocationManager locationManager;
 	private WifiManager.LocalOnlyHotspotReservation reservation;
 	private volatile boolean running = false;
 
-	public WifiHotspotProvider(WifiManager wifiManager) {
+	public WifiHotspotProvider(WifiManager wifiManager, LocationManager locationManager) {
 		if (wifiManager == null) {
 			throw new IllegalArgumentException("wifiManager must not be null");
 		}
 		this.wifiManager = wifiManager;
+		this.locationManager = locationManager;
 	}
 
 	/**
@@ -73,9 +76,17 @@ public class WifiHotspotProvider implements HotspotProvider {
 			return;
 		}
 
+		// Granting the permission is not enough: the platform also refuses to start a hotspot while
+		// location is switched off, and says so in a way that looks like any other failure.
+		if (!isLocationEnabled()) {
+			warn(WifiHotspotProvider.class, "Location services are off, cannot start a hotspot");
+			callback.onFailed("location_services_off");
+			return;
+		}
+
 		if (running) {
 			warn(this, "Hotspot already running");
-			callback.onFailed("Hotspot already running");
+			callback.onFailed("hotspot_already_running");
 			return;
 		}
 
@@ -83,10 +94,10 @@ public class WifiHotspotProvider implements HotspotProvider {
 			startLocalOnlyHotspot(callback);
 		} catch (SecurityException e) {
 			error(e, "Hotspot SecurityException");
-			callback.onFailed("security_exception: " + e.getMessage());
+			callback.onFailed("permissions_required");
 		} catch (Exception e) {
 			error(e, "Failed to start hotspot");
-			callback.onFailed("Unexpected error: " + e.getMessage());
+			callback.onFailed("hotspot_error");
 		}
 	}
 
@@ -145,7 +156,24 @@ public class WifiHotspotProvider implements HotspotProvider {
 		running = false;
 		closeReservationQuietly(hotspotReservation);
 		reservation = null;
-		callback.onFailed("Could not detect hotspot IP address. Please restart P2P sync.");
+		callback.onFailed("hotspot_no_address");
+	}
+
+	/**
+		* Whether the device's location setting is on, which the platform requires for a hotspot.
+		*
+		* Separate from the permission: a user can grant location access and still have the setting
+		* switched off, and the hotspot then fails in a way that looks like any other error.
+		*/
+	private boolean isLocationEnabled() {
+		if (locationManager == null) {
+			return false;
+		}
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+			return locationManager.isLocationEnabled();
+		}
+		return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
+				|| locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
 	}
 
 	@android.annotation.TargetApi(26)
@@ -344,18 +372,29 @@ public class WifiHotspotProvider implements HotspotProvider {
 		return null;
 	}
 
+	/**
+		* Turns a platform failure into a stable code for the webapp, and logs the detail.
+		*
+		* The code is what crosses to the webapp, which maps it to a translated message; the prose
+		* and the raw value stay in the log, where they are what lets support tell an OEM that
+		* forbids hotspots from a device that is merely busy.
+		*/
 	private String mapFailureReason(int reason) {
 		switch (reason) {
 			case WifiManager.LocalOnlyHotspotCallback.ERROR_NO_CHANNEL:
-				return "No WiFi channel available";
-			case WifiManager.LocalOnlyHotspotCallback.ERROR_GENERIC:
-				return "Generic hotspot error";
+				warn(WifiHotspotProvider.class, "No wifi channel available (code " + reason + ")");
+				return "hotspot_no_channel";
 			case WifiManager.LocalOnlyHotspotCallback.ERROR_INCOMPATIBLE_MODE:
-				return "Incompatible WiFi mode (tethering may be active)";
+				warn(WifiHotspotProvider.class,
+						"Incompatible wifi mode, tethering may be active (code " + reason + ")");
+				return "hotspot_incompatible_mode";
 			case WifiManager.LocalOnlyHotspotCallback.ERROR_TETHERING_DISALLOWED:
-				return "Tethering disallowed by device policy";
+				warn(WifiHotspotProvider.class,
+						"Tethering disallowed by this device (code " + reason + ")");
+				return "hotspot_tethering_disallowed";
 			default:
-				return "Unknown hotspot error (code " + reason + ")";
+				warn(WifiHotspotProvider.class, "Hotspot failed (code " + reason + ")");
+				return "hotspot_error";
 		}
 	}
 }

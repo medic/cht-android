@@ -4,6 +4,7 @@ import static org.medicmobile.webapp.mobile.MedicLog.log;
 import static org.medicmobile.webapp.mobile.MedicLog.warn;
 
 import android.content.Context;
+import android.location.LocationManager;
 import android.net.wifi.WifiManager;
 
 import org.json.JSONException;
@@ -43,11 +44,14 @@ public class P2pManager {
 		* Builds a manager wired to the real WiFi radio, with a fresh TLS identity for the session.
 		*/
 	public static P2pManager create(Context context, String deviceLabel) throws GeneralSecurityException {
-		WifiManager wifiManager =
-				(WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+		Context appContext = context.getApplicationContext();
+		WifiManager wifiManager = (WifiManager) appContext.getSystemService(Context.WIFI_SERVICE);
+		LocationManager locationManager =
+				(LocationManager) appContext.getSystemService(Context.LOCATION_SERVICE);
 		SessionCertificate certificate = SessionCertificate.generate(deviceLabel);
 		return new P2pManager(
-				new WifiHotspotManager(new WifiHotspotProvider(wifiManager), IDLE_TIMEOUT_SEC),
+				new WifiHotspotManager(
+						new WifiHotspotProvider(wifiManager, locationManager), IDLE_TIMEOUT_SEC),
 				new LocalHttpServer(deviceLabel, certificate),
 				certificate);
 	}
@@ -58,8 +62,7 @@ public class P2pManager {
 	}
 
 	/**
-		* Starts hosting: hotspot first, then the local server, then hands back the payload a peer
-		* needs in order to join.
+		* Starts hosting: hotspot first, then the local server, then hands back the code a peer scans.
 		*
 		* Reports failure rather than partial success. If the server cannot bind, the hotspot is
 		* taken back down so the device is not left advertising a network with nothing behind it.
@@ -87,8 +90,14 @@ public class P2pManager {
 				try {
 					String payload = QrCodeHelper.buildPayload(ssid, password, ipAddress,
 							server.getListeningPort(), certificate.fingerprint());
+					String qrImage = QrCodeHelper.generateQrDataUrl(payload);
+					if (qrImage == null) {
+						stopHosting();
+						callback.onFailed("payload_failed");
+						return;
+					}
 					log(P2pManager.class, "Hosting session ready on " + ipAddress);
-					callback.onReady(payload);
+					callback.onReady(qrImage);
 				} catch (JSONException | GeneralSecurityException e) {
 					warn(e, "Could not build the pairing payload");
 					stopHosting();
@@ -116,8 +125,8 @@ public class P2pManager {
 
 	/** Result of trying to start hosting. */
 	public interface HostingCallback {
-		/** @param qrPayload the JSON a peer scans to join */
-		void onReady(String qrPayload);
+		/** @param qrImage a PNG data URL of the code, ready for the webapp to display */
+		void onReady(String qrImage);
 
 		/** @param reason a stable code the webapp can map to a message */
 		void onFailed(String reason);

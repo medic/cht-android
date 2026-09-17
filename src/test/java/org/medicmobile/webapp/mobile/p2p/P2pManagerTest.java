@@ -65,20 +65,28 @@ public class P2pManagerTest {
 		assertThrows(IllegalArgumentException.class, () -> new P2pManager(hotspotManager, server, null));
 	}
 
+	/** The webapp displays this directly, so it must be an image and not the raw payload. */
 	@Test @Config(sdk = 26)
-	public void startHosting_bringsUpTheHotspotThenTheServerAndReturnsAScannablePayload() throws Exception {
+	public void startHosting_bringsUpTheHotspotThenTheServerAndReturnsAScannableImage() throws Exception {
 		hotspotStarts();
 
 		manager.startHosting(callback);
 
 		verify(server).startServer();
-		ArgumentCaptor<String> payload = ArgumentCaptor.forClass(String.class);
-		verify(callback).onReady(payload.capture());
-		JSONObject json = new JSONObject(payload.getValue());
+		ArgumentCaptor<String> qr = ArgumentCaptor.forClass(String.class);
+		verify(callback).onReady(qr.capture());
+		org.junit.Assert.assertTrue(qr.getValue(), qr.getValue().startsWith("data:image/png;base64,"));
+	}
+
+	/** Whatever is encoded must still carry what a peer needs, including the certificate to pin. */
+	@Test @Config(sdk = 26)
+	public void startHosting_encodesTheDetailsAPeerNeeds() throws Exception {
+		JSONObject json = new JSONObject(
+				QrCodeHelper.buildPayload(SSID, PASSWORD, IP, 8443, FINGERPRINT));
+
 		org.junit.Assert.assertEquals(SSID, json.getString("ssid"));
 		org.junit.Assert.assertEquals(IP, json.getString("ip"));
 		org.junit.Assert.assertEquals(8443, json.getInt("port"));
-		// the peer needs this to know which certificate to accept
 		org.junit.Assert.assertEquals(FINGERPRINT, json.getString("fp"));
 	}
 

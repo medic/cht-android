@@ -3,6 +3,7 @@ package org.medicmobile.webapp.mobile.p2p;
 import static org.medicmobile.webapp.mobile.MedicLog.error;
 
 import android.graphics.Bitmap;
+import android.util.Base64;
 import android.graphics.Color;
 
 import com.google.zxing.BarcodeFormat;
@@ -11,6 +12,8 @@ import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
+
+import java.io.ByteArrayOutputStream;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -107,6 +110,27 @@ public final class QrCodeHelper {
 		}
 	}
 
+
+	/**
+		* Renders the payload as a PNG data URL, for the webapp to show.
+		*
+		* Encoding here rather than in the webapp keeps the QR library on one side: ZXing is already
+		* a dependency for scanning, so the browser needs none.
+		*
+		* @return a data: URL, or null if the payload could not be encoded
+		*/
+	public static String generateQrDataUrl(String payloadJson) {
+		try {
+			Bitmap bitmap = encodeQrBitmap(payloadJson, QR_SIZE);
+			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
+			bitmap.recycle();
+			return "data:image/png;base64," + Base64.encodeToString(out.toByteArray(), Base64.NO_WRAP);
+		} catch (WriterException e) {
+			error(e, "Could not render the pairing code");
+			return null;
+		}
+	}
 
 	/**
 		* Build the QR payload JSON string from hotspot credentials.
