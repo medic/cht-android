@@ -43,10 +43,13 @@ public class AppNotificationManagerTest {
 
 	@After
 	public void resetDataStore() {
+		// The tests read these back with getLongBlocking, so the reset has to be blocking too.
+		// saveLong returns before the write lands, which lets the next test read the previous
+		// test's value and fail on an assertion that has nothing to do with what it covers.
 		appDataStore.saveString(AppNotificationManager.TASK_NOTIFICATIONS_KEY, "[]");
-		appDataStore.saveLong(AppNotificationManager.TASK_NOTIFICATION_DAY_KEY, 0L);
-		appDataStore.saveLong(AppNotificationManager.LATEST_NOTIFICATION_TIMESTAMP_KEY, 0L);
-		appDataStore.saveLong(AppNotificationManager.MAX_NOTIFICATIONS_TO_SHOW_KEY, 8L);
+		appDataStore.saveLongBlocking(AppNotificationManager.TASK_NOTIFICATION_DAY_KEY, 0L);
+		appDataStore.saveLongBlocking(AppNotificationManager.LATEST_NOTIFICATION_TIMESTAMP_KEY, 0L);
+		appDataStore.saveLongBlocking(AppNotificationManager.MAX_NOTIFICATIONS_TO_SHOW_KEY, 8L);
 	}
 
 	@Test
