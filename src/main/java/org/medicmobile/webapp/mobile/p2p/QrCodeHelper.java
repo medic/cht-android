@@ -56,6 +56,7 @@ public final class QrCodeHelper {
 	private static final String KEY_PWD = "pwd";
 	private static final String KEY_IP = "ip";
 	private static final String KEY_PORT = "port";
+	private static final int MAX_PORT = 65535;
 	private static final String KEY_TS = "ts";
 
 	private QrCodeHelper() {
@@ -140,24 +141,8 @@ public final class QrCodeHelper {
 		* @throws JSONException if JSON construction fails
 		*/
 	public static String buildPayload(HotspotCredentials creds) throws JSONException {
-		return buildPayload(creds.ssid, creds.password, creds.ipAddress, creds.port,
-				creds.certFingerprint);
-	}
-
-	/**
-		* Build the QR payload JSON string.
-		*
-		* @param ssid		   the WiFi hotspot SSID
-		* @param password	   the WiFi hotspot WPA2 password
-		* @param ipAddress	  the supervisor device IP on the hotspot network
-		* @param port		   the HTTPS port for the P2P HTTP server
-		* @return JSON string matching
-		* @throws JSONException if JSON construction fails
-		*/
-	public static String buildPayload(String ssid, String password, String ipAddress, int port,
-										String certFingerprint) throws JSONException {
-		validatePayloadParams(ssid, password, ipAddress, port);
-		if (certFingerprint == null || certFingerprint.trim().isEmpty()) {
+		validatePayloadParams(creds.ssid, creds.password, creds.ipAddress, creds.port);
+		if (creds.certFingerprint == null || creds.certFingerprint.trim().isEmpty()) {
 			// a payload without one would pair over a connection nothing can verify
 			throw new JSONException("certFingerprint is required");
 		}
@@ -165,11 +150,11 @@ public final class QrCodeHelper {
 		JSONObject payload = new JSONObject();
 		payload.put("type", PAYLOAD_TYPE);
 		payload.put("v", PAYLOAD_VERSION);
-		payload.put(KEY_SSID, ssid);
-		payload.put(KEY_PWD, password);
-		payload.put(KEY_IP, ipAddress);
-		payload.put(KEY_FINGERPRINT, certFingerprint);
-		payload.put(KEY_PORT, port);
+		payload.put(KEY_SSID, creds.ssid);
+		payload.put(KEY_PWD, creds.password);
+		payload.put(KEY_IP, creds.ipAddress);
+		payload.put(KEY_FINGERPRINT, creds.certFingerprint);
+		payload.put(KEY_PORT, creds.port);
 		payload.put(KEY_TS, System.currentTimeMillis());
 		return payload.toString();
 	}
@@ -179,8 +164,8 @@ public final class QrCodeHelper {
 		requireNonEmpty(ssid, "ssid");
 		requireNonEmpty(password, "password");
 		requireNonEmpty(ipAddress, "ipAddress");
-		if (port <= 0 || port > 65535) {
-			throw new IllegalArgumentException("port must be between 1 and 65535, got: " + port);
+		if (port <= 0 || port > MAX_PORT) {
+			throw new IllegalArgumentException("port must be between 1 and " + MAX_PORT + ", got: " + port);
 		}
 	}
 
@@ -286,21 +271,16 @@ public final class QrCodeHelper {
 		* The fingerprint counts as required: a payload without one would let a peer pair over a
 		* connection it cannot verify, which is the attack the pinning exists to stop.
 		*/
+	private static final String[] REQUIRED_FIELDS = { KEY_SSID, KEY_PWD, KEY_IP, KEY_FINGERPRINT };
+
 	private static QrValidation validateRequiredFields(JSONObject payload) {
-		if (isEmptyField(payload, "ssid")) {
-			return QrValidation.reject("missing required field: ssid");
-		}
-		if (isEmptyField(payload, "pwd")) {
-			return QrValidation.reject("missing required field: pwd");
-		}
-		if (isEmptyField(payload, "ip")) {
-			return QrValidation.reject("missing required field: ip");
-		}
-		if (isEmptyField(payload, KEY_FINGERPRINT)) {
-			return QrValidation.reject("missing required field: fp");
+		for (String field : REQUIRED_FIELDS) {
+			if (isEmptyField(payload, field)) {
+				return QrValidation.reject("missing required field: " + field);
+			}
 		}
 		int port = payload.optInt(KEY_PORT, 0);
-		if (port <= 0 || port > 65535) {
+		if (port <= 0 || port > MAX_PORT) {
 			return QrValidation.reject("invalid port: " + port);
 		}
 		return QrValidation.accept();

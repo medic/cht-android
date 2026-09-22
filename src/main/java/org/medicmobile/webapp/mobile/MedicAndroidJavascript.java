@@ -190,6 +190,7 @@ public class MedicAndroidJavascript {
 	 * local-only hotspot API does not exist. Joining a session has no such limit.
 	 */
 	@android.webkit.JavascriptInterface
+	@SuppressWarnings("java:S100")  // the webapp calls this name literally over the bridge
 	public boolean p2p_host_available() {
 		return p2pManager != null && P2pManager.isHostSupported();
 	}
@@ -201,6 +202,7 @@ public class MedicAndroidJavascript {
 	 * because the hotspot takes seconds to come up.
 	 */
 	@android.webkit.JavascriptInterface
+	@SuppressWarnings("java:S100")  // the webapp calls this name literally over the bridge
 	public void p2p_start_hosting() {
 		if(!p2p_host_available()) {
 			respondToP2p(false, "hotspot_unsupported");
@@ -224,6 +226,7 @@ public class MedicAndroidJavascript {
 	}
 
 	@android.webkit.JavascriptInterface
+	@SuppressWarnings("java:S100")  // the webapp calls this name literally over the bridge
 	public void p2p_stop_hosting() {
 		if(p2pManager != null) {
 			p2pManager.stopHosting();
@@ -237,6 +240,7 @@ public class MedicAndroidJavascript {
 	 * so the webapp asks about each separately: a device can join without being able to host.
 	 */
 	@android.webkit.JavascriptInterface
+	@SuppressWarnings("java:S100")  // the webapp calls this name literally over the bridge
 	public boolean p2p_join_available() {
 		return p2pPeer != null && P2pPeer.isJoinSupported();
 	}
@@ -246,6 +250,7 @@ public class MedicAndroidJavascript {
 	 * device has joined and confirmed the host's certificate.
 	 */
 	@android.webkit.JavascriptInterface
+	@SuppressWarnings("java:S100")  // the webapp calls this name literally over the bridge
 	public void p2p_scan_and_join() {
 		if(!p2p_join_available()) {
 			respondToPairing(false, "join_unsupported");
@@ -259,6 +264,7 @@ public class MedicAndroidJavascript {
 	}
 
 	@android.webkit.JavascriptInterface
+	@SuppressWarnings("java:S100")  // the webapp calls this name literally over the bridge
 	public void p2p_leave_session() {
 		if(p2pPeer != null) {
 			p2pPeer.unpair();
@@ -266,6 +272,7 @@ public class MedicAndroidJavascript {
 	}
 
 	@android.webkit.JavascriptInterface
+	@SuppressWarnings("java:S100")  // the webapp calls this name literally over the bridge
 	public boolean p2p_is_hosting() {
 		return p2pManager != null && p2pManager.isHosting();
 	}

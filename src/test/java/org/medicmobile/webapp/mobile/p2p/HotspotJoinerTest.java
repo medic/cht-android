@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -43,12 +44,12 @@ public class HotspotJoinerTest {
 
 	@Test @Config(sdk = 28)
 	public void isSupported_isTrueOnOlderVersionsToo() {
-		assertTrue(HotspotJoiner.isSupported());
+		assertTrue(HotspotJoiner.SUPPORTED);
 	}
 
 	@Test @Config(sdk = 29)
 	public void isSupported_isTrueFromAndroid10() {
-		assertTrue(HotspotJoiner.isSupported());
+		assertTrue(HotspotJoiner.SUPPORTED);
 	}
 
 	/** Android 9 and below save the network and switch to it; requestNetwork is not used there. */
@@ -60,7 +61,7 @@ public class HotspotJoinerTest {
 		joiner.join(SSID, PASSWORD, callback);
 
 		verify(wifiManager).addNetwork(any());
-		verify(wifiManager).enableNetwork(org.mockito.ArgumentMatchers.eq(7), org.mockito.ArgumentMatchers.eq(true));
+		verify(wifiManager).enableNetwork(7, true);
 		verify(connectivityManager).registerNetworkCallback(any(), any(ConnectivityManager.NetworkCallback.class));
 	}
 
@@ -96,7 +97,7 @@ public class HotspotJoinerTest {
 		joiner.join(SSID, null, callback);
 		joiner.join(SSID, "", callback);
 
-		verify(callback, org.mockito.Mockito.times(4)).onFailed("invalid_credentials");
+		verify(callback, times(4)).onFailed("invalid_credentials");
 		verify(connectivityManager, never()).requestNetwork(any(), any(ConnectivityManager.NetworkCallback.class), anyInt());
 	}
 

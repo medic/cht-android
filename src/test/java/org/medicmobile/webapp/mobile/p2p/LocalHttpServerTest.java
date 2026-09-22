@@ -1,6 +1,7 @@
 package org.medicmobile.webapp.mobile.p2p;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -70,7 +71,7 @@ public class LocalHttpServerTest {
 	}
 
 	@Test
-	public void unknownPath_is404() throws Exception {
+	public void unknownPath_is404() {
 		LocalHttpServer server = server();
 
 		NanoHTTPD.Response response = server.serve(request(NanoHTTPD.Method.GET, "/_p2p/anything-else"));
@@ -80,7 +81,7 @@ public class LocalHttpServerTest {
 
 	/** The data endpoints do not exist yet; a peer must not be able to reach one by guessing. */
 	@Test
-	public void dataEndpointsFromTheOldProtocolAreGone() throws Exception {
+	public void dataEndpointsFromTheOldProtocolAreGone() {
 		LocalHttpServer server = server();
 
 		for (String path : new String[] { "/_p2p/auth", "/_p2p/get-ids", "/_p2p/bulk-get", "/_p2p/accept-docs" }) {
@@ -90,7 +91,7 @@ public class LocalHttpServerTest {
 	}
 
 	@Test
-	public void statusOnlyAnswersGet() throws Exception {
+	public void statusOnlyAnswersGet() {
 		LocalHttpServer server = server();
 
 		NanoHTTPD.Response response = server.serve(request(NanoHTTPD.Method.POST, "/_p2p/status"));
@@ -100,7 +101,12 @@ public class LocalHttpServerTest {
 
 	@Test
 	public void stopServer_isSafeWhenNeverStarted() {
-		server().stopServer();
+		LocalHttpServer server = server();
+
+		server.stopServer();
+
+		// it never started, so it must still not be listening rather than have half-torn-down state
+		assertFalse(server.isAlive());
 	}
 
 	/** Port 0 asks the OS for a free port, which is what removes the "port already in use" failure. */

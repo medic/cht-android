@@ -44,7 +44,7 @@ import fi.iki.elonen.NanoHTTPD;
 @android.annotation.TargetApi(26)
 public class SessionCertificate {
 
-	private static final String KEYSTORE = "AndroidKeyStore";
+	private static final String KEYSTORE_TYPE = "AndroidKeyStore";
 	private static final String LOOPBACK = "127.0.0.1";
 	private static final int HANDSHAKE_TIMEOUT_MS = 5000;
 	private static final String ALIAS = "cht-p2p-session";
@@ -68,7 +68,7 @@ public class SessionCertificate {
 		}
 
 		KeyPairGenerator generator =
-				KeyPairGenerator.getInstance(KeyProperties.KEY_ALGORITHM_RSA, KEYSTORE);
+				KeyPairGenerator.getInstance(KeyProperties.KEY_ALGORITHM_RSA, KEYSTORE_TYPE);
 		// Both purposes, because which one the handshake needs depends on the cipher suite the two
 		// devices agree on: a modern ECDHE suite has the server sign, an RSA key-transport suite has
 		// it decrypt. Allowing only signing would work on most devices and fail on some.
@@ -102,7 +102,7 @@ public class SessionCertificate {
 
 	private static KeyStore loadKeyStore() throws GeneralSecurityException {
 		try {
-			KeyStore keyStore = KeyStore.getInstance(KEYSTORE);
+			KeyStore keyStore = KeyStore.getInstance(KEYSTORE_TYPE);
 			keyStore.load(null);
 			return keyStore;
 		} catch (Exception e) {
@@ -147,12 +147,14 @@ public class SessionCertificate {
 	}
 
 	static String formatFingerprint(byte[] digest) {
+		// Indexed rather than for-each so the separator can key off the position. Checking the
+		// builder's own emptiness instead would need CharSequence.isEmpty, which is API 35.
 		StringBuilder hex = new StringBuilder(digest.length * 3);
-		for (byte b : digest) {
-			if (hex.length() > 0) {
+		for (int i = 0; i < digest.length; i++) {
+			if (i > 0) {
 				hex.append(':');
 			}
-			hex.append(String.format(Locale.US, "%02X", b));
+			hex.append(String.format(Locale.US, "%02X", digest[i]));
 		}
 		return hex.toString();
 	}

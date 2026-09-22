@@ -78,30 +78,8 @@ public class P2pManager {
 
 		hotspotManager.startHotspot(new HotspotProvider.HotspotCallback() {
 			@Override public void onStarted(String ssid, String password, String ipAddress) {
-				try {
-					server.startServer();
-				} catch (Exception e) {
-					warn(e, "Local server failed to start, taking the hotspot back down");
-					hotspotManager.stopHotspot();
-					callback.onFailed("server_start_failed");
-					return;
-				}
-
-				try {
-					String payload = QrCodeHelper.buildPayload(ssid, password, ipAddress,
-							server.getListeningPort(), certificate.fingerprint());
-					String qrImage = QrCodeHelper.generateQrDataUrl(payload);
-					if (qrImage == null) {
-						stopHosting();
-						callback.onFailed("payload_failed");
-						return;
-					}
-					log(P2pManager.class, "Hosting session ready on " + ipAddress);
-					callback.onReady(qrImage);
-				} catch (JSONException | GeneralSecurityException e) {
-					warn(e, "Could not build the pairing payload");
-					stopHosting();
-					callback.onFailed("payload_failed");
+				if (startLocalServer(callback)) {
+					publishPairingCode(ssid, password, ipAddress, callback);
 				}
 			}
 
@@ -109,6 +87,42 @@ public class P2pManager {
 				callback.onFailed(reason);
 			}
 		});
+	}
+
+	/**
+		* Brings the local server up. False means the caller has already been told why, and the
+		* hotspot is back down: a network advertising nothing is worse than no network.
+		*/
+	private boolean startLocalServer(HostingCallback callback) {
+		try {
+			server.startServer();
+			return true;
+		} catch (Exception e) {
+			warn(e, "Local server failed to start, taking the hotspot back down");
+			hotspotManager.stopHotspot();
+			callback.onFailed("server_start_failed");
+			return false;
+		}
+	}
+
+	/** Builds the code a peer scans, tearing the session down if it cannot be produced. */
+	private void publishPairingCode(String ssid, String password, String ipAddress, HostingCallback callback) {
+		try {
+			String payload = QrCodeHelper.buildPayload(new QrCodeHelper.HotspotCredentials(
+					ssid, password, ipAddress, server.getListeningPort(), certificate.fingerprint()));
+			String qrImage = QrCodeHelper.generateQrDataUrl(payload);
+			if (qrImage == null) {
+				stopHosting();
+				callback.onFailed("payload_failed");
+				return;
+			}
+			log(P2pManager.class, "Hosting session ready on " + ipAddress);
+			callback.onReady(qrImage);
+		} catch (JSONException | GeneralSecurityException e) {
+			warn(e, "Could not build the pairing payload");
+			stopHosting();
+			callback.onFailed("payload_failed");
+		}
 	}
 
 	/** Tears the session down. Safe to call when nothing is running. */

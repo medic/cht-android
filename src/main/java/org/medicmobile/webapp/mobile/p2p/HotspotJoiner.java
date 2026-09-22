@@ -28,6 +28,11 @@ import android.os.Build;
 	*/
 public class HotspotJoiner {
 
+	private static final String JOIN_FAILED = "join_failed";
+
+	/** Every supported version can join, by one route or the other. */
+	public static final boolean SUPPORTED = true;
+
 	/** Long enough for the user to accept the system prompt, short enough to fail visibly. */
 	private static final int JOIN_TIMEOUT_MS = 60_000;
 
@@ -53,10 +58,6 @@ public class HotspotJoiner {
 				(WifiManager) appContext.getSystemService(Context.WIFI_SERVICE));
 	}
 
-	/** Every supported version can join, by one route or the other. */
-	public static boolean isSupported() {
-		return true;
-	}
 
 	/**
 		* Asks the system to join the named network. The user sees a confirmation prompt.
@@ -96,7 +97,7 @@ public class HotspotJoiner {
 		int networkId = wifiManager.addNetwork(config);
 		if (networkId == -1) {
 			warn(HotspotJoiner.class, "The device would not save the host's network");
-			callback.onFailed("join_failed");
+			callback.onFailed(JOIN_FAILED);
 			return;
 		}
 		savedNetworkId = networkId;
@@ -106,7 +107,7 @@ public class HotspotJoiner {
 		if (!wifiManager.enableNetwork(networkId, true)) {
 			leave();
 			warn(HotspotJoiner.class, "The device would not switch to the host's network");
-			callback.onFailed("join_failed");
+			callback.onFailed(JOIN_FAILED);
 		}
 	}
 
@@ -150,7 +151,7 @@ public class HotspotJoiner {
 
 			@Override public void onUnavailable() {
 				warn(HotspotJoiner.class, "Could not join the host's network");
-				callback.onFailed("join_failed");
+				callback.onFailed(JOIN_FAILED);
 			}
 
 			@Override public void onLost(Network network) {

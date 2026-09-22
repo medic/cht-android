@@ -82,7 +82,8 @@ public class P2pManagerTest {
 	@Test @Config(sdk = 26)
 	public void startHosting_encodesTheDetailsAPeerNeeds() throws Exception {
 		JSONObject json = new JSONObject(
-				QrCodeHelper.buildPayload(SSID, PASSWORD, IP, 8443, FINGERPRINT));
+				QrCodeHelper.buildPayload(
+						new QrCodeHelper.HotspotCredentials(SSID, PASSWORD, IP, 8443, FINGERPRINT)));
 
 		org.junit.Assert.assertEquals(SSID, json.getString("ssid"));
 		org.junit.Assert.assertEquals(IP, json.getString("ip"));

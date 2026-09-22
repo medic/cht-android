@@ -9,6 +9,7 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -86,7 +87,7 @@ public class PeerClient {
 		HttpsURLConnection connection = open(ipAddress, port, path);
 		try {
 			int status = connection.getResponseCode();
-			if (status != HttpsURLConnection.HTTP_OK) {
+			if (status != HttpURLConnection.HTTP_OK) {
 				throw new IOException("The host answered " + status + " for " + path);
 			}
 			return parse(readBody(connection));

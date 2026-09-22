@@ -8,7 +8,7 @@ package org.medicmobile.webapp.mobile.p2p;
 	*/
 public final class QrValidation {
 
-	private static final QrValidation ACCEPTED = new QrValidation(true, null);
+	private static final QrValidation ACCEPTED_RESULT = new QrValidation(true, null);
 
 	private final boolean accepted;
 	private final String reason;
@@ -19,7 +19,7 @@ public final class QrValidation {
 	}
 
 	public static QrValidation accept() {
-		return ACCEPTED;
+		return ACCEPTED_RESULT;
 	}
 
 	public static QrValidation reject(String reason) {

@@ -59,9 +59,11 @@ public class QrCodeHelperTest {
 	/** Pairing without a fingerprint would mean trusting whatever answers on that IP. */
 	@Test public void buildPayload_refusesToBuildWithoutAFingerprint() {
 		org.junit.Assert.assertThrows(org.json.JSONException.class,
-				() -> QrCodeHelper.buildPayload(SSID, PASSWORD, IP, PORT, ""));
+				() -> QrCodeHelper.buildPayload(
+						new QrCodeHelper.HotspotCredentials(SSID, PASSWORD, IP, PORT, "")));
 		org.junit.Assert.assertThrows(org.json.JSONException.class,
-				() -> QrCodeHelper.buildPayload(SSID, PASSWORD, IP, PORT, null));
+				() -> QrCodeHelper.buildPayload(
+						new QrCodeHelper.HotspotCredentials(SSID, PASSWORD, IP, PORT, null)));
 	}
 
 	@Test public void validateQrPayload_rejectsAPayloadWithoutAFingerprint() throws Exception {

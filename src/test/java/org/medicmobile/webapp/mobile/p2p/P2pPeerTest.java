@@ -28,8 +28,8 @@ public class P2pPeerTest {
 	}
 
 	private String validPayload() throws Exception {
-		return QrCodeHelper.buildPayload("CHT-P2P-a3f7", "a-password", "192.168.49.1", 8443,
-				"AB:CD:EF:01:23:45");
+		return QrCodeHelper.buildPayload(new QrCodeHelper.HotspotCredentials(
+				"CHT-P2P-a3f7", "a-password", "192.168.49.1", 8443, "AB:CD:EF:01:23:45"));
 	}
 
 	@Test public void constructor_rejectsAMissingJoiner() {
@@ -37,7 +37,9 @@ public class P2pPeerTest {
 	}
 
 	@Test public void pair_rejectsAMissingCallback() throws Exception {
-		assertThrows(IllegalArgumentException.class, () -> peer.pair(validPayload(), null));
+		String payload = validPayload();
+
+		assertThrows(IllegalArgumentException.class, () -> peer.pair(payload, null));
 	}
 
 	@Test public void pair_joinsTheNetworkNamedInTheCode() throws Exception {

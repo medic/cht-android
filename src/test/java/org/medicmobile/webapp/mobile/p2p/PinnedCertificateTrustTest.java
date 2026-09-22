@@ -66,7 +66,7 @@ public class PinnedCertificateTrustTest {
 	}
 
 	/** The whole point: a different device answering on the host's address must be refused. */
-	@Test public void verifyPinned_rejectsAnImpostor() throws Exception {
+	@Test public void verifyPinned_rejectsAnImpostor() {
 		CertificateException thrown = assertThrows(CertificateException.class,
 				() -> PinnedCertificateTrust.verifyPinned(
 						new X509Certificate[] { certificateOf(OTHER_CERT) }, fingerprintOf(HOST_CERT)));
@@ -74,7 +74,7 @@ public class PinnedCertificateTrustTest {
 		assertTrue(thrown.getMessage(), thrown.getMessage().contains("does not match"));
 	}
 
-	@Test public void verifyPinned_rejectsAnEmptyChain() throws Exception {
+	@Test public void verifyPinned_rejectsAnEmptyChain() {
 		assertThrows(CertificateException.class,
 				() -> PinnedCertificateTrust.verifyPinned(new X509Certificate[0], fingerprintOf(HOST_CERT)));
 		assertThrows(CertificateException.class,
@@ -82,7 +82,7 @@ public class PinnedCertificateTrustTest {
 	}
 
 	/** Only the leaf is pinned, so an extra certificate in the chain must not rescue an impostor. */
-	@Test public void verifyPinned_onlyTrustsTheLeafCertificate() throws Exception {
+	@Test public void verifyPinned_onlyTrustsTheLeafCertificate() {
 		assertThrows(CertificateException.class,
 				() -> PinnedCertificateTrust.verifyPinned(
 						new X509Certificate[] { certificateOf(OTHER_CERT), certificateOf(HOST_CERT) },

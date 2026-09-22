@@ -63,30 +63,38 @@ public class WifiHotspotProvider implements HotspotProvider {
 		return Build.VERSION.SDK_INT >= Build.VERSION_CODES.O;
 	}
 
-	@Override
-	public void start(HotspotCallback callback) {
-		if (callback == null) {
-			throw new IllegalArgumentException("callback must not be null");
-		}
-
+	/** The code for why this device cannot start a hotspot right now, or null when it can. */
+	private String reasonHostingIsUnavailable() {
 		if (!isSupported()) {
 			warn(WifiHotspotProvider.class,
 					"Local-only hotspot needs Android 8.0, this device is on API " + Build.VERSION.SDK_INT);
-			callback.onFailed("hotspot_unsupported");
-			return;
+			return "hotspot_unsupported";
 		}
 
 		// Granting the permission is not enough: the platform also refuses to start a hotspot while
 		// location is switched off, and says so in a way that looks like any other failure.
 		if (!isLocationEnabled()) {
 			warn(WifiHotspotProvider.class, "Location services are off, cannot start a hotspot");
-			callback.onFailed("location_services_off");
-			return;
+			return "location_services_off";
 		}
 
 		if (running) {
 			warn(this, "Hotspot already running");
-			callback.onFailed("hotspot_already_running");
+			return "hotspot_already_running";
+		}
+
+		return null;
+	}
+
+	@Override
+	public void start(HotspotCallback callback) {
+		if (callback == null) {
+			throw new IllegalArgumentException("callback must not be null");
+		}
+
+		String unavailable = reasonHostingIsUnavailable();
+		if (unavailable != null) {
+			callback.onFailed(unavailable);
 			return;
 		}
 

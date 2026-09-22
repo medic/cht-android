@@ -32,7 +32,7 @@ public class P2pPeer {
 
 	/** Whether this device can join a session. Every supported Android version can. */
 	public static boolean isJoinSupported() {
-		return HotspotJoiner.isSupported();
+		return HotspotJoiner.SUPPORTED;
 	}
 
 	/**
