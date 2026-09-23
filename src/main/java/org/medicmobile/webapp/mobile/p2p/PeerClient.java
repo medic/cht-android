@@ -10,6 +10,7 @@ import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -32,6 +33,9 @@ public class PeerClient {
 
 	private static final int CONNECT_TIMEOUT_MS = 10_000;
 	private static final int READ_TIMEOUT_MS = 10_000;
+	// The status response is a few dozen bytes. The read timeout only bounds inactivity, so a
+	// host that streams steadily would never trip it: this bounds the total instead.
+	private static final int MAX_BODY_CHARS = 64 * 1024;
 
 	/**
 		* Accepts any hostname, on purpose, because the pin decides identity here.
@@ -113,11 +117,19 @@ public class PeerClient {
 	}
 
 	private String readBody(HttpsURLConnection connection) throws IOException {
+		return readBounded(connection.getInputStream());
+	}
+
+	/** Package-private so the bound can be tested without standing up a server. */
+	static String readBounded(InputStream stream) throws IOException {
 		StringBuilder body = new StringBuilder();
 		try (BufferedReader reader = new BufferedReader(
-				new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8))) {
+				new InputStreamReader(stream, StandardCharsets.UTF_8))) {
 			String line;
 			while ((line = reader.readLine()) != null) {
+				if (body.length() + line.length() > MAX_BODY_CHARS) {
+					throw new IOException("The host's response is larger than we will read");
+				}
 				body.append(line);
 			}
 		}
