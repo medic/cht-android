@@ -92,8 +92,10 @@ public class QrScannerActivity extends Activity {
 		} else {
 			// Unexpected result — not from ZXing
 			super.onActivityResult(requestCode, resultCode, data);
+			// "unknown" rather than a code of its own: the user message would be the same, and a
+			// code with no p2p.error key reaches them as raw text. The log carries the specifics.
 			warn(this, "Unexpected onActivityResult — not a ZXing result");
-			returnError("unexpected_scan_result");
+			returnError("unknown");
 		}
 	}
 
