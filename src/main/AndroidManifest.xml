@@ -110,9 +110,9 @@
         android:exported="true"
         tools:targetApi="23" />
 
-    <!-- P2P WiFi hotspot sync (#11281). No cleartext config is declared: the local server only
-         RECEIVES requests, and cleartext policy applies to outbound ones. The transfer work adds
-         TLS with a pinned per-session certificate, so cleartext is never needed. -->
+    <!-- P2P WiFi hotspot sync (#11281). No cleartext config is declared and none is needed: the
+         only outbound call is the peer's probe of the host, and that is https against a pinned
+         per-session certificate. -->
     <activity android:name="RequestP2pPermissionsActivity"
         android:screenOrientation="portrait"
         android:exported="false"
