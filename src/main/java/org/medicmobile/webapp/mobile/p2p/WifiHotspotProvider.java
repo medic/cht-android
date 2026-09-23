@@ -10,7 +10,7 @@ import android.location.LocationManager;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Handler;
-import android.os.Looper;
+import android.os.HandlerThread;
 
 import java.net.Inet4Address;
 import java.net.InetAddress;
@@ -44,6 +44,12 @@ public class WifiHotspotProvider implements HotspotProvider {
 	private final LocationManager locationManager;
 	private WifiManager.LocalOnlyHotspotReservation reservation;
 	private volatile boolean running = false;
+	/**
+		* The platform delivers its callbacks on whatever looper it is handed, and detecting the
+		* hotspot's address polls for up to 7.5 seconds. On the main looper that is past Android's
+		* ANR threshold, so the app would freeze and can be killed while the hotspot comes up.
+		*/
+	private HandlerThread callbackThread;
 
 	public WifiHotspotProvider(WifiManager wifiManager, LocationManager locationManager) {
 		if (wifiManager == null) {
@@ -102,9 +108,11 @@ public class WifiHotspotProvider implements HotspotProvider {
 			startLocalOnlyHotspot(callback);
 		} catch (SecurityException e) {
 			error(e, "Hotspot SecurityException");
+			stopCallbackThread();
 			callback.onFailed("permissions_required");
 		} catch (Exception e) {
 			error(e, "Failed to start hotspot");
+			stopCallbackThread();
 			callback.onFailed("hotspot_error");
 		}
 	}
@@ -116,8 +124,17 @@ public class WifiHotspotProvider implements HotspotProvider {
 		*/
 	@android.annotation.TargetApi(26)
 	private void startLocalOnlyHotspot(HotspotCallback callback) {
+		callbackThread = new HandlerThread("p2p-hotspot");
+		callbackThread.start();
 		wifiManager.startLocalOnlyHotspot(createHotspotCallback(callback),
-				new Handler(Looper.getMainLooper()));
+				new Handler(callbackThread.getLooper()));
+	}
+
+	private void stopCallbackThread() {
+		if (callbackThread != null) {
+			callbackThread.quitSafely();
+			callbackThread = null;
+		}
 	}
 
 	@android.annotation.TargetApi(26)
@@ -164,6 +181,7 @@ public class WifiHotspotProvider implements HotspotProvider {
 		running = false;
 		closeReservationQuietly(hotspotReservation);
 		reservation = null;
+		stopCallbackThread();
 		callback.onFailed("hotspot_no_address");
 	}
 
@@ -207,6 +225,7 @@ public class WifiHotspotProvider implements HotspotProvider {
 			}
 			reservation = null;
 		}
+		stopCallbackThread();
 		running = false;
 	}
 
