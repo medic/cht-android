@@ -9,6 +9,7 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -21,6 +22,7 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
 import java.io.IOException;
+import java.security.GeneralSecurityException;
 
 @RunWith(RobolectricTestRunner.class)
 public class P2pManagerTest {
@@ -164,12 +166,12 @@ public class P2pManagerTest {
 		manager.stopHosting();
 		manager.startHosting(callback);
 
-		verify(certificate, org.mockito.Mockito.times(2)).renew();
+		verify(certificate, times(2)).renew();
 		verify(certificate).destroy();
 	}
 
 	@Test public void startHosting_failsWhenNoCertificateCanBeMinted() throws Exception {
-		doThrow(new java.security.GeneralSecurityException("no keystore")).when(certificate).renew();
+		doThrow(new GeneralSecurityException("no keystore")).when(certificate).renew();
 
 		manager.startHosting(callback);
 
