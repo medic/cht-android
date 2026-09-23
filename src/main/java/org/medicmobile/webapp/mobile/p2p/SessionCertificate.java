@@ -51,9 +51,11 @@ public class SessionCertificate {
 	private static final String ALIAS = "cht-p2p-session";
 
 	private final KeyStore keyStore;
+	private final String deviceLabel;
 
-	private SessionCertificate(KeyStore keyStore) {
+	private SessionCertificate(KeyStore keyStore, String deviceLabel) {
 		this.keyStore = keyStore;
+		this.deviceLabel = deviceLabel;
 	}
 
 	/**
@@ -63,7 +65,18 @@ public class SessionCertificate {
 		*                    meaningful rather than a placeholder
 		*/
 	public static SessionCertificate generate(String deviceLabel) throws GeneralSecurityException {
-		KeyStore keyStore = loadKeyStore();
+		SessionCertificate certificate = new SessionCertificate(loadKeyStore(), deviceLabel);
+		certificate.renew();
+		return certificate;
+	}
+
+	/**
+		* Replaces the key and certificate with a fresh pair.
+		*
+		* Called at the start of every hosting session: {@link #destroy()} removes the entry when a
+		* session ends, so a second session would otherwise find nothing to serve TLS with.
+		*/
+	public void renew() throws GeneralSecurityException {
 		if (keyStore.containsAlias(ALIAS)) {
 			keyStore.deleteEntry(ALIAS);
 		}
@@ -85,10 +98,8 @@ public class SessionCertificate {
 				.build());
 		generator.generateKeyPair();
 
-		SessionCertificate certificate = new SessionCertificate(keyStore);
-		certificate.assertUsableOnThisDevice();
+		assertUsableOnThisDevice();
 		log(SessionCertificate.class, "Generated a session certificate");
-		return certificate;
 	}
 
 	/** Backdated a little, so a peer whose clock runs slightly behind still accepts it. */

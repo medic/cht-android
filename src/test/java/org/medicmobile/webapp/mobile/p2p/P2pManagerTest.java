@@ -154,4 +154,26 @@ public class P2pManagerTest {
 	public void isHostSupported_isTrueFromApi26() {
 		assertTrue(P2pManager.isHostSupported());
 	}
+
+	/**
+		* stopHosting destroys the session key, so a second session has to mint a new one. Without
+		* this the supervisor can share once, stop, and never share again until the app restarts.
+		*/
+	@Test public void startHosting_renewsTheCertificateForEachSession() throws Exception {
+		manager.startHosting(callback);
+		manager.stopHosting();
+		manager.startHosting(callback);
+
+		verify(certificate, org.mockito.Mockito.times(2)).renew();
+		verify(certificate).destroy();
+	}
+
+	@Test public void startHosting_failsWhenNoCertificateCanBeMinted() throws Exception {
+		doThrow(new java.security.GeneralSecurityException("no keystore")).when(certificate).renew();
+
+		manager.startHosting(callback);
+
+		verify(callback).onFailed("server_start_failed");
+		verify(hotspotManager, never()).startHotspot(any());
+	}
 }

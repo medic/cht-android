@@ -74,6 +74,16 @@ public class P2pManager {
 			return;
 		}
 
+		try {
+			// A session's identity must not outlive it: stopHosting destroys the key, so without
+			// this a second session would find nothing in the keystore to serve TLS with.
+			certificate.renew();
+		} catch (GeneralSecurityException e) {
+			warn(e, "Could not prepare a certificate for this session");
+			callback.onFailed("server_start_failed");
+			return;
+		}
+
 		hotspotManager.startHotspot(new HotspotProvider.HotspotCallback() {
 			@Override public void onStarted(String ssid, String password, String ipAddress) {
 				if (startLocalServer(callback)) {
