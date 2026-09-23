@@ -380,13 +380,22 @@ public class EmbeddedBrowserActivity extends Activity {
 	}
 
 //> PRIVATE HELPERS
+	/**
+		* Why the scan ended without a code. The scanner reports this; without it every bad code
+		* would look to the user like they had cancelled the scan themselves.
+		*/
+	private static String scanFailureCode(Intent intent) {
+		if (intent == null) {
+			return "scan_cancelled";
+		}
+		String reason = intent.getStringExtra(QrScannerActivity.EXTRA_QR_ERROR);
+		return reason == null ? "scan_cancelled" : reason;
+	}
+
 	/** Hands a scanned code to the peer, which joins and then checks the host is who it claims. */
 	private void p2pQrCodeScanned(int resultCode, Intent intent) {
 		if(resultCode != RESULT_OK || intent == null) {
-			// The scanner reports why it rejected a code; without this every bad code would look
-			// to the user like they had cancelled the scan themselves.
-			String reason = intent == null ? null : intent.getStringExtra(QrScannerActivity.EXTRA_QR_ERROR);
-			resolveP2pPairing(false, reason == null ? "scan_cancelled" : reason);
+			resolveP2pPairing(false, scanFailureCode(intent));
 			return;
 		}
 

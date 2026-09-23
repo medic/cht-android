@@ -4,18 +4,26 @@ import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.robolectric.Shadows.shadowOf;
 
 import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.os.Looper;
+
+import java.time.Duration;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
@@ -73,6 +81,45 @@ public class HotspotJoinerTest {
 
 		verify(callback).onFailed("join_failed");
 		verify(wifiManager, never()).enableNetwork(anyInt(), org.mockito.ArgumentMatchers.anyBoolean());
+	}
+
+	/**
+		* Below Android 10 the platform gives requestNetwork's timeout no equivalent, so the join is
+		* bounded here. Without it the user sits on "connecting" forever with nothing to act on.
+		*/
+	@Test @Config(sdk = 28)
+	public void join_failsWhenTheNetworkNeverArrivesBeforeAndroid10() {
+		when(wifiManager.addNetwork(any())).thenReturn(7);
+		when(wifiManager.enableNetwork(anyInt(), org.mockito.ArgumentMatchers.anyBoolean())).thenReturn(true);
+
+		joiner.join(SSID, PASSWORD, callback);
+		verify(callback, never()).onFailed(anyString());
+
+		shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(60_000));
+
+		verify(callback).onFailed("join_failed");
+	}
+
+	/**
+		* The legacy path can only watch wifi in general, so another network coming up must not be
+		* mistaken for the host's.
+		*/
+	@Test @Config(sdk = 28)
+	public void join_ignoresADifferentNetworkBeforeAndroid10() {
+		when(wifiManager.addNetwork(any())).thenReturn(7);
+		when(wifiManager.enableNetwork(anyInt(), org.mockito.ArgumentMatchers.anyBoolean())).thenReturn(true);
+		WifiInfo info = mock(WifiInfo.class);
+		when(info.getSSID()).thenReturn("\"someone-elses-wifi\"");
+		when(wifiManager.getConnectionInfo()).thenReturn(info);
+
+		joiner.join(SSID, PASSWORD, callback);
+
+		ArgumentCaptor<ConnectivityManager.NetworkCallback> captor =
+				ArgumentCaptor.forClass(ConnectivityManager.NetworkCallback.class);
+		verify(connectivityManager).registerNetworkCallback(any(), captor.capture());
+		captor.getValue().onAvailable(mock(Network.class));
+
+		verify(callback, never()).onJoined(any());
 	}
 
 	/** Android 10 broke addNetwork for apps, so it must not be attempted there. */

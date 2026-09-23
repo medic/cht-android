@@ -11,6 +11,8 @@ import android.net.NetworkRequest;
 import android.net.wifi.WifiManager;
 import android.net.wifi.WifiNetworkSpecifier;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
 
 /**
 	* Joins the host's hotspot on the peer device.
@@ -39,6 +41,9 @@ public class HotspotJoiner {
 	private final ConnectivityManager connectivityManager;
 	private final WifiManager wifiManager;
 	private ConnectivityManager.NetworkCallback activeCallback;
+	/** Only the API 29+ path gets a timeout from the platform; below that we run our own. */
+	private final Handler timeoutHandler = new Handler(Looper.getMainLooper());
+	private Runnable joinTimeout;
 	/** Set only on the pre-Android-10 path, where the network is saved to the device and must be
 		* taken back off it afterwards. */
 	private int savedNetworkId = -1;
@@ -103,7 +108,7 @@ public class HotspotJoiner {
 		savedNetworkId = networkId;
 
 		// watch first, so a fast connection is not missed between enabling and registering
-		watchForWifi(callback);
+		watchForWifi(ssid, callback);
 		if (!wifiManager.enableNetwork(networkId, true)) {
 			leave();
 			warn(HotspotJoiner.class, "The device would not switch to the host's network");
@@ -111,14 +116,26 @@ public class HotspotJoiner {
 		}
 	}
 
-	/** Reports the wifi network once the system says it is up. */
-	private void watchForWifi(JoinCallback callback) {
+	/**
+		* Reports the wifi network once the system says it is up.
+		*
+		* This watches wifi in general, because below Android 10 there is no way to ask for one
+		* specific network, so it checks the SSID before calling the join done. Nothing here is a
+		* security boundary: the certificate pin is what proves the host is the right device.
+		*/
+	@SuppressWarnings("deprecation")
+	private void watchForWifi(String ssid, JoinCallback callback) {
 		NetworkRequest request = new NetworkRequest.Builder()
 				.addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
 				.build();
 
 		activeCallback = new ConnectivityManager.NetworkCallback() {
 			@Override public void onAvailable(Network network) {
+				if (!isConnectedTo(ssid)) {
+					// some other wifi came up; keep waiting for the host's
+					return;
+				}
+				cancelJoinTimeout();
 				log(HotspotJoiner.class, "Joined the host's network");
 				callback.onJoined(network);
 			}
@@ -129,6 +146,40 @@ public class HotspotJoiner {
 			}
 		};
 		connectivityManager.registerNetworkCallback(request, activeCallback);
+		startJoinTimeout(callback);
+	}
+
+	/** Whether the device is currently on the named network. */
+	@SuppressWarnings("deprecation")
+	private boolean isConnectedTo(String ssid) {
+		android.net.wifi.WifiInfo info = wifiManager.getConnectionInfo();
+		if (info == null || info.getSSID() == null) {
+			return false;
+		}
+		// the platform reports it quoted
+		return info.getSSID().replace("\"", "").equals(ssid);
+	}
+
+	/**
+		* Fails the join if the network never arrives. Without this the pre-Android-10 path waits
+		* forever and the user is left on "connecting" with nothing to act on.
+		*/
+	private void startJoinTimeout(JoinCallback callback) {
+		cancelJoinTimeout();
+		joinTimeout = () -> {
+			joinTimeout = null;
+			warn(HotspotJoiner.class, "Gave up waiting for the host's network");
+			leave();
+			callback.onFailed(JOIN_FAILED);
+		};
+		timeoutHandler.postDelayed(joinTimeout, JOIN_TIMEOUT_MS);
+	}
+
+	private void cancelJoinTimeout() {
+		if (joinTimeout != null) {
+			timeoutHandler.removeCallbacks(joinTimeout);
+			joinTimeout = null;
+		}
 	}
 
 	@android.annotation.TargetApi(29)
@@ -164,6 +215,7 @@ public class HotspotJoiner {
 
 	/** Releases the network, letting the device return to its usual connection. */
 	public void leave() {
+		cancelJoinTimeout();
 		if (activeCallback != null) {
 			try {
 				connectivityManager.unregisterNetworkCallback(activeCallback);
