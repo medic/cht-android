@@ -48,7 +48,8 @@ public class P2pPeer {
 
 		QrValidation validation = QrCodeHelper.validateQrPayload(payloadJson);
 		if (!validation.isAccepted()) {
-			callback.onFailed(validation.getReason());
+			warn(P2pPeer.class, "Rejected a scanned code: " + validation.getDetail());
+			callback.onFailed(validation.getCode());
 			return;
 		}
 

@@ -35,7 +35,7 @@ public class QrCodeHelperTest {
 	@Test public void validateQrPayload_acceptsAFreshPayload() throws Exception {
 		QrValidation result = QrCodeHelper.validateQrPayload(QrCodeHelper.buildPayload(credentials()));
 
-		assertTrue(result.getReason(), result.isAccepted());
+		assertTrue(result.getDetail(), result.isAccepted());
 	}
 
 	@Test public void validateQrPayload_rejectsEmptyInput() {
@@ -47,7 +47,7 @@ public class QrCodeHelperTest {
 		QrValidation result = QrCodeHelper.validateQrPayload("this is not a qr payload");
 
 		assertFalse(result.isAccepted());
-		assertNotNull(result.getReason());
+		assertNotNull(result.getCode());
 	}
 
 	@Test public void buildPayload_carriesTheCertificateFingerprint() throws Exception {
@@ -73,7 +73,7 @@ public class QrCodeHelperTest {
 		QrValidation result = QrCodeHelper.validateQrPayload(payload.toString());
 
 		assertFalse(result.isAccepted());
-		assertTrue(result.getReason(), result.getReason().contains("fp"));
+		assertTrue(result.getDetail(), result.getDetail().contains("fp"));
 	}
 
 	@Test public void parsePayload_exposesTheFingerprintToPinAgainst() throws Exception {
@@ -89,7 +89,7 @@ public class QrCodeHelperTest {
 		QrValidation result = QrCodeHelper.validateQrPayload(payload.toString());
 
 		assertFalse(result.isAccepted());
-		assertTrue(result.getReason(), result.getReason().contains("ssid"));
+		assertTrue(result.getDetail(), result.getDetail().contains("ssid"));
 	}
 
 	@Test public void validateQrPayload_rejectsAStaleQrCode() throws Exception {
@@ -106,5 +106,34 @@ public class QrCodeHelperTest {
 
 		assertNotNull(parsed);
 		assertEquals(SSID, parsed.getSsid());
+	}
+
+	/**
+		* Anything the webapp receives becomes a `p2p.error.<code>` translation key, so a code has to
+		* be a stable token. A sentence here would reach a CHW as raw text, which is how the prose
+		* reasons this class used to return went unnoticed.
+		*/
+	@Test public void everyRejectionCarriesAStableCode() throws Exception {
+		JSONObject noTimestamp = new JSONObject(QrCodeHelper.buildPayload(credentials()));
+		noTimestamp.remove("ts");
+
+		String[] badPayloads = {
+			"",
+			"not json at all",
+			new JSONObject().put("type", "wrong").toString(),
+			new JSONObject(QrCodeHelper.buildPayload(credentials())).put("v", 99).toString(),
+			noTimestamp.toString(),
+			new JSONObject(QrCodeHelper.buildPayload(credentials())).put("ts", 1).toString(),
+			new JSONObject(QrCodeHelper.buildPayload(credentials())).put("port", 0).toString(),
+			new JSONObject(QrCodeHelper.buildPayload(credentials())).put("ssid", "").toString(),
+		};
+
+		for (String payload : badPayloads) {
+			QrValidation result = QrCodeHelper.validateQrPayload(payload);
+			assertFalse("expected a rejection for: " + payload, result.isAccepted());
+			assertTrue(
+					"not a stable code: " + result.getCode(),
+					result.getCode().matches("[a-z0-9_]+"));
+		}
 	}
 }

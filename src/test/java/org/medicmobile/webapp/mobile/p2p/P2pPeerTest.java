@@ -63,7 +63,7 @@ public class P2pPeerTest {
 
 		peer.pair(payload.toString(), callback);
 
-		verify(callback).onFailed("missing required field: fp");
+		verify(callback).onFailed("unreadable_payload");
 		verify(joiner, never()).join(anyString(), anyString(), any());
 	}
 

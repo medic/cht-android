@@ -6,7 +6,6 @@ import static org.medicmobile.webapp.mobile.MedicLog.warn;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.widget.Toast;
 
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
@@ -111,10 +110,9 @@ public class QrScannerActivity extends Activity {
 			resultIntent.putExtra(EXTRA_QR_RESULT, scannedContent);
 			setResult(RESULT_OK, resultIntent);
 		} else {
-			String reason = validation.getReason();
-			warn(this, "QR payload validation failed: " + reason);
-			Toast.makeText(this, "Invalid QR code: " + reason, Toast.LENGTH_LONG).show();
-			returnError(reason);
+			// The webapp shows the translated message for this code; the detail is for support.
+			warn(this, "QR payload validation failed: " + validation.getDetail());
+			returnError(validation.getCode());
 		}
 
 		finish();

@@ -57,6 +57,9 @@ public final class QrCodeHelper {
 	private static final String KEY_IP = "ip";
 	private static final String KEY_PORT = "port";
 	private static final int MAX_PORT = 65535;
+	// Every validation failure means the same thing to the user: the code cannot be used, ask
+	// for another. The prose behind it goes to the log, never across the bridge.
+	private static final String UNREADABLE = "unreadable_payload";
 	private static final String KEY_TS = "ts";
 
 	private QrCodeHelper() {
@@ -189,14 +192,14 @@ public final class QrCodeHelper {
 		*/
 	public static QrValidation validateQrPayload(String payloadJson) {
 		if (payloadJson == null || payloadJson.isEmpty()) {
-			return QrValidation.reject("empty_payload");
+			return QrValidation.reject(UNREADABLE, "empty payload");
 		}
 
 		JSONObject payload;
 		try {
 			payload = new JSONObject(payloadJson);
 		} catch (JSONException e) {
-			return QrValidation.reject("invalid_json: " + e.getMessage());
+			return QrValidation.reject(UNREADABLE, "invalid json: " + e.getMessage());
 		}
 
 		QrValidation headerCheck = checkQrTypeAndVersion(payload);
@@ -215,12 +218,12 @@ public final class QrCodeHelper {
 	private static QrValidation checkQrTypeAndVersion(JSONObject payload) {
 		String type = payload.optString("type", "");
 		if (!PAYLOAD_TYPE.equals(type)) {
-			return QrValidation.reject("invalid type '" + type +
+			return QrValidation.reject(UNREADABLE, "invalid type '" + type +
 					"', expected '" + PAYLOAD_TYPE + "'");
 		}
 		int version = payload.optInt("v", -1);
 		if (version != PAYLOAD_VERSION) {
-			return QrValidation.reject("unsupported version: " + version +
+			return QrValidation.reject(UNREADABLE, "unsupported version: " + version +
 					", expected " + PAYLOAD_VERSION);
 		}
 		return null;
@@ -229,11 +232,11 @@ public final class QrCodeHelper {
 	private static QrValidation checkQrTimestamp(JSONObject payload) {
 		long timestamp = payload.optLong(KEY_TS, 0);
 		if (timestamp == 0) {
-			return QrValidation.reject("missing timestamp");
+			return QrValidation.reject(UNREADABLE, "missing timestamp");
 		}
 		long drift = Math.abs(System.currentTimeMillis() - timestamp);
 		if (drift > MAX_TIMESTAMP_DRIFT_MS) {
-			return QrValidation.reject("QR code expired. Timestamp drift: " +
+			return QrValidation.reject(UNREADABLE, "code expired, timestamp drift: " +
 					(drift / 1000) + "s (max " + (MAX_TIMESTAMP_DRIFT_MS / 1000) + "s)");
 		}
 		return null;
@@ -276,12 +279,12 @@ public final class QrCodeHelper {
 	private static QrValidation validateRequiredFields(JSONObject payload) {
 		for (String field : REQUIRED_FIELDS) {
 			if (isEmptyField(payload, field)) {
-				return QrValidation.reject("missing required field: " + field);
+				return QrValidation.reject(UNREADABLE, "missing required field: " + field);
 			}
 		}
 		int port = payload.optInt(KEY_PORT, 0);
 		if (port <= 0 || port > MAX_PORT) {
-			return QrValidation.reject("invalid port: " + port);
+			return QrValidation.reject(UNREADABLE, "invalid port: " + port);
 		}
 		return QrValidation.accept();
 	}

@@ -383,8 +383,10 @@ public class EmbeddedBrowserActivity extends Activity {
 	/** Hands a scanned code to the peer, which joins and then checks the host is who it claims. */
 	private void p2pQrCodeScanned(int resultCode, Intent intent) {
 		if(resultCode != RESULT_OK || intent == null) {
-			evaluateJavascript(
-				"window.CHTCore.AndroidApi.v1.resolveP2pPairing(false, \"scan_cancelled\");");
+			// The scanner reports why it rejected a code; without this every bad code would look
+			// to the user like they had cancelled the scan themselves.
+			String reason = intent == null ? null : intent.getStringExtra(QrScannerActivity.EXTRA_QR_ERROR);
+			resolveP2pPairing(false, reason == null ? "scan_cancelled" : reason);
 			return;
 		}
 

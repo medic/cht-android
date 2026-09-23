@@ -14,20 +14,22 @@ public class QrValidationTest {
 		QrValidation validation = QrValidation.accept();
 
 		assertTrue(validation.isAccepted());
-		assertNull(validation.getReason());
+		assertNull(validation.getCode());
+		assertNull(validation.getDetail());
 	}
 
 	@Test
 	public void reject_isNotAcceptedAndKeepsTheReason() {
-		QrValidation validation = QrValidation.reject("missing required field: ssid");
+		QrValidation validation = QrValidation.reject("unreadable_payload", "missing required field: ssid");
 
 		assertFalse(validation.isAccepted());
-		assertEquals("missing required field: ssid", validation.getReason());
+		assertEquals("unreadable_payload", validation.getCode());
+		assertEquals("missing required field: ssid", validation.getDetail());
 	}
 
 	@Test
 	public void toString_saysWhichOutcomeItIs() {
 		assertTrue(QrValidation.accept().toString().contains("accepted"));
-		assertTrue(QrValidation.reject("expired").toString().contains("expired"));
+		assertTrue(QrValidation.reject("unreadable_payload", "expired").toString().contains("expired"));
 	}
 }
