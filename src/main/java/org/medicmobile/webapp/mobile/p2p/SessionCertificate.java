@@ -45,6 +45,7 @@ import fi.iki.elonen.NanoHTTPD;
 public class SessionCertificate {
 
 	private static final String KEYSTORE_TYPE = "AndroidKeyStore";
+	private static final String DEFAULT_LABEL = "CHT device";
 	private static final String LOOPBACK = "127.0.0.1";
 	private static final int HANDSHAKE_TIMEOUT_MS = 5000;
 	private static final String ALIAS = "cht-p2p-session";
@@ -111,11 +112,15 @@ public class SessionCertificate {
 	}
 
 	/** A subject is not a security boundary, but it should not be able to break the DN either. */
-	private static String sanitise(String deviceLabel) {
-		if (deviceLabel == null || deviceLabel.trim().isEmpty()) {
-			return "CHT device";
+	static String sanitise(String deviceLabel) {
+		if (deviceLabel == null) {
+			return DEFAULT_LABEL;
 		}
-		return deviceLabel.replaceAll("[^A-Za-z0-9 ._-]", "").trim();
+		// Build.MODEL is whatever the vendor set, so it can be entirely outside this set and strip
+		// to nothing. Falling through with an empty subject would leave the certificate with a bare
+		// "CN=".
+		String cleaned = deviceLabel.replaceAll("[^A-Za-z0-9 ._-]", "").trim();
+		return cleaned.isEmpty() ? DEFAULT_LABEL : cleaned;
 	}
 
 	/** The socket factory NanoHTTPD serves through. */
