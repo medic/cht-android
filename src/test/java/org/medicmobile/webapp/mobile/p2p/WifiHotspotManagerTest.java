@@ -1,7 +1,6 @@
 package org.medicmobile.webapp.mobile.p2p;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
@@ -20,7 +19,6 @@ import org.robolectric.RobolectricTestRunner;
 @RunWith(RobolectricTestRunner.class)
 public class WifiHotspotManagerTest {
 
-	private static final int IDLE_TIMEOUT_SEC = 60;
 	private static final String SSID = "CHT-P2P-a3f7";
 	private static final String PASSWORD = "a-password";
 	private static final String IP = "192.168.49.1";
@@ -30,7 +28,7 @@ public class WifiHotspotManagerTest {
 
 	@Before public void setUp() {
 		provider = mock(HotspotProvider.class);
-		manager = new WifiHotspotManager(provider, IDLE_TIMEOUT_SEC);
+		manager = new WifiHotspotManager(provider);
 	}
 
 	/** Answers a startHotspot call by reporting success back through the provider's callback. */
@@ -43,12 +41,7 @@ public class WifiHotspotManagerTest {
 	}
 
 	@Test public void constructor_rejectsAMissingProvider() {
-		assertThrows(IllegalArgumentException.class, () -> new WifiHotspotManager(null, IDLE_TIMEOUT_SEC));
-	}
-
-	@Test public void constructor_rejectsANonPositiveTimeout() {
-		assertThrows(IllegalArgumentException.class, () -> new WifiHotspotManager(provider, 0));
-		assertThrows(IllegalArgumentException.class, () -> new WifiHotspotManager(provider, -1));
+		assertThrows(IllegalArgumentException.class, () -> new WifiHotspotManager(null));
 	}
 
 	@Test public void startHotspot_keepsTheCredentialsTheProviderReported() {
@@ -119,19 +112,4 @@ public class WifiHotspotManagerTest {
 		verify(provider, never()).stop();
 	}
 
-	@Test public void isIdleTimedOut_isFalseWhileTheHotspotIsDown() {
-		when(provider.isRunning()).thenReturn(false);
-
-		assertFalse(manager.isIdleTimedOut());
-	}
-
-	@Test public void isIdleTimedOut_isFalseRightAfterActivity() {
-		providerStartsSuccessfully();
-		when(provider.isRunning()).thenReturn(false, true);
-		manager.startHotspot(mock(HotspotProvider.HotspotCallback.class));
-
-		manager.recordActivity();
-
-		assertFalse(manager.isIdleTimedOut());
-	}
 }

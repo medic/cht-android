@@ -16,25 +16,18 @@ import static org.medicmobile.webapp.mobile.MedicLog.warn;
 	*/
 public class WifiHotspotManager {
 
-
 	private final HotspotProvider provider;
-	private final long idleTimeoutMs;
 
 	private long startedAt;
-	private volatile long lastActivityAt;
 	private String activeSsid;
 	private String activePassword;
 	private String activeIpAddress;
 
-	public WifiHotspotManager(HotspotProvider provider, int idleTimeoutSec) {
+	public WifiHotspotManager(HotspotProvider provider) {
 		if (provider == null) {
 			throw new IllegalArgumentException("provider must not be null");
 		}
-		if (idleTimeoutSec <= 0) {
-			throw new IllegalArgumentException("idleTimeoutSec must be positive");
-		}
 		this.provider = provider;
-		this.idleTimeoutMs = (long) idleTimeoutSec * 1000;
 	}
 
 	/**
@@ -56,9 +49,7 @@ public class WifiHotspotManager {
 		provider.start(new HotspotProvider.HotspotCallback() {
 			@Override
 			public void onStarted(String ssid, String password, String ipAddress) {
-				long now = System.currentTimeMillis();
-				startedAt = now;
-				lastActivityAt = now;
+				startedAt = System.currentTimeMillis();
 				activeSsid = ssid;
 				activePassword = password;
 				activeIpAddress = ipAddress;
@@ -88,7 +79,6 @@ public class WifiHotspotManager {
 		activePassword = null;
 		activeIpAddress = null;
 		startedAt = 0;
-		lastActivityAt = 0;
 	}
 
 	/**
@@ -97,30 +87,6 @@ public class WifiHotspotManager {
 	public boolean isActive() {
 		return provider.isRunning();
 	}
-
-	/**
-		* Record activity to reset the idle timeout clock.
-		* Call this whenever a sync operation occurs (doc transfer, auth, etc.).
-		*/
-	public void recordActivity() {
-		lastActivityAt = System.currentTimeMillis();
-	}
-
-	/**
-		* Check if the hotspot has exceeded its idle timeout.
-		* Used to auto-shutdown the hotspot when no sync activity occurs.
-		*
-		* @return true if idle time exceeds the configured idle timeout
-		*/
-	public boolean isIdleTimedOut() {
-		if (!provider.isRunning() || lastActivityAt == 0) {
-			return false;
-		}
-		long idleMs = System.currentTimeMillis() - lastActivityAt;
-		return idleMs > idleTimeoutMs;
-	}
-
-
 
 	// --- Getters for active credentials ---
 

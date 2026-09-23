@@ -23,8 +23,6 @@ import java.security.GeneralSecurityException;
 	*/
 public class P2pManager {
 
-	/** How long a hotspot may sit unused before it is worth shutting down. */
-	private static final int IDLE_TIMEOUT_SEC = 300;
 
 	private final WifiHotspotManager hotspotManager;
 	private final LocalHttpServer server;
@@ -51,7 +49,7 @@ public class P2pManager {
 		SessionCertificate certificate = SessionCertificate.generate(deviceLabel);
 		return new P2pManager(
 				new WifiHotspotManager(
-						new WifiHotspotProvider(wifiManager, locationManager), IDLE_TIMEOUT_SEC),
+						new WifiHotspotProvider(wifiManager, locationManager)),
 				new LocalHttpServer(deviceLabel, certificate),
 				certificate);
 	}
