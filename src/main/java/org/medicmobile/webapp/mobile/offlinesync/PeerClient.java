@@ -100,7 +100,7 @@ public class PeerClient {
 		*/
 	public void postBundle(String ipAddress, int port, String envelope, String signature, File body)
 			throws IOException {
-		HttpsURLConnection connection = open(ipAddress, port, "/_p2p/bundle", "POST");
+		HttpsURLConnection connection = open(ipAddress, port, "/_offline-sync/bundle", "POST");
 		try {
 			connection.setDoOutput(true);
 			// Streamed rather than buffered: a bundle is megabytes and the phone should not hold a

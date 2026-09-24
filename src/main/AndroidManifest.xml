@@ -109,7 +109,7 @@
         android:resource="@xml/file_paths">
       </meta-data>
     </provider>
-    <service android:name="org.medicmobile.webapp.mobile.p2p.P2pForegroundService"
+    <service android:name="org.medicmobile.webapp.mobile.offlinesync.OfflineSyncForegroundService"
              android:exported="false"
              android:foregroundServiceType="connectedDevice"/>
 

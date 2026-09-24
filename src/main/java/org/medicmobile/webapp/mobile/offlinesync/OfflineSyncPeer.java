@@ -218,18 +218,6 @@ public class OfflineSyncPeer {
 		}
 	}
 
-	/**
-		* Removes a bundle once it is finished with, whether it arrived or not.
-		*
-		* Kept on failure it would only pile up: the webapp packs from its own position and would
-		* build the same data again next time, so nothing here is worth resuming.
-		*/
-	private void discard(File body) {
-		if (body.exists() && !body.delete()) {
-			warn(P2pPeer.class, "Could not delete a bundle that is finished with");
-		}
-	}
-
 	/** Leaves the session's network. */
 	public void unpair() {
 		forget();

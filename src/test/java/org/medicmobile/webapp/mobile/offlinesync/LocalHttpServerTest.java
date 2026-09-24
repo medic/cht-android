@@ -44,7 +44,7 @@ public class LocalHttpServerTest {
 	}
 
 	private NanoHTTPD.IHTTPSession bundleRequest(java.util.Map<String, String> headers, byte[] body) {
-		NanoHTTPD.IHTTPSession session = request(NanoHTTPD.Method.POST, "/_p2p/bundle");
+		NanoHTTPD.IHTTPSession session = request(NanoHTTPD.Method.POST, "/_offline-sync/bundle");
 		when(session.getHeaders()).thenReturn(headers);
 		when(session.getInputStream()).thenReturn(new java.io.ByteArrayInputStream(body));
 		return session;
@@ -244,7 +244,7 @@ public class LocalHttpServerTest {
 	public void serve_readsOnlyTheBodyAndLeavesTheRestOfTheSocketAlone() throws Exception {
 		java.io.File root = new java.io.File(System.getProperty("java.io.tmpdir"), "inbox-" + System.nanoTime());
 		LocalHttpServer server = serverWithRealSpool(root);
-		byte[] wire = "ciphertextGET /_p2p/status".getBytes("UTF-8");
+		byte[] wire = "ciphertextGET /_offline-sync/status".getBytes("UTF-8");
 
 		NanoHTTPD.Response response = server.serve(bundleRequest(bundleHeaders(10), wire));
 
@@ -272,6 +272,6 @@ public class LocalHttpServerTest {
 	public void serve_refusesAnythingElse() throws Exception {
 		assertEquals(
 				NanoHTTPD.Response.Status.NOT_FOUND,
-				server().serve(request(NanoHTTPD.Method.POST, "/_p2p/status")).getStatus());
+				server().serve(request(NanoHTTPD.Method.POST, "/_offline-sync/status")).getStatus());
 	}
 }
