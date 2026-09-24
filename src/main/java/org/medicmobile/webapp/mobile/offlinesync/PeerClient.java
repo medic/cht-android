@@ -7,10 +7,13 @@ import android.net.Network;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
@@ -32,6 +35,7 @@ public class PeerClient {
 
 	private static final int CONNECT_TIMEOUT_MS = 10_000;
 	private static final int READ_TIMEOUT_MS = 10_000;
+	private static final int UPLOAD_BUFFER_BYTES = 64 * 1024;
 	// The status response is a few dozen bytes. The read timeout only bounds inactivity, so a
 	// host that streams steadily would never trip it: this bounds the total instead.
 	private static final int MAX_BODY_CHARS = 64 * 1024;
@@ -86,8 +90,46 @@ public class PeerClient {
 		}
 	}
 
+	/**
+		* Hands one sealed bundle to the host.
+		*
+		* The envelope and signature ride in headers and the body is the raw ciphertext, which is
+		* the shape the server's own endpoint expects, so the host can pass both on untouched.
+		*
+		* @throws IOException if the host could not be reached, or would not take the bundle
+		*/
+	public void postBundle(String ipAddress, int port, String envelope, String signature, File body)
+			throws IOException {
+		HttpsURLConnection connection = open(ipAddress, port, "/_p2p/bundle", "POST");
+		try {
+			connection.setDoOutput(true);
+			// Streamed rather than buffered: a bundle is megabytes and the phone should not hold a
+			// second copy of it just to send the first.
+			connection.setFixedLengthStreamingMode(body.length());
+			connection.setRequestProperty("Content-Type", "application/octet-stream");
+			connection.setRequestProperty("X-Medic-Bundle-Envelope", envelope);
+			connection.setRequestProperty("X-Medic-Bundle-Signature", signature);
+
+			try (InputStream in = new FileInputStream(body); OutputStream out = connection.getOutputStream()) {
+				byte[] buffer = new byte[UPLOAD_BUFFER_BYTES];
+				int read;
+				while ((read = in.read(buffer)) != -1) {
+					out.write(buffer, 0, read);
+				}
+			}
+
+			int status = connection.getResponseCode();
+			if (status != HttpURLConnection.HTTP_OK) {
+				throw new BundleRejectedException("The host answered " + status + " for the bundle");
+			}
+			log(PeerClient.class, "Handed over a bundle of " + body.length() + " bytes");
+		} finally {
+			connection.disconnect();
+		}
+	}
+
 	private JSONObject get(String ipAddress, int port, String path) throws IOException {
-		HttpsURLConnection connection = open(ipAddress, port, path);
+		HttpsURLConnection connection = open(ipAddress, port, path, "GET");
 		try {
 			int status = connection.getResponseCode();
 			if (status != HttpURLConnection.HTTP_OK) {
@@ -99,7 +141,7 @@ public class PeerClient {
 		}
 	}
 
-	private HttpsURLConnection open(String ipAddress, int port, String path) throws IOException {
+	private HttpsURLConnection open(String ipAddress, int port, String path, String method) throws IOException {
 		URL url = new URL("https://" + ipAddress + ":" + port + path);
 		// through the joined network, not whatever the device would otherwise use
 		HttpsURLConnection connection = (HttpsURLConnection) network.openConnection(url);
@@ -111,8 +153,22 @@ public class PeerClient {
 		connection.setHostnameVerifier(PIN_IS_THE_IDENTITY_CHECK);
 		connection.setConnectTimeout(CONNECT_TIMEOUT_MS);
 		connection.setReadTimeout(READ_TIMEOUT_MS);
-		connection.setRequestMethod("GET");
+		connection.setRequestMethod(method);
 		return connection;
+	}
+
+	/**
+		* The host was reached and would not take the bundle.
+		*
+		* Separate from any other failure because it means something different to the user: the
+		* link worked, so retrying the same bundle on the same host will fail the same way.
+		*/
+	public static class BundleRejectedException extends IOException {
+		private static final long serialVersionUID = 1L;
+
+		public BundleRejectedException(String message) {
+			super(message);
+		}
 	}
 
 	private String readBody(HttpsURLConnection connection) throws IOException {

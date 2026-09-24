@@ -26,6 +26,7 @@ import android.widget.DatePicker;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.medicmobile.webapp.mobile.offlinesync.OfflineSyncForegroundService;
 import org.medicmobile.webapp.mobile.offlinesync.OfflineSyncManager;
 import org.medicmobile.webapp.mobile.offlinesync.OfflineSyncPeer;
 import org.medicmobile.webapp.mobile.util.AppDataStore;
@@ -59,6 +60,9 @@ public class MedicAndroidJavascript {
 	private final OfflineSyncPeer offlineSyncPeer;
 	private final OfflineSyncManager.HostingCallback hostingCallback = new OfflineSyncManager.HostingCallback() {
 		@Override public void onReady(String qrPayload, String ssid, String password) {
+			// Only once there is something to keep alive: a session that failed to start has
+			// nothing for the service to hold open.
+			OfflineSyncForegroundService.start(parent, OfflineSyncForegroundService.STATUS_HOSTING);
 			respondToOfflineSync(true, session(qrPayload, ssid, password), "");
 		}
 
@@ -67,6 +71,7 @@ public class MedicAndroidJavascript {
 		}
 
 		@Override public void onLost(String reason) {
+			OfflineSyncForegroundService.stop(parent);
 			respondToOfflineSync(false, reason, "");
 		}
 	};
@@ -84,6 +89,7 @@ public class MedicAndroidJavascript {
 		this.offlineSyncPeer = parent.getOfflineSyncPeer();
 		if(offlineSyncManager != null) {
 			offlineSyncManager.redirect(hostingCallback);
+			offlineSyncManager.setBundleListener(this::respondToBundleReceived);
 		}
 	}
 
@@ -238,6 +244,7 @@ public class MedicAndroidJavascript {
 	@android.webkit.JavascriptInterface
 	@SuppressWarnings("java:S100")  // the webapp calls this name literally over the bridge
 	public void offline_sync_stop_hosting() {
+		OfflineSyncForegroundService.stop(parent);
 		if(offlineSyncManager != null) {
 			offlineSyncManager.stopHosting();
 		}
@@ -276,6 +283,7 @@ public class MedicAndroidJavascript {
 	@android.webkit.JavascriptInterface
 	@SuppressWarnings("java:S100")  // the webapp calls this name literally over the bridge
 	public void offline_sync_leave_session() {
+		OfflineSyncForegroundService.stop(parent);
 		if(offlineSyncPeer != null) {
 			offlineSyncPeer.unpair();
 		}
@@ -286,6 +294,120 @@ public class MedicAndroidJavascript {
 	public String offline_sync_hosting_session() {
 		OfflineSyncManager.Session current = offlineSyncManager == null ? null : offlineSyncManager.currentSession();
 		return current == null ? "" : session(current.qrImage, current.ssid, current.password);
+	}
+
+	/**
+	 * Starts assembling a bundle to send, returning the id its pieces belong to.
+	 *
+	 * A bundle is megabytes, too much for one call across this bridge, so the webapp opens one and
+	 * writes it a piece at a time before asking for it to be sent.
+	 *
+	 * @return the id, or an empty string if this device could not start one
+	 */
+	@android.webkit.JavascriptInterface
+	@SuppressWarnings("java:S100")  // the webapp calls this name literally over the bridge
+	public String offline_sync_bundle_open() {
+		if(offlineSyncPeer == null) {
+			return "";
+		}
+		String id = offlineSyncPeer.openBundle();
+		return id == null ? "" : id;
+	}
+
+	/** Appends one base64 piece to a bundle being assembled. */
+	@android.webkit.JavascriptInterface
+	@SuppressWarnings("java:S100")  // the webapp calls this name literally over the bridge
+	public boolean offline_sync_bundle_write(String id, String base64Chunk) {
+		return offlineSyncPeer != null && offlineSyncPeer.writeBundle(id, base64Chunk);
+	}
+
+	/**
+	 * Hands an assembled bundle to the paired host.
+	 *
+	 * Asynchronous: the result arrives on the webapp's resolveOfflineSyncTransfer callback, because a
+	 * bundle takes as long to cross the link as its size and the link allow.
+	 */
+	@android.webkit.JavascriptInterface
+	@SuppressWarnings("java:S100")  // the webapp calls this name literally over the bridge
+	public void offline_sync_bundle_send(String id, String envelope, String signature) {
+		if(offlineSyncPeer == null) {
+			respondToTransfer(false, "not_paired");
+			return;
+		}
+		offlineSyncPeer.sendBundle(id, envelope, signature, new OfflineSyncPeer.SendCallback() {
+			@Override public void onSent() {
+				respondToTransfer(true, "");
+			}
+
+			@Override public void onFailed(String reason) {
+				respondToTransfer(false, reason);
+			}
+		});
+	}
+
+	/** Drops a bundle that will not be sent, so a failed attempt leaves nothing on the phone. */
+	@android.webkit.JavascriptInterface
+	@SuppressWarnings("java:S100")  // the webapp calls this name literally over the bridge
+	public boolean offline_sync_bundle_abort(String id) {
+		return offlineSyncPeer != null && offlineSyncPeer.discardBundle(id);
+	}
+
+	/**
+	 * Marks the start of a handover, which may be several bundles.
+	 *
+	 * Bracketing the whole handover rather than each bundle: the notification is what keeps the
+	 * app alive, and stopping it between bundles would both flicker and give the system a chance
+	 * to stop the app half way through.
+	 */
+	@android.webkit.JavascriptInterface
+	@SuppressWarnings("java:S100")  // the webapp calls this name literally over the bridge
+	public void offline_sync_transfer_started() {
+		OfflineSyncForegroundService.start(parent, OfflineSyncForegroundService.STATUS_SENDING);
+	}
+
+	/** @param delivered how many bundles have been handed over so far */
+	@android.webkit.JavascriptInterface
+	@SuppressWarnings("java:S100")  // the webapp calls this name literally over the bridge
+	public void offline_sync_transfer_progress(int delivered) {
+		OfflineSyncForegroundService.start(parent, OfflineSyncForegroundService.STATUS_SENDING, delivered);
+	}
+
+	/**
+	 * Marks the end of a handover.
+	 *
+	 * A failure leaves a notification behind rather than simply removing the session one, because
+	 * a user who had switched away would otherwise see it vanish and have no way to tell whether
+	 * that meant finished or broken.
+	 */
+	@android.webkit.JavascriptInterface
+	@SuppressWarnings("java:S100")  // the webapp calls this name literally over the bridge
+	public void offline_sync_transfer_finished(boolean ok) {
+		if(ok) {
+			OfflineSyncForegroundService.stop(parent);
+			return;
+		}
+		OfflineSyncForegroundService.reportFailed(parent);
+	}
+
+	/** Every bundle this device is holding for someone else, as json. */
+	@android.webkit.JavascriptInterface
+	@SuppressWarnings("java:S100")  // the webapp calls this name literally over the bridge
+	public String offline_sync_received_bundles() {
+		return offlineSyncManager == null ? "[]" : offlineSyncManager.receivedBundles();
+	}
+
+	/** One base64 piece of a held bundle, starting at a decoded byte offset. */
+	@android.webkit.JavascriptInterface
+	@SuppressWarnings("java:S100")  // the webapp calls this name literally over the bridge
+	public String offline_sync_bundle_read(String id, int offset, int length) {
+		return offlineSyncManager == null ? "" : offlineSyncManager.readBundle(id, offset, length);
+	}
+
+	/** Drops a bundle the webapp has taken into its own storage. */
+	@android.webkit.JavascriptInterface
+	@SuppressWarnings("java:S100")  // the webapp calls this name literally over the bridge
+	public boolean offline_sync_bundle_delete(String id) {
+		return offlineSyncManager != null && offlineSyncManager.deleteBundle(id);
 	}
 
 	/**
@@ -309,18 +431,38 @@ public class MedicAndroidJavascript {
 		}
 	}
 
-	/** Not through loadUrl, which percent-decodes the script and would garble the diagnostic text. */
 	private void respondToOfflineSync(boolean ok, String detail, String diagnostic) {
+		callWebapp("resolveOfflineSyncHostingResult",
+				ok + ", " + JSONObject.quote(detail) + ", " + JSONObject.quote(diagnostic));
+	}
+
+	private void respondToTransfer(boolean ok, String detail) {
+		callWebapp("resolveOfflineSyncTransfer", ok + ", " + JSONObject.quote(detail));
+	}
+
+	private void respondToBundleReceived(String id) {
+		callWebapp("resolveOfflineSyncBundleReceived", JSONObject.quote(id));
+	}
+
+	/**
+	 * Calls one of the webapp's offline sync callbacks, if the webapp is far enough along to have it.
+	 *
+	 * Guarded rather than assumed: these fire from hotspot and network callbacks that can land
+	 * while the page is still loading, or after it has gone away. Not through loadUrl, which
+	 * percent-decodes the script: some of these values come from the other phone, and an encoded
+	 * quote would end the string it sits in.
+	 */
+	private void callWebapp(String method, String args) {
 		parent.evaluateJavascript(String.format(
 				"try {" +
 						"const api = window.CHTCore.AndroidApi;" +
-						"if (api && api.v1 && api.v1.resolveOfflineSyncHostingResult) {" +
-						"  api.v1.resolveOfflineSyncHostingResult(%s, %s, %s);" +
+						"if (api && api.v1 && api.v1.%1$s) {" +
+						"  api.v1.%1$s(%2$s);" +
 						"}" +
 						"} catch (error) {" +
-						"  console.error('MedicAndroidJavascript :: Offline sync result not delivered', error);" +
+						"  console.error('MedicAndroidJavascript :: %1$s not delivered', error);" +
 						"}",
-				ok, JSONObject.quote(detail), JSONObject.quote(diagnostic)), false);
+				method, args), false);
 	}
 
 	/**

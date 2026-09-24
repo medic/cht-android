@@ -3,7 +3,10 @@ package org.medicmobile.webapp.mobile.offlinesync;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -22,13 +25,15 @@ public class LocalHttpServerTest {
 	private static final String LABEL = "Supervisor phone";
 
 	private SessionCertificate certificate;
+	private BundleSpool inbox;
 
 	@org.junit.Before public void setUp() {
 		certificate = mock(SessionCertificate.class);
+		inbox = mock(BundleSpool.class);
 	}
 
 	private LocalHttpServer server() {
-		return new LocalHttpServer(LABEL, certificate);
+		return new LocalHttpServer(LABEL, certificate, inbox);
 	}
 
 	private NanoHTTPD.IHTTPSession request(NanoHTTPD.Method method, String uri) {
@@ -38,6 +43,22 @@ public class LocalHttpServerTest {
 		return session;
 	}
 
+	private NanoHTTPD.IHTTPSession bundleRequest(java.util.Map<String, String> headers, byte[] body) {
+		NanoHTTPD.IHTTPSession session = request(NanoHTTPD.Method.POST, "/_p2p/bundle");
+		when(session.getHeaders()).thenReturn(headers);
+		when(session.getInputStream()).thenReturn(new java.io.ByteArrayInputStream(body));
+		return session;
+	}
+
+	private java.util.Map<String, String> bundleHeaders(long declaredLength) {
+		java.util.Map<String, String> headers = new java.util.HashMap<>();
+		headers.put("x-medic-bundle-envelope", "eyJ1c2VyIjoiY2h3In0=");
+		headers.put("x-medic-bundle-signature", "c2lnbmF0dXJl");
+		headers.put("content-length", String.valueOf(declaredLength));
+		return headers;
+	}
+
+	/** Response.send is protected, so read the body straight off the response's data stream. */
 	private String bodyOf(NanoHTTPD.Response response) throws Exception {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		byte[] buffer = new byte[1024];
@@ -50,10 +71,11 @@ public class LocalHttpServerTest {
 
 	@Test
 	public void constructor_rejectsAnEmptyLabel() {
-		assertThrows(IllegalArgumentException.class, () -> new LocalHttpServer("", certificate));
-		assertThrows(IllegalArgumentException.class, () -> new LocalHttpServer("  ", certificate));
-		assertThrows(IllegalArgumentException.class, () -> new LocalHttpServer(null, certificate));
-		assertThrows(IllegalArgumentException.class, () -> new LocalHttpServer(LABEL, null));
+		assertThrows(IllegalArgumentException.class, () -> new LocalHttpServer("", certificate, inbox));
+		assertThrows(IllegalArgumentException.class, () -> new LocalHttpServer("  ", certificate, inbox));
+		assertThrows(IllegalArgumentException.class, () -> new LocalHttpServer(null, certificate, inbox));
+		assertThrows(IllegalArgumentException.class, () -> new LocalHttpServer(LABEL, null, inbox));
+		assertThrows(IllegalArgumentException.class, () -> new LocalHttpServer(LABEL, certificate, null));
 	}
 
 	@Test
@@ -78,6 +100,7 @@ public class LocalHttpServerTest {
 		assertEquals(NanoHTTPD.Response.Status.NOT_FOUND, response.getStatus());
 	}
 
+	/** The data endpoints do not exist yet; a peer must not be able to reach one by guessing. */
 	@Test
 	public void dataEndpointsFromTheOldProtocolAreGone() {
 		LocalHttpServer server = server();
@@ -103,14 +126,20 @@ public class LocalHttpServerTest {
 
 		server.stopServer();
 
+		// it never started, so it must still not be listening rather than have half-torn-down state
 		assertFalse(server.isAlive());
 	}
 
+	/** Port 0 asks the OS for a free port, which is what removes the "port already in use" failure. */
 	@Test
 	public void defaultsToAnOsAssignedPort() {
 		assertEquals(0, LocalHttpServer.EPHEMERAL_PORT);
 	}
 
+	/**
+		* Proves the server will not listen without TLS. Actually completing a handshake needs a
+		* keystore-backed certificate, so that is verified on a device rather than faked here.
+		*/
 	@Test
 	public void startServer_refusesToListenIfTheCertificateIsUnusable() throws Exception {
 		when(certificate.sslServerSocketFactory())
@@ -126,5 +155,68 @@ public class LocalHttpServerTest {
 
 		assertThrows(java.security.GeneralSecurityException.class, () -> server().startServer());
 		verify(certificate).sslServerSocketFactory();
+	}
+
+	@Test
+	public void serve_takesABundleAndTellsWhoeverIsListening() throws Exception {
+		when(inbox.store(any(), any(), any())).thenReturn("bundle-1");
+		LocalHttpServer server = server();
+		LocalHttpServer.BundleListener listener = mock(LocalHttpServer.BundleListener.class);
+		server.setBundleListener(listener);
+
+		NanoHTTPD.Response response = server.serve(bundleRequest(bundleHeaders(10), "ciphertext".getBytes("UTF-8")));
+
+		assertEquals(NanoHTTPD.Response.Status.OK, response.getStatus());
+		verify(inbox).store(eq("eyJ1c2VyIjoiY2h3In0="), eq("c2lnbmF0dXJl"), any());
+		verify(listener).onBundleReceived("bundle-1");
+	}
+
+	/** A bundle that lands before the webapp is listening is still kept, and collected later. */
+	@Test
+	public void serve_takesABundleWhenNobodyIsListeningYet() throws Exception {
+		when(inbox.store(any(), any(), any())).thenReturn("bundle-1");
+
+		NanoHTTPD.Response response = server().serve(bundleRequest(bundleHeaders(10), "ciphertext".getBytes("UTF-8")));
+
+		assertEquals(NanoHTTPD.Response.Status.OK, response.getStatus());
+	}
+
+	/** Only the server can check these, so a bundle with nothing to check is refused here. */
+	@Test
+	public void serve_refusesABundleWithNoEnvelope() throws Exception {
+		java.util.Map<String, String> headers = bundleHeaders(10);
+		headers.remove("x-medic-bundle-envelope");
+
+		NanoHTTPD.Response response = server().serve(bundleRequest(headers, "ciphertext".getBytes("UTF-8")));
+
+		assertEquals(NanoHTTPD.Response.Status.BAD_REQUEST, response.getStatus());
+		verify(inbox, never()).store(any(), any(), any());
+	}
+
+	@Test
+	public void serve_refusesABundleThatWouldFillThePhone() throws Exception {
+		NanoHTTPD.Response response = server()
+				.serve(bundleRequest(bundleHeaders(33L * 1024 * 1024), "ciphertext".getBytes("UTF-8")));
+
+		assertEquals(NanoHTTPD.Response.Status.PAYLOAD_TOO_LARGE, response.getStatus());
+		verify(inbox, never()).store(any(), any(), any());
+	}
+
+	/** The socket carries the next request too, so a body with no declared end is not readable. */
+	@Test
+	public void serve_refusesABundleThatDoesNotSayHowLargeItIs() throws Exception {
+		java.util.Map<String, String> headers = bundleHeaders(10);
+		headers.remove("content-length");
+
+		NanoHTTPD.Response response = server().serve(bundleRequest(headers, "ciphertext".getBytes("UTF-8")));
+
+		assertEquals(NanoHTTPD.Response.Status.INTERNAL_ERROR, response.getStatus());
+	}
+
+	@Test
+	public void serve_refusesAnythingElse() throws Exception {
+		assertEquals(
+				NanoHTTPD.Response.Status.NOT_FOUND,
+				server().serve(request(NanoHTTPD.Method.POST, "/_p2p/status")).getStatus());
 	}
 }

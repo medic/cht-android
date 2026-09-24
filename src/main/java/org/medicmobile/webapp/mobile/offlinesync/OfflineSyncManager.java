@@ -7,8 +7,10 @@ import android.content.Context;
 import android.location.LocationManager;
 import android.net.wifi.WifiManager;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 
+import java.io.IOException;
 import java.security.GeneralSecurityException;
 
 /**
@@ -32,15 +34,17 @@ public class OfflineSyncManager {
 	private volatile String currentQrImage;
 	/** Who hears about the session. Replaced when the screen that started it is recreated. */
 	private volatile HostingCallback callback;
+	private final BundleSpool inbox;
 
 	public OfflineSyncManager(WifiHotspotManager hotspotManager, LocalHttpServer server,
-						SessionCertificate certificate) {
-		if (hotspotManager == null || server == null || certificate == null) {
+						SessionCertificate certificate, BundleSpool inbox) {
+		if (hotspotManager == null || server == null || certificate == null || inbox == null) {
 			throw new IllegalArgumentException("collaborators must not be null");
 		}
 		this.hotspotManager = hotspotManager;
 		this.server = server;
 		this.certificate = certificate;
+		this.inbox = inbox;
 	}
 
 	/**
@@ -56,6 +60,42 @@ public class OfflineSyncManager {
 		return instance;
 	}
 
+	/** Registers who to tell when a peer hands something over. */
+	public void setBundleListener(LocalHttpServer.BundleListener listener) {
+		server.setBundleListener(listener);
+	}
+
+	/** Every bundle this device is holding, as the webapp needs to see it. */
+	public String receivedBundles() {
+		try {
+			return inbox.list().toString();
+		} catch (JSONException e) {
+			warn(e, "Could not list the bundles this device is holding");
+			return new JSONArray().toString();
+		}
+	}
+
+	/** One base64 piece of a held bundle, so the webapp can take it a piece at a time. */
+	public String readBundle(String id, long offset, int length) {
+		try {
+			return android.util.Base64.encodeToString(
+					inbox.read(id, offset, length), android.util.Base64.NO_WRAP);
+		} catch (IOException | IllegalArgumentException e) {
+			warn(e, "Could not read a held bundle");
+			return "";
+		}
+	}
+
+	/** Drops a bundle the webapp has taken. */
+	public boolean deleteBundle(String id) {
+		try {
+			return inbox.delete(id);
+		} catch (IllegalArgumentException e) {
+			warn(e, "Refused to delete something that is not a bundle id");
+			return false;
+		}
+	}
+
 	/**
 		* Builds a manager wired to the real WiFi radio, with a fresh TLS identity for the session.
 		*/
@@ -65,11 +105,13 @@ public class OfflineSyncManager {
 		LocationManager locationManager =
 				(LocationManager) appContext.getSystemService(Context.LOCATION_SERVICE);
 		SessionCertificate certificate = SessionCertificate.forDevice(deviceLabel);
+		BundleSpool inbox = BundleSpool.inbox(appContext);
 		return new OfflineSyncManager(
 				new WifiHotspotManager(
 						new WifiHotspotProvider(wifiManager, locationManager)),
-				new LocalHttpServer(deviceLabel, certificate),
-				certificate);
+				new LocalHttpServer(deviceLabel, certificate, inbox),
+				certificate,
+				inbox);
 	}
 
 	/** Whether this device can host at all. False on Android below 8.0. */
