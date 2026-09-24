@@ -160,6 +160,7 @@ public class LocalHttpServerTest {
 	@Test
 	public void serve_takesABundleAndTellsWhoeverIsListening() throws Exception {
 		when(inbox.store(any(), any(), any())).thenReturn("bundle-1");
+		when(inbox.size("bundle-1")).thenReturn(10L);
 		LocalHttpServer server = server();
 		LocalHttpServer.BundleListener listener = mock(LocalHttpServer.BundleListener.class);
 		server.setBundleListener(listener);
@@ -175,6 +176,7 @@ public class LocalHttpServerTest {
 	@Test
 	public void serve_takesABundleWhenNobodyIsListeningYet() throws Exception {
 		when(inbox.store(any(), any(), any())).thenReturn("bundle-1");
+		when(inbox.size("bundle-1")).thenReturn(10L);
 
 		NanoHTTPD.Response response = server().serve(bundleRequest(bundleHeaders(10), "ciphertext".getBytes("UTF-8")));
 
@@ -202,7 +204,10 @@ public class LocalHttpServerTest {
 		verify(inbox, never()).store(any(), any(), any());
 	}
 
-	/** The socket carries the next request too, so a body with no declared end is not readable. */
+	/**
+		* The socket carries the next request too, so a body with no declared end cannot be read.
+		* That is the caller's mistake, so it is a 400 and not a 500.
+		*/
 	@Test
 	public void serve_refusesABundleThatDoesNotSayHowLargeItIs() throws Exception {
 		java.util.Map<String, String> headers = bundleHeaders(10);
@@ -210,7 +215,57 @@ public class LocalHttpServerTest {
 
 		NanoHTTPD.Response response = server().serve(bundleRequest(headers, "ciphertext".getBytes("UTF-8")));
 
-		assertEquals(NanoHTTPD.Response.Status.INTERNAL_ERROR, response.getStatus());
+		assertEquals(NanoHTTPD.Response.Status.BAD_REQUEST, response.getStatus());
+		verify(inbox, never()).store(any(), any(), any());
+	}
+
+	@Test
+	public void serve_refusesABundleWhoseSizeIsNotANumber() throws Exception {
+		java.util.Map<String, String> headers = bundleHeaders(10);
+		headers.put("content-length", "some");
+
+		NanoHTTPD.Response response = server().serve(bundleRequest(headers, "ciphertext".getBytes("UTF-8")));
+
+		assertEquals(NanoHTTPD.Response.Status.BAD_REQUEST, response.getStatus());
+		verify(inbox, never()).store(any(), any(), any());
+	}
+
+	/**
+		* The bounded read is the subtle part of this class: the socket is reused, so reading past
+		* the declared length would block on the next request's bytes. A mocked spool never touches
+		* the stream, so these two use a real one.
+		*/
+	private LocalHttpServer serverWithRealSpool(java.io.File root) {
+		inbox = new BundleSpool(root);
+		return new LocalHttpServer(LABEL, certificate, inbox);
+	}
+
+	@Test
+	public void serve_readsOnlyTheBodyAndLeavesTheRestOfTheSocketAlone() throws Exception {
+		java.io.File root = new java.io.File(System.getProperty("java.io.tmpdir"), "inbox-" + System.nanoTime());
+		LocalHttpServer server = serverWithRealSpool(root);
+		byte[] wire = "ciphertextGET /_p2p/status".getBytes("UTF-8");
+
+		NanoHTTPD.Response response = server.serve(bundleRequest(bundleHeaders(10), wire));
+
+		assertEquals(NanoHTTPD.Response.Status.OK, response.getStatus());
+		String id = inbox.list().getJSONObject(0).getString("id");
+		assertEquals("ciphertext", new String(inbox.read(id, 0, 64), "UTF-8"));
+	}
+
+	/**
+		* The peer deletes its copy the moment this answers, and moves its position past the data.
+		* Keeping a body that stopped early would lose it for good.
+		*/
+	@Test
+	public void serve_refusesABundleThatStoppedEarlyRatherThanKeepingHalfOfIt() throws Exception {
+		java.io.File root = new java.io.File(System.getProperty("java.io.tmpdir"), "inbox-" + System.nanoTime());
+		LocalHttpServer server = serverWithRealSpool(root);
+
+		NanoHTTPD.Response response = server.serve(bundleRequest(bundleHeaders(500), "short".getBytes("UTF-8")));
+
+		assertEquals(NanoHTTPD.Response.Status.BAD_REQUEST, response.getStatus());
+		assertEquals(0, inbox.list().length());
 	}
 
 	@Test
