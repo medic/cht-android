@@ -126,7 +126,9 @@ public class P2pManager {
 			}
 			log(P2pManager.class, "Hosting session ready on " + ipAddress);
 			callback.onReady(qrImage);
-		} catch (JSONException | GeneralSecurityException e) {
+		} catch (JSONException | GeneralSecurityException | IllegalArgumentException e) {
+			// IllegalArgumentException included deliberately: QrCodeHelper rejects empty credentials
+			// that way, and letting it escape would leave the hotspot up with nothing reported.
 			warn(e, "Could not build the pairing payload");
 			stopHosting();
 			callback.onFailed("payload_failed");

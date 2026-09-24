@@ -147,8 +147,14 @@ public class WifiHotspotProvider implements HotspotProvider {
 
 				String ssid = extractSsid(hotspotReservation);
 				String password = extractPassword(hotspotReservation);
-				String ip = detectHotspotIpWithRetry();
+				if (ssid == null || password == null) {
+					warn(this, "Hotspot started but the system did not say how to join it");
+					stop();
+					callback.onFailed("hotspot_no_credentials");
+					return;
+				}
 
+				String ip = detectHotspotIpWithRetry();
 				if (ip == null) {
 					handleIpDetectionFailure(hotspotReservation, callback);
 					return;
@@ -245,7 +251,9 @@ public class WifiHotspotProvider implements HotspotProvider {
 		}
 		// API 26-29: use deprecated WifiConfiguration
 		android.net.wifi.WifiConfiguration wifiConfig = hotspotReservation.getWifiConfiguration();
-		return wifiConfig != null ? wifiConfig.SSID : "CHT-P2P-unknown";
+		// Null rather than a made-up name. A peer would put whatever goes in here into a QR code
+		// and try to join it, so inventing one advertises a network that does not exist.
+		return wifiConfig == null ? null : wifiConfig.SSID;
 	}
 
 	@SuppressWarnings("deprecation")
@@ -257,7 +265,8 @@ public class WifiHotspotProvider implements HotspotProvider {
 		}
 		// API 26-29: use deprecated WifiConfiguration
 		android.net.wifi.WifiConfiguration wifiConfig = hotspotReservation.getWifiConfiguration();
-		return wifiConfig != null ? wifiConfig.preSharedKey : "";
+		// Null rather than an empty password, for the same reason as the name above.
+		return wifiConfig == null ? null : wifiConfig.preSharedKey;
 	}
 
 	/**

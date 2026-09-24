@@ -6,13 +6,12 @@ import static org.medicmobile.webapp.mobile.MedicLog.warn;
 /**
 	* Manages the WiFi hotspot lifecycle for P2P sync.
 	*
-	* Wraps a {@link HotspotProvider} with:
-	* - Idle timeout detection, so an unused hotspot shuts itself down
-	* - Start/stop timing
-	* - State tracking to prevent double-start
+	* Wraps a {@link HotspotProvider} with start/stop timing, state tracking so a second start
+	* returns the running hotspot rather than competing for the radio, and the credentials of the
+	* session while it lasts.
 	*
-	* The idle timeout is passed in rather than read from a config object: this class needs one
-	* number, and the caller owns where it comes from.
+	* There is deliberately no idle timeout: nothing would poll it, and a session is ended by the
+	* user, by the peer disconnecting, or by the system taking the hotspot away.
 	*/
 public class WifiHotspotManager {
 
