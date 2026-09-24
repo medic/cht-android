@@ -51,7 +51,10 @@ public class BundleTransferTest {
 		context = InstrumentationRegistry.getInstrumentation().getTargetContext();
 		root = new File(context.getCacheDir(), "transfer-test-" + System.nanoTime());
 		inbox = new BundleSpool(root);
-		certificate = SessionCertificate.generate(LABEL);
+		certificate = SessionCertificate.forDevice(LABEL);
+		// Minting now rather than at construction, which is what a hosting session does: this is
+		// also the step that proves the device's keystore can actually serve TLS.
+		certificate.renew();
 		server = new LocalHttpServer(LocalHttpServer.EPHEMERAL_PORT, LABEL, certificate, inbox);
 		server.startServer();
 	}
