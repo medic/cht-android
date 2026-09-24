@@ -7,6 +7,8 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
@@ -45,6 +47,7 @@ public class OfflineSyncManagerTest {
 	private SessionCertificate certificate;
 	private OfflineSyncManager manager;
 	private OfflineSyncManager.HostingCallback callback;
+	private BundleSpool inbox;
 
 	@Before public void setUp() {
 		hotspotManager = mock(WifiHotspotManager.class);
@@ -56,7 +59,8 @@ public class OfflineSyncManagerTest {
 		} catch (Exception e) {
 			throw new IllegalStateException(e);
 		}
-		manager = new OfflineSyncManager(hotspotManager, server, certificate);
+		inbox = mock(BundleSpool.class);
+		manager = new OfflineSyncManager(hotspotManager, server, certificate, inbox);
 		callback = mock(OfflineSyncManager.HostingCallback.class);
 	}
 
@@ -69,9 +73,10 @@ public class OfflineSyncManagerTest {
 	}
 
 	@Test public void constructor_rejectsMissingCollaborators() {
-		assertThrows(IllegalArgumentException.class, () -> new OfflineSyncManager(null, server, certificate));
-		assertThrows(IllegalArgumentException.class, () -> new OfflineSyncManager(hotspotManager, null, certificate));
-		assertThrows(IllegalArgumentException.class, () -> new OfflineSyncManager(hotspotManager, server, null));
+		assertThrows(IllegalArgumentException.class, () -> new OfflineSyncManager(null, server, certificate, inbox));
+		assertThrows(IllegalArgumentException.class, () -> new OfflineSyncManager(hotspotManager, null, certificate, inbox));
+		assertThrows(IllegalArgumentException.class, () -> new OfflineSyncManager(hotspotManager, server, null, inbox));
+		assertThrows(IllegalArgumentException.class, () -> new OfflineSyncManager(hotspotManager, server, certificate, null));
 	}
 
 	@Test @Config(sdk = 26)
@@ -211,12 +216,52 @@ public class OfflineSyncManagerTest {
 		verify(hotspotManager, never()).startHotspot(any());
 	}
 
+	@Test public void receivedBundles_handsTheWebappWhatItIsHolding() throws Exception {
+		when(inbox.list()).thenReturn(new org.json.JSONArray().put(new org.json.JSONObject().put("id", "bundle-1")));
 
+		assertEquals("[{\"id\":\"bundle-1\"}]", manager.receivedBundles());
+	}
 
+	/** An empty list, not a broken one: the webapp should find nothing rather than fail to parse. */
+	@Test public void receivedBundles_isEmptyWhenTheListCannotBeBuilt() throws Exception {
+		when(inbox.list()).thenThrow(new org.json.JSONException("broken"));
 
+		assertEquals("[]", manager.receivedBundles());
+	}
 
+	/** Base64 without line breaks, because the webapp joins the pieces as text. */
+	@Test public void readBundle_encodesThePieceWithNoWrapping() throws Exception {
+		when(inbox.read("bundle-1", 0, 3)).thenReturn("one".getBytes("UTF-8"));
 
+		assertEquals("b25l", manager.readBundle("bundle-1", 0, 3));
+	}
 
+	@Test public void readBundle_isEmptyWhenThePieceCannotBeRead() throws Exception {
+		when(inbox.read(any(), anyLong(), anyInt())).thenThrow(new java.io.IOException("gone"));
+
+		assertEquals("", manager.readBundle("bundle-1", 0, 3));
+	}
+
+	@Test public void deleteBundle_dropsWhatTheWebappHasTaken() {
+		when(inbox.delete("bundle-1")).thenReturn(true);
+
+		assertTrue(manager.deleteBundle("bundle-1"));
+	}
+
+	/** Ids come from the webapp, so one that is not a bundle id is refused, not acted on. */
+	@Test public void deleteBundle_isFalseForSomethingThatIsNotABundleId() {
+		when(inbox.delete(any())).thenThrow(new IllegalArgumentException("not a bundle id"));
+
+		assertFalse(manager.deleteBundle("../../secrets"));
+	}
+
+	@Test public void setBundleListener_passesItToTheServer() {
+		LocalHttpServer.BundleListener listener = mock(LocalHttpServer.BundleListener.class);
+
+		manager.setBundleListener(listener);
+
+		verify(server).setBundleListener(listener);
+	}
 
 	private HotspotProvider.HotspotCallback hostingStartedThenCaptureCallback() {
 		ArgumentCaptor<HotspotProvider.HotspotCallback> captor =
