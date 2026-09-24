@@ -92,9 +92,21 @@ public class SessionCertificate {
 				.setCertificateSerialNumber(BigInteger.ONE)
 				.setCertificateNotBefore(notBefore())
 				.setCertificateNotAfter(notAfter())
-				.setDigests(KeyProperties.DIGEST_SHA256, KeyProperties.DIGEST_SHA1)
+				// NONE alongside the real digests for the same reason as the padding below: the TLS
+				// stack hashes the handshake itself and asks the key for a raw operation over the
+				// result, which keystore reports as digest NONE.
+				.setDigests(
+						KeyProperties.DIGEST_NONE,
+						KeyProperties.DIGEST_SHA256,
+						KeyProperties.DIGEST_SHA1)
 				.setSignaturePaddings(KeyProperties.SIGNATURE_PADDING_RSA_PKCS1)
-				.setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_RSA_PKCS1)
+				// NONE alongside PKCS1 because the TLS stack does its own padding: to sign the
+				// handshake it hands the key an already-padded block through a raw
+				// RSA/ECB/NoPadding operation, and a key that only authorizes PKCS1 is refused by
+				// the keystore, which fails the handshake and so the whole session.
+				.setEncryptionPaddings(
+						KeyProperties.ENCRYPTION_PADDING_RSA_PKCS1,
+						KeyProperties.ENCRYPTION_PADDING_NONE)
 				.build());
 		generator.generateKeyPair();
 
