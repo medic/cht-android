@@ -46,7 +46,7 @@ public class P2pManager {
 		WifiManager wifiManager = (WifiManager) appContext.getSystemService(Context.WIFI_SERVICE);
 		LocationManager locationManager =
 				(LocationManager) appContext.getSystemService(Context.LOCATION_SERVICE);
-		SessionCertificate certificate = SessionCertificate.generate(deviceLabel);
+		SessionCertificate certificate = SessionCertificate.forDevice(deviceLabel);
 		return new P2pManager(
 				new WifiHotspotManager(
 						new WifiHotspotProvider(wifiManager, locationManager)),

@@ -59,15 +59,20 @@ public class SessionCertificate {
 	}
 
 	/**
-		* Generates a new key and certificate, replacing any left over from a previous session.
+		* Prepares a certificate holder without minting anything yet.
+		*
+		* Nothing is generated here on purpose. Minting the key runs a real TLS handshake against
+		* ourselves to prove the device can serve with it, which is worth doing but belongs to the
+		* start of a session, not to app startup: doing it here made a device that cannot serve TLS
+		* fail while the app was still opening, and the only visible effect was that the sharing
+		* option quietly disappeared from the menu. {@link #renew()} is called when hosting starts,
+		* and reports the failure where someone can see it.
 		*
 		* @param deviceLabel shown as the certificate subject, so a curious peer sees something
 		*                    meaningful rather than a placeholder
 		*/
-	public static SessionCertificate generate(String deviceLabel) throws GeneralSecurityException {
-		SessionCertificate certificate = new SessionCertificate(loadKeyStore(), deviceLabel);
-		certificate.renew();
-		return certificate;
+	public static SessionCertificate forDevice(String deviceLabel) throws GeneralSecurityException {
+		return new SessionCertificate(loadKeyStore(), deviceLabel);
 	}
 
 	/**
