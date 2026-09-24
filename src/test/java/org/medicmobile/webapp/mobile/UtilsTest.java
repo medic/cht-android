@@ -2,6 +2,7 @@ package org.medicmobile.webapp.mobile;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -22,6 +23,7 @@ import org.robolectric.RobolectricTestRunner;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -38,7 +40,7 @@ public class UtilsTest {
 			"https://example.com/medic/_design/medic/_rewrite",
 		};
 
-		for(String goodUrl : goodUrls) {
+		for (String goodUrl : goodUrls) {
 			assertTrue("Expected URL to be accepted, but it wasn't: " + goodUrl,
 				Utils.isUrlRelated("https://example.com", Uri.parse(goodUrl)));
 		}
@@ -50,7 +52,7 @@ public class UtilsTest {
 			"blob:https://example.com/medic/_design/medic/_rewrite",
 		};
 
-		for(String goodBlobUrl : goodBlobUrls) {
+		for (String goodBlobUrl : goodBlobUrls) {
 			assertTrue("Expected URL to be accepted, but it wasn't: " + goodBlobUrl,
 				Utils.isUrlRelated("https://example.com", Uri.parse(goodBlobUrl)));
 		}
@@ -66,7 +68,7 @@ public class UtilsTest {
 			"sms:0040733898569,0040788963214&body=Thisisthesmsbody",
 		};
 
-		for(String badUrl : badUrls) {
+		for (String badUrl : badUrls) {
 			assertFalse("Expected URL to be rejected, but it wasn't: " + badUrl,
 				Utils.isUrlRelated("https://example.com", Uri.parse(badUrl)));
 		}
@@ -121,7 +123,7 @@ public class UtilsTest {
 			"blob:https://gamma-cht.dev.medicmobile.org/#/reports"
 		};
 
-		for(String goodBlobUrl : goodBlobUrls) {
+		for (String goodBlobUrl : goodBlobUrls) {
 			assertTrue("Expected URL to be accepted, but it wasn't: " + goodBlobUrl,
 				Utils.isValidNavigationUrl("https://gamma-cht.dev.medicmobile.org", goodBlobUrl));
 		}
@@ -136,7 +138,7 @@ public class UtilsTest {
 			{"", ""},
 		};
 
-		for(String[] nullUrlPair : nullUrls) {
+		for (String[] nullUrlPair : nullUrls) {
 			assertFalse("Not expected URLs to be accepted, but they were: " + nullUrlPair[0] + " , " + nullUrlPair[1],
 				Utils.isValidNavigationUrl(nullUrlPair[0], nullUrlPair[1]));
 		}
@@ -266,6 +268,28 @@ public class UtilsTest {
 				any(Exception.class),
 				eq("Error while getting package name")
 			));
+		}
+	}
+
+	@Test
+	public void formatTime_returnsNullForBadTime() {
+		LocalTime result = Utils.formatTime("14:70");
+		assertNull(result);
+	}
+
+	@Test
+	public void formatTime_parsesValidTimeFormats() {
+		String[] testTimes = {"00:00", "12:00", "23:59"};
+		LocalTime[] expectedTimes = {
+			LocalTime.of(0, 0),
+			LocalTime.of(12, 0),
+			LocalTime.of(23, 59)
+		};
+
+		//Assert
+		for (int i = 0; i < testTimes.length; i++) {
+			LocalTime result = Utils.formatTime(testTimes[i]);
+			assertEquals(expectedTimes[i], result);
 		}
 	}
 }

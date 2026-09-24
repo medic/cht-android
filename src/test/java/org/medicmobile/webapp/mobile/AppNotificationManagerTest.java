@@ -38,6 +38,7 @@ public class AppNotificationManagerTest {
 		appNotificationManager = spy(new AppNotificationManager(context));
 		startOfDay = appNotificationManager.getStartOfDay();
 		appDataStore = AppDataStore.getInstance(context);
+		appDataStore.saveStringBlocking(AppNotificationManager.TASK_NOTIFICATION_SETTINGS_KEY, "{\"maxNotifications\": 8}");
 		useBlockingDataStoreGet();
 	}
 
@@ -46,7 +47,7 @@ public class AppNotificationManagerTest {
 		appDataStore.saveString(AppNotificationManager.TASK_NOTIFICATIONS_KEY, "[]");
 		appDataStore.saveLong(AppNotificationManager.TASK_NOTIFICATION_DAY_KEY, 0L);
 		appDataStore.saveLong(AppNotificationManager.LATEST_NOTIFICATION_TIMESTAMP_KEY, 0L);
-		appDataStore.saveLong(AppNotificationManager.MAX_NOTIFICATIONS_TO_SHOW_KEY, 8L);
+		appDataStore.saveString(AppNotificationManager.TASK_NOTIFICATION_SETTINGS_KEY, "{\"maxNotifications\": 8}");
 	}
 
 	@Test
@@ -65,7 +66,7 @@ public class AppNotificationManagerTest {
 	@Test
 	public void showsOnlyMaxAllowedNotifications() throws JSONException {
 		String jsData = "[" + getJSTaskNotificationString(startOfDay, startOfDay, startOfDay) + "]";
-		appDataStore.saveLongBlocking(AppNotificationManager.MAX_NOTIFICATIONS_TO_SHOW_KEY, 1L);
+		appDataStore.saveStringBlocking(AppNotificationManager.TASK_NOTIFICATION_SETTINGS_KEY, "{\"maxNotifications\": 1}");
 		appNotificationManager.showNotificationsFromJsArray(jsData);
 		assertEquals(1, shadowNotificationManager.getAllNotifications().size());
 	}
@@ -87,7 +88,7 @@ public class AppNotificationManagerTest {
 					}
 				]
 				""".formatted(jsData, latestReadyAtTimestamp, startOfDay, startOfDay);
-		appDataStore.saveLongBlocking(AppNotificationManager.MAX_NOTIFICATIONS_TO_SHOW_KEY, 1L);
+		appDataStore.saveStringBlocking(AppNotificationManager.TASK_NOTIFICATION_SETTINGS_KEY, "{\"maxNotifications\": 1}");
 		appNotificationManager.showNotificationsFromJsArray(newNotificationData);
 		assertEquals(1, shadowNotificationManager.getAllNotifications().size());
 		assertEquals(latestReadyAtTimestamp, appDataStore.getLongBlocking(AppNotificationManager.LATEST_NOTIFICATION_TIMESTAMP_KEY, 0L));

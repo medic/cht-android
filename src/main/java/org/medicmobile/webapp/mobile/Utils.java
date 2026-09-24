@@ -20,11 +20,14 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.Optional;
 
 final class Utils {
-	private Utils() {}
+	private Utils() {
+	}
 
 	/**
 	 * @see #isValidNavigationUrl(String, String)
@@ -57,17 +60,17 @@ final class Utils {
 	 */
 	static boolean isValidNavigationUrl(String appUrl, String navUrl) {
 		boolean isValid = isUrlRelated(appUrl, navUrl);
-		if (isValid && !navUrl.matches(".*/(login|_rewrite).*")) {
+		if (isValid && !navUrl.matches(".*/(login|_rewrite).*")) { // NOSONAR
 			return true;
 		}
 		return false;
 	}
 
 	static JSONObject json(Object... keyVals) throws JSONException {
-		if(DEBUG && keyVals.length % 2 != 0) throw new AssertionError();
+		if (DEBUG && keyVals.length % 2 != 0) throw new AssertionError();
 		JSONObject o = new JSONObject();
-		for(int i=keyVals.length-1; i>0; i-=2) {
-			o.put(keyVals[i-1].toString(), keyVals[i]);
+		for (int i = keyVals.length - 1; i > 0; i -= 2) {
+			o.put(keyVals[i - 1].toString(), keyVals[i]);
 		}
 		return o;
 	}
@@ -77,7 +80,7 @@ final class Utils {
 	}
 
 	static void startAppActivityChain(Activity a) {
-		if(SettingsStore.in(a).hasWebappSettings()) {
+		if (SettingsStore.in(a).hasWebappSettings()) {
 			a.startActivity(new Intent(a, EmbeddedBrowserActivity.class));
 		} else {
 			a.startActivity(new Intent(a, SettingsDialogActivity.class));
@@ -86,7 +89,7 @@ final class Utils {
 	}
 
 	static String createUseragentFrom(String current) {
-		if(current.contains(APPLICATION_ID)) return current;
+		if (current.contains(APPLICATION_ID)) return current;
 
 		return String.format("%s %s/%s",
 			current, APPLICATION_ID, VERSION_NAME);
@@ -101,6 +104,7 @@ final class Utils {
 
 	/**
 	 * The file path can be a regular file or a content ("content://" scheme)
+	 *
 	 * @param path {String} File path
 	 * @return {Uri}
 	 */
@@ -128,6 +132,7 @@ final class Utils {
 
 	/**
 	 * parses js string array to JSONArray
+	 *
 	 * @param stringArray {String} array in string format
 	 * @return {JSONArray}
 	 */
@@ -137,6 +142,26 @@ final class Utils {
 		} catch (JSONException e) {
 			log(e, "error parsing JS data");
 			return new JSONArray();
+		}
+	}
+
+	static JSONObject parseJSONObject(String inputObject) {
+		try {
+			return new JSONObject(inputObject);
+		} catch (JSONException e) {
+			log(e, "error parsing object");
+			return new JSONObject();
+		}
+	}
+
+	//formats string time to HH:mm
+	static LocalTime formatTime(String timeString) {
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+		try {
+			return LocalTime.parse(timeString, formatter);
+		} catch (Exception e) {
+			log(e, "Error parsing window time");
+			return null;
 		}
 	}
 
