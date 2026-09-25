@@ -2,6 +2,7 @@ package org.medicmobile.webapp.mobile.offlinesync;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
@@ -102,6 +103,30 @@ public class BundleTransferTest {
 		* The pin is the whole identity check: anyone in range can join the network, so a device
 		* answering at the right address proves nothing on its own.
 		*/
+	/**
+		* Every session mints a new identity, so the one actually served must be the new one.
+		*
+		* Key material is cached per alias, so regenerating under a shared alias can leave the TLS
+		* layer serving the retired key while the fingerprint in the QR code names the new one. The
+		* other tests renew once in setUp, so only a second session can show it.
+		*/
+	@Test public void aSecondSessionServesItsOwnKey() throws Exception {
+		String firstSession = certificate.fingerprint();
+		server.stopServer();
+
+		certificate.renew();
+		String secondSession = certificate.fingerprint();
+		server = new LocalHttpServer(LocalHttpServer.EPHEMERAL_PORT, LABEL, certificate, inbox);
+		server.startServer();
+
+		assertNotEquals("renew() must mint a new identity", firstSession, secondSession);
+		assertEquals(LABEL, client(secondSession).fetchStatus(address(), server.getListeningPort()));
+		// and the retired identity must no longer be accepted, or renewing would protect nothing
+		assertThrows(
+				IOException.class,
+				() -> client(firstSession).fetchStatus(address(), server.getListeningPort()));
+	}
+
 	@Test public void aHostPresentingAnotherCertificateIsRefused() {
 		String someoneElse = "AA:BB:CC:DD:EE:FF:00:11:22:33:44:55:66:77:88:99:" +
 				"AA:BB:CC:DD:EE:FF:00:11:22:33:44:55:66:77:88:99";
