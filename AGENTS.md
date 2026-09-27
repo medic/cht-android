@@ -135,7 +135,7 @@ Trailing PR numbers (`(#427)`) are appended automatically by the squash merge �
 ## Conventions
 
 - Java only. No Kotlin sources. Keep it that way unless the team decides otherwise.
-- Tabs (size 4) for Java sources and the Makefile; 2-space indentation everywhere else (see `.editorconfig`). Caveat: the glob is `[{*.java, Makefile}]` — the stray space means `Makefile` does not actually match, so an editor honouring `.editorconfig` will indent it with spaces and break `make`. Keep Makefile recipe lines tab-indented regardless.
+- Tabs (size 4) for Java sources and the Makefile; 2-space indentation everywhere else (see `.editorconfig`).
 - Static imports for `MedicLog.{trace,log,warn,error}` and the helper utilities — match the existing style.
 - Logging goes through `MedicLog`; `trace` is debug-only, `log/warn/error` are unconditional.
 - Redact URLs that may contain credentials with `SimpleJsonClient2.redactUrl(...)` before logging.
