@@ -470,6 +470,11 @@ android {
       applicationId = 'org.medicmobile.webapp.mobile.lumbini'
     }
 
+    karnali {
+      dimension = 'brand'
+      applicationId = 'org.medicmobile.webapp.mobile.karnali'
+    }
+
   }
 
   splits {
