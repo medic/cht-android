@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The scanner, with a way out of it.
+
+  ZXing's own layout is the camera preview and nothing else, so the only way to leave is the system
+  back gesture. That is easy to miss on a device with gesture navigation, and a user who cannot find
+  it is stuck looking at a camera. The cancel path already exists: finishing without a result is
+  reported as a cancelled scan.
+
+  A merge root, like the layout this replaces: the activity's own content view is the frame these
+  sit in, so wrapping them in another one would be a level of nesting for nothing.
+-->
+<merge xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <com.journeyapps.barcodescanner.DecoratedBarcodeView
+        android:id="@+id/zxing_barcode_scanner"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <Button
+        android:id="@+id/offlineSyncScannerCancel"
+        style="@style/borderlessButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginBottom="32dp"
+        android:text="@string/offlineSyncScanCancel" />
+
+</merge>

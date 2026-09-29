@@ -47,8 +47,17 @@ public interface HotspotProvider {
 		/**
 			* Called when the hotspot failed to start.
 			*
-			* @param reason human-readable failure reason
+			* @param reason a stable code the webapp can map to a message
 			*/
 		void onFailed(String reason);
+
+		/**
+			* Called when a running hotspot went away on its own.
+			*
+			* The system can take it down at any point, for instance when the user turns WiFi off
+			* or another app needs the radio. Without this, a session would appear to be running
+			* with nothing behind it for as long as nobody happened to try to use it.
+			*/
+		void onStopped();
 	}
 }

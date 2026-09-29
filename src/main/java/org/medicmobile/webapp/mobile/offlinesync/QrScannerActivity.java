@@ -8,12 +8,13 @@ import android.content.Intent;
 import android.os.Bundle;
 
 import com.google.zxing.integration.android.IntentIntegrator;
+import org.medicmobile.webapp.mobile.R;
 import com.google.zxing.integration.android.IntentResult;
 
 /**
 	* Activity that launches ZXing QR scanner for offline sync credential exchange.
 	*
-	* CHW scans the Supervisor's QR code to get WiFi hotspot credentials.
+	* The sending device scans the receiving device's QR code to get the WiFi hotspot credentials.
 	* Result returned via onActivityResult with the scanned QR payload.
 	*
 	* Usage from the calling activity:
@@ -64,7 +65,7 @@ public class QrScannerActivity extends Activity {
 
 		IntentIntegrator integrator = new IntentIntegrator(this);
 		integrator.setDesiredBarcodeFormats(IntentIntegrator.QR_CODE);
-		integrator.setPrompt("Scan the Supervisor's QR code");
+		integrator.setPrompt(getString(R.string.offlineSyncScanPrompt));
 		integrator.setBeepEnabled(true);
 		integrator.setOrientationLocked(true);
 		integrator.setCaptureActivity(getCaptureActivityClass());
@@ -131,19 +132,12 @@ public class QrScannerActivity extends Activity {
 	}
 
 	/**
-		* Get the capture activity class. Uses the default ZXing capture activity.
+		* The scanner screen to open. Ours rather than ZXing's, which is landscape.
 		* Override this method in tests to provide a mock.
 		*
 		* @return the Activity class for QR capture
 		*/
 	protected Class<?> getCaptureActivityClass() {
-		// Use the default ZXing embedded capture activity
-		// This avoids requiring a separate ZXing app install
-		try {
-			return Class.forName("com.journeyapps.barcodescanner.CaptureActivity");
-		} catch (ClassNotFoundException e) {
-			warn(this, "ZXing CaptureActivity not found, falling back to default");
-			return null;
-		}
+		return PortraitCaptureActivity.class;
 	}
 }

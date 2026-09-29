@@ -14,12 +14,13 @@ import static org.mockito.Mockito.when;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.robolectric.RobolectricTestRunner;
 
 @RunWith(RobolectricTestRunner.class)
 public class WifiHotspotManagerTest {
 
-	private static final String SSID = "CHT-OFFLINE-SYNC-a3f7";
+	private static final String SSID = "AndroidShare_1234";
 	private static final String PASSWORD = "a-password";
 	private static final String IP = "192.168.49.1";
 
@@ -112,4 +113,20 @@ public class WifiHotspotManagerTest {
 		verify(provider, never()).stop();
 	}
 
+	/** Credentials for a hotspot that no longer exists would be handed to the next caller. */
+	@Test public void aHotspotThatGoesAwayLeavesNoCredentialsBehind() {
+		ArgumentCaptor<HotspotProvider.HotspotCallback> captor =
+				ArgumentCaptor.forClass(HotspotProvider.HotspotCallback.class);
+		HotspotProvider.HotspotCallback callback = mock(HotspotProvider.HotspotCallback.class);
+		manager.startHotspot(callback);
+		verify(provider).start(captor.capture());
+		captor.getValue().onStarted("AndroidShare_1234", "a-password", "192.168.49.1");
+
+		captor.getValue().onStopped();
+
+		assertNull(manager.getActiveSsid());
+		assertNull(manager.getActivePassword());
+		assertNull(manager.getActiveIpAddress());
+		verify(callback).onStopped();
+	}
 }

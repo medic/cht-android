@@ -1,6 +1,7 @@
 package org.medicmobile.webapp.mobile;
 
 import static org.medicmobile.webapp.mobile.MedicLog.log;
+import static org.medicmobile.webapp.mobile.MedicLog.warn;
 import static java.util.Calendar.DAY_OF_MONTH;
 import static java.util.Calendar.MONTH;
 import static java.util.Calendar.YEAR;
@@ -205,22 +206,26 @@ public class MedicAndroidJavascript {
 	@SuppressWarnings("java:S100")  // the webapp calls this name literally over the bridge
 	public void offline_sync_start_hosting() {
 		if(!offline_sync_host_available()) {
-			respondToOfflineSync(false, "hotspot_unsupported");
+			respondToOfflineSync(false, "hotspot_unsupported", "");
 			return;
 		}
 		// Asks if it is missing, and reports back through offlineSyncPermissionsResolved so the webapp can
 		// retry. Without this the hotspot call fails with a SecurityException the user cannot act on.
 		if(!parent.getOfflineSyncPermissions()) {
-			respondToOfflineSync(false, "permissions_required");
+			respondToOfflineSync(false, "permissions_required", "");
 			return;
 		}
 		offlineSyncManager.startHosting(new OfflineSyncManager.HostingCallback() {
-			@Override public void onReady(String qrPayload) {
-				respondToOfflineSync(true, qrPayload);
+			@Override public void onReady(String qrPayload, String ssid, String password) {
+				respondToOfflineSync(true, session(qrPayload, ssid, password), "");
 			}
 
-			@Override public void onFailed(String reason) {
-				respondToOfflineSync(false, reason);
+			@Override public void onFailed(String reason, String diagnostic) {
+				respondToOfflineSync(false, reason, diagnostic);
+			}
+
+			@Override public void onLost(String reason) {
+				respondToOfflineSync(false, reason, "");
 			}
 		});
 	}
@@ -290,7 +295,29 @@ public class MedicAndroidJavascript {
 				ok, JSONObject.quote(detail)));
 	}
 
-	private void respondToOfflineSync(boolean ok, String detail) {
+	/**
+		* What the webapp needs to put a hosting session on screen.
+		*
+		* The QR code carries the network details already, but only as an image: a peer whose camera
+		* will not focus, or who has no camera permission, still has to be able to join the network
+		* by hand, and that means the webapp has to be able to show the name and password as text.
+		*/
+	private String session(String qrPayload, String ssid, String password) {
+		try {
+			return new JSONObject()
+					.put("qr", qrPayload)
+					.put("ssid", ssid)
+					.put("password", password)
+					.toString();
+		} catch (org.json.JSONException e) {
+			// Nothing here can fail on a JSONObject with three string values, and an empty session
+			// is reported as a failure by the webapp rather than shown as a blank screen.
+			warn(e, "Could not describe the hosting session");
+			return "";
+		}
+	}
+
+	private void respondToOfflineSync(boolean ok, String detail, String diagnostic) {
 		parent.evaluateJavascript(String.format(
 				"try {" +
 						"const api = window.CHTCore.AndroidApi;" +

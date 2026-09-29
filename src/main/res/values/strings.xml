@@ -36,8 +36,10 @@
 	<string name="locRequestDenyButton">No thanks</string>
 	<string name="locRequestIconDescription">My location icon</string>
 
-	<string name="offlineSyncRequestTitle">offline sync</string>
-	<string name="offlineSyncRequestMessage">%s needs permission to set up a direct connection with a nearby device, so reports can be shared when there is no network. To allow this select \"Turn on\", and then confirm the next prompt.</string>
+	<string name="offlineSyncScanCancel">Cancel</string>
+	<string name="offlineSyncScanPrompt">Scan the QR code on the receiving device</string>
+	<string name="offlineSyncRequestTitle">Offline sync</string>
+	<string name="offlineSyncRequestMessage">%s needs permission to connect directly to another device, so reports can be transferred when there is no network. To allow this select \"Turn on\", and then confirm the next prompt.</string>
 	<string name="offlineSyncRequestOkButton">Turn on</string>
 	<string name="offlineSyncRequestDenyButton">No thanks</string>
 

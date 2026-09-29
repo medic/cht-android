@@ -59,16 +59,12 @@ public class LocalHttpServer extends NanoHTTPD {
 	}
 
 	/** Starts listening. Safe to call when already running. */
-	public void startServer() throws IOException {
+	public void startServer() throws IOException, GeneralSecurityException {
 		if (isAlive()) {
 			log(this, "Local server already running on port " + getListeningPort());
 			return;
 		}
-		try {
-			makeSecure(certificate.sslServerSocketFactory(), null);
-		} catch (GeneralSecurityException e) {
-			throw new IOException("Could not enable TLS on the local server", e);
-		}
+		makeSecure(certificate.sslServerSocketFactory(), null);
 		start(NanoHTTPD.SOCKET_READ_TIMEOUT, false);
 		// the real port is only known once bound, and it is what goes into the QR payload
 		log(this, "Local server listening on port " + getListeningPort());

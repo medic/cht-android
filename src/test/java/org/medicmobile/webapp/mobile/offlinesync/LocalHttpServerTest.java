@@ -124,7 +124,7 @@ public class LocalHttpServerTest {
 		when(certificate.sslServerSocketFactory())
 				.thenThrow(new java.security.GeneralSecurityException("no key"));
 
-		assertThrows(java.io.IOException.class, () -> server().startServer());
+		assertThrows(java.security.GeneralSecurityException.class, () -> server().startServer());
 	}
 
 	@Test
@@ -134,7 +134,7 @@ public class LocalHttpServerTest {
 
 		try {
 			server().startServer();
-		} catch (java.io.IOException expected) {
+		} catch (java.security.GeneralSecurityException expected) {
 			// we only care that TLS was set up before any socket was opened
 		}
 		verify(certificate).sslServerSocketFactory();

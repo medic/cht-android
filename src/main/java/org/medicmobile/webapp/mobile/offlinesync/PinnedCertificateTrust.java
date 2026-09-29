@@ -1,7 +1,6 @@
 package org.medicmobile.webapp.mobile.offlinesync;
 
 import java.security.GeneralSecurityException;
-import java.security.MessageDigest;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
@@ -11,7 +10,7 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
 /**
-	* Trusts exactly one certificate: the one whose fingerprint the peer read from the QR code.
+	* Trusts exactly one key: the one whose fingerprint the peer read from the QR code.
 	*
 	* The host's certificate is self-signed and generated seconds earlier, so no certificate
 	* authority can vouch for it and normal validation is useless here. Pinning replaces that trust:
@@ -51,8 +50,7 @@ public final class PinnedCertificateTrust {
 	}
 
 	static String fingerprintOf(X509Certificate certificate) throws GeneralSecurityException {
-		return SessionCertificate.formatFingerprint(
-				MessageDigest.getInstance("SHA-256").digest(certificate.getEncoded()));
+		return SessionCertificate.fingerprintOfKey(certificate);
 	}
 
 	/**
@@ -76,9 +74,37 @@ public final class PinnedCertificateTrust {
 		}
 
 		if (!matches(expectedFingerprint, actual)) {
+			// Both values, because "does not match" alone cannot tell a wrong device from a device
+			// whose keystore hands back a different encoding than the one we fingerprinted. Neither
+			// is a secret: the expected one is printed in the QR code and the other was just sent
+			// over the wire.
 			throw new CertificateException(
-					"The host's certificate does not match the one in the QR code");
+					"The host's certificate does not match the one in the QR code (expected " +
+							shorten(expectedFingerprint) + ", got " + shorten(actual) +
+							" subject " + subjectOf(chain[0]) + ")");
 		}
+	}
+
+	/**
+		* The certificate's subject, for the message above.
+		*
+		* Null-safe because this runs while rejecting a certificate we have already decided not to
+		* trust: anything about it may be missing or malformed, and a diagnostic must never be the
+		* thing that throws.
+		*/
+	private static String subjectOf(X509Certificate certificate) {
+		try {
+			return certificate.getSubjectX500Principal() == null
+					? "unknown" : certificate.getSubjectX500Principal().getName();
+		} catch (RuntimeException e) {
+			return "unreadable";
+		}
+	}
+
+	/** Enough of a fingerprint to compare by eye, in a message that has to stay readable. */
+	private static String shorten(String fingerprint) {
+		String normalised = normalise(fingerprint);
+		return normalised.length() <= 16 ? normalised : normalised.substring(0, 16);
 	}
 
 	/**

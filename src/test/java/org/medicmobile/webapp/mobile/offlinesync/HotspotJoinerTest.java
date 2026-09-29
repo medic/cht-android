@@ -30,7 +30,7 @@ import org.robolectric.annotation.Config;
 @RunWith(RobolectricTestRunner.class)
 public class HotspotJoinerTest {
 
-	private static final String SSID = "CHT-OFFLINE-SYNC-a3f7";
+	private static final String SSID = "AndroidShare_1234";
 	private static final String PASSWORD = "a-password";
 
 	private ConnectivityManager connectivityManager;
