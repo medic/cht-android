@@ -38,6 +38,10 @@ public class OfflineSyncManager {
 		this.certificate = certificate;
 	}
 
+
+
+
+
 	/**
 		* Builds a manager wired to the real WiFi radio, with a fresh TLS identity for the session.
 		*/
@@ -70,9 +74,16 @@ public class OfflineSyncManager {
 			throw new IllegalArgumentException("callback must not be null");
 		}
 		if (!isHostSupported()) {
-			callback.onFailed("hotspot_unsupported");
+			callback.onFailed("hotspot_unsupported", "LocalOnlyHotspot needs Android 8.0");
 			return;
 		}
+
+		// The platform allows one local-only hotspot reservation per app, and a session that failed
+		// part way through still holds it. Without this, every attempt after a failure collides with
+		// the wreckage of the last one until the platform times the reservation out on its own.
+		// Idempotent, so starting from nothing costs nothing.
+		server.stopServer();
+		hotspotManager.stopHotspot();
 
 		try {
 			// A session's identity must not outlive it: stopHosting destroys the key, so without
@@ -80,7 +91,7 @@ public class OfflineSyncManager {
 			certificate.renew();
 		} catch (GeneralSecurityException e) {
 			warn(e, "Could not prepare a certificate for this session");
-			callback.onFailed("server_start_failed");
+			callback.onFailed("certificate_failed", describe(e));
 			return;
 		}
 
@@ -92,7 +103,15 @@ public class OfflineSyncManager {
 			}
 
 			@Override public void onFailed(String reason) {
-				callback.onFailed(reason);
+				callback.onFailed(reason, "");
+			}
+
+			@Override public void onStopped() {
+				// Nothing is listening on a network that no longer exists, and a peer part way
+				// through handing something over has already lost it.
+				server.stopServer();
+				certificate.destroy();
+				callback.onLost("hotspot_stopped");
 			}
 		});
 	}
@@ -105,10 +124,18 @@ public class OfflineSyncManager {
 		try {
 			server.startServer();
 			return true;
+		} catch (GeneralSecurityException e) {
+			// The key exists by now, so this is the device refusing to serve TLS with it rather
+			// than anything about the server. Reported apart from a bind failure, because the two
+			// have nothing in common and only one of them is worth retrying.
+			warn(e, "This device could not serve TLS, taking the hotspot back down");
+			hotspotManager.stopHotspot();
+			callback.onFailed("certificate_failed", describe(e));
+			return false;
 		} catch (Exception e) {
 			warn(e, "Local server failed to start, taking the hotspot back down");
 			hotspotManager.stopHotspot();
-			callback.onFailed("server_start_failed");
+			callback.onFailed("server_start_failed", describe(e));
 			return false;
 		}
 	}
@@ -121,17 +148,17 @@ public class OfflineSyncManager {
 			String qrImage = QrCodeHelper.generateQrDataUrl(payload);
 			if (qrImage == null) {
 				stopHosting();
-				callback.onFailed("payload_failed");
+				callback.onFailed("payload_failed", "the QR image could not be rendered");
 				return;
 			}
 			log(OfflineSyncManager.class, "Hosting session ready on " + ipAddress);
-			callback.onReady(qrImage);
+			callback.onReady(qrImage, ssid, password);
 		} catch (JSONException | GeneralSecurityException | IllegalArgumentException e) {
 			// IllegalArgumentException included deliberately: QrCodeHelper rejects empty credentials
 			// that way, and letting it escape would leave the hotspot up with nothing reported.
 			warn(e, "Could not build the pairing payload");
 			stopHosting();
-			callback.onFailed("payload_failed");
+			callback.onFailed("payload_failed", describe(e));
 		}
 	}
 
@@ -143,16 +170,60 @@ public class OfflineSyncManager {
 		log(OfflineSyncManager.class, "Hosting session stopped");
 	}
 
+	/**
+		* Whether a peer could reach this device right now.
+		*
+		* Both halves, because either can go without the other: the system can take the hotspot
+		* away, and the local server's listener can die while the network is still up. Reporting
+		* hosting when only one of them is left would leave the screen showing a code that leads
+		* nowhere.
+		*/
 	public boolean isHosting() {
-		return hotspotManager.isActive();
+		return hotspotManager.isActive() && server.isAlive();
 	}
 
-	/** Result of trying to start hosting. */
-	public interface HostingCallback {
-		/** @param qrImage a PNG data URL of the code, ready for the webapp to display */
-		void onReady(String qrImage);
+	/**
+		* An exception as one line, causes included.
+		*
+		* Hosting depends on what a particular device's keystore allows, and that varies by OEM, so
+		* the reason has to travel off the device: a phone in the field is never on a cable, and the
+		* keystore names the attribute it refused only in the cause chain.
+		*/
+	private static String describe(Throwable error) {
+		StringBuilder description = new StringBuilder();
+		for (Throwable cause = error; cause != null && description.length() < 400; cause = cause.getCause()) {
+			if (description.length() > 0) {
+				description.append(" <- ");
+			}
+			description.append(cause.getClass().getSimpleName());
+			if (cause.getMessage() != null) {
+				description.append(": ").append(cause.getMessage());
+			}
+		}
+		return description.toString();
+	}
 
-		/** @param reason a stable code the webapp can map to a message */
-		void onFailed(String reason);
+	/** What happens to a hosting session, from trying to start it to losing it. */
+	public interface HostingCallback {
+		/**
+			* @param qrImage a PNG data URL of the code, ready for the webapp to display
+			* @param ssid the network the peer must join, shown so it can be joined by hand
+			* @param password that network's password, for the same reason
+			*/
+		void onReady(String qrImage, String ssid, String password);
+
+		/**
+			* @param reason a stable code the webapp can map to a message
+			* @param diagnostic what actually went wrong, for support. Never shown to the user: it
+			*        cannot be translated. Empty when there is nothing to add beyond the code.
+			*/
+		void onFailed(String reason, String diagnostic);
+
+		/**
+			* A session that was running is gone, without anyone asking for it to stop.
+			*
+			* @param reason a stable code the webapp can map to a message
+			*/
+		void onLost(String reason);
 	}
 }

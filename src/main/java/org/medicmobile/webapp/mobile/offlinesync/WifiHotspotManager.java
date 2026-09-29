@@ -62,6 +62,13 @@ public class WifiHotspotManager {
 				warn(this, "Hotspot failed to start: " + reason);
 				callback.onFailed(reason);
 			}
+
+			@Override
+			public void onStopped() {
+				warn(this, "Hotspot went away while a session was running");
+				clearCredentials();
+				callback.onStopped();
+			}
 		});
 	}
 
@@ -74,6 +81,10 @@ public class WifiHotspotManager {
 			long duration = System.currentTimeMillis() - startedAt;
 			log(this, "Hotspot stopped after " + (duration / 1000) + "s");
 		}
+		clearCredentials();
+	}
+
+	private void clearCredentials() {
 		activeSsid = null;
 		activePassword = null;
 		activeIpAddress = null;

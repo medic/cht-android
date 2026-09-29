@@ -169,6 +169,7 @@ public class WifiHotspotProvider implements HotspotProvider {
 				log(this, "LocalOnlyHotspot stopped by system");
 				running = false;
 				reservation = null;
+				callback.onStopped();
 			}
 
 			@Override

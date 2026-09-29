@@ -28,8 +28,8 @@ import java.util.Map;
 	* {
 	*   "type": "cht-offline-sync",
 	*   "v": 1,
-	*   "ssid": "CHT-OFFLINE-SYNC-a3f7",
-	*   "pwd": "randomPassword123",
+	*   "ssid": "AndroidShare_1234",   // whatever the OS named the hotspot, we do not choose it
+	*   "pwd": "randomPassword123",     // likewise
 	*   "ip": "192.168.43.1",
 	*   "port": 8443,
 	*   "ts": 1711152000000
@@ -37,7 +37,7 @@ import java.util.Map;
 	*
 	*   Timestamp must be within 10 minutes of current time
 	*   Type field must be "cht-offline-sync"
-	*   TLS fingerprint must match server cert on connection
+	*   TLS fingerprint must match the host key presented on connection
 	*   QR regenerated each session, old codes are invalid
 	*/
 public final class QrCodeHelper {

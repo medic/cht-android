@@ -13,7 +13,7 @@ import org.robolectric.RobolectricTestRunner;
 @RunWith(RobolectricTestRunner.class)
 public class QrCodeHelperTest {
 
-	private static final String SSID = "CHT-OFFLINE-SYNC-a3f7";
+	private static final String SSID = "AndroidShare_1234";
 	private static final String PASSWORD = "a-password";
 	private static final String IP = "192.168.49.1";
 	private static final int PORT = 8443;
