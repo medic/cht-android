@@ -1,4 +1,4 @@
-package org.medicmobile.webapp.mobile.p2p;
+package org.medicmobile.webapp.mobile.offlinesync;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;

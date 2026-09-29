@@ -8,30 +8,30 @@
     android:paddingRight="16dp">
 
     <TextView
-        android:id="@+id/p2pTitleText"
+        android:id="@+id/offlineSyncTitleText"
         style="@android:style/Widget.DeviceDefault.Light.TextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="80dp"
         android:gravity="center"
         android:padding="10dp"
-        android:text="@string/p2pRequestTitle"
+        android:text="@string/offlineSyncRequestTitle"
         android:textSize="18sp"
         android:textStyle="bold" />
 
     <TextView
-        android:id="@+id/p2pMessageText"
+        android:id="@+id/offlineSyncMessageText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/p2pTitleText"
+        android:layout_below="@+id/offlineSyncTitleText"
         android:layout_marginTop="10dp"
         android:gravity="center"
         android:padding="20dp"
-        android:text="@string/p2pRequestMessage"
+        android:text="@string/offlineSyncRequestMessage"
         android:textSize="18sp" />
 
     <LinearLayout
-        android:id="@+id/p2pButtons"
+        android:id="@+id/offlineSyncButtons"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
@@ -41,10 +41,10 @@
         android:paddingBottom="20dp">
 
         <Button
-            android:id="@+id/p2pNegativeButton"
+            android:id="@+id/offlineSyncNegativeButton"
             style="@style/borderlessButton"
             android:onClick="onClickNegative"
-            android:text="@string/p2pRequestDenyButton"
+            android:text="@string/offlineSyncRequestDenyButton"
             tools:ignore="OnClick,UsingOnClickInXml" />
 
         <View
@@ -53,10 +53,10 @@
             android:layout_weight="1" />
 
         <Button
-            android:id="@+id/p2pOkButton"
+            android:id="@+id/offlineSyncOkButton"
             style="@style/borderlessButton"
             android:onClick="onClickOk"
-            android:text="@string/p2pRequestOkButton"
+            android:text="@string/offlineSyncRequestOkButton"
             tools:ignore="OnClick,UsingOnClickInXml" />
     </LinearLayout>
 

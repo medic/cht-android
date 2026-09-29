@@ -1,4 +1,4 @@
-package org.medicmobile.webapp.mobile.p2p;
+package org.medicmobile.webapp.mobile.offlinesync;
 
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
@@ -30,7 +30,7 @@ import org.robolectric.annotation.Config;
 @RunWith(RobolectricTestRunner.class)
 public class HotspotJoinerTest {
 
-	private static final String SSID = "CHT-P2P-a3f7";
+	private static final String SSID = "CHT-OFFLINE-SYNC-a3f7";
 	private static final String PASSWORD = "a-password";
 
 	private ConnectivityManager connectivityManager;

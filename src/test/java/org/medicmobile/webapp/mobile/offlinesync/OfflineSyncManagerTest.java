@@ -1,4 +1,4 @@
-package org.medicmobile.webapp.mobile.p2p;
+package org.medicmobile.webapp.mobile.offlinesync;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
@@ -25,9 +25,9 @@ import java.io.IOException;
 import java.security.GeneralSecurityException;
 
 @RunWith(RobolectricTestRunner.class)
-public class P2pManagerTest {
+public class OfflineSyncManagerTest {
 
-	private static final String SSID = "CHT-P2P-a3f7";
+	private static final String SSID = "CHT-OFFLINE-SYNC-a3f7";
 	private static final String PASSWORD = "a-password";
 	private static final String IP = "192.168.49.1";
 
@@ -36,8 +36,8 @@ public class P2pManagerTest {
 	private WifiHotspotManager hotspotManager;
 	private LocalHttpServer server;
 	private SessionCertificate certificate;
-	private P2pManager manager;
-	private P2pManager.HostingCallback callback;
+	private OfflineSyncManager manager;
+	private OfflineSyncManager.HostingCallback callback;
 
 	@Before public void setUp() {
 		hotspotManager = mock(WifiHotspotManager.class);
@@ -49,8 +49,8 @@ public class P2pManagerTest {
 		} catch (Exception e) {
 			throw new IllegalStateException(e);
 		}
-		manager = new P2pManager(hotspotManager, server, certificate);
-		callback = mock(P2pManager.HostingCallback.class);
+		manager = new OfflineSyncManager(hotspotManager, server, certificate);
+		callback = mock(OfflineSyncManager.HostingCallback.class);
 	}
 
 	private void hotspotStarts() {
@@ -62,9 +62,9 @@ public class P2pManagerTest {
 	}
 
 	@Test public void constructor_rejectsMissingCollaborators() {
-		assertThrows(IllegalArgumentException.class, () -> new P2pManager(null, server, certificate));
-		assertThrows(IllegalArgumentException.class, () -> new P2pManager(hotspotManager, null, certificate));
-		assertThrows(IllegalArgumentException.class, () -> new P2pManager(hotspotManager, server, null));
+		assertThrows(IllegalArgumentException.class, () -> new OfflineSyncManager(null, server, certificate));
+		assertThrows(IllegalArgumentException.class, () -> new OfflineSyncManager(hotspotManager, null, certificate));
+		assertThrows(IllegalArgumentException.class, () -> new OfflineSyncManager(hotspotManager, server, null));
 	}
 
 	/** The webapp displays this directly, so it must be an image and not the raw payload. */
@@ -149,12 +149,12 @@ public class P2pManagerTest {
 
 	@Test @Config(sdk = 25)
 	public void isHostSupported_isFalseBelowApi26() {
-		assertFalse(P2pManager.isHostSupported());
+		assertFalse(OfflineSyncManager.isHostSupported());
 	}
 
 	@Test @Config(sdk = 26)
 	public void isHostSupported_isTrueFromApi26() {
-		assertTrue(P2pManager.isHostSupported());
+		assertTrue(OfflineSyncManager.isHostSupported());
 	}
 
 	/**

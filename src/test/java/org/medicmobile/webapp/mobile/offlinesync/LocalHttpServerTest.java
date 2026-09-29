@@ -1,4 +1,4 @@
-package org.medicmobile.webapp.mobile.p2p;
+package org.medicmobile.webapp.mobile.offlinesync;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -61,11 +61,11 @@ public class LocalHttpServerTest {
 	public void status_identifiesTheHostSoAPeerCanConfirmWhatItReached() throws Exception {
 		LocalHttpServer server = server();
 
-		NanoHTTPD.Response response = server.serve(request(NanoHTTPD.Method.GET, "/_p2p/status"));
+		NanoHTTPD.Response response = server.serve(request(NanoHTTPD.Method.GET, "/_offline-sync/status"));
 
 		assertEquals(NanoHTTPD.Response.Status.OK, response.getStatus());
 		JSONObject body = new JSONObject(bodyOf(response));
-		assertEquals("cht-p2p", body.getString("service"));
+		assertEquals("cht-offline-sync", body.getString("service"));
 		assertEquals(LABEL, body.getString("device_label"));
 		assertEquals(1, body.getInt("protocol_version"));
 	}
@@ -74,7 +74,7 @@ public class LocalHttpServerTest {
 	public void unknownPath_is404() {
 		LocalHttpServer server = server();
 
-		NanoHTTPD.Response response = server.serve(request(NanoHTTPD.Method.GET, "/_p2p/anything-else"));
+		NanoHTTPD.Response response = server.serve(request(NanoHTTPD.Method.GET, "/_offline-sync/anything-else"));
 
 		assertEquals(NanoHTTPD.Response.Status.NOT_FOUND, response.getStatus());
 	}
@@ -84,7 +84,7 @@ public class LocalHttpServerTest {
 	public void dataEndpointsFromTheOldProtocolAreGone() {
 		LocalHttpServer server = server();
 
-		for (String path : new String[] { "/_p2p/auth", "/_p2p/get-ids", "/_p2p/bulk-get", "/_p2p/accept-docs" }) {
+		for (String path : new String[] { "/_offline-sync/auth", "/_offline-sync/get-ids", "/_offline-sync/bulk-get", "/_offline-sync/accept-docs" }) {
 			NanoHTTPD.Response response = server.serve(request(NanoHTTPD.Method.POST, path));
 			assertEquals(path, NanoHTTPD.Response.Status.NOT_FOUND, response.getStatus());
 		}
@@ -94,7 +94,7 @@ public class LocalHttpServerTest {
 	public void statusOnlyAnswersGet() {
 		LocalHttpServer server = server();
 
-		NanoHTTPD.Response response = server.serve(request(NanoHTTPD.Method.POST, "/_p2p/status"));
+		NanoHTTPD.Response response = server.serve(request(NanoHTTPD.Method.POST, "/_offline-sync/status"));
 
 		assertEquals(NanoHTTPD.Response.Status.NOT_FOUND, response.getStatus());
 	}

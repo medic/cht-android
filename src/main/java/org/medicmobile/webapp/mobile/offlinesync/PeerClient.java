@@ -1,4 +1,4 @@
-package org.medicmobile.webapp.mobile.p2p;
+package org.medicmobile.webapp.mobile.offlinesync;
 
 import static org.medicmobile.webapp.mobile.MedicLog.log;
 
@@ -77,7 +77,7 @@ public class PeerClient {
 		* @throws IOException if the host cannot be reached, or presents a different certificate
 		*/
 	public String fetchStatus(String ipAddress, int port) throws IOException {
-		JSONObject body = get(ipAddress, port, "/_p2p/status");
+		JSONObject body = get(ipAddress, port, "/_offline-sync/status");
 		try {
 			String label = body.getString("device_label");
 			log(PeerClient.class, "Reached host: " + label);

@@ -41,9 +41,9 @@ import androidx.core.view.ViewCompat;
 import java.util.Arrays;
 import java.util.Optional;
 
-import org.medicmobile.webapp.mobile.p2p.P2pManager;
-import org.medicmobile.webapp.mobile.p2p.P2pPeer;
-import org.medicmobile.webapp.mobile.p2p.QrScannerActivity;
+import org.medicmobile.webapp.mobile.offlinesync.OfflineSyncManager;
+import org.medicmobile.webapp.mobile.offlinesync.OfflineSyncPeer;
+import org.medicmobile.webapp.mobile.offlinesync.QrScannerActivity;
 
 @SuppressWarnings({ "PMD.GodClass", "PMD.TooManyMethods" })
 public class EmbeddedBrowserActivity extends Activity {
@@ -54,8 +54,8 @@ public class EmbeddedBrowserActivity extends Activity {
 	private MrdtSupport mrdt;
 	private FilePickerHandler filePickerHandler;
 	private SmsSender smsSender;
-	private P2pManager p2pManager;
-	private P2pPeer p2pPeer;
+	private OfflineSyncManager offlineSyncManager;
+	private OfflineSyncPeer offlineSyncPeer;
 	private ChtExternalAppHandler chtExternalAppHandler;
 	private boolean isMigrationRunning = false;
 
@@ -90,15 +90,15 @@ public class EmbeddedBrowserActivity extends Activity {
 
 		// Hosting and joining have different Android version floors, so each is created only where
 		// it can actually work and the webapp asks before offering either.
-		if(P2pManager.isHostSupported()) {
+		if(OfflineSyncManager.isHostSupported()) {
 			try {
-				this.p2pManager = P2pManager.create(this, Build.MODEL);
+				this.offlineSyncManager = OfflineSyncManager.create(this, Build.MODEL);
 			} catch(Exception ex) {
-				error(ex, "Failed to create P2pManager.");
+				error(ex, "Failed to create OfflineSyncManager.");
 			}
 		}
-		if(P2pPeer.isJoinSupported()) {
-			this.p2pPeer = P2pPeer.create(this);
+		if(OfflineSyncPeer.isJoinSupported()) {
+			this.offlineSyncPeer = OfflineSyncPeer.create(this);
 		}
 
 		this.settings = SettingsStore.in(this);
@@ -247,11 +247,11 @@ public class EmbeddedBrowserActivity extends Activity {
 				case ACCESS_SEND_SMS_PERMISSION:
 					this.smsSender.resumeProcess(resultCode);
 					return;
-				case ACCESS_P2P_PERMISSIONS:
-					p2pPermissionsResolved(resultCode == RESULT_OK);
+				case ACCESS_OFFLINE_SYNC_PERMISSIONS:
+					offlineSyncPermissionsResolved(resultCode == RESULT_OK);
 					return;
-				case SCAN_P2P_QR_CODE:
-					p2pQrCodeScanned(resultCode, intent);
+				case SCAN_OFFLINE_SYNC_QR_CODE:
+					offlineSyncQrCodeScanned(resultCode, intent);
 					return;
 				default:
 					trace(this, "onActivityResult() :: no handling for requestCode=%s", requestCode.name());
@@ -293,19 +293,19 @@ public class EmbeddedBrowserActivity extends Activity {
 		return this.smsSender;
 	}
 
-	P2pManager getP2pManager() {
-		return this.p2pManager;
+	OfflineSyncManager getOfflineSyncManager() {
+		return this.offlineSyncManager;
 	}
 
-	P2pPeer getP2pPeer() {
-		return this.p2pPeer;
+	OfflineSyncPeer getOfflineSyncPeer() {
+		return this.offlineSyncPeer;
 	}
 
 	/** Opens the scanner so the user can read a host's QR code. */
-	void scanP2pQrCode() {
+	void scanOfflineSyncQrCode() {
 		startActivityForResult(
 			new Intent(this, QrScannerActivity.class),
-			RequestCode.SCAN_P2P_QR_CODE.getCode()
+			RequestCode.SCAN_OFFLINE_SYNC_QR_CODE.getCode()
 		);
 	}
 
@@ -344,20 +344,20 @@ public class EmbeddedBrowserActivity extends Activity {
 	}
 
 	/**
-	 * Whether a P2P session may start, asking for the permissions if it may not.
+	 * Whether an offline sync session may start, asking for the permissions if it may not.
 	 *
 	 * Returns false while the request is in flight; the webapp retries once the user has answered.
 	 */
-	public boolean getP2pPermissions() {
-		if (RequestP2pPermissionsActivity.hasP2pPermissions(this)) {
-			trace(this, "getP2pPermissions() :: P2P permissions already granted");
+	public boolean getOfflineSyncPermissions() {
+		if (RequestOfflineSyncPermissionsActivity.hasOfflineSyncPermissions(this)) {
+			trace(this, "getOfflineSyncPermissions() :: Offline sync permissions already granted");
 			return true;
 		}
 
-		trace(this, "getP2pPermissions() :: P2P permissions not granted before, requesting access...");
+		trace(this, "getOfflineSyncPermissions() :: Offline sync permissions not granted before, requesting access...");
 		startActivityForResult(
-			new Intent(this, RequestP2pPermissionsActivity.class),
-			RequestCode.ACCESS_P2P_PERMISSIONS.getCode()
+			new Intent(this, RequestOfflineSyncPermissionsActivity.class),
+			RequestCode.ACCESS_OFFLINE_SYNC_PERMISSIONS.getCode()
 		);
 		return false;
 	}
@@ -393,40 +393,40 @@ public class EmbeddedBrowserActivity extends Activity {
 	}
 
 	/** Hands a scanned code to the peer, which joins and then checks the host is who it claims. */
-	private void p2pQrCodeScanned(int resultCode, Intent intent) {
+	private void offlineSyncQrCodeScanned(int resultCode, Intent intent) {
 		if(resultCode != RESULT_OK || intent == null) {
-			resolveP2pPairing(false, scanFailureCode(intent));
+			resolveOfflineSyncPairing(false, scanFailureCode(intent));
 			return;
 		}
 
 		String payload = intent.getStringExtra(QrScannerActivity.EXTRA_QR_RESULT);
-		this.p2pPeer.pair(payload, new P2pPeer.PairCallback() {
+		this.offlineSyncPeer.pair(payload, new OfflineSyncPeer.PairCallback() {
 			@Override public void onPaired(String hostLabel) {
-				resolveP2pPairing(true, hostLabel);
+				resolveOfflineSyncPairing(true, hostLabel);
 			}
 
 			@Override public void onFailed(String reason) {
-				resolveP2pPairing(false, reason);
+				resolveOfflineSyncPairing(false, reason);
 			}
 		});
 	}
 
-	private void resolveP2pPairing(boolean ok, String detail) {
+	private void resolveOfflineSyncPairing(boolean ok, String detail) {
 		evaluateJavascript(String.format(
 			"try {" +
 				"const api = window.CHTCore.AndroidApi;" +
-				"if (api && api.v1 && api.v1.resolveP2pPairing) {" +
-				"  api.v1.resolveP2pPairing(%s, %s);" +
+				"if (api && api.v1 && api.v1.resolveOfflineSyncPairing) {" +
+				"  api.v1.resolveOfflineSyncPairing(%s, %s);" +
 				"}" +
 				"} catch (error) {" +
-				"  console.error('EmbeddedBrowserActivity :: P2P pairing result not delivered', error);" +
+				"  console.error('EmbeddedBrowserActivity :: Offline sync pairing result not delivered', error);" +
 				"}",
 			ok, org.json.JSONObject.quote(detail)));
 	}
 
-	private void p2pPermissionsResolved(boolean granted) {
+	private void offlineSyncPermissionsResolved(boolean granted) {
 		evaluateJavascript(String.format(
-			"window.CHTCore.AndroidApi.v1.p2pPermissionsResolved(%s);", granted));
+			"window.CHTCore.AndroidApi.v1.offlineSyncPermissionsResolved(%s);", granted));
 	}
 
 	private void locationRequestResolved() {
@@ -561,8 +561,8 @@ public class EmbeddedBrowserActivity extends Activity {
 		CHT_EXTERNAL_APP_ACTIVITY(103),
 		GRAB_MRDT_PHOTO_ACTIVITY(104),
 		FILE_PICKER_ACTIVITY(105),
-		ACCESS_P2P_PERMISSIONS(106),
-		SCAN_P2P_QR_CODE(107);
+		ACCESS_OFFLINE_SYNC_PERMISSIONS(106),
+		SCAN_OFFLINE_SYNC_QR_CODE(107);
 
 		private final int requestCode;
 

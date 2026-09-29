@@ -1,10 +1,10 @@
-package org.medicmobile.webapp.mobile.p2p;
+package org.medicmobile.webapp.mobile.offlinesync;
 
 import static org.medicmobile.webapp.mobile.MedicLog.log;
 import static org.medicmobile.webapp.mobile.MedicLog.warn;
 
 /**
-	* Manages the WiFi hotspot lifecycle for P2P sync.
+	* Manages the WiFi hotspot lifecycle for offline sync.
 	*
 	* Wraps a {@link HotspotProvider} with start/stop timing, state tracking so a second start
 	* returns the running hotspot rather than competing for the radio, and the credentials of the

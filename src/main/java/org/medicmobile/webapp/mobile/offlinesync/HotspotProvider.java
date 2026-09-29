@@ -1,4 +1,4 @@
-package org.medicmobile.webapp.mobile.p2p;
+package org.medicmobile.webapp.mobile.offlinesync;
 
 /**
 	* Abstraction for WiFi hotspot management, so the session logic can be tested without a radio.

@@ -1,4 +1,4 @@
-package org.medicmobile.webapp.mobile.p2p;
+package org.medicmobile.webapp.mobile.offlinesync;
 
 /**
 	* Outcome of validating a scanned QR payload: accepted, or rejected with a code and a detail.

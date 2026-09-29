@@ -1,4 +1,4 @@
-package org.medicmobile.webapp.mobile.p2p;
+package org.medicmobile.webapp.mobile.offlinesync;
 
 import static org.medicmobile.webapp.mobile.MedicLog.log;
 import static org.medicmobile.webapp.mobile.MedicLog.warn;
@@ -12,7 +12,7 @@ import java.security.GeneralSecurityException;
 import fi.iki.elonen.NanoHTTPD;
 
 /**
-	* The local HTTP server a host device runs for the duration of a P2P session.
+	* The local HTTP server a host device runs for the duration of an offline sync session.
 	*
 	* Pairing only (#11281): it answers a status probe so a peer can confirm it reached the right
 	* device, and nothing else. The endpoints that carry data arrive with the transfer work.
@@ -35,7 +35,7 @@ public class LocalHttpServer extends NanoHTTPD {
 	public static final int EPHEMERAL_PORT = 0;
 
 	private static final String MIME_JSON = "application/json";
-	private static final String STATUS_PATH = "/_p2p/status";
+	private static final String STATUS_PATH = "/_offline-sync/status";
 	/** Bumped when the wire contract changes, so a peer can refuse a host it cannot talk to. */
 	private static final int PROTOCOL_VERSION = 1;
 
@@ -99,7 +99,7 @@ public class LocalHttpServer extends NanoHTTPD {
 	private Response handleStatus() {
 		try {
 			JSONObject body = new JSONObject();
-			body.put("service", "cht-p2p");
+			body.put("service", "cht-offline-sync");
 			body.put("protocol_version", PROTOCOL_VERSION);
 			body.put("device_label", deviceLabel);
 			return newFixedLengthResponse(Response.Status.OK, MIME_JSON, body.toString());
