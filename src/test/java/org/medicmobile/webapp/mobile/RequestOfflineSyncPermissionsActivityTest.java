@@ -17,7 +17,7 @@ import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowApplication;
 
 @RunWith(RobolectricTestRunner.class)
-public class RequestP2pPermissionsActivityTest {
+public class RequestOfflineSyncPermissionsActivityTest {
 
 	private Application app() {
 		return RuntimeEnvironment.getApplication();
@@ -32,38 +32,38 @@ public class RequestP2pPermissionsActivityTest {
 	@Test @Config(sdk = 33)
 	public void requiredPermissions_isNearbyWifiFromAndroid13() {
 		assertArrayEquals(new String[] { NEARBY_WIFI_DEVICES },
-				RequestP2pPermissionsActivity.requiredPermissions());
+				RequestOfflineSyncPermissionsActivity.requiredPermissions());
 	}
 
 	@Test @Config(sdk = 26)
 	public void requiredPermissions_isLocationBeforeAndroid13() {
 		assertArrayEquals(new String[] { ACCESS_FINE_LOCATION },
-				RequestP2pPermissionsActivity.requiredPermissions());
+				RequestOfflineSyncPermissionsActivity.requiredPermissions());
 	}
 
 	@Test @Config(sdk = 26)
-	public void hasP2pPermissions_isFalseUntilLocationIsGranted() {
-		assertFalse(RequestP2pPermissionsActivity.hasP2pPermissions(app()));
+	public void hasOfflineSyncPermissions_isFalseUntilLocationIsGranted() {
+		assertFalse(RequestOfflineSyncPermissionsActivity.hasOfflineSyncPermissions(app()));
 
 		grant(ACCESS_FINE_LOCATION);
 
-		assertTrue(RequestP2pPermissionsActivity.hasP2pPermissions(app()));
+		assertTrue(RequestOfflineSyncPermissionsActivity.hasOfflineSyncPermissions(app()));
 	}
 
 	@Test @Config(sdk = 33)
-	public void hasP2pPermissions_isFalseUntilNearbyWifiIsGranted() {
-		assertFalse(RequestP2pPermissionsActivity.hasP2pPermissions(app()));
+	public void hasOfflineSyncPermissions_isFalseUntilNearbyWifiIsGranted() {
+		assertFalse(RequestOfflineSyncPermissionsActivity.hasOfflineSyncPermissions(app()));
 
 		grant(NEARBY_WIFI_DEVICES);
 
-		assertTrue(RequestP2pPermissionsActivity.hasP2pPermissions(app()));
+		assertTrue(RequestOfflineSyncPermissionsActivity.hasOfflineSyncPermissions(app()));
 	}
 
 	/** Location alone is not enough on 13+, which is the version trap this guards against. */
 	@Test @Config(sdk = 33)
-	public void hasP2pPermissions_isNotSatisfiedByLocationOnAndroid13() {
+	public void hasOfflineSyncPermissions_isNotSatisfiedByLocationOnAndroid13() {
 		grant(ACCESS_FINE_LOCATION);
 
-		assertFalse(RequestP2pPermissionsActivity.hasP2pPermissions(app()));
+		assertFalse(RequestOfflineSyncPermissionsActivity.hasOfflineSyncPermissions(app()));
 	}
 }

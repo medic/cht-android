@@ -1,4 +1,4 @@
-package org.medicmobile.webapp.mobile.p2p;
+package org.medicmobile.webapp.mobile.offlinesync;
 
 import static org.medicmobile.webapp.mobile.MedicLog.log;
 import static org.medicmobile.webapp.mobile.MedicLog.warn;
@@ -11,7 +11,7 @@ import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 
 /**
-	* Activity that launches ZXing QR scanner for P2P credential exchange.
+	* Activity that launches ZXing QR scanner for offline sync credential exchange.
 	*
 	* CHW scans the Supervisor's QR code to get WiFi hotspot credentials.
 	* Result returned via onActivityResult with the scanned QR payload.
@@ -25,7 +25,7 @@ import com.google.zxing.integration.android.IntentResult;
 	*   EXTRA_QR_ERROR   — error message string (on RESULT_CANCELED with error)
 	*
 	*   Timestamp within 10 minutes
-	*   Type == "cht-p2p"
+	*   Type == "cht-offline-sync"
 	*/
 public class QrScannerActivity extends Activity {
 
@@ -93,7 +93,7 @@ public class QrScannerActivity extends Activity {
 			// Unexpected result — not from ZXing
 			super.onActivityResult(requestCode, resultCode, data);
 			// "unknown" rather than a code of its own: the user message would be the same, and a
-			// code with no p2p.error key reaches them as raw text. The log carries the specifics.
+			// code with no offline_sync.error key reaches them as raw text. The log carries the specifics.
 			warn(this, "Unexpected onActivityResult — not a ZXing result");
 			returnError("unknown");
 		}

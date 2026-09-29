@@ -1,4 +1,4 @@
-package org.medicmobile.webapp.mobile.p2p;
+package org.medicmobile.webapp.mobile.offlinesync;
 
 import static org.medicmobile.webapp.mobile.MedicLog.error;
 import static org.medicmobile.webapp.mobile.MedicLog.log;
@@ -124,7 +124,7 @@ public class WifiHotspotProvider implements HotspotProvider {
 		*/
 	@android.annotation.TargetApi(26)
 	private void startLocalOnlyHotspot(HotspotCallback callback) {
-		callbackThread = new HandlerThread("p2p-hotspot");
+		callbackThread = new HandlerThread("offline-sync-hotspot");
 		callbackThread.start();
 		wifiManager.startLocalOnlyHotspot(createHotspotCallback(callback),
 				new Handler(callbackThread.getLooper()));

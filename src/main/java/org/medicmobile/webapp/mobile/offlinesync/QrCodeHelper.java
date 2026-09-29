@@ -1,4 +1,4 @@
-package org.medicmobile.webapp.mobile.p2p;
+package org.medicmobile.webapp.mobile.offlinesync;
 
 import static org.medicmobile.webapp.mobile.MedicLog.error;
 
@@ -22,13 +22,13 @@ import java.util.EnumMap;
 import java.util.Map;
 
 /**
-	* Generates and validates QR codes for P2P WiFi hotspot credential exchange.
+	* Generates and validates QR codes for offline sync WiFi hotspot credential exchange.
 	*
 	* QR Payload:
 	* {
-	*   "type": "cht-p2p",
+	*   "type": "cht-offline-sync",
 	*   "v": 1,
-	*   "ssid": "CHT-P2P-a3f7",
+	*   "ssid": "CHT-OFFLINE-SYNC-a3f7",
 	*   "pwd": "randomPassword123",
 	*   "ip": "192.168.43.1",
 	*   "port": 8443,
@@ -36,7 +36,7 @@ import java.util.Map;
 	* }
 	*
 	*   Timestamp must be within 10 minutes of current time
-	*   Type field must be "cht-p2p"
+	*   Type field must be "cht-offline-sync"
 	*   TLS fingerprint must match server cert on connection
 	*   QR regenerated each session, old codes are invalid
 	*/
@@ -44,7 +44,7 @@ public final class QrCodeHelper {
 
 
 	private static final int QR_SIZE = 512; // pixels
-	private static final String PAYLOAD_TYPE = "cht-p2p";
+	private static final String PAYLOAD_TYPE = "cht-offline-sync";
 	private static final int PAYLOAD_VERSION = 1;
 	private static final long MAX_TIMESTAMP_DRIFT_MS = 10L * 60 * 1000; // 10 minutes
 
@@ -181,7 +181,7 @@ public final class QrCodeHelper {
 		* Validate a scanned QR payload.
 		*
 		* Checks:
-		*   Type must be "cht-p2p"
+		*   Type must be "cht-offline-sync"
 		*   Timestamp within 10 minutes of current time
 		*   Required fields: ssid, pwd, ip, port
 		*

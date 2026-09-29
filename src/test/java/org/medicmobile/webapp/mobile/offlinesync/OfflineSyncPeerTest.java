@@ -1,4 +1,4 @@
-package org.medicmobile.webapp.mobile.p2p;
+package org.medicmobile.webapp.mobile.offlinesync;
 
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -15,25 +15,25 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 
 @RunWith(RobolectricTestRunner.class)
-public class P2pPeerTest {
+public class OfflineSyncPeerTest {
 
 	private HotspotJoiner joiner;
-	private P2pPeer peer;
-	private P2pPeer.PairCallback callback;
+	private OfflineSyncPeer peer;
+	private OfflineSyncPeer.PairCallback callback;
 
 	@Before public void setUp() {
 		joiner = mock(HotspotJoiner.class);
-		peer = new P2pPeer(joiner);
-		callback = mock(P2pPeer.PairCallback.class);
+		peer = new OfflineSyncPeer(joiner);
+		callback = mock(OfflineSyncPeer.PairCallback.class);
 	}
 
 	private String validPayload() throws Exception {
 		return QrCodeHelper.buildPayload(new QrCodeHelper.HotspotCredentials(
-				"CHT-P2P-a3f7", "a-password", "192.168.49.1", 8443, "AB:CD:EF:01:23:45"));
+				"CHT-OFFLINE-SYNC-a3f7", "a-password", "192.168.49.1", 8443, "AB:CD:EF:01:23:45"));
 	}
 
 	@Test public void constructor_rejectsAMissingJoiner() {
-		assertThrows(IllegalArgumentException.class, () -> new P2pPeer(null));
+		assertThrows(IllegalArgumentException.class, () -> new OfflineSyncPeer(null));
 	}
 
 	@Test public void pair_rejectsAMissingCallback() throws Exception {
@@ -45,7 +45,7 @@ public class P2pPeerTest {
 	@Test public void pair_joinsTheNetworkNamedInTheCode() throws Exception {
 		peer.pair(validPayload(), callback);
 
-		verify(joiner).join(org.mockito.ArgumentMatchers.eq("CHT-P2P-a3f7"),
+		verify(joiner).join(org.mockito.ArgumentMatchers.eq("CHT-OFFLINE-SYNC-a3f7"),
 				org.mockito.ArgumentMatchers.eq("a-password"), any());
 	}
 

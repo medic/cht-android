@@ -1,4 +1,4 @@
-package org.medicmobile.webapp.mobile.p2p;
+package org.medicmobile.webapp.mobile.offlinesync;
 
 import static org.medicmobile.webapp.mobile.MedicLog.log;
 import static org.medicmobile.webapp.mobile.MedicLog.warn;
@@ -48,7 +48,7 @@ public class SessionCertificate {
 	private static final String DEFAULT_LABEL = "CHT device";
 	private static final String LOOPBACK = "127.0.0.1";
 	private static final int HANDSHAKE_TIMEOUT_MS = 5000;
-	private static final String ALIAS = "cht-p2p-session";
+	private static final String ALIAS = "cht-offline-sync-session";
 
 	private final KeyStore keyStore;
 	private final String deviceLabel;
@@ -234,7 +234,7 @@ public class SessionCertificate {
 				// the client reports the failure; this side only has to not hang
 				warn(e, "Loopback handshake failed on the serving side");
 			}
-		}, "p2p-cert-selftest");
+		}, "offline-sync-cert-selftest");
 		thread.setDaemon(true);
 		thread.start();
 		return thread;

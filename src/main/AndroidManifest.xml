@@ -26,7 +26,7 @@
   <uses-permission android:name="android.permission.SEND_SMS"/>
   -->
 
-  <!-- P2P WiFi hotspot sync (#11281). NEARBY_WIFI_DEVICES only exists from 33, and below it the
+  <!-- Offline sync over WiFi hotspot (#11281). NEARBY_WIFI_DEVICES only exists from 33, and below it the
        platform requires location permission for wifi scanning, which is already declared above. -->
   <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
   <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
@@ -110,14 +110,14 @@
         android:exported="true"
         tools:targetApi="23" />
 
-    <!-- P2P WiFi hotspot sync (#11281). No cleartext config is declared and none is needed: the
+    <!-- Offline sync over WiFi hotspot (#11281). No cleartext config is declared and none is needed: the
          only outbound call is the peer's probe of the host, and that is https against a pinned
          per-session certificate. -->
-    <activity android:name="RequestP2pPermissionsActivity"
+    <activity android:name="RequestOfflineSyncPermissionsActivity"
         android:screenOrientation="portrait"
         android:exported="false"
         tools:ignore="DiscouragedApi,LockedOrientationActivity"/>
-    <activity android:name=".p2p.QrScannerActivity"
+    <activity android:name=".offlinesync.QrScannerActivity"
         android:screenOrientation="portrait"
         android:exported="false"
         tools:ignore="DiscouragedApi"/>

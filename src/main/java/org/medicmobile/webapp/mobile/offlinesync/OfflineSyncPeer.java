@@ -1,4 +1,4 @@
-package org.medicmobile.webapp.mobile.p2p;
+package org.medicmobile.webapp.mobile.offlinesync;
 
 import static org.medicmobile.webapp.mobile.MedicLog.log;
 import static org.medicmobile.webapp.mobile.MedicLog.warn;
@@ -15,19 +15,19 @@ import java.io.IOException;
 	* answering there is the one the code came from. Pairing is only complete once that check passes:
 	* reaching something at the address proves nothing on a network anyone can join.
 	*/
-public class P2pPeer {
+public class OfflineSyncPeer {
 
 	private final HotspotJoiner joiner;
 
-	public P2pPeer(HotspotJoiner joiner) {
+	public OfflineSyncPeer(HotspotJoiner joiner) {
 		if (joiner == null) {
 			throw new IllegalArgumentException("joiner must not be null");
 		}
 		this.joiner = joiner;
 	}
 
-	public static P2pPeer create(Context context) {
-		return new P2pPeer(HotspotJoiner.create(context));
+	public static OfflineSyncPeer create(Context context) {
+		return new OfflineSyncPeer(HotspotJoiner.create(context));
 	}
 
 	/** Whether this device can join a session. Every supported Android version can. */
@@ -48,7 +48,7 @@ public class P2pPeer {
 
 		QrValidation validation = QrCodeHelper.validateQrPayload(payloadJson);
 		if (!validation.isAccepted()) {
-			warn(P2pPeer.class, "Rejected a scanned code: " + validation.getDetail());
+			warn(OfflineSyncPeer.class, "Rejected a scanned code: " + validation.getDetail());
 			callback.onFailed(validation.getCode());
 			return;
 		}
@@ -84,7 +84,7 @@ public class P2pPeer {
 		try {
 			String label = new PeerClient(network, payload.getCertFingerprint())
 					.fetchStatus(payload.getIpAddress(), payload.getPort());
-			log(P2pPeer.class, "Paired with " + label);
+			log(OfflineSyncPeer.class, "Paired with " + label);
 			callback.onPaired(label);
 		} catch (IOException e) {
 			warn(e, "Could not verify the host, abandoning the session");

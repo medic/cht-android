@@ -1,4 +1,4 @@
-package org.medicmobile.webapp.mobile.p2p;
+package org.medicmobile.webapp.mobile.offlinesync;
 
 import static org.medicmobile.webapp.mobile.MedicLog.log;
 import static org.medicmobile.webapp.mobile.MedicLog.warn;
@@ -12,7 +12,7 @@ import org.json.JSONException;
 import java.security.GeneralSecurityException;
 
 /**
-	* Owns a P2P pairing session on the host device.
+	* Owns an offline sync pairing session on the host device.
 	*
 	* Brings up the hotspot, starts the local server behind it, and produces the payload the peer
 	* scans. Nothing here knows what will later travel over the link.
@@ -21,14 +21,14 @@ import java.security.GeneralSecurityException;
 	* check {@link #isHostSupported()} first; the webapp uses it to decide whether to offer the
 	* option at all.
 	*/
-public class P2pManager {
+public class OfflineSyncManager {
 
 
 	private final WifiHotspotManager hotspotManager;
 	private final LocalHttpServer server;
 	private final SessionCertificate certificate;
 
-	public P2pManager(WifiHotspotManager hotspotManager, LocalHttpServer server,
+	public OfflineSyncManager(WifiHotspotManager hotspotManager, LocalHttpServer server,
 						SessionCertificate certificate) {
 		if (hotspotManager == null || server == null || certificate == null) {
 			throw new IllegalArgumentException("collaborators must not be null");
@@ -41,13 +41,13 @@ public class P2pManager {
 	/**
 		* Builds a manager wired to the real WiFi radio, with a fresh TLS identity for the session.
 		*/
-	public static P2pManager create(Context context, String deviceLabel) throws GeneralSecurityException {
+	public static OfflineSyncManager create(Context context, String deviceLabel) throws GeneralSecurityException {
 		Context appContext = context.getApplicationContext();
 		WifiManager wifiManager = (WifiManager) appContext.getSystemService(Context.WIFI_SERVICE);
 		LocationManager locationManager =
 				(LocationManager) appContext.getSystemService(Context.LOCATION_SERVICE);
 		SessionCertificate certificate = SessionCertificate.forDevice(deviceLabel);
-		return new P2pManager(
+		return new OfflineSyncManager(
 				new WifiHotspotManager(
 						new WifiHotspotProvider(wifiManager, locationManager)),
 				new LocalHttpServer(deviceLabel, certificate),
@@ -124,7 +124,7 @@ public class P2pManager {
 				callback.onFailed("payload_failed");
 				return;
 			}
-			log(P2pManager.class, "Hosting session ready on " + ipAddress);
+			log(OfflineSyncManager.class, "Hosting session ready on " + ipAddress);
 			callback.onReady(qrImage);
 		} catch (JSONException | GeneralSecurityException | IllegalArgumentException e) {
 			// IllegalArgumentException included deliberately: QrCodeHelper rejects empty credentials
@@ -140,7 +140,7 @@ public class P2pManager {
 		server.stopServer();
 		hotspotManager.stopHotspot();
 		certificate.destroy();
-		log(P2pManager.class, "Hosting session stopped");
+		log(OfflineSyncManager.class, "Hosting session stopped");
 	}
 
 	public boolean isHosting() {

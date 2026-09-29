@@ -25,8 +25,8 @@ import android.widget.DatePicker;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.medicmobile.webapp.mobile.p2p.P2pManager;
-import org.medicmobile.webapp.mobile.p2p.P2pPeer;
+import org.medicmobile.webapp.mobile.offlinesync.OfflineSyncManager;
+import org.medicmobile.webapp.mobile.offlinesync.OfflineSyncPeer;
 import org.medicmobile.webapp.mobile.util.AppDataStore;
 
 import java.io.BufferedReader;
@@ -54,8 +54,8 @@ public class MedicAndroidJavascript {
 	private final MrdtSupport mrdt;
 	private final SmsSender smsSender;
 	private final ChtExternalAppHandler chtExternalAppHandler;
-	private final P2pManager p2pManager;
-	private final P2pPeer p2pPeer;
+	private final OfflineSyncManager offlineSyncManager;
+	private final OfflineSyncPeer offlineSyncPeer;
 
 	private ActivityManager activityManager;
 	private ConnectivityManager connectivityManager;
@@ -66,8 +66,8 @@ public class MedicAndroidJavascript {
 		this.mrdt = parent.getMrdtSupport();
 		this.smsSender = parent.getSmsSender();
 		this.chtExternalAppHandler = parent.getChtExternalAppHandler();
-		this.p2pManager = parent.getP2pManager();
-		this.p2pPeer = parent.getP2pPeer();
+		this.offlineSyncManager = parent.getOfflineSyncManager();
+		this.offlineSyncPeer = parent.getOfflineSyncPeer();
 	}
 
 	public void setAlert(Alert soundAlert) {
@@ -186,50 +186,50 @@ public class MedicAndroidJavascript {
 	}
 
 	/**
-	 * Whether this device can host a P2P sync session. False below Android 8.0, where the
+	 * Whether this device can host an offline sync session. False below Android 8.0, where the
 	 * local-only hotspot API does not exist. Joining a session has no such limit.
 	 */
 	@android.webkit.JavascriptInterface
 	@SuppressWarnings("java:S100")  // the webapp calls this name literally over the bridge
-	public boolean p2p_host_available() {
-		return p2pManager != null && P2pManager.isHostSupported();
+	public boolean offline_sync_host_available() {
+		return offlineSyncManager != null && OfflineSyncManager.isHostSupported();
 	}
 
 	/**
 	 * Brings up the hotspot and the local server, then reports the payload a peer scans.
 	 *
-	 * Asynchronous: the result arrives on the webapp's P2P callback rather than as a return value,
+	 * Asynchronous: the result arrives on the webapp's offline sync callback rather than as a return value,
 	 * because the hotspot takes seconds to come up.
 	 */
 	@android.webkit.JavascriptInterface
 	@SuppressWarnings("java:S100")  // the webapp calls this name literally over the bridge
-	public void p2p_start_hosting() {
-		if(!p2p_host_available()) {
-			respondToP2p(false, "hotspot_unsupported");
+	public void offline_sync_start_hosting() {
+		if(!offline_sync_host_available()) {
+			respondToOfflineSync(false, "hotspot_unsupported");
 			return;
 		}
-		// Asks if it is missing, and reports back through p2pPermissionsResolved so the webapp can
+		// Asks if it is missing, and reports back through offlineSyncPermissionsResolved so the webapp can
 		// retry. Without this the hotspot call fails with a SecurityException the user cannot act on.
-		if(!parent.getP2pPermissions()) {
-			respondToP2p(false, "permissions_required");
+		if(!parent.getOfflineSyncPermissions()) {
+			respondToOfflineSync(false, "permissions_required");
 			return;
 		}
-		p2pManager.startHosting(new P2pManager.HostingCallback() {
+		offlineSyncManager.startHosting(new OfflineSyncManager.HostingCallback() {
 			@Override public void onReady(String qrPayload) {
-				respondToP2p(true, qrPayload);
+				respondToOfflineSync(true, qrPayload);
 			}
 
 			@Override public void onFailed(String reason) {
-				respondToP2p(false, reason);
+				respondToOfflineSync(false, reason);
 			}
 		});
 	}
 
 	@android.webkit.JavascriptInterface
 	@SuppressWarnings("java:S100")  // the webapp calls this name literally over the bridge
-	public void p2p_stop_hosting() {
-		if(p2pManager != null) {
-			p2pManager.stopHosting();
+	public void offline_sync_stop_hosting() {
+		if(offlineSyncManager != null) {
+			offlineSyncManager.stopHosting();
 		}
 	}
 
@@ -241,64 +241,64 @@ public class MedicAndroidJavascript {
 	 */
 	@android.webkit.JavascriptInterface
 	@SuppressWarnings("java:S100")  // the webapp calls this name literally over the bridge
-	public boolean p2p_join_available() {
-		return p2pPeer != null && P2pPeer.isJoinSupported();
+	public boolean offline_sync_join_available() {
+		return offlineSyncPeer != null && OfflineSyncPeer.isJoinSupported();
 	}
 
 	/**
-	 * Opens the scanner. The result arrives on the webapp's resolveP2pPairing callback once the
+	 * Opens the scanner. The result arrives on the webapp's resolveOfflineSyncPairing callback once the
 	 * device has joined and confirmed the host's certificate.
 	 */
 	@android.webkit.JavascriptInterface
 	@SuppressWarnings("java:S100")  // the webapp calls this name literally over the bridge
-	public void p2p_scan_and_join() {
-		if(!p2p_join_available()) {
+	public void offline_sync_scan_and_join() {
+		if(!offline_sync_join_available()) {
 			respondToPairing(false, "join_unsupported");
 			return;
 		}
-		if(!parent.getP2pPermissions()) {
+		if(!parent.getOfflineSyncPermissions()) {
 			respondToPairing(false, "permissions_required");
 			return;
 		}
-		parent.scanP2pQrCode();
+		parent.scanOfflineSyncQrCode();
 	}
 
 	@android.webkit.JavascriptInterface
 	@SuppressWarnings("java:S100")  // the webapp calls this name literally over the bridge
-	public void p2p_leave_session() {
-		if(p2pPeer != null) {
-			p2pPeer.unpair();
+	public void offline_sync_leave_session() {
+		if(offlineSyncPeer != null) {
+			offlineSyncPeer.unpair();
 		}
 	}
 
 	@android.webkit.JavascriptInterface
 	@SuppressWarnings("java:S100")  // the webapp calls this name literally over the bridge
-	public boolean p2p_is_hosting() {
-		return p2pManager != null && p2pManager.isHosting();
+	public boolean offline_sync_is_hosting() {
+		return offlineSyncManager != null && offlineSyncManager.isHosting();
 	}
 
 	private void respondToPairing(boolean ok, String detail) {
 		parent.evaluateJavascript(String.format(
 				"try {" +
 						"const api = window.CHTCore.AndroidApi;" +
-						"if (api && api.v1 && api.v1.resolveP2pPairing) {" +
-						"  api.v1.resolveP2pPairing(%s, %s);" +
+						"if (api && api.v1 && api.v1.resolveOfflineSyncPairing) {" +
+						"  api.v1.resolveOfflineSyncPairing(%s, %s);" +
 						"}" +
 						"} catch (error) {" +
-						"  console.error('MedicAndroidJavascript :: P2P pairing result not delivered', error);" +
+						"  console.error('MedicAndroidJavascript :: Offline sync pairing result not delivered', error);" +
 						"}",
 				ok, JSONObject.quote(detail)));
 	}
 
-	private void respondToP2p(boolean ok, String detail) {
+	private void respondToOfflineSync(boolean ok, String detail) {
 		parent.evaluateJavascript(String.format(
 				"try {" +
 						"const api = window.CHTCore.AndroidApi;" +
-						"if (api && api.v1 && api.v1.resolveP2pHostingResult) {" +
-						"  api.v1.resolveP2pHostingResult(%s, %s);" +
+						"if (api && api.v1 && api.v1.resolveOfflineSyncHostingResult) {" +
+						"  api.v1.resolveOfflineSyncHostingResult(%s, %s);" +
 						"}" +
 						"} catch (error) {" +
-						"  console.error('MedicAndroidJavascript :: P2P result not delivered', error);" +
+						"  console.error('MedicAndroidJavascript :: Offline sync result not delivered', error);" +
 						"}",
 				ok, JSONObject.quote(detail)));
 	}

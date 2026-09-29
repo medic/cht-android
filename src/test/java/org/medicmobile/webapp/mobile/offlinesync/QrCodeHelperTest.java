@@ -1,4 +1,4 @@
-package org.medicmobile.webapp.mobile.p2p;
+package org.medicmobile.webapp.mobile.offlinesync;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -13,7 +13,7 @@ import org.robolectric.RobolectricTestRunner;
 @RunWith(RobolectricTestRunner.class)
 public class QrCodeHelperTest {
 
-	private static final String SSID = "CHT-P2P-a3f7";
+	private static final String SSID = "CHT-OFFLINE-SYNC-a3f7";
 	private static final String PASSWORD = "a-password";
 	private static final String IP = "192.168.49.1";
 	private static final int PORT = 8443;
@@ -109,7 +109,7 @@ public class QrCodeHelperTest {
 	}
 
 	/**
-		* Anything the webapp receives becomes a `p2p.error.<code>` translation key, so a code has to
+		* Anything the webapp receives becomes a `offline_sync.error.<code>` translation key, so a code has to
 		* be a stable token. A sentence here would reach a CHW as raw text, which is how the prose
 		* reasons this class used to return went unnoticed.
 		*/

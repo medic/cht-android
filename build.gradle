@@ -488,7 +488,7 @@ android {
 }
 
 dependencies {
-  // P2P WiFi hotspot sync (#11281): NanoHTTPD is a single-file HTTP server, ZXing does QR both ways
+  // Offline sync over WiFi hotspot (#11281): NanoHTTPD is a single-file HTTP server, ZXing does QR both ways
   implementation 'org.nanohttpd:nanohttpd:2.3.1'
   implementation 'com.google.zxing:core:3.5.3'
   implementation 'com.journeyapps:zxing-android-embedded:4.3.0'

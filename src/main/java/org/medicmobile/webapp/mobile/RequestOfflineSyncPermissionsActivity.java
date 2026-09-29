@@ -21,7 +21,7 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
 
 /**
- * Asks for the permissions a P2P sync session needs, with a disclosure first.
+ * Asks for the permissions an offline sync session needs, with a disclosure first.
  *
  * Which permission that is depends on the Android version. Hosting a local-only hotspot needs
  * NEARBY_WIFI_DEVICES from Android 13, and location before that: the platform treated nearby wifi
@@ -31,12 +31,12 @@ import androidx.fragment.app.FragmentActivity;
  * Follows RequestLocationPermissionActivity: explain first, then ask, and send the user to the app
  * settings if they have already refused twice.
  */
-public class RequestP2pPermissionsActivity extends FragmentActivity {
+public class RequestOfflineSyncPermissionsActivity extends FragmentActivity {
 
 	private final ActivityResultLauncher<String[]> requestPermissionLauncher =
 		registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), grantedMap -> {
-			if (hasP2pPermissions(this)) {
-				trace(this, "RequestP2pPermissionsActivity :: User granted the P2P permissions.");
+			if (hasOfflineSyncPermissions(this)) {
+				trace(this, "RequestOfflineSyncPermissionsActivity :: User granted the offline sync permissions.");
 				setResult(RESULT_OK);
 				finish();
 				return;
@@ -45,22 +45,22 @@ public class RequestP2pPermissionsActivity extends FragmentActivity {
 			if (shouldSendToAppSettings()) {
 				trace(
 					this,
-					"RequestP2pPermissionsActivity :: User refused twice or selected \"never ask again\"." +
+					"RequestOfflineSyncPermissionsActivity :: User refused twice or selected \"never ask again\"." +
 						" Sending user to the app's settings to grant it manually."
 				);
 				this.appSettingsLauncher.launch(appSettingsIntent());
 				return;
 			}
 
-			trace(this, "RequestP2pPermissionsActivity :: User refused the P2P permissions.");
+			trace(this, "RequestOfflineSyncPermissionsActivity :: User refused the offline sync permissions.");
 			setResult(RESULT_CANCELED);
 			finish();
 		});
 
 	private final ActivityResultLauncher<Intent> appSettingsLauncher =
 		registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
-			boolean granted = hasP2pPermissions(this);
-			trace(this, "RequestP2pPermissionsActivity :: Returned from app settings, granted:%s", granted);
+			boolean granted = hasOfflineSyncPermissions(this);
+			trace(this, "RequestOfflineSyncPermissionsActivity :: Returned from app settings, granted:%s", granted);
 			setResult(granted ? RESULT_OK : RESULT_CANCELED);
 			finish();
 		});
@@ -79,7 +79,7 @@ public class RequestP2pPermissionsActivity extends FragmentActivity {
 	}
 
 	/** Whether this device already has what a session needs. */
-	public static boolean hasP2pPermissions(Context context) {
+	public static boolean hasOfflineSyncPermissions(Context context) {
 		for (String permission : requiredPermissions()) {
 			if (ContextCompat.checkSelfPermission(context, permission) != PERMISSION_GRANTED) {
 				return false;
@@ -111,21 +111,21 @@ public class RequestP2pPermissionsActivity extends FragmentActivity {
 		super.onCreate(savedInstanceState);
 
 		this.requestWindowFeature(Window.FEATURE_NO_TITLE);
-		setContentView(R.layout.request_p2p_permission);
+		setContentView(R.layout.request_offline_sync_permission);
 
 		String appName = getResources().getString(R.string.app_name);
-		String message = getResources().getString(R.string.p2pRequestMessage);
-		TextView field = findViewById(R.id.p2pMessageText);
+		String message = getResources().getString(R.string.offlineSyncRequestMessage);
+		TextView field = findViewById(R.id.offlineSyncMessageText);
 		field.setText(String.format(message, appName));
 	}
 
 	public void onClickOk(View view) {
-		trace(this, "RequestP2pPermissionsActivity :: User agreed with the disclosure message.");
+		trace(this, "RequestOfflineSyncPermissionsActivity :: User agreed with the disclosure message.");
 		requestPermissionLauncher.launch(requiredPermissions());
 	}
 
 	public void onClickNegative(View view) {
-		trace(this, "RequestP2pPermissionsActivity :: User disagreed with the disclosure message.");
+		trace(this, "RequestOfflineSyncPermissionsActivity :: User disagreed with the disclosure message.");
 		setResult(RESULT_CANCELED);
 		finish();
 	}
