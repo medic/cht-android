@@ -178,7 +178,7 @@ public class OfflineSyncManagerTest {
 		* released it on its own.
 		*/
 	@Test @Config(sdk = 26)
-	public void startHosting_releasesAnyPreviousSessionFirst() throws Exception {
+	public void startHosting_releasesAnyPreviousSessionFirst() {
 		hotspotStarts();
 
 		manager.startHosting(callback);

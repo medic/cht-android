@@ -191,14 +191,13 @@ public class OfflineSyncManager {
 		*/
 	private static String describe(Throwable error) {
 		StringBuilder description = new StringBuilder();
+		String separator = "";
 		for (Throwable cause = error; cause != null && description.length() < 400; cause = cause.getCause()) {
-			if (description.length() > 0) {
-				description.append(" <- ");
-			}
-			description.append(cause.getClass().getSimpleName());
+			description.append(separator).append(cause.getClass().getSimpleName());
 			if (cause.getMessage() != null) {
 				description.append(": ").append(cause.getMessage());
 			}
+			separator = " <- ";
 		}
 		return description.toString();
 	}

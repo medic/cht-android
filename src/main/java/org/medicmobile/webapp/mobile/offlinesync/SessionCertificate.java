@@ -235,8 +235,8 @@ public class SessionCertificate {
 	private KeyManager[] serveOnly(KeyManager[] managers) {
 		KeyManager[] bound = new KeyManager[managers.length];
 		for (int i = 0; i < managers.length; i++) {
-			bound[i] = managers[i] instanceof X509KeyManager
-					? new SessionKeyManager((X509KeyManager) managers[i], alias) : managers[i];
+			bound[i] = managers[i] instanceof X509KeyManager x509
+					? new SessionKeyManager(x509, alias) : managers[i];
 		}
 		return bound;
 	}
@@ -380,9 +380,9 @@ public class SessionCertificate {
 					KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
 			factory.init(keyStore, null);
 			for (javax.net.ssl.KeyManager manager : factory.getKeyManagers()) {
-				if (manager instanceof javax.net.ssl.X509KeyManager) {
+				if (manager instanceof javax.net.ssl.X509KeyManager x509) {
 					report.append(" serving=").append(java.util.Arrays.toString(
-							((javax.net.ssl.X509KeyManager) manager).getServerAliases("RSA", null)));
+							x509.getServerAliases("RSA", null)));
 				}
 			}
 			report.append(" algo=").append(KeyManagerFactory.getDefaultAlgorithm());

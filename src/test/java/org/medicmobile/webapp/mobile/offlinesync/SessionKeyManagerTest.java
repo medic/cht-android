@@ -35,7 +35,7 @@ public class SessionKeyManagerTest {
 		return delegate;
 	}
 
-	@Test public void servesOurAliasEvenWhenTheDelegateWouldPickAnother() throws Exception {
+	@Test public void servesOurAliasEvenWhenTheDelegateWouldPickAnother() {
 		X509Certificate[] ourChain = { mock(X509Certificate.class) };
 
 		X509KeyManager served = new SessionCertificate.SessionKeyManager(

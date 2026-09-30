@@ -74,7 +74,6 @@ public class PinnedCertificateTrustTest {
 				new X509Certificate[] { certificateFor(hostKey) }, fingerprintOf(hostKey));
 	}
 
-	/** The whole point: a different device answering on the host's address must be refused. */
 	/**
 		* The pin is over the key, so a certificate re-encoded around the same key must still be
 		* accepted. Keystores may re-derive the certificate when an entry is read back, and pinning
@@ -118,7 +117,7 @@ public class PinnedCertificateTrustTest {
 		* different encoding than the one we fingerprinted, and only the phone in the field can say
 		* which it is.
 		*/
-	@Test public void verifyPinned_saysWhatItExpectedAndWhatItGot() throws Exception {
+	@Test public void verifyPinned_saysWhatItExpectedAndWhatItGot() {
 		CertificateException thrown = assertThrows(CertificateException.class,
 				() -> PinnedCertificateTrust.verifyPinned(
 						new X509Certificate[] { certificateFor(otherKey) },
@@ -128,6 +127,7 @@ public class PinnedCertificateTrustTest {
 		assertTrue(thrown.getMessage().contains("got "));
 	}
 
+	/** The whole point: a different device answering on the host's address must be refused. */
 	@Test public void verifyPinned_rejectsAnImpostor() {
 		CertificateException thrown = assertThrows(CertificateException.class,
 				() -> PinnedCertificateTrust.verifyPinned(
