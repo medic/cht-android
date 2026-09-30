@@ -322,12 +322,12 @@ public class MedicAndroidJavascript {
 				"try {" +
 						"const api = window.CHTCore.AndroidApi;" +
 						"if (api && api.v1 && api.v1.resolveOfflineSyncHostingResult) {" +
-						"  api.v1.resolveOfflineSyncHostingResult(%s, %s);" +
+						"  api.v1.resolveOfflineSyncHostingResult(%s, %s, %s);" +
 						"}" +
 						"} catch (error) {" +
 						"  console.error('MedicAndroidJavascript :: Offline sync result not delivered', error);" +
 						"}",
-				ok, JSONObject.quote(detail)));
+				ok, JSONObject.quote(detail), JSONObject.quote(diagnostic)));
 	}
 
 	/**
