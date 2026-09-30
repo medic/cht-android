@@ -1,6 +1,7 @@
 package org.medicmobile.webapp.mobile;
 
 import static org.medicmobile.webapp.mobile.MedicLog.log;
+import static org.medicmobile.webapp.mobile.MedicLog.warn;
 import static java.util.Calendar.DAY_OF_MONTH;
 import static java.util.Calendar.MONTH;
 import static java.util.Calendar.YEAR;
@@ -25,6 +26,8 @@ import android.widget.DatePicker;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.medicmobile.webapp.mobile.offlinesync.OfflineSyncManager;
+import org.medicmobile.webapp.mobile.offlinesync.OfflineSyncPeer;
 import org.medicmobile.webapp.mobile.util.AppDataStore;
 
 import java.io.BufferedReader;
@@ -52,6 +55,8 @@ public class MedicAndroidJavascript {
 	private final MrdtSupport mrdt;
 	private final SmsSender smsSender;
 	private final ChtExternalAppHandler chtExternalAppHandler;
+	private final OfflineSyncManager offlineSyncManager;
+	private final OfflineSyncPeer offlineSyncPeer;
 
 	private ActivityManager activityManager;
 	private ConnectivityManager connectivityManager;
@@ -62,6 +67,8 @@ public class MedicAndroidJavascript {
 		this.mrdt = parent.getMrdtSupport();
 		this.smsSender = parent.getSmsSender();
 		this.chtExternalAppHandler = parent.getChtExternalAppHandler();
+		this.offlineSyncManager = parent.getOfflineSyncManager();
+		this.offlineSyncPeer = parent.getOfflineSyncPeer();
 	}
 
 	public void setAlert(Alert soundAlert) {
@@ -177,6 +184,150 @@ public class MedicAndroidJavascript {
 	@android.webkit.JavascriptInterface
 	public boolean sms_available() {
 		return smsSender != null;
+	}
+
+	/**
+	 * Whether this device can host an offline sync session. False below Android 8.0, where the
+	 * local-only hotspot API does not exist. Joining a session has no such limit.
+	 */
+	@android.webkit.JavascriptInterface
+	@SuppressWarnings("java:S100")  // the webapp calls this name literally over the bridge
+	public boolean offline_sync_host_available() {
+		return offlineSyncManager != null && OfflineSyncManager.isHostSupported();
+	}
+
+	/**
+	 * Brings up the hotspot and the local server, then reports the payload a peer scans.
+	 *
+	 * Asynchronous: the result arrives on the webapp's offline sync callback rather than as a return value,
+	 * because the hotspot takes seconds to come up.
+	 */
+	@android.webkit.JavascriptInterface
+	@SuppressWarnings("java:S100")  // the webapp calls this name literally over the bridge
+	public void offline_sync_start_hosting() {
+		if(!offline_sync_host_available()) {
+			respondToOfflineSync(false, "hotspot_unsupported", "");
+			return;
+		}
+		// Asks if it is missing, and reports back through offlineSyncPermissionsResolved so the webapp can
+		// retry. Without this the hotspot call fails with a SecurityException the user cannot act on.
+		if(!parent.getOfflineSyncPermissions()) {
+			respondToOfflineSync(false, "permissions_required", "");
+			return;
+		}
+		offlineSyncManager.startHosting(new OfflineSyncManager.HostingCallback() {
+			@Override public void onReady(String qrPayload, String ssid, String password) {
+				respondToOfflineSync(true, session(qrPayload, ssid, password), "");
+			}
+
+			@Override public void onFailed(String reason, String diagnostic) {
+				respondToOfflineSync(false, reason, diagnostic);
+			}
+
+			@Override public void onLost(String reason) {
+				respondToOfflineSync(false, reason, "");
+			}
+		});
+	}
+
+	@android.webkit.JavascriptInterface
+	@SuppressWarnings("java:S100")  // the webapp calls this name literally over the bridge
+	public void offline_sync_stop_hosting() {
+		if(offlineSyncManager != null) {
+			offlineSyncManager.stopHosting();
+		}
+	}
+
+	/**
+	 * Whether this device can join a session.
+	 *
+	 * Joining works on every version the app supports, by one route or the other. Hosting does not,
+	 * so the webapp asks about each separately: a device can join without being able to host.
+	 */
+	@android.webkit.JavascriptInterface
+	@SuppressWarnings("java:S100")  // the webapp calls this name literally over the bridge
+	public boolean offline_sync_join_available() {
+		return offlineSyncPeer != null && OfflineSyncPeer.isJoinSupported();
+	}
+
+	/**
+	 * Opens the scanner. The result arrives on the webapp's resolveOfflineSyncPairing callback once the
+	 * device has joined and confirmed the host's certificate.
+	 */
+	@android.webkit.JavascriptInterface
+	@SuppressWarnings("java:S100")  // the webapp calls this name literally over the bridge
+	public void offline_sync_scan_and_join() {
+		if(!offline_sync_join_available()) {
+			respondToPairing(false, "join_unsupported");
+			return;
+		}
+		if(!parent.getOfflineSyncPermissions()) {
+			respondToPairing(false, "permissions_required");
+			return;
+		}
+		parent.scanOfflineSyncQrCode();
+	}
+
+	@android.webkit.JavascriptInterface
+	@SuppressWarnings("java:S100")  // the webapp calls this name literally over the bridge
+	public void offline_sync_leave_session() {
+		if(offlineSyncPeer != null) {
+			offlineSyncPeer.unpair();
+		}
+	}
+
+	@android.webkit.JavascriptInterface
+	@SuppressWarnings("java:S100")  // the webapp calls this name literally over the bridge
+	public boolean offline_sync_is_hosting() {
+		return offlineSyncManager != null && offlineSyncManager.isHosting();
+	}
+
+	private void respondToPairing(boolean ok, String detail) {
+		parent.evaluateJavascript(String.format(
+				"try {" +
+						"const api = window.CHTCore.AndroidApi;" +
+						"if (api && api.v1 && api.v1.resolveOfflineSyncPairing) {" +
+						"  api.v1.resolveOfflineSyncPairing(%s, %s);" +
+						"}" +
+						"} catch (error) {" +
+						"  console.error('MedicAndroidJavascript :: Offline sync pairing result not delivered', error);" +
+						"}",
+				ok, JSONObject.quote(detail)));
+	}
+
+	/**
+		* What the webapp needs to put a hosting session on screen.
+		*
+		* The QR code carries the network details already, but only as an image: a peer whose camera
+		* will not focus, or who has no camera permission, still has to be able to join the network
+		* by hand, and that means the webapp has to be able to show the name and password as text.
+		*/
+	private String session(String qrPayload, String ssid, String password) {
+		try {
+			return new JSONObject()
+					.put("qr", qrPayload)
+					.put("ssid", ssid)
+					.put("password", password)
+					.toString();
+		} catch (org.json.JSONException e) {
+			// Nothing here can fail on a JSONObject with three string values, and an empty session
+			// is reported as a failure by the webapp rather than shown as a blank screen.
+			warn(e, "Could not describe the hosting session");
+			return "";
+		}
+	}
+
+	private void respondToOfflineSync(boolean ok, String detail, String diagnostic) {
+		parent.evaluateJavascript(String.format(
+				"try {" +
+						"const api = window.CHTCore.AndroidApi;" +
+						"if (api && api.v1 && api.v1.resolveOfflineSyncHostingResult) {" +
+						"  api.v1.resolveOfflineSyncHostingResult(%s, %s, %s);" +
+						"}" +
+						"} catch (error) {" +
+						"  console.error('MedicAndroidJavascript :: Offline sync result not delivered', error);" +
+						"}",
+				ok, JSONObject.quote(detail), JSONObject.quote(diagnostic)));
 	}
 
 	/**

@@ -26,6 +26,16 @@
   <uses-permission android:name="android.permission.SEND_SMS"/>
   -->
 
+  <!-- Offline sync over WiFi hotspot (#11281). NEARBY_WIFI_DEVICES only exists from 33, and below it the
+       platform requires location permission for wifi scanning, which is already declared above. -->
+  <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+  <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
+  <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE"/>
+  <uses-permission android:name="android.permission.CAMERA"/>
+  <uses-permission android:name="android.permission.NEARBY_WIFI_DEVICES" android:minSdkVersion="33"/>
+  <uses-feature android:name="android.hardware.wifi" android:required="false"/>
+  <uses-feature android:name="android.hardware.camera" android:required="false"/>
+
   <application android:label="@string/app_name"
       android:icon="@mipmap/ic_launcher"
       android:allowBackup="false"
@@ -99,6 +109,19 @@
         android:permission="android.permission.BIND_JOB_SERVICE"
         android:exported="true"
         tools:targetApi="23" />
+
+    <!-- Offline sync over WiFi hotspot (#11281). No cleartext config is declared and none is needed: the
+         only outbound call is the peer's probe of the host, and that is https against a pinned
+         per-session certificate. -->
+    <activity android:name="RequestOfflineSyncPermissionsActivity"
+        android:screenOrientation="portrait"
+        android:exported="false"
+        tools:ignore="DiscouragedApi,LockedOrientationActivity"/>
+    <activity android:name=".offlinesync.QrScannerActivity"
+        android:screenOrientation="portrait"
+        android:exported="false"
+        tools:ignore="DiscouragedApi"/>
+
   </application>
 
   <queries>

@@ -36,6 +36,13 @@
 	<string name="locRequestDenyButton">No thanks</string>
 	<string name="locRequestIconDescription">My location icon</string>
 
+	<string name="offlineSyncScanCancel">Cancel</string>
+	<string name="offlineSyncScanPrompt">Scan the QR code on the receiving device</string>
+	<string name="offlineSyncRequestTitle">Offline sync</string>
+	<string name="offlineSyncRequestMessage">%s needs permission to connect directly to another device, so reports can be transferred when there is no network. To allow this select \"Turn on\", and then confirm the next prompt.</string>
+	<string name="offlineSyncRequestOkButton">Turn on</string>
+	<string name="offlineSyncRequestDenyButton">No thanks</string>
+
   <string name="storageRequestTitle">Storage access</string>
   <string name="storageRequestMessage">%s uploads files into reports to analyze and improve health outcomes in your area. To permit storage access select \"Allow\", and then grant storage access in the next prompt.</string>
   <string name="storageRequestAllowButton">Allow</string>

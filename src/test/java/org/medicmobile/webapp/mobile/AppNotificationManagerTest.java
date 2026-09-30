@@ -38,15 +38,22 @@ public class AppNotificationManagerTest {
 		appNotificationManager = spy(new AppNotificationManager(context));
 		startOfDay = appNotificationManager.getStartOfDay();
 		appDataStore = AppDataStore.getInstance(context);
+		// The day marker is written with saveLong, which returns before the write lands, and read
+		// back with getLongBlocking on the very next call. Seeding it here means no test depends on
+		// that write winning the race.
+		appDataStore.saveLongBlocking(AppNotificationManager.TASK_NOTIFICATION_DAY_KEY, startOfDay);
 		useBlockingDataStoreGet();
 	}
 
 	@After
 	public void resetDataStore() {
+		// The tests read these back with getLongBlocking, so the reset has to be blocking too.
+		// saveLong returns before the write lands, which lets the next test read the previous
+		// test's value and fail on an assertion that has nothing to do with what it covers.
 		appDataStore.saveString(AppNotificationManager.TASK_NOTIFICATIONS_KEY, "[]");
-		appDataStore.saveLong(AppNotificationManager.TASK_NOTIFICATION_DAY_KEY, 0L);
-		appDataStore.saveLong(AppNotificationManager.LATEST_NOTIFICATION_TIMESTAMP_KEY, 0L);
-		appDataStore.saveLong(AppNotificationManager.MAX_NOTIFICATIONS_TO_SHOW_KEY, 8L);
+		appDataStore.saveLongBlocking(AppNotificationManager.TASK_NOTIFICATION_DAY_KEY, 0L);
+		appDataStore.saveLongBlocking(AppNotificationManager.LATEST_NOTIFICATION_TIMESTAMP_KEY, 0L);
+		appDataStore.saveLongBlocking(AppNotificationManager.MAX_NOTIFICATIONS_TO_SHOW_KEY, 8L);
 	}
 
 	@Test
