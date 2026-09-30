@@ -38,6 +38,10 @@ public class AppNotificationManagerTest {
 		appNotificationManager = spy(new AppNotificationManager(context));
 		startOfDay = appNotificationManager.getStartOfDay();
 		appDataStore = AppDataStore.getInstance(context);
+		// The day marker is written with saveLong, which returns before the write lands, and read
+		// back with getLongBlocking on the very next call. Seeding it here means no test depends on
+		// that write winning the race.
+		appDataStore.saveLongBlocking(AppNotificationManager.TASK_NOTIFICATION_DAY_KEY, startOfDay);
 		useBlockingDataStoreGet();
 	}
 
