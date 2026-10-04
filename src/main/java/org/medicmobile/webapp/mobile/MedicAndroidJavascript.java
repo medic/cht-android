@@ -167,11 +167,18 @@ public class MedicAndroidJavascript {
 		}
 	}
 
+	//CHT-Core v5.1 and v5.2 use this
 	@JavascriptInterface
 	public void updateTaskNotificationStore(String notifications, long maxNotifications) {
+		String settings = String.format("{maxNotifications: %s}", maxNotifications);
+		updateTaskNotificationStoreWithSettings(notifications, settings);
+	}
+
+	@JavascriptInterface
+	public void updateTaskNotificationStoreWithSettings(
+		String notifications, String settings) {
 		AppDataStore appDataStore = AppDataStore.getInstance(parent.getApplicationContext());
-		appDataStore.saveLong(AppNotificationManager.MAX_NOTIFICATIONS_TO_SHOW_KEY, maxNotifications);
-		appDataStore.saveString(AppNotificationManager.TASK_NOTIFICATIONS_KEY, notifications);
+		appDataStore.saveTaskNotificationSettingsBlocking(settings, notifications);
 	}
 
 	@android.webkit.JavascriptInterface
