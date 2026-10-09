@@ -32,7 +32,6 @@ public class WifiHotspotManagerTest {
 		manager = new WifiHotspotManager(provider);
 	}
 
-	/** Answers a startHotspot call by reporting success back through the provider's callback. */
 	private void providerStartsSuccessfully() {
 		doAnswer(invocation -> {
 			HotspotProvider.HotspotCallback cb = invocation.getArgument(0);
@@ -47,7 +46,6 @@ public class WifiHotspotManagerTest {
 
 	@Test public void startHotspot_keepsTheCredentialsTheProviderReported() {
 		providerStartsSuccessfully();
-		// down before the call, up after, the way a real provider behaves
 		when(provider.isRunning()).thenReturn(false, true);
 
 		manager.startHotspot(mock(HotspotProvider.HotspotCallback.class));
@@ -81,7 +79,6 @@ public class WifiHotspotManagerTest {
 		assertNull(manager.getActiveSsid());
 	}
 
-	/** Once the provider reports itself up, a second start must reuse it rather than start again. */
 	@Test public void startHotspot_doesNotStartTwice() {
 		providerStartsSuccessfully();
 		when(provider.isRunning()).thenReturn(false, true);
@@ -91,7 +88,6 @@ public class WifiHotspotManagerTest {
 		manager.startHotspot(second);
 
 		verify(provider).start(any());
-		// the second caller still gets the live credentials back
 		verify(second).onStarted(SSID, PASSWORD, IP);
 	}
 
@@ -113,7 +109,6 @@ public class WifiHotspotManagerTest {
 		verify(provider, never()).stop();
 	}
 
-	/** Credentials for a hotspot that no longer exists would be handed to the next caller. */
 	@Test public void aHotspotThatGoesAwayLeavesNoCredentialsBehind() {
 		ArgumentCaptor<HotspotProvider.HotspotCallback> captor =
 				ArgumentCaptor.forClass(HotspotProvider.HotspotCallback.class);

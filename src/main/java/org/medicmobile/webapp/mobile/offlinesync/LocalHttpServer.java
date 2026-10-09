@@ -14,8 +14,7 @@ import fi.iki.elonen.NanoHTTPD;
 /**
 	* The local HTTP server a host device runs for the duration of an offline sync session.
 	*
-	* Pairing only (#11281): it answers a status probe so a peer can confirm it reached the right
-	* device, and nothing else. The endpoints that carry data arrive with the transfer work.
+	* It answers a status probe so a peer can confirm it reached the right device.
 	*
 	* Served over TLS using a {@link SessionCertificate}. The certificate is self-signed and
 	* deliberately untrusted by any CA: the peer pins it against the fingerprint printed in the QR

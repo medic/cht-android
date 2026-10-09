@@ -15,10 +15,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 
-/**
-	* Covers what can be checked off-device. Completing a pinned handshake needs a real host with a
-	* keystore-backed certificate, so that is verified on hardware rather than simulated here.
-	*/
 @RunWith(RobolectricTestRunner.class)
 public class PeerClientTest {
 
@@ -28,7 +24,6 @@ public class PeerClientTest {
 		assertThrows(IllegalArgumentException.class, () -> new PeerClient(null, FINGERPRINT));
 	}
 
-	/** Without a fingerprint there is nothing to pin, so connecting would trust any answer. */
 	@Test public void constructor_refusesToConnectWithoutAFingerprint() {
 		Network network = mock(Network.class);
 
@@ -44,10 +39,6 @@ public class PeerClientTest {
 		assertEquals("{\"device_label\":\"Sup\"}", body);
 	}
 
-	/**
-		* The read timeout only bounds inactivity, so a host streaming steadily would never trip it.
-		* Without a size bound one could exhaust the phone's memory from the other side of the pairing.
-		*/
 	@Test public void readBounded_refusesAResponseThatNeverEnds() {
 		byte[] huge = new byte[200 * 1024];
 		Arrays.fill(huge, (byte) 'x');

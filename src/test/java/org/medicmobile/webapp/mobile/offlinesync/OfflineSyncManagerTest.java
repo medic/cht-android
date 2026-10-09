@@ -72,7 +72,6 @@ public class OfflineSyncManagerTest {
 		assertThrows(IllegalArgumentException.class, () -> new OfflineSyncManager(hotspotManager, server, null));
 	}
 
-	/** The webapp displays this directly, so it must be an image and not the raw payload. */
 	@Test @Config(sdk = 26)
 	public void startHosting_bringsUpTheHotspotThenTheServerAndReturnsAScannableImage() throws Exception {
 		hotspotStarts();
@@ -85,12 +84,10 @@ public class OfflineSyncManagerTest {
 		ArgumentCaptor<String> password = ArgumentCaptor.forClass(String.class);
 		verify(callback).onReady(qr.capture(), ssid.capture(), password.capture());
 		org.junit.Assert.assertTrue(qr.getValue(), qr.getValue().startsWith("data:image/png;base64,"));
-		// the same credentials go up as text, so a peer that cannot scan can still join by hand
 		assertEquals(SSID, ssid.getValue());
 		assertEquals(PASSWORD, password.getValue());
 	}
 
-	/** Whatever is encoded must still carry what a peer needs, including the certificate to pin. */
 	@Test @Config(sdk = 26)
 	public void startHosting_encodesTheDetailsAPeerNeeds() throws Exception {
 		JSONObject json = new JSONObject(
@@ -125,7 +122,6 @@ public class OfflineSyncManagerTest {
 		verify(callback, never()).onReady(anyString(), anyString(), anyString());
 	}
 
-	/** A hotspot with no server behind it is worse than no hotspot: it advertises a dead network. */
 	@Test @Config(sdk = 26)
 	public void startHosting_takesTheHotspotBackDownIfTheServerCannotBind() throws Exception {
 		hotspotStarts();
@@ -138,10 +134,6 @@ public class OfflineSyncManagerTest {
 		verify(callback, never()).onReady(anyString(), anyString(), anyString());
 	}
 
-	/**
-		* A device whose keystore will not serve TLS is a different problem from a port that will not
-		* bind: one is worth retrying and the other never will be, so they must not share a code.
-		*/
 	@Test @Config(sdk = 26)
 	public void startHosting_saysSoWhenTheDeviceCannotServeTls() throws Exception {
 		hotspotStarts();
@@ -154,10 +146,6 @@ public class OfflineSyncManagerTest {
 		verify(callback, never()).onReady(anyString(), anyString(), anyString());
 	}
 
-	/**
-		* The phone that fails is never the phone on a cable, so the reason has to leave the device.
-		* Keystore failures name the refused attribute several causes down, hence the whole chain.
-		*/
 	@Test @Config(sdk = 26)
 	public void startHosting_sendsTheReasonOnWithTheCode() throws Exception {
 		doThrow(new GeneralSecurityException("cannot mint",
@@ -172,11 +160,6 @@ public class OfflineSyncManagerTest {
 		assertTrue(diagnostic.getValue().contains("INCOMPATIBLE_PADDING_MODE"));
 	}
 
-	/**
-		* The platform allows one local-only hotspot reservation per app, so a session that failed
-		* part way through would otherwise hold it and every retry would collide until the platform
-		* released it on its own.
-		*/
 	@Test @Config(sdk = 26)
 	public void startHosting_releasesAnyPreviousSessionFirst() {
 		hotspotStarts();
@@ -195,7 +178,6 @@ public class OfflineSyncManagerTest {
 
 		verify(server).stopServer();
 		verify(hotspotManager).stopHotspot();
-		// the session identity must not outlive the session
 		verify(certificate).destroy();
 	}
 
@@ -209,10 +191,6 @@ public class OfflineSyncManagerTest {
 		assertTrue(OfflineSyncManager.isHostSupported());
 	}
 
-	/**
-		* stopHosting destroys the session key, so a second session has to mint a new one. Without
-		* this the supervisor can share once, stop, and never share again until the app restarts.
-		*/
 	@Test public void startHosting_renewsTheCertificateForEachSession() throws Exception {
 		manager.startHosting(callback);
 		manager.stopHosting();
@@ -246,10 +224,6 @@ public class OfflineSyncManagerTest {
 		return captor.getValue();
 	}
 
-	/**
-		* The system can take the hotspot away at any point. Leaving the server listening on a
-		* network that is gone would leave the screen showing a code nothing is behind.
-		*/
 	@Test public void aHotspotThatGoesAwayTakesTheSessionWithIt() {
 		HotspotProvider.HotspotCallback hotspot = hostingStartedThenCaptureCallback();
 		hotspot.onStarted(SSID, PASSWORD, IP);
@@ -261,7 +235,6 @@ public class OfflineSyncManagerTest {
 		verify(callback).onLost("hotspot_stopped");
 	}
 
-	/** A code, not a sentence: the webapp turns this straight into a translation key. */
 	@Test public void aLostSessionIsReportedAsACode() {
 		HotspotProvider.HotspotCallback hotspot = hostingStartedThenCaptureCallback();
 		hotspot.onStarted(SSID, PASSWORD, IP);
@@ -273,10 +246,6 @@ public class OfflineSyncManagerTest {
 		assertTrue(reason.getValue().matches("[a-z0-9_]+"));
 	}
 
-	/**
-		* Either half can go without the other, and a code that leads nowhere is worse than no code:
-		* the user would keep showing it and wonder why nobody can connect.
-		*/
 	@Test public void hostingNeedsBothTheNetworkAndSomethingListeningOnIt() {
 		when(hotspotManager.isActive()).thenReturn(true);
 		when(server.isAlive()).thenReturn(true);

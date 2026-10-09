@@ -66,7 +66,7 @@ public class SessionCertificate {
 		*/
 	private static final String ALIAS_PREFIX = "cht-offline-sync-session";
 
-	/** Every alias prefix this feature has ever used. Add to it when renaming, never replace. */
+	/** Every alias prefix this feature has used, so entries under an older one are still found. */
 	private static final String[] OUR_ALIAS_PREFIXES = { ALIAS_PREFIX, "cht-p2p-session" };
 
 	private KeyStore keyStore;
@@ -82,12 +82,10 @@ public class SessionCertificate {
 	/**
 		* Prepares a certificate holder without minting anything yet.
 		*
-		* Nothing is generated here on purpose. Minting the key runs a real TLS handshake against
-		* ourselves to prove the device can serve with it, which is worth doing but belongs to the
-		* start of a session, not to app startup: doing it here made a device that cannot serve TLS
-		* fail while the app was still opening, and the only visible effect was that the sharing
-		* option quietly disappeared from the menu. {@link #renew()} is called when hosting starts,
-		* and reports the failure where someone can see it.
+		* Nothing is generated here. Minting the key runs a real TLS handshake against ourselves to
+		* prove the device can serve with it, which belongs to the start of a session: at app startup
+		* a device that cannot serve TLS would lose the sharing option from the menu without a word.
+		* {@link #renew()} is called when hosting starts, and reports the failure where someone can see it.
 		*
 		* @param deviceLabel shown as the certificate subject, so a curious peer sees something
 		*                    meaningful rather than a placeholder
@@ -161,9 +159,8 @@ public class SessionCertificate {
 	/**
 		* Whether an entry belongs to this feature, under any name it has ever used.
 		*
-		* Renaming the feature renamed the alias, and the entries written under the old one stayed
-		* behind: a keystore survives an upgrade. Retiring a name means adding it here, never
-		* removing it, or its entries are orphaned on every device that ran that version.
+		* A keystore survives an upgrade, so entries written under a retired alias prefix stay on the
+		* device. Listing every prefix here is what lets them be found and removed.
 		*/
 	private static boolean isOurs(String existing) {
 		for (String prefix : OUR_ALIAS_PREFIXES) {
@@ -194,7 +191,7 @@ public class SessionCertificate {
 		}
 	}
 
-	/** A subject is not a security boundary, but it should not be able to break the DN either. */
+	/** A subject is not a security boundary, but a label still cannot break the DN. */
 	static String sanitise(String deviceLabel) {
 		if (deviceLabel == null) {
 			return DEFAULT_LABEL;
@@ -365,8 +362,8 @@ public class SessionCertificate {
 		* Which entry the key manager is actually serving, for the failure above.
 		*
 		* The handshake reports a key that does not match the one just generated, and only the
-		* keystore's own view can say whose key it is. Best effort by design: this runs while
-		* reporting a failure and must not become a second one.
+		* keystore's own view can say whose key it is. Best effort: this runs while reporting a
+		* failure, so it does not throw one of its own.
 		*/
 	private String whatIsBeingServed() {
 		StringBuilder report = new StringBuilder("[mine=").append(alias);

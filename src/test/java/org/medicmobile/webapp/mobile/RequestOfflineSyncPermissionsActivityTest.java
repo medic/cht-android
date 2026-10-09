@@ -28,7 +28,6 @@ public class RequestOfflineSyncPermissionsActivityTest {
 		shadow.grantPermissions(permission);
 	}
 
-	/** Android 13 introduced a dedicated permission; before it the capability sat behind location. */
 	@Test @Config(sdk = 33)
 	public void requiredPermissions_isNearbyWifiFromAndroid13() {
 		assertArrayEquals(new String[] { NEARBY_WIFI_DEVICES },
@@ -59,7 +58,6 @@ public class RequestOfflineSyncPermissionsActivityTest {
 		assertTrue(RequestOfflineSyncPermissionsActivity.hasOfflineSyncPermissions(app()));
 	}
 
-	/** Location alone is not enough on 13+, which is the version trap this guards against. */
 	@Test @Config(sdk = 33)
 	public void hasOfflineSyncPermissions_isNotSatisfiedByLocationOnAndroid13() {
 		grant(ACCESS_FINE_LOCATION);

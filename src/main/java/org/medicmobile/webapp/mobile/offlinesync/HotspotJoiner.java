@@ -186,7 +186,7 @@ public class HotspotJoiner {
 	private void requestNetwork(String ssid, String password, JoinCallback callback) {
 		NetworkRequest request = new NetworkRequest.Builder()
 				.addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
-				// the hotspot has no upstream, so the system must not discard it for lacking one
+				// the hotspot has no upstream, so without this the system discards it for lacking one
 				.removeCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
 				.setNetworkSpecifier(new WifiNetworkSpecifier.Builder()
 						.setSsid(ssid)

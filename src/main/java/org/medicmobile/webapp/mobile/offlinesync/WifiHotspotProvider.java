@@ -20,8 +20,8 @@ import java.util.Enumeration;
 /**
 	* Production HotspotProvider using WifiManager.startLocalOnlyHotspot() (API 26+).
 	*
-	* Creates an isolated local network with no internet routing — CHW devices
-	* connect directly to the Supervisor's phone over WiFi.
+	* Creates an isolated local network with no internet routing: sending devices
+	* connect directly to the receiving one over WiFi.
 	*
 	* Notes:
 	* - Requires android.permission.CHANGE_WIFI_STATE
@@ -303,7 +303,7 @@ public class WifiHotspotProvider implements HotspotProvider {
 		* Detect the actual hotspot IP by scanning network interfaces.
 		* Phase 1: Check known hotspot interface names.
 		* Phase 2: Enumerate all interfaces, skip loopback and wlan0 (regular WiFi).
-		* Returns null if no hotspot IP found — caller MUST fail loudly.
+		* Returns null if no hotspot IP is found, and the caller then fails the session.
 		*/
 	private static String detectHotspotIp() {
 		try {

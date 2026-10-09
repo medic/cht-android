@@ -56,7 +56,6 @@ public class QrCodeHelperTest {
 		assertEquals(FINGERPRINT, payload.getString("fp"));
 	}
 
-	/** Pairing without a fingerprint would mean trusting whatever answers on that IP. */
 	@Test public void buildPayload_refusesToBuildWithoutAFingerprint() {
 		org.junit.Assert.assertThrows(org.json.JSONException.class,
 				() -> QrCodeHelper.buildPayload(
@@ -108,11 +107,6 @@ public class QrCodeHelperTest {
 		assertEquals(SSID, parsed.getSsid());
 	}
 
-	/**
-		* Anything the webapp receives becomes a `offline_sync.error.<code>` translation key, so a code has to
-		* be a stable token. A sentence here would reach a CHW as raw text, which is how the prose
-		* reasons this class used to return went unnoticed.
-		*/
 	@Test public void everyRejectionCarriesAStableCode() throws Exception {
 		JSONObject noTimestamp = new JSONObject(QrCodeHelper.buildPayload(credentials()));
 		noTimestamp.remove("ts");

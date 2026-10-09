@@ -86,8 +86,8 @@ public class OfflineSyncManager {
 		hotspotManager.stopHotspot();
 
 		try {
-			// A session's identity must not outlive it: stopHosting destroys the key, so without
-			// this a second session would find nothing in the keystore to serve TLS with.
+			// Each session gets a fresh identity: stopHosting destroys the key, so without this a
+			// second session would find nothing in the keystore to serve TLS with.
 			certificate.renew();
 		} catch (GeneralSecurityException e) {
 			warn(e, "Could not prepare a certificate for this session");

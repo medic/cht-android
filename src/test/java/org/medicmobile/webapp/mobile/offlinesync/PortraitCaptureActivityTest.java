@@ -14,10 +14,6 @@ import org.robolectric.android.controller.ActivityController;
 
 import org.medicmobile.webapp.mobile.R;
 
-/**
-	* ZXing's own layout is the camera preview alone, so the only way out is the system back gesture.
-	* A user who cannot find it is left looking at a camera with no way back.
-	*/
 @RunWith(RobolectricTestRunner.class)
 public class PortraitCaptureActivityTest {
 
@@ -31,7 +27,6 @@ public class PortraitCaptureActivityTest {
 
 			cancel.performClick();
 
-			// finishing without a result is already reported to the webapp as a cancelled scan
 			assertTrue(activity.isFinishing());
 		}
 	}

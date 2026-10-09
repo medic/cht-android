@@ -13,14 +13,6 @@ import java.security.cert.X509Certificate;
 
 import javax.net.ssl.X509KeyManager;
 
-/**
-	* The server must offer the key the QR code names, whatever else the keystore holds.
-	*
-	* Entries written under a name the feature used in an earlier version outlive an upgrade, and a
-	* key manager handed the whole keystore is free to pick one of them. It then serves a key the
-	* peer was never told to trust, so pairing fails on an upgraded device while working on one
-	* installed fresh.
-	*/
 @RunWith(RobolectricTestRunner.class)
 public class SessionKeyManagerTest {
 
@@ -42,7 +34,6 @@ public class SessionKeyManagerTest {
 				delegateChoosing(SOMEONE_ELSE, ourChain), OURS);
 		assertEquals(OURS, served.chooseServerAlias("RSA", null, null));
 		assertArrayEquals(new String[] { OURS }, served.getServerAliases("RSA", null));
-		// asked for someone else's entry, it still answers with ours
 		assertArrayEquals(ourChain, served.getCertificateChain(SOMEONE_ELSE));
 	}
 }

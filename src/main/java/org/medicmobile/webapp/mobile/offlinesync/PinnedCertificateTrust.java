@@ -89,8 +89,8 @@ public final class PinnedCertificateTrust {
 		* The certificate's subject, for the message above.
 		*
 		* Null-safe because this runs while rejecting a certificate we have already decided not to
-		* trust: anything about it may be missing or malformed, and a diagnostic must never be the
-		* thing that throws.
+		* trust: anything about it may be missing or malformed, so building the diagnostic does not
+		* throw.
 		*/
 	private static String subjectOf(X509Certificate certificate) {
 		try {

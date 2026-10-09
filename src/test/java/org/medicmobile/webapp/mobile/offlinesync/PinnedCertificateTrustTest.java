@@ -23,8 +23,6 @@ public class PinnedCertificateTrustTest {
 	private static java.security.PublicKey otherKey;
 
 	@org.junit.BeforeClass public static void generateKeys() throws Exception {
-		// Real keys rather than invented bytes: the pin is taken over the encoded public key, so a
-		// fixture that is not one would not exercise the thing under test.
 		java.security.KeyPairGenerator keys = java.security.KeyPairGenerator.getInstance("RSA");
 		hostKey = keys.generateKeyPair().getPublic();
 		otherKey = keys.generateKeyPair().getPublic();
@@ -74,11 +72,6 @@ public class PinnedCertificateTrustTest {
 				new X509Certificate[] { certificateFor(hostKey) }, fingerprintOf(hostKey));
 	}
 
-	/**
-		* The pin is over the key, so a certificate re-encoded around the same key must still be
-		* accepted. Keystores may re-derive the certificate when an entry is read back, and pinning
-		* the whole certificate would make pairing depend on that never happening.
-		*/
 	@Test public void verifyPinned_acceptsTheSameKeyInADifferentCertificate() throws Exception {
 		java.security.KeyPair pair = java.security.KeyPairGenerator.getInstance("RSA").generateKeyPair();
 
@@ -88,7 +81,6 @@ public class PinnedCertificateTrustTest {
 
 		X509Certificate asPresented = mock(X509Certificate.class);
 		when(asPresented.getPublicKey()).thenReturn(pair.getPublic());
-		// the same key, wrapped in a certificate the device encoded differently
 		when(asPresented.getEncoded()).thenReturn(new byte[] { 2, 2, 2 });
 
 		PinnedCertificateTrust.verifyPinned(
@@ -96,7 +88,6 @@ public class PinnedCertificateTrustTest {
 				PinnedCertificateTrust.fingerprintOf(asFingerprinted));
 	}
 
-	/** The other half: a different key is still refused, so pinning the key is not weaker. */
 	@Test public void verifyPinned_stillRefusesADifferentKey() throws Exception {
 		java.security.KeyPairGenerator keys = java.security.KeyPairGenerator.getInstance("RSA");
 		X509Certificate host = mock(X509Certificate.class);
@@ -104,7 +95,6 @@ public class PinnedCertificateTrustTest {
 
 		X509Certificate impostor = mock(X509Certificate.class);
 		when(impostor.getPublicKey()).thenReturn(keys.generateKeyPair().getPublic());
-		// identical certificate bytes, so only the key can tell them apart
 		when(impostor.getEncoded()).thenReturn(new byte[] { 1, 1, 1 });
 		when(host.getEncoded()).thenReturn(new byte[] { 1, 1, 1 });
 
@@ -112,11 +102,6 @@ public class PinnedCertificateTrustTest {
 				new X509Certificate[] { impostor }, PinnedCertificateTrust.fingerprintOf(host)));
 	}
 
-	/**
-		* "Does not match" alone cannot tell a wrong device from a device whose keystore returns a
-		* different encoding than the one we fingerprinted, and only the phone in the field can say
-		* which it is.
-		*/
 	@Test public void verifyPinned_saysWhatItExpectedAndWhatItGot() {
 		CertificateException thrown = assertThrows(CertificateException.class,
 				() -> PinnedCertificateTrust.verifyPinned(
@@ -127,7 +112,6 @@ public class PinnedCertificateTrustTest {
 		assertTrue(thrown.getMessage().contains("got "));
 	}
 
-	/** The whole point: a different device answering on the host's address must be refused. */
 	@Test public void verifyPinned_rejectsAnImpostor() {
 		CertificateException thrown = assertThrows(CertificateException.class,
 				() -> PinnedCertificateTrust.verifyPinned(
@@ -143,7 +127,6 @@ public class PinnedCertificateTrustTest {
 				() -> PinnedCertificateTrust.verifyPinned(null, fingerprintOf(hostKey)));
 	}
 
-	/** Only the leaf is pinned, so an extra certificate in the chain must not rescue an impostor. */
 	@Test public void verifyPinned_onlyTrustsTheLeafCertificate() {
 		assertThrows(CertificateException.class,
 				() -> PinnedCertificateTrust.verifyPinned(

@@ -26,7 +26,7 @@
   <uses-permission android:name="android.permission.SEND_SMS"/>
   -->
 
-  <!-- Offline sync over WiFi hotspot (#11281). NEARBY_WIFI_DEVICES only exists from 33, and below it the
+  <!-- Offline sync over WiFi hotspot. NEARBY_WIFI_DEVICES only exists from 33, and below it the
        platform requires location permission for wifi scanning, which is already declared above. -->
   <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
   <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>

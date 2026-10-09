@@ -60,7 +60,6 @@ public class HotspotJoinerTest {
 		assertTrue(HotspotJoiner.SUPPORTED);
 	}
 
-	/** Android 9 and below save the network and switch to it; requestNetwork is not used there. */
 	@Test @Config(sdk = 28)
 	public void join_savesAndEnablesTheNetworkBeforeAndroid10() {
 		when(wifiManager.addNetwork(any())).thenReturn(7);
@@ -83,10 +82,6 @@ public class HotspotJoinerTest {
 		verify(wifiManager, never()).enableNetwork(anyInt(), org.mockito.ArgumentMatchers.anyBoolean());
 	}
 
-	/**
-		* Below Android 10 the platform gives requestNetwork's timeout no equivalent, so the join is
-		* bounded here. Without it the user sits on "connecting" forever with nothing to act on.
-		*/
 	@Test @Config(sdk = 28)
 	public void join_failsWhenTheNetworkNeverArrivesBeforeAndroid10() {
 		when(wifiManager.addNetwork(any())).thenReturn(7);
@@ -100,10 +95,6 @@ public class HotspotJoinerTest {
 		verify(callback).onFailed("join_failed");
 	}
 
-	/**
-		* The legacy path can only watch wifi in general, so another network coming up must not be
-		* mistaken for the host's.
-		*/
 	@Test @Config(sdk = 28)
 	public void join_ignoresADifferentNetworkBeforeAndroid10() {
 		when(wifiManager.addNetwork(any())).thenReturn(7);
@@ -122,7 +113,6 @@ public class HotspotJoinerTest {
 		verify(callback, never()).onJoined(any());
 	}
 
-	/** Android 10 broke addNetwork for apps, so it must not be attempted there. */
 	@Test @Config(sdk = 29)
 	public void join_doesNotUseTheLegacyPathFromAndroid10() {
 		joiner.join(SSID, PASSWORD, callback);
@@ -169,10 +159,6 @@ public class HotspotJoinerTest {
 		verify(connectivityManager, never()).unregisterNetworkCallback(any(ConnectivityManager.NetworkCallback.class));
 	}
 
-	/**
-		* Leaving a saved network behind would strand the user on a hotspot with no internet, and
-		* the device would keep rejoining it whenever the supervisor is nearby.
-		*/
 	@Test @Config(sdk = 28)
 	public void leave_takesTheSavedNetworkBackOffTheDevice() {
 		when(wifiManager.addNetwork(any())).thenReturn(7);

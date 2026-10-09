@@ -14,7 +14,6 @@ public class SessionCertificateTest {
 		assertEquals("SM-A125F", SessionCertificate.sanitise("SM-A125F"));
 	}
 
-	/** A label cannot be allowed to inject its own relative distinguished name. */
 	@Test public void sanitise_dropsCharactersThatWouldBreakTheSubject() {
 		String cleaned = SessionCertificate.sanitise("Pixel 6a, CN=evil");
 
@@ -23,10 +22,6 @@ public class SessionCertificateTest {
 		assertFalse(cleaned.contains("="));
 	}
 
-	/**
-		* Build.MODEL is whatever the vendor set. A model written entirely in another script strips
-		* to nothing, and a bare "CN=" subject is not something to hand the keystore.
-		*/
 	@Test public void sanitise_fallsBackWhenNothingPrintableIsLeft() {
 		assertEquals("CHT device", SessionCertificate.sanitise("नेपाल"));
 		assertEquals("CHT device", SessionCertificate.sanitise("???"));

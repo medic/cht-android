@@ -5,10 +5,7 @@ package org.medicmobile.webapp.mobile.offlinesync;
 	*
 	* The code is what crosses the bridge, so it is a stable token the webapp turns into a
 	* translated message. The detail is the prose behind it and is for the log only: a sentence
-	* built here can never be translated, and would reach a CHW as raw text.
-	*
-	* Deliberately local to the QR pairing code. An earlier iteration reused the document-scope
-	* classification result for this, which tied pairing to a data model it has nothing to do with.
+	* built here cannot be translated, and would reach the user as raw text.
 	*/
 public final class QrValidation {
 
@@ -41,7 +38,7 @@ public final class QrValidation {
 		return code;
 	}
 
-	/** Why it failed, for the log. Never show this to a user: it cannot be translated. */
+	/** Why it failed, for the log. Not shown to a user, because it cannot be translated. */
 	public String getDetail() {
 		return detail;
 	}

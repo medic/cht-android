@@ -38,7 +38,6 @@ public class LocalHttpServerTest {
 		return session;
 	}
 
-	/** Response.send is protected, so read the body straight off the response's data stream. */
 	private String bodyOf(NanoHTTPD.Response response) throws Exception {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		byte[] buffer = new byte[1024];
@@ -79,7 +78,6 @@ public class LocalHttpServerTest {
 		assertEquals(NanoHTTPD.Response.Status.NOT_FOUND, response.getStatus());
 	}
 
-	/** The data endpoints do not exist yet; a peer must not be able to reach one by guessing. */
 	@Test
 	public void dataEndpointsFromTheOldProtocolAreGone() {
 		LocalHttpServer server = server();
@@ -105,20 +103,14 @@ public class LocalHttpServerTest {
 
 		server.stopServer();
 
-		// it never started, so it must still not be listening rather than have half-torn-down state
 		assertFalse(server.isAlive());
 	}
 
-	/** Port 0 asks the OS for a free port, which is what removes the "port already in use" failure. */
 	@Test
 	public void defaultsToAnOsAssignedPort() {
 		assertEquals(0, LocalHttpServer.EPHEMERAL_PORT);
 	}
 
-	/**
-		* Proves the server will not listen without TLS. Actually completing a handshake needs a
-		* keystore-backed certificate, so that is verified on a device rather than faked here.
-		*/
 	@Test
 	public void startServer_refusesToListenIfTheCertificateIsUnusable() throws Exception {
 		when(certificate.sslServerSocketFactory())
@@ -132,11 +124,7 @@ public class LocalHttpServerTest {
 		when(certificate.sslServerSocketFactory())
 				.thenThrow(new java.security.GeneralSecurityException("stop before binding"));
 
-		try {
-			server().startServer();
-		} catch (java.security.GeneralSecurityException expected) {
-			// we only care that TLS was set up before any socket was opened
-		}
+		assertThrows(java.security.GeneralSecurityException.class, () -> server().startServer());
 		verify(certificate).sslServerSocketFactory();
 	}
 }

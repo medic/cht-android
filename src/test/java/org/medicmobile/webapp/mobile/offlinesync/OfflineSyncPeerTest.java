@@ -49,7 +49,6 @@ public class OfflineSyncPeerTest {
 				org.mockito.ArgumentMatchers.eq("a-password"), any());
 	}
 
-	/** A code that fails validation must not reach the radio at all. */
 	@Test public void pair_refusesAnInvalidPayloadWithoutJoining() {
 		peer.pair("not a qr payload", callback);
 
