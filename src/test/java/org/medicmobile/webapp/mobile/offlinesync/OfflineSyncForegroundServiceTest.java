@@ -53,8 +53,8 @@ public class OfflineSyncForegroundServiceTest {
 	}
 
 	@Test public void itSaysWhichSideOfTheTransferThisPhoneIsOn() {
-		assertEquals("Ready to receive reports from another device.", text(started(OfflineSyncForegroundService.STATUS_HOSTING)));
-		assertEquals("Sending reports to another device.", text(started(OfflineSyncForegroundService.STATUS_SENDING)));
+		assertEquals("Ready to receive data from another device.", text(started(OfflineSyncForegroundService.STATUS_HOSTING)));
+		assertEquals("Sending data to another device.", text(started(OfflineSyncForegroundService.STATUS_SENDING)));
 	}
 
 	/** Restarted by the system with nothing to say: a session cannot be resumed from nothing. */
@@ -82,7 +82,7 @@ public class OfflineSyncForegroundServiceTest {
 	}
 
 	@Test public void itDoesNotCountBeforeAnythingHasBeenSent() {
-		assertEquals("Sending reports to another device.",
+		assertEquals("Sending data to another device.",
 				text(started(OfflineSyncForegroundService.STATUS_SENDING, 0)));
 	}
 }

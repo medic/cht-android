@@ -43,8 +43,8 @@
 	<string name="offlineSyncRequestOkButton">Turn on</string>
 	<string name="offlineSyncRequestDenyButton">No thanks</string>
 	<string name="offlineSyncSessionTitle">Offline sync</string>
-	<string name="offlineSyncSessionHosting">Ready to receive reports from another device.</string>
-	<string name="offlineSyncSessionSending">Sending reports to another device.</string>
+	<string name="offlineSyncSessionHosting">Ready to receive data from another device.</string>
+	<string name="offlineSyncSessionSending">Sending data to another device.</string>
 	<string name="offlineSyncSessionFailed">The transfer did not finish. Reconnect and send again.</string>
 	<plurals name="offlineSyncSessionSent">
 		<item quantity="one">Transferred %1$d package to another device.</item>
