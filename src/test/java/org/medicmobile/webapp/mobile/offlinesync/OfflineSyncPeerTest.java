@@ -145,7 +145,6 @@ public class OfflineSyncPeerTest {
 		assertEquals("bundle-1", peer.openBundle());
 	}
 
-	/** The webapp has to learn it cannot send now, rather than writing pieces into nothing. */
 	@Test public void openBundle_isNullWhenThereIsNowhereToPutIt() throws Exception {
 		when(outbox.create()).thenThrow(new java.io.IOException("no space"));
 
@@ -164,7 +163,6 @@ public class OfflineSyncPeerTest {
 		assertFalse(peer.writeBundle("bundle-1", "b25l"));
 	}
 
-	/** Sending before a host has proved who it is would be sending to nobody in particular. */
 	@Test public void sendBundle_refusesWhenThereIsNoPairedHost() {
 		OfflineSyncPeer.SendCallback sendCallback = mock(OfflineSyncPeer.SendCallback.class);
 
@@ -186,7 +184,6 @@ public class OfflineSyncPeerTest {
 		assertTrue(peer.discardBundle("bundle-1"));
 	}
 
-	/** Ids come from the webapp, so one that is not a bundle id is refused, not acted on. */
 	@Test public void discardBundle_isFalseForSomethingThatIsNotABundleId() {
 		when(outbox.delete(any())).thenThrow(new IllegalArgumentException("not a bundle id"));
 

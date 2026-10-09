@@ -23,18 +23,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-/**
-	* The peer-to-peer transfer, run for real on one device.
-	*
-	* Everything a handover does except bringing up the radio happens here: a session certificate
-	* minted in the Android keystore, a TLS server behind it, a client that trusts nothing but the
-	* fingerprint from the QR code, and a bundle that has to arrive byte for byte. Those are the
-	* parts that can be wrong in ways a mocked test would never notice, and they need a real device
-	* because the keystore is hardware-backed and cannot be stood up on a JVM.
-	*
-	* What is deliberately NOT covered: LocalOnlyHotspot. Creating one needs a WiFi radio and a
-	* second device to join it. This runs the server on the address the device already has.
-	*/
 @RunWith(AndroidJUnit4.class)
 public class BundleTransferTest {
 
@@ -53,16 +41,12 @@ public class BundleTransferTest {
 		root = new File(context.getCacheDir(), "transfer-test-" + System.nanoTime());
 		inbox = new BundleSpool(root);
 		certificate = SessionCertificate.forDevice(LABEL);
-		// Minting now rather than at construction, which is what a hosting session does: this is
-		// also the step that proves the device's keystore can actually serve TLS.
 		certificate.renew();
 		server = new LocalHttpServer(LocalHttpServer.EPHEMERAL_PORT, LABEL, certificate, inbox);
 		server.startServer();
 	}
 
 	@After public void tearDown() {
-		// Guarded because a failure in setUp leaves these unset, and an NPE here would replace the
-		// real reason in the report with a meaningless one.
 		if (server != null) {
 			server.stopServer();
 		}
@@ -87,7 +71,6 @@ public class BundleTransferTest {
 		return outbox.bundle(id);
 	}
 
-	/** The address a peer would have been given in the QR code. */
 	private String address() {
 		return "127.0.0.1";
 	}
@@ -99,17 +82,6 @@ public class BundleTransferTest {
 		assertEquals(LABEL, label);
 	}
 
-	/**
-		* The pin is the whole identity check: anyone in range can join the network, so a device
-		* answering at the right address proves nothing on its own.
-		*/
-	/**
-		* Every session mints a new identity, so the one actually served must be the new one.
-		*
-		* Key material is cached per alias, so regenerating under a shared alias can leave the TLS
-		* layer serving the retired key while the fingerprint in the QR code names the new one. The
-		* other tests renew once in setUp, so only a second session can show it.
-		*/
 	@Test public void aSecondSessionServesItsOwnKey() throws Exception {
 		String firstSession = certificate.fingerprint();
 		server.stopServer();
@@ -121,7 +93,6 @@ public class BundleTransferTest {
 
 		assertNotEquals("renew() must mint a new identity", firstSession, secondSession);
 		assertEquals(LABEL, client(secondSession).fetchStatus(address(), server.getListeningPort()));
-		// and the retired identity must no longer be accepted, or renewing would protect nothing
 		assertThrows(
 				IOException.class,
 				() -> client(firstSession).fetchStatus(address(), server.getListeningPort()));
@@ -152,7 +123,6 @@ public class BundleTransferTest {
 				inbox.read(id, 0, contents.length() * 2));
 	}
 
-	/** Several megabytes is the normal size, and it is where a bounded read goes wrong. */
 	@Test public void aLargeBundleArrivesWhole() throws Exception {
 		StringBuilder large = new StringBuilder();
 		while (large.length() < 4 * 1024 * 1024) {
@@ -167,7 +137,6 @@ public class BundleTransferTest {
 		assertEquals(contents.length(), inbox.size(id));
 	}
 
-	/** The socket is reused, so a body read past its declared end would block on the next request. */
 	@Test public void theSocketIsStillGoodAfterABundle() throws Exception {
 		PeerClient peer = client(certificate.fingerprint());
 		peer.postBundle(address(), server.getListeningPort(), ENVELOPE, SIGNATURE, bundleOf("first"));

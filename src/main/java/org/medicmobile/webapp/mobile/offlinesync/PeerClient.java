@@ -103,8 +103,8 @@ public class PeerClient {
 		HttpsURLConnection connection = open(ipAddress, port, "/_offline-sync/bundle", "POST");
 		try {
 			connection.setDoOutput(true);
-			// Streamed rather than buffered: a bundle is megabytes and the phone should not hold a
-			// second copy of it just to send the first.
+			// Streamed rather than buffered: a bundle is megabytes, and buffering would hold a second
+			// copy of it just to send the first.
 			connection.setFixedLengthStreamingMode(body.length());
 			connection.setRequestProperty("Content-Type", "application/octet-stream");
 			connection.setRequestProperty("X-Medic-Bundle-Envelope", envelope);

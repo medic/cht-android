@@ -58,7 +58,6 @@ public class LocalHttpServerTest {
 		return headers;
 	}
 
-	/** Response.send is protected, so read the body straight off the response's data stream. */
 	private String bodyOf(NanoHTTPD.Response response) throws Exception {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		byte[] buffer = new byte[1024];
@@ -100,7 +99,6 @@ public class LocalHttpServerTest {
 		assertEquals(NanoHTTPD.Response.Status.NOT_FOUND, response.getStatus());
 	}
 
-	/** The data endpoints do not exist yet; a peer must not be able to reach one by guessing. */
 	@Test
 	public void dataEndpointsFromTheOldProtocolAreGone() {
 		LocalHttpServer server = server();
@@ -126,20 +124,14 @@ public class LocalHttpServerTest {
 
 		server.stopServer();
 
-		// it never started, so it must still not be listening rather than have half-torn-down state
 		assertFalse(server.isAlive());
 	}
 
-	/** Port 0 asks the OS for a free port, which is what removes the "port already in use" failure. */
 	@Test
 	public void defaultsToAnOsAssignedPort() {
 		assertEquals(0, LocalHttpServer.EPHEMERAL_PORT);
 	}
 
-	/**
-		* Proves the server will not listen without TLS. Actually completing a handshake needs a
-		* keystore-backed certificate, so that is verified on a device rather than faked here.
-		*/
 	@Test
 	public void startServer_refusesToListenIfTheCertificateIsUnusable() throws Exception {
 		when(certificate.sslServerSocketFactory())
@@ -172,7 +164,6 @@ public class LocalHttpServerTest {
 		verify(listener).onBundleReceived("bundle-1");
 	}
 
-	/** A bundle that lands before the webapp is listening is still kept, and collected later. */
 	@Test
 	public void serve_takesABundleWhenNobodyIsListeningYet() throws Exception {
 		when(inbox.store(any(), any(), any())).thenReturn("bundle-1");
@@ -183,7 +174,6 @@ public class LocalHttpServerTest {
 		assertEquals(NanoHTTPD.Response.Status.OK, response.getStatus());
 	}
 
-	/** Only the server can check these, so a bundle with nothing to check is refused here. */
 	@Test
 	public void serve_refusesABundleWithNoEnvelope() throws Exception {
 		java.util.Map<String, String> headers = bundleHeaders(10);
@@ -204,10 +194,6 @@ public class LocalHttpServerTest {
 		verify(inbox, never()).store(any(), any(), any());
 	}
 
-	/**
-		* The socket carries the next request too, so a body with no declared end cannot be read.
-		* That is the caller's mistake, so it is a 400 and not a 500.
-		*/
 	@Test
 	public void serve_refusesABundleThatDoesNotSayHowLargeItIs() throws Exception {
 		java.util.Map<String, String> headers = bundleHeaders(10);
@@ -230,11 +216,6 @@ public class LocalHttpServerTest {
 		verify(inbox, never()).store(any(), any(), any());
 	}
 
-	/**
-		* The bounded read is the subtle part of this class: the socket is reused, so reading past
-		* the declared length would block on the next request's bytes. A mocked spool never touches
-		* the stream, so these two use a real one.
-		*/
 	private LocalHttpServer serverWithRealSpool(java.io.File root) {
 		inbox = new BundleSpool(root);
 		return new LocalHttpServer(LABEL, certificate, inbox);
@@ -253,10 +234,6 @@ public class LocalHttpServerTest {
 		assertEquals("ciphertext", new String(inbox.read(id, 0, 64), "UTF-8"));
 	}
 
-	/**
-		* The peer deletes its copy the moment this answers, and moves its position past the data.
-		* Keeping a body that stopped early would lose it for good.
-		*/
 	@Test
 	public void serve_refusesABundleThatStoppedEarlyRatherThanKeepingHalfOfIt() throws Exception {
 		java.io.File root = new java.io.File(System.getProperty("java.io.tmpdir"), "inbox-" + System.nanoTime());

@@ -37,15 +37,10 @@ public class OfflineSyncForegroundServiceTest {
 		return shadow.getLastForegroundNotification();
 	}
 
-	/**
-		* The whole point of the service: without going to the foreground the system is free to stop
-		* the app, and the hotspot and local server go with it.
-		*/
 	@Test public void aSessionRunsInTheForeground() {
 		assertNotNull(started(OfflineSyncForegroundService.STATUS_HOSTING));
 	}
 
-	/** It stays up for as long as the session does, so the user can see the phone is still sharing. */
 	@Test public void theNotificationCannotBeSwipedAway() {
 		Notification notification = started(OfflineSyncForegroundService.STATUS_HOSTING);
 
@@ -57,7 +52,6 @@ public class OfflineSyncForegroundServiceTest {
 		assertEquals("Sending data to another device.", text(started(OfflineSyncForegroundService.STATUS_SENDING)));
 	}
 
-	/** Restarted by the system with nothing to say: a session cannot be resumed from nothing. */
 	@Test public void itDoesNotComeBackForASessionThatIsOver() {
 		OfflineSyncForegroundService service = service();
 
@@ -72,10 +66,6 @@ public class OfflineSyncForegroundServiceTest {
 		return notification.extras.getString(Notification.EXTRA_TEXT);
 	}
 
-	/**
-		* Progress is a count and not a fraction on purpose: bundles are produced as the data is
-		* read, so how many there will be is not known until the last one exists.
-		*/
 	@Test public void itCountsWhatHasBeenHandedOver() {
 		assertEquals("Transferred 3 packages to another device.",
 				text(started(OfflineSyncForegroundService.STATUS_SENDING, 3)));

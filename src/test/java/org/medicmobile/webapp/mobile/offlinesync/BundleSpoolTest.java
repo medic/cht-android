@@ -67,7 +67,6 @@ public class BundleSpoolTest {
 		assertArrayEquals(bytes("ciphertext"), spool.read(id, 0, 64));
 	}
 
-	/** The webapp reads a bundle in pieces up to the size it was told, so a read is clamped to it. */
 	@Test public void read_returnsWhatIsThereAndNoMore() throws Exception {
 		String id = spool.store(ENVELOPE, SIGNATURE, new ByteArrayInputStream(bytes("0123456789")));
 
@@ -82,12 +81,9 @@ public class BundleSpoolTest {
 		assertEquals(0, spool.list().length());
 	}
 
-	/** Oldest first, because that is the order they should leave in. */
 	@Test public void list_ordersByWhenTheyArrived() throws Exception {
 		String older = spool.store(ENVELOPE, SIGNATURE, new ByteArrayInputStream(bytes("a")));
 		String newer = spool.store(ENVELOPE, SIGNATURE, new ByteArrayInputStream(bytes("b")));
-		// Set rather than slept for: file timestamps are only accurate to the second on some
-		// filesystems, which would make a test that waits both slow and unreliable.
 		assertTrue(spool.bundle(older).setLastModified(1_000_000_000_000L));
 		assertTrue(spool.bundle(newer).setLastModified(2_000_000_000_000L));
 
@@ -110,10 +106,6 @@ public class BundleSpoolTest {
 		assertFalse(spool.delete(id));
 	}
 
-	/**
-		* Ids arrive from the webapp and become a path, so anything that is not an id this class
-		* produced is refused rather than escaped.
-		*/
 	@Test public void anIdThatIsNotOneOfOursNeverBecomesAPath() {
 		for (String id : new String[] { "../../etc/passwd", "", null, "not-a-uuid", "/absolute" }) {
 			assertThrows(IllegalArgumentException.class, () -> spool.size(id));

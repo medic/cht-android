@@ -222,14 +222,12 @@ public class OfflineSyncManagerTest {
 		assertEquals("[{\"id\":\"bundle-1\"}]", manager.receivedBundles());
 	}
 
-	/** An empty list, not a broken one: the webapp should find nothing rather than fail to parse. */
 	@Test public void receivedBundles_isEmptyWhenTheListCannotBeBuilt() throws Exception {
 		when(inbox.list()).thenThrow(new org.json.JSONException("broken"));
 
 		assertEquals("[]", manager.receivedBundles());
 	}
 
-	/** Base64 without line breaks, because the webapp joins the pieces as text. */
 	@Test public void readBundle_encodesThePieceWithNoWrapping() throws Exception {
 		when(inbox.read("bundle-1", 0, 3)).thenReturn("one".getBytes("UTF-8"));
 
@@ -248,7 +246,6 @@ public class OfflineSyncManagerTest {
 		assertTrue(manager.deleteBundle("bundle-1"));
 	}
 
-	/** Ids come from the webapp, so one that is not a bundle id is refused, not acted on. */
 	@Test public void deleteBundle_isFalseForSomethingThatIsNotABundleId() {
 		when(inbox.delete(any())).thenThrow(new IllegalArgumentException("not a bundle id"));
 

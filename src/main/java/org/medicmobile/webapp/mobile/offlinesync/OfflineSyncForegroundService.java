@@ -37,7 +37,7 @@ public class OfflineSyncForegroundService extends Service {
 	private static final String EXTRA_STATUS = "status";
 	private static final String EXTRA_DELIVERED = "delivered";
 
-	/** Shown after the session is over, so it must not be the one holding the service up. */
+	/** Shown after the session is over, so it is not the notification holding the service up. */
 	private static final int RESULT_NOTIFICATION_ID = 2002;
 
 	public static final String STATUS_HOSTING = "hosting";
