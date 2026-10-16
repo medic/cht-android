@@ -108,8 +108,4 @@ public class WifiHotspotManager {
 		return activePassword;
 	}
 
-	public String getActiveIpAddress() {
-		return activeIpAddress;
-	}
-
 }

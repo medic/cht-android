@@ -52,7 +52,6 @@ public class WifiHotspotManagerTest {
 
 		assertEquals(SSID, manager.getActiveSsid());
 		assertEquals(PASSWORD, manager.getActivePassword());
-		assertEquals(IP, manager.getActiveIpAddress());
 		assertTrue(manager.isActive());
 	}
 
@@ -121,7 +120,6 @@ public class WifiHotspotManagerTest {
 
 		assertNull(manager.getActiveSsid());
 		assertNull(manager.getActivePassword());
-		assertNull(manager.getActiveIpAddress());
 		verify(callback).onStopped();
 	}
 }

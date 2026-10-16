@@ -382,11 +382,6 @@ public final class QrCodeHelper {
 			return port;
 		}
 
-
-		public long getTimestamp() {
-			return timestamp;
-		}
-
 		@Override
 		public String toString() {
 			return "QrPayload{ssid='" + ssid + "', ip='" + ipAddress +
