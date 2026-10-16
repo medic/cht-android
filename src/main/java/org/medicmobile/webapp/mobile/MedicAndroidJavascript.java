@@ -311,8 +311,7 @@ public class MedicAndroidJavascript {
 					.put("password", password)
 					.toString();
 		} catch (org.json.JSONException e) {
-			// Nothing here can fail on a JSONObject with three string values, and an empty session
-			// is reported as a failure by the webapp rather than shown as a blank screen.
+			// Nothing here can fail on a JSONObject with three string values.
 			warn(e, "Could not describe the hosting session");
 			return "";
 		}
