@@ -305,6 +305,19 @@ public class OfflineSyncManagerTest {
 	}
 
 	@Test @Config(sdk = 26)
+	public void currentSession_isNullOnceANewSessionIsStarting() {
+		HotspotProvider.HotspotCallback first = hostingStartedThenCaptureCallback();
+		first.onStarted(SSID, PASSWORD, IP);
+		when(hotspotManager.isActive()).thenReturn(true);
+		when(server.isAlive()).thenReturn(true);
+		assertNotNull(manager.currentSession());
+
+		manager.startHosting(callback);
+
+		assertNull(manager.currentSession());
+	}
+
+	@Test @Config(sdk = 26)
 	public void currentSession_isNullWhenNothingIsListening() {
 		hotspotStarts();
 		manager.startHosting(callback);
