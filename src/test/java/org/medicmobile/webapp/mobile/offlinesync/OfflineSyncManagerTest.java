@@ -2,6 +2,8 @@ package org.medicmobile.webapp.mobile.offlinesync;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -257,5 +259,58 @@ public class OfflineSyncManagerTest {
 		when(hotspotManager.isActive()).thenReturn(false);
 		when(server.isAlive()).thenReturn(true);
 		assertFalse(manager.isHosting());
+	}
+
+	@Test @Config(sdk = 26)
+	public void currentSession_isWhatOnReadyHandedOut() {
+		hotspotStarts();
+		when(hotspotManager.getActiveSsid()).thenReturn(SSID);
+		when(hotspotManager.getActivePassword()).thenReturn(PASSWORD);
+		when(hotspotManager.isActive()).thenReturn(true);
+		when(server.isAlive()).thenReturn(true);
+		ArgumentCaptor<String> qr = ArgumentCaptor.forClass(String.class);
+
+		manager.startHosting(callback);
+
+		verify(callback).onReady(qr.capture(), eq(SSID), eq(PASSWORD));
+		OfflineSyncManager.Session session = manager.currentSession();
+		assertEquals(qr.getValue(), session.qrImage);
+		assertEquals(SSID, session.ssid);
+		assertEquals(PASSWORD, session.password);
+	}
+
+	@Test @Config(sdk = 26)
+	public void currentSession_isNullOnceStopped() {
+		hotspotStarts();
+		when(hotspotManager.isActive()).thenReturn(true);
+		when(server.isAlive()).thenReturn(true);
+		manager.startHosting(callback);
+		assertNotNull(manager.currentSession());
+
+		manager.stopHosting();
+
+		assertNull(manager.currentSession());
+	}
+
+	@Test public void currentSession_isNullOnceLost() {
+		HotspotProvider.HotspotCallback hotspot = hostingStartedThenCaptureCallback();
+		hotspot.onStarted(SSID, PASSWORD, IP);
+		when(hotspotManager.isActive()).thenReturn(true);
+		when(server.isAlive()).thenReturn(true);
+		assertNotNull(manager.currentSession());
+
+		hotspot.onStopped();
+
+		assertNull(manager.currentSession());
+	}
+
+	@Test @Config(sdk = 26)
+	public void currentSession_isNullWhenNothingIsListening() {
+		hotspotStarts();
+		manager.startHosting(callback);
+		when(hotspotManager.isActive()).thenReturn(true);
+		when(server.isAlive()).thenReturn(false);
+
+		assertNull(manager.currentSession());
 	}
 }

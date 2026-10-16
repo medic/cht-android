@@ -27,6 +27,8 @@ public class OfflineSyncManager {
 	private final WifiHotspotManager hotspotManager;
 	private final LocalHttpServer server;
 	private final SessionCertificate certificate;
+	/** The code the last onReady handed out, kept so the screen can show it again. */
+	private volatile String currentQrImage;
 
 	public OfflineSyncManager(WifiHotspotManager hotspotManager, LocalHttpServer server,
 						SessionCertificate certificate) {
@@ -82,6 +84,7 @@ public class OfflineSyncManager {
 		// part way through still holds it. Without this, every attempt after a failure collides with
 		// the wreckage of the last one until the platform times the reservation out on its own.
 		// Idempotent, so starting from nothing costs nothing.
+		currentQrImage = null;
 		server.stopServer();
 		hotspotManager.stopHotspot();
 
@@ -109,6 +112,7 @@ public class OfflineSyncManager {
 			@Override public void onStopped() {
 				// Nothing is listening on a network that no longer exists, and a peer part way
 				// through handing something over has already lost it.
+				currentQrImage = null;
 				server.stopServer();
 				certificate.destroy();
 				callback.onLost("hotspot_stopped");
@@ -152,6 +156,7 @@ public class OfflineSyncManager {
 				return;
 			}
 			log(OfflineSyncManager.class, "Hosting session ready on " + ipAddress);
+			currentQrImage = qrImage;
 			callback.onReady(qrImage, ssid, password);
 		} catch (JSONException | GeneralSecurityException | IllegalArgumentException e) {
 			// IllegalArgumentException included deliberately: QrCodeHelper rejects empty credentials
@@ -164,6 +169,7 @@ public class OfflineSyncManager {
 
 	/** Tears the session down. Safe to call when nothing is running. */
 	public void stopHosting() {
+		currentQrImage = null;
 		server.stopServer();
 		hotspotManager.stopHotspot();
 		certificate.destroy();
@@ -180,6 +186,15 @@ public class OfflineSyncManager {
 		*/
 	public boolean isHosting() {
 		return hotspotManager.isActive() && server.isAlive();
+	}
+
+	/** The session a peer can join right now, or null. */
+	public Session currentSession() {
+		String image = currentQrImage;
+		if (image == null || !isHosting()) {
+			return null;
+		}
+		return new Session(image, hotspotManager.getActiveSsid(), hotspotManager.getActivePassword());
 	}
 
 	/**
@@ -200,6 +215,19 @@ public class OfflineSyncManager {
 			separator = " <- ";
 		}
 		return description.toString();
+	}
+
+	/** The details a peer needs, as handed to {@link HostingCallback#onReady}. */
+	public static final class Session {
+		public final String qrImage;
+		public final String ssid;
+		public final String password;
+
+		Session(String qrImage, String ssid, String password) {
+			this.qrImage = qrImage;
+			this.ssid = ssid;
+			this.password = password;
+		}
 	}
 
 	/** What happens to a hosting session, from trying to start it to losing it. */

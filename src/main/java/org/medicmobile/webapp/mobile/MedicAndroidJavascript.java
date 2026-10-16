@@ -278,8 +278,9 @@ public class MedicAndroidJavascript {
 
 	@android.webkit.JavascriptInterface
 	@SuppressWarnings("java:S100")  // the webapp calls this name literally over the bridge
-	public boolean offline_sync_is_hosting() {
-		return offlineSyncManager != null && offlineSyncManager.isHosting();
+	public String offline_sync_hosting_session() {
+		OfflineSyncManager.Session current = offlineSyncManager == null ? null : offlineSyncManager.currentSession();
+		return current == null ? "" : session(current.qrImage, current.ssid, current.password);
 	}
 
 	private void respondToPairing(boolean ok, String detail) {
