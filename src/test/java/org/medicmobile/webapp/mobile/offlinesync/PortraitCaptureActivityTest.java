@@ -4,12 +4,15 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
 import android.view.View;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.controller.ActivityController;
 
 import org.medicmobile.webapp.mobile.R;
@@ -29,5 +32,11 @@ public class PortraitCaptureActivityTest {
 
 			assertTrue(activity.isFinishing());
 		}
+	}
+
+	@Test public void isDeclaredSoTheScannerCanOpenIt() {
+		Context context = RuntimeEnvironment.getApplication();
+
+		assertNotNull(context.getPackageManager().resolveActivity(new Intent(context, PortraitCaptureActivity.class), 0));
 	}
 }

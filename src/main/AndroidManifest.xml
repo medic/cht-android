@@ -121,6 +121,14 @@
         android:screenOrientation="portrait"
         android:exported="false"
         tools:ignore="DiscouragedApi"/>
+    <activity android:name=".offlinesync.PortraitCaptureActivity"
+        android:screenOrientation="portrait"
+        android:exported="false"
+        android:clearTaskOnLaunch="true"
+        android:stateNotNeeded="true"
+        android:theme="@style/zxing_CaptureTheme"
+        android:windowSoftInputMode="stateAlwaysHidden"
+        tools:ignore="DiscouragedApi"/>
 
   </application>
 
