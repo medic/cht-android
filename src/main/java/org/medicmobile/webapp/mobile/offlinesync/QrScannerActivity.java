@@ -68,7 +68,7 @@ public class QrScannerActivity extends Activity {
 		integrator.setPrompt(getString(R.string.offlineSyncScanPrompt));
 		integrator.setBeepEnabled(true);
 		integrator.setOrientationLocked(true);
-		integrator.setCaptureActivity(getCaptureActivityClass());
+		integrator.setCaptureActivity(PortraitCaptureActivity.class);
 		integrator.initiateScan();
 	}
 
@@ -129,15 +129,5 @@ public class QrScannerActivity extends Activity {
 		resultIntent.putExtra(EXTRA_QR_ERROR, error);
 		setResult(RESULT_CANCELED, resultIntent);
 		finish();
-	}
-
-	/**
-		* The scanner screen to open. Ours rather than ZXing's, which is landscape.
-		* Override this method in tests to provide a mock.
-		*
-		* @return the Activity class for QR capture
-		*/
-	protected Class<?> getCaptureActivityClass() {
-		return PortraitCaptureActivity.class;
 	}
 }
