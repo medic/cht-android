@@ -22,11 +22,8 @@ import com.google.zxing.integration.android.IntentResult;
 	*   startActivityForResult(intent, QrScannerActivity.REQUEST_CODE);
 	*
 	* Result extras:
-	*   EXTRA_QR_RESULT  — the validated QR payload JSON string (on RESULT_OK)
-	*   EXTRA_QR_ERROR   — error message string (on RESULT_CANCELED with error)
-	*
-	*   Timestamp within 10 minutes
-	*   Type == "cht-offline-sync"
+	*   EXTRA_QR_RESULT: the validated QR payload JSON string (on RESULT_OK)
+	*   EXTRA_QR_ERROR: a stable error code (on RESULT_CANCELED with error)
 	*/
 public class QrScannerActivity extends Activity {
 
@@ -91,11 +88,11 @@ public class QrScannerActivity extends Activity {
 			log(this, "QR code scanned, validating payload");
 			handleScannedPayload(scannedContent);
 		} else {
-			// Unexpected result — not from ZXing
+			// Unexpected result, not from ZXing
 			super.onActivityResult(requestCode, resultCode, data);
 			// "unknown" rather than a code of its own: the user message would be the same, and a
 			// code with no offline_sync.error key reaches them as raw text. The log carries the specifics.
-			warn(this, "Unexpected onActivityResult — not a ZXing result");
+			warn(this, "Unexpected onActivityResult, not a ZXing result");
 			returnError("unknown");
 		}
 	}

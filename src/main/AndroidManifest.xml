@@ -110,13 +110,13 @@
         android:exported="true"
         tools:targetApi="23" />
 
-    <!-- Offline sync over WiFi hotspot (#11281). No cleartext config is declared and none is needed: the
+    <!-- Offline sync over WiFi hotspot. No cleartext config is declared and none is needed: the
          only outbound call is the peer's probe of the host, and that is https against a pinned
          per-session certificate. -->
     <activity android:name="RequestOfflineSyncPermissionsActivity"
         android:screenOrientation="portrait"
         android:exported="false"
-        tools:ignore="DiscouragedApi,LockedOrientationActivity"/>
+        tools:ignore="DiscouragedApi"/>
     <activity android:name=".offlinesync.QrScannerActivity"
         android:screenOrientation="portrait"
         android:exported="false"

@@ -184,7 +184,7 @@ public class WifiHotspotProvider implements HotspotProvider {
 
 	private void handleIpDetectionFailure(WifiManager.LocalOnlyHotspotReservation hotspotReservation,
 											HotspotCallback callback) {
-		warn(this, "Hotspot started but could not detect IP — aborting");
+		warn(this, "Hotspot started but could not detect IP, aborting");
 		running = false;
 		closeReservationQuietly(hotspotReservation);
 		reservation = null;
@@ -272,7 +272,7 @@ public class WifiHotspotProvider implements HotspotProvider {
 
 	/**
 		* Retry wrapper for detectHotspotIp(). On many devices the hotspot network
-		* interface isn't fully configured when onStarted() fires — the OS needs a
+		* interface isn't fully configured when onStarted() fires: the OS needs a
 		* few hundred milliseconds to assign the IP. We retry up to
 		* IP_DETECT_MAX_RETRIES times with IP_DETECT_RETRY_DELAY_MS between attempts.
 		*/

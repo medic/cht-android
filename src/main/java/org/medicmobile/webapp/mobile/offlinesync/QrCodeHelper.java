@@ -69,7 +69,7 @@ public final class QrCodeHelper {
 	/**
 		* Hotspot credentials grouped for QR code generation.
 		*/
-	@SuppressWarnings("java:S107") // Data class — all fields are logically related
+	@SuppressWarnings("java:S107") // Data class: all fields are logically related
 	public static final class HotspotCredentials {
 		final String ssid;
 		final String password;
@@ -342,7 +342,7 @@ public final class QrCodeHelper {
 		* Parsed QR payload data class.
 		* Holds the extracted fields from a validated QR code.
 		*/
-	@SuppressWarnings("java:S107") // Data class — all fields are logically related
+	@SuppressWarnings("java:S107") // Data class: all fields are logically related
 	public static final class QrPayload {
 		private final String ssid;
 		private final String password;

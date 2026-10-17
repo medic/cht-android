@@ -6,11 +6,10 @@ import com.journeyapps.barcodescanner.DecoratedBarcodeView;
 import org.medicmobile.webapp.mobile.R;
 
 /**
-	* The scanner screen, locked to portrait.
+	* The scanner screen, with a way out that ZXing's own screen lacks.
 	*
-	* ZXing declares its own CaptureActivity as sensorLandscape, so scanning a code turned the phone
-	* sideways in the middle of a flow that is portrait everywhere else. Subclassing is the only way
-	* to change it: the orientation comes from the manifest entry, not from the integrator.
+	* ZXing declares its own CaptureActivity as sensorLandscape, so this one's manifest entry locks
+	* it to portrait, like the rest of the flow.
 	*/
 public class PortraitCaptureActivity extends CaptureActivity {
 
