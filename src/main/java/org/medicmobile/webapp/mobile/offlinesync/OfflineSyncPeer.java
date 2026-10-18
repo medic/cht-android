@@ -17,7 +17,11 @@ import java.io.IOException;
 	*/
 public class OfflineSyncPeer {
 
+	private static OfflineSyncPeer instance;
+
 	private final HotspotJoiner joiner;
+	/** Who hears about the pairing. Replaced when the screen that started it is recreated. */
+	private volatile PairCallback callback;
 
 	public OfflineSyncPeer(HotspotJoiner joiner) {
 		if (joiner == null) {
@@ -28,6 +32,17 @@ public class OfflineSyncPeer {
 
 	public static OfflineSyncPeer create(Context context) {
 		return new OfflineSyncPeer(HotspotJoiner.create(context));
+	}
+
+	/**
+		* The peer for this process. The joined network belongs to the process, and the screen is
+		* recreated on a theme or language change, so a peer per screen could no longer leave it.
+		*/
+	public static synchronized OfflineSyncPeer getInstance(Context context) {
+		if (instance == null) {
+			instance = create(context.getApplicationContext());
+		}
+		return instance;
 	}
 
 	/** Whether this device can join a session. Every supported Android version can. */
@@ -45,6 +60,7 @@ public class OfflineSyncPeer {
 		if (callback == null) {
 			throw new IllegalArgumentException("callback must not be null");
 		}
+		this.callback = callback;
 
 		QrValidation validation = QrCodeHelper.validateQrPayload(payloadJson);
 		if (!validation.isAccepted()) {
@@ -61,15 +77,15 @@ public class OfflineSyncPeer {
 
 		joiner.join(payload.getSsid(), payload.getPassword(), new HotspotJoiner.JoinCallback() {
 			@Override public void onJoined(Network network) {
-				verifyHost(network, payload, callback);
+				verifyHost(network, payload, OfflineSyncPeer.this.callback);
 			}
 
 			@Override public void onFailed(String reason) {
-				callback.onFailed(reason);
+				OfflineSyncPeer.this.callback.onFailed(reason);
 			}
 
 			@Override public void onLost() {
-				callback.onFailed("network_lost");
+				OfflineSyncPeer.this.callback.onFailed("network_lost");
 			}
 		});
 	}
@@ -91,6 +107,14 @@ public class OfflineSyncPeer {
 			unpair();
 			callback.onFailed("host_not_verified");
 		}
+	}
+
+	/** Sends what happens to the pairing from now on to a new callback, e.g. a recreated screen. */
+	public void redirect(PairCallback callback) {
+		if (callback == null) {
+			throw new IllegalArgumentException("callback must not be null");
+		}
+		this.callback = callback;
 	}
 
 	/** Leaves the session's network. */

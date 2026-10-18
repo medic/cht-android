@@ -12,6 +12,7 @@ import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.robolectric.RobolectricTestRunner;
 
 @RunWith(RobolectricTestRunner.class)
@@ -64,6 +65,19 @@ public class OfflineSyncPeerTest {
 
 		verify(callback).onFailed("unreadable_payload");
 		verify(joiner, never()).join(anyString(), anyString(), any());
+	}
+
+	@Test public void aRecreatedScreenHearsHowThePairingEnds() throws Exception {
+		ArgumentCaptor<HotspotJoiner.JoinCallback> join = ArgumentCaptor.forClass(HotspotJoiner.JoinCallback.class);
+		peer.pair(validPayload(), callback);
+		verify(joiner).join(anyString(), anyString(), join.capture());
+		OfflineSyncPeer.PairCallback recreated = mock(OfflineSyncPeer.PairCallback.class);
+
+		peer.redirect(recreated);
+		join.getValue().onLost();
+
+		verify(recreated).onFailed("network_lost");
+		verify(callback, never()).onFailed(anyString());
 	}
 
 	@Test public void pair_reportsAJoinFailureAsIs() throws Exception {

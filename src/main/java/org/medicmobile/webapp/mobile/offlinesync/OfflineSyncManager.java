@@ -23,12 +23,15 @@ import java.security.GeneralSecurityException;
 	*/
 public class OfflineSyncManager {
 
+	private static OfflineSyncManager instance;
 
 	private final WifiHotspotManager hotspotManager;
 	private final LocalHttpServer server;
 	private final SessionCertificate certificate;
 	/** The code the last onReady handed out, kept so the screen can show it again. */
 	private volatile String currentQrImage;
+	/** Who hears about the session. Replaced when the screen that started it is recreated. */
+	private volatile HostingCallback callback;
 
 	public OfflineSyncManager(WifiHotspotManager hotspotManager, LocalHttpServer server,
 						SessionCertificate certificate) {
@@ -40,10 +43,18 @@ public class OfflineSyncManager {
 		this.certificate = certificate;
 	}
 
-
-
-
-
+	/**
+		* The manager for this process. The platform holds the hotspot reservation per process, and
+		* the screen is recreated on a theme or language change, so the session belongs to the
+		* process: a manager per screen would lose track of a hotspot that is still running.
+		*/
+	public static synchronized OfflineSyncManager getInstance(Context context, String deviceLabel)
+			throws GeneralSecurityException {
+		if (instance == null) {
+			instance = create(context, deviceLabel);
+		}
+		return instance;
+	}
 	/**
 		* Builds a manager wired to the real WiFi radio, with a fresh TLS identity for the session.
 		*/
@@ -79,6 +90,7 @@ public class OfflineSyncManager {
 			callback.onFailed("hotspot_unsupported", "LocalOnlyHotspot needs Android 8.0");
 			return;
 		}
+		this.callback = callback;
 
 		// The platform allows one local-only hotspot reservation per app, and a session that failed
 		// part way through still holds it. Without this, every attempt after a failure collides with
@@ -100,13 +112,14 @@ public class OfflineSyncManager {
 
 		hotspotManager.startHotspot(new HotspotProvider.HotspotCallback() {
 			@Override public void onStarted(String ssid, String password, String ipAddress) {
-				if (startLocalServer(callback)) {
-					publishPairingCode(ssid, password, ipAddress, callback);
+				HostingCallback current = OfflineSyncManager.this.callback;
+				if (startLocalServer(current)) {
+					publishPairingCode(ssid, password, ipAddress, current);
 				}
 			}
 
 			@Override public void onFailed(String reason) {
-				callback.onFailed(reason, "");
+				OfflineSyncManager.this.callback.onFailed(reason, "");
 			}
 
 			@Override public void onStopped() {
@@ -115,7 +128,7 @@ public class OfflineSyncManager {
 				currentQrImage = null;
 				server.stopServer();
 				certificate.destroy();
-				callback.onLost("hotspot_stopped");
+				OfflineSyncManager.this.callback.onLost("hotspot_stopped");
 			}
 		});
 	}
@@ -165,6 +178,14 @@ public class OfflineSyncManager {
 			stopHosting();
 			callback.onFailed("payload_failed", describe(e));
 		}
+	}
+
+	/** Sends what happens to the session from now on to a new callback, e.g. a recreated screen. */
+	public void redirect(HostingCallback callback) {
+		if (callback == null) {
+			throw new IllegalArgumentException("callback must not be null");
+		}
+		this.callback = callback;
 	}
 
 	/** Tears the session down. Safe to call when nothing is running. */

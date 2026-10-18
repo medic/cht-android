@@ -21,9 +21,13 @@ import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Application;
 import android.content.Intent;
+import android.net.ConnectivityManager;
 import android.net.Uri;
+import android.os.Looper;
+import android.webkit.WebView;
 
 import androidx.core.content.ContextCompat;
+import androidx.test.core.app.ActivityScenario;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.espresso.intent.Intents;
 import androidx.test.espresso.intent.matcher.IntentMatchers;
@@ -38,6 +42,8 @@ import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runner.RunWith;
 import org.junit.runners.model.Statement;
+import org.medicmobile.webapp.mobile.offlinesync.OfflineSyncPeer;
+import org.medicmobile.webapp.mobile.offlinesync.QrCodeHelper;
 import org.mockito.MockedStatic;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.shadows.ShadowActivity;
@@ -65,6 +71,27 @@ public class EmbeddedBrowserActivityTest {
 
 	@Rule
 	public TestRule ruleChain = RuleChain.outerRule(new WorkManagerInitRule()).around(scenarioRule);
+
+	@Test
+	public void recreating_sendsTheJoinedSessionToTheNewScreen() throws Exception {
+		OfflineSyncPeer.PairCallback firstScreen = mock(OfflineSyncPeer.PairCallback.class);
+		String payload = QrCodeHelper.buildPayload(new QrCodeHelper.HotspotCredentials(
+				"AndroidShare_1234", "a-password", "192.168.49.1", 8443, "AB:CD:EF:01:23:45"));
+		ActivityScenario<EmbeddedBrowserActivity> scenario = scenarioRule.getScenario();
+		scenario.onActivity(activity -> activity.getOfflineSyncPeer().pair(payload, firstScreen));
+
+		scenario.recreate();
+		ConnectivityManager connectivity = ApplicationProvider.getApplicationContext()
+				.getSystemService(ConnectivityManager.class);
+		for (ConnectivityManager.NetworkCallback network : shadowOf(connectivity).getNetworkCallbacks()) {
+			network.onLost(null);
+		}
+		shadowOf(Looper.getMainLooper()).idle();
+
+		verify(firstScreen, never()).onFailed(any());
+		scenario.onActivity(activity -> assertTrue(shadowOf((WebView) activity.findViewById(R.id.wbvMain))
+				.getLastLoadedUrl().contains("resolveOfflineSyncPairing(false, \"network_lost\"")));
+	}
 
 	@Test
 	public void isMigrationRunning_returnsFlagCorrectly() {

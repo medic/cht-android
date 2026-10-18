@@ -237,6 +237,20 @@ public class OfflineSyncManagerTest {
 		verify(callback).onLost("hotspot_stopped");
 	}
 
+	@Test public void aRecreatedScreenHearsAboutTheSessionItDidNotStart() {
+		HotspotProvider.HotspotCallback hotspot = hostingStartedThenCaptureCallback();
+		OfflineSyncManager.HostingCallback recreated = mock(OfflineSyncManager.HostingCallback.class);
+
+		manager.redirect(recreated);
+		hotspot.onStarted(SSID, PASSWORD, IP);
+		hotspot.onStopped();
+
+		verify(recreated).onReady(anyString(), eq(SSID), eq(PASSWORD));
+		verify(recreated).onLost("hotspot_stopped");
+		verify(callback, never()).onReady(anyString(), anyString(), anyString());
+		verify(callback, never()).onLost(anyString());
+	}
+
 	@Test public void aLostSessionIsReportedAsACode() {
 		HotspotProvider.HotspotCallback hotspot = hostingStartedThenCaptureCallback();
 		hotspot.onStarted(SSID, PASSWORD, IP);

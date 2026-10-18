@@ -57,6 +57,19 @@ public class MedicAndroidJavascript {
 	private final ChtExternalAppHandler chtExternalAppHandler;
 	private final OfflineSyncManager offlineSyncManager;
 	private final OfflineSyncPeer offlineSyncPeer;
+	private final OfflineSyncManager.HostingCallback hostingCallback = new OfflineSyncManager.HostingCallback() {
+		@Override public void onReady(String qrPayload, String ssid, String password) {
+			respondToOfflineSync(true, session(qrPayload, ssid, password), "");
+		}
+
+		@Override public void onFailed(String reason, String diagnostic) {
+			respondToOfflineSync(false, reason, diagnostic);
+		}
+
+		@Override public void onLost(String reason) {
+			respondToOfflineSync(false, reason, "");
+		}
+	};
 
 	private ActivityManager activityManager;
 	private ConnectivityManager connectivityManager;
@@ -69,6 +82,9 @@ public class MedicAndroidJavascript {
 		this.chtExternalAppHandler = parent.getChtExternalAppHandler();
 		this.offlineSyncManager = parent.getOfflineSyncManager();
 		this.offlineSyncPeer = parent.getOfflineSyncPeer();
+		if(offlineSyncManager != null) {
+			offlineSyncManager.redirect(hostingCallback);
+		}
 	}
 
 	public void setAlert(Alert soundAlert) {
@@ -215,19 +231,7 @@ public class MedicAndroidJavascript {
 			respondToOfflineSync(false, "permissions_required", "");
 			return;
 		}
-		offlineSyncManager.startHosting(new OfflineSyncManager.HostingCallback() {
-			@Override public void onReady(String qrPayload, String ssid, String password) {
-				respondToOfflineSync(true, session(qrPayload, ssid, password), "");
-			}
-
-			@Override public void onFailed(String reason, String diagnostic) {
-				respondToOfflineSync(false, reason, diagnostic);
-			}
-
-			@Override public void onLost(String reason) {
-				respondToOfflineSync(false, reason, "");
-			}
-		});
+		offlineSyncManager.startHosting(hostingCallback);
 	}
 
 	@android.webkit.JavascriptInterface

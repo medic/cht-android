@@ -56,6 +56,15 @@ public class EmbeddedBrowserActivity extends Activity {
 	private SmsSender smsSender;
 	private OfflineSyncManager offlineSyncManager;
 	private OfflineSyncPeer offlineSyncPeer;
+	private final OfflineSyncPeer.PairCallback pairingCallback = new OfflineSyncPeer.PairCallback() {
+		@Override public void onPaired(String hostLabel) {
+			resolveOfflineSyncPairing(true, hostLabel);
+		}
+
+		@Override public void onFailed(String reason) {
+			resolveOfflineSyncPairing(false, reason);
+		}
+	};
 	private ChtExternalAppHandler chtExternalAppHandler;
 	private boolean isMigrationRunning = false;
 
@@ -92,13 +101,14 @@ public class EmbeddedBrowserActivity extends Activity {
 		// it can actually work and the webapp asks before offering either.
 		if(OfflineSyncManager.isHostSupported()) {
 			try {
-				this.offlineSyncManager = OfflineSyncManager.create(this, Build.MODEL);
+				this.offlineSyncManager = OfflineSyncManager.getInstance(this, Build.MODEL);
 			} catch(Exception ex) {
 				error(ex, "Failed to create OfflineSyncManager.");
 			}
 		}
 		if(OfflineSyncPeer.isJoinSupported()) {
-			this.offlineSyncPeer = OfflineSyncPeer.create(this);
+			this.offlineSyncPeer = OfflineSyncPeer.getInstance(this);
+			this.offlineSyncPeer.redirect(pairingCallback);
 		}
 
 		this.settings = SettingsStore.in(this);
@@ -400,15 +410,7 @@ public class EmbeddedBrowserActivity extends Activity {
 		}
 
 		String payload = intent.getStringExtra(QrScannerActivity.EXTRA_QR_RESULT);
-		this.offlineSyncPeer.pair(payload, new OfflineSyncPeer.PairCallback() {
-			@Override public void onPaired(String hostLabel) {
-				resolveOfflineSyncPairing(true, hostLabel);
-			}
-
-			@Override public void onFailed(String reason) {
-				resolveOfflineSyncPairing(false, reason);
-			}
-		});
+		this.offlineSyncPeer.pair(payload, pairingCallback);
 	}
 
 	private void resolveOfflineSyncPairing(boolean ok, String detail) {
