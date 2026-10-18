@@ -262,11 +262,11 @@ public class MedicAndroidJavascript {
 	@SuppressWarnings("java:S100")  // the webapp calls this name literally over the bridge
 	public void offline_sync_scan_and_join() {
 		if(!offline_sync_join_available()) {
-			respondToPairing(false, "join_unsupported");
+			parent.resolveOfflineSyncPairing(false, "join_unsupported");
 			return;
 		}
 		if(!parent.getOfflineSyncPermissions()) {
-			respondToPairing(false, "permissions_required");
+			parent.resolveOfflineSyncPairing(false, "permissions_required");
 			return;
 		}
 		parent.scanOfflineSyncQrCode();
@@ -285,19 +285,6 @@ public class MedicAndroidJavascript {
 	public String offline_sync_hosting_session() {
 		OfflineSyncManager.Session current = offlineSyncManager == null ? null : offlineSyncManager.currentSession();
 		return current == null ? "" : session(current.qrImage, current.ssid, current.password);
-	}
-
-	private void respondToPairing(boolean ok, String detail) {
-		parent.evaluateJavascript(String.format(
-				"try {" +
-						"const api = window.CHTCore.AndroidApi;" +
-						"if (api && api.v1 && api.v1.resolveOfflineSyncPairing) {" +
-						"  api.v1.resolveOfflineSyncPairing(%s, %s);" +
-						"}" +
-						"} catch (error) {" +
-						"  console.error('MedicAndroidJavascript :: Offline sync pairing result not delivered', error);" +
-						"}",
-				ok, JSONObject.quote(detail)));
 	}
 
 	/**

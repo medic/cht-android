@@ -413,7 +413,7 @@ public class EmbeddedBrowserActivity extends Activity {
 		this.offlineSyncPeer.pair(payload, pairingCallback);
 	}
 
-	private void resolveOfflineSyncPairing(boolean ok, String detail) {
+	void resolveOfflineSyncPairing(boolean ok, String detail) {
 		evaluateJavascript(String.format(
 			"try {" +
 				"const api = window.CHTCore.AndroidApi;" +
