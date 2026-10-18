@@ -17,10 +17,6 @@ import com.google.zxing.integration.android.IntentResult;
 	* The sending device scans the receiving device's QR code to get the WiFi hotspot credentials.
 	* Result returned via onActivityResult with the scanned QR payload.
 	*
-	* Usage from the calling activity:
-	*   Intent intent = new Intent(context, QrScannerActivity.class);
-	*   startActivityForResult(intent, QrScannerActivity.REQUEST_CODE);
-	*
 	* Result extras:
 	*   EXTRA_QR_RESULT: the scanned QR payload JSON string (on RESULT_OK)
 	*   EXTRA_QR_ERROR: a stable error code (on RESULT_CANCELED with error)
@@ -30,7 +26,6 @@ public class QrScannerActivity extends Activity {
 
 	public static final String EXTRA_QR_RESULT = "qr_result";
 	public static final String EXTRA_QR_ERROR = "qr_error";
-	public static final int REQUEST_CODE = 42100;
 
 	private boolean scannerLaunched = false;
 

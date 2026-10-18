@@ -66,9 +66,6 @@ public class SessionCertificate {
 		*/
 	private static final String ALIAS_PREFIX = "cht-offline-sync-session";
 
-	/** Every alias prefix this feature has used, so entries under an older one are still found. */
-	private static final String[] OUR_ALIAS_PREFIXES = { ALIAS_PREFIX, "cht-p2p-session" };
-
 	private KeyStore keyStore;
 	private final String deviceLabel;
 	/** The alias this session generated, or null before renew() and after destroy(). */
@@ -150,25 +147,10 @@ public class SessionCertificate {
 		java.util.Enumeration<String> aliases = keyStore.aliases();
 		while (aliases.hasMoreElements()) {
 			String existing = aliases.nextElement();
-			if (isOurs(existing)) {
+			if (existing.startsWith(ALIAS_PREFIX)) {
 				keyStore.deleteEntry(existing);
 			}
 		}
-	}
-
-	/**
-		* Whether an entry belongs to this feature, under any name it has ever used.
-		*
-		* A keystore survives an upgrade, so entries written under a retired alias prefix stay on the
-		* device. Listing every prefix here is what lets them be found and removed.
-		*/
-	private static boolean isOurs(String existing) {
-		for (String prefix : OUR_ALIAS_PREFIXES) {
-			if (existing.startsWith(prefix)) {
-				return true;
-			}
-		}
-		return false;
 	}
 
 	/** Backdated a little, so a peer whose clock runs slightly behind still accepts it. */
