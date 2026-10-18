@@ -53,7 +53,7 @@ public class OfflineSyncPeer {
 	/**
 		* Joins the session described by a scanned payload.
 		*
-		* @param payloadJson the QR contents, already validated by the scanner
+		* @param payloadJson the QR contents as scanned, validated here before anything is joined
 		* @param callback    reports the host's label once its certificate has been verified
 		*/
 	public void pair(String payloadJson, PairCallback callback) {

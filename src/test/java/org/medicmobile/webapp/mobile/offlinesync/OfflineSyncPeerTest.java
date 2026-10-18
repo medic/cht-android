@@ -67,6 +67,26 @@ public class OfflineSyncPeerTest {
 		verify(joiner, never()).join(anyString(), anyString(), any());
 	}
 
+	@Test public void pair_refusesAPayloadOfAnotherVersion() throws Exception {
+		JSONObject payload = new JSONObject(validPayload());
+		payload.put("v", 99);
+
+		peer.pair(payload.toString(), callback);
+
+		verify(callback).onFailed("unreadable_payload");
+		verify(joiner, never()).join(anyString(), anyString(), any());
+	}
+
+	@Test public void pair_refusesAnEmptyFingerprint() throws Exception {
+		JSONObject payload = new JSONObject(validPayload());
+		payload.put("fp", "");
+
+		peer.pair(payload.toString(), callback);
+
+		verify(callback).onFailed("unreadable_payload");
+		verify(joiner, never()).join(anyString(), anyString(), any());
+	}
+
 	@Test public void aRecreatedScreenHearsHowThePairingEnds() throws Exception {
 		ArgumentCaptor<HotspotJoiner.JoinCallback> join = ArgumentCaptor.forClass(HotspotJoiner.JoinCallback.class);
 		peer.pair(validPayload(), callback);

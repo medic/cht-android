@@ -22,7 +22,7 @@ import com.google.zxing.integration.android.IntentResult;
 	*   startActivityForResult(intent, QrScannerActivity.REQUEST_CODE);
 	*
 	* Result extras:
-	*   EXTRA_QR_RESULT: the validated QR payload JSON string (on RESULT_OK)
+	*   EXTRA_QR_RESULT: the scanned QR payload JSON string (on RESULT_OK)
 	*   EXTRA_QR_ERROR: a stable error code (on RESULT_CANCELED with error)
 	*/
 public class QrScannerActivity extends Activity {
@@ -85,7 +85,7 @@ public class QrScannerActivity extends Activity {
 				return;
 			}
 
-			log(this, "QR code scanned, validating payload");
+			log(this, "QR code scanned");
 			handleScannedPayload(scannedContent);
 		} else {
 			// Unexpected result, not from ZXing
@@ -97,23 +97,11 @@ public class QrScannerActivity extends Activity {
 		}
 	}
 
-	/**
-		* Validate the scanned QR payload and return the result to the caller.
-		*/
+	/** Hands the scanned payload back. The peer validates it before joining anything. */
 	private void handleScannedPayload(String scannedContent) {
-		QrValidation validation = QrCodeHelper.validateQrPayload(scannedContent);
-
-		if (validation.isAccepted()) {
-			log(this, "QR payload validated successfully");
-			Intent resultIntent = new Intent();
-			resultIntent.putExtra(EXTRA_QR_RESULT, scannedContent);
-			setResult(RESULT_OK, resultIntent);
-		} else {
-			// The webapp shows the translated message for this code; the detail is for support.
-			warn(this, "QR payload validation failed: " + validation.getDetail());
-			returnError(validation.getCode());
-		}
-
+		Intent resultIntent = new Intent();
+		resultIntent.putExtra(EXTRA_QR_RESULT, scannedContent);
+		setResult(RESULT_OK, resultIntent);
 		finish();
 	}
 
