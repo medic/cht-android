@@ -32,11 +32,9 @@ import java.util.Map;
 	*   "pwd": "randomPassword123",     // likewise
 	*   "ip": "192.168.43.1",
 	*   "fp": "3A:7F:...:C2",          // SHA-256 of the host's public key, colon-separated hex
-	*   "port": 8443,
-	*   "ts": 1711152000000
+	*   "port": 8443
 	* }
 	*
-	*   Timestamp must be within 10 minutes of current time
 	*   Type field must be "cht-offline-sync"
 	*   TLS fingerprint must match the host key presented on connection
 	*   QR regenerated each session, old codes are invalid
@@ -47,7 +45,6 @@ public final class QrCodeHelper {
 	private static final int QR_SIZE = 512; // pixels
 	private static final String PAYLOAD_TYPE = "cht-offline-sync";
 	private static final int PAYLOAD_VERSION = 1;
-	private static final long MAX_TIMESTAMP_DRIFT_MS = 10L * 60 * 1000; // 10 minutes
 
 	// QR payload JSON keys
 	/** SHA-256 of the host's session certificate; the peer refuses anything else. */
@@ -60,7 +57,6 @@ public final class QrCodeHelper {
 	// Every validation failure means the same thing to the user: the code cannot be used, ask
 	// for another. The prose behind it goes to the log, never across the bridge.
 	private static final String UNREADABLE = "unreadable_payload";
-	private static final String KEY_TS = "ts";
 
 	private QrCodeHelper() {
 		// Static utility class
@@ -158,7 +154,6 @@ public final class QrCodeHelper {
 		payload.put(KEY_IP, creds.ipAddress);
 		payload.put(KEY_FINGERPRINT, creds.certFingerprint);
 		payload.put(KEY_PORT, creds.port);
-		payload.put(KEY_TS, System.currentTimeMillis());
 		return payload.toString();
 	}
 
@@ -183,7 +178,6 @@ public final class QrCodeHelper {
 		*
 		* Checks:
 		*   Type must be "cht-offline-sync"
-		*   Timestamp within 10 minutes of current time
 		*   Required fields: ssid, pwd, ip, port
 		*
 		* @param payloadJson the scanned QR code content
@@ -207,11 +201,6 @@ public final class QrCodeHelper {
 			return headerCheck;
 		}
 
-		QrValidation tsCheck = checkQrTimestamp(payload);
-		if (tsCheck != null) {
-			return tsCheck;
-		}
-
 		return validateRequiredFields(payload);
 	}
 
@@ -225,19 +214,6 @@ public final class QrCodeHelper {
 		if (version != PAYLOAD_VERSION) {
 			return QrValidation.reject(UNREADABLE, "unsupported version: " + version +
 					", expected " + PAYLOAD_VERSION);
-		}
-		return null;
-	}
-
-	private static QrValidation checkQrTimestamp(JSONObject payload) {
-		long timestamp = payload.optLong(KEY_TS, 0);
-		if (timestamp == 0) {
-			return QrValidation.reject(UNREADABLE, "missing timestamp");
-		}
-		long drift = Math.abs(System.currentTimeMillis() - timestamp);
-		if (drift > MAX_TIMESTAMP_DRIFT_MS) {
-			return QrValidation.reject(UNREADABLE, "code expired, timestamp drift: " +
-					(drift / 1000) + "s (max " + (MAX_TIMESTAMP_DRIFT_MS / 1000) + "s)");
 		}
 		return null;
 	}
@@ -257,8 +233,7 @@ public final class QrCodeHelper {
 					json.getString(KEY_PWD),
 					json.getString(KEY_IP),
 					json.getInt(KEY_PORT),
-					json.getString(KEY_FINGERPRINT),
-					json.getLong(KEY_TS)
+					json.getString(KEY_FINGERPRINT)
 			);
 		} catch (JSONException e) {
 			error(e, "Failed to parse QR payload");
@@ -349,16 +324,14 @@ public final class QrCodeHelper {
 		private final String ipAddress;
 		private final int port;
 		private final String certFingerprint;
-		private final long timestamp;
 
 		QrPayload(String ssid, String password, String ipAddress,
-					int port, String certFingerprint, long timestamp) {
+					int port, String certFingerprint) {
 			this.ssid = ssid;
 			this.password = password;
 			this.ipAddress = ipAddress;
 			this.port = port;
 			this.certFingerprint = certFingerprint;
-			this.timestamp = timestamp;
 		}
 
 		/** The certificate the host must present. Anything else means it is not the host. */
@@ -385,7 +358,7 @@ public final class QrCodeHelper {
 		@Override
 		public String toString() {
 			return "QrPayload{ssid='" + ssid + "', ip='" + ipAddress +
-					"', port=" + port + ", ts=" + timestamp + '}';
+					"', port=" + port + '}';
 		}
 	}
 }

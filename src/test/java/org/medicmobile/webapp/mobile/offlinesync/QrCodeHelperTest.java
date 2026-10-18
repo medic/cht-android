@@ -91,13 +91,11 @@ public class QrCodeHelperTest {
 		assertTrue(result.getDetail(), result.getDetail().contains("ssid"));
 	}
 
-	@Test public void validateQrPayload_rejectsAStaleQrCode() throws Exception {
+	@Test public void buildPayload_carriesNothingTiedToTheClock() throws Exception {
 		JSONObject payload = new JSONObject(QrCodeHelper.buildPayload(credentials()));
-		payload.put("ts", System.currentTimeMillis() - (24L * 60 * 60 * 1000));
 
-		QrValidation result = QrCodeHelper.validateQrPayload(payload.toString());
-
-		assertFalse("a day-old QR code should not pair", result.isAccepted());
+		assertFalse(payload.has("ts"));
+		assertTrue(QrCodeHelper.validateQrPayload(payload.toString()).isAccepted());
 	}
 
 	@Test public void parsePayload_roundTripsWhatBuildPayloadProduced() throws Exception {
@@ -108,16 +106,11 @@ public class QrCodeHelperTest {
 	}
 
 	@Test public void everyRejectionCarriesAStableCode() throws Exception {
-		JSONObject noTimestamp = new JSONObject(QrCodeHelper.buildPayload(credentials()));
-		noTimestamp.remove("ts");
-
 		String[] badPayloads = {
 			"",
 			"not json at all",
 			new JSONObject().put("type", "wrong").toString(),
 			new JSONObject(QrCodeHelper.buildPayload(credentials())).put("v", 99).toString(),
-			noTimestamp.toString(),
-			new JSONObject(QrCodeHelper.buildPayload(credentials())).put("ts", 1).toString(),
 			new JSONObject(QrCodeHelper.buildPayload(credentials())).put("port", 0).toString(),
 			new JSONObject(QrCodeHelper.buildPayload(credentials())).put("ssid", "").toString(),
 		};

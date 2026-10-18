@@ -99,7 +99,6 @@ public class QrScannerActivity extends Activity {
 
 	/**
 		* Validate the scanned QR payload and return the result to the caller.
-		* Validates QR timestamp and type fields.
 		*/
 	private void handleScannedPayload(String scannedContent) {
 		QrValidation validation = QrCodeHelper.validateQrPayload(scannedContent);
