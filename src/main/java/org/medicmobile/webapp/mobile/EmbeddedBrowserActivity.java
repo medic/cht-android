@@ -356,7 +356,8 @@ public class EmbeddedBrowserActivity extends Activity {
 	/**
 	 * Whether an offline sync session may start, asking for the permissions if it may not.
 	 *
-	 * Returns false while the request is in flight; the webapp retries once the user has answered.
+	 * Returns false while the request is in flight; the webapp offers the action again once the
+	 * user has granted it.
 	 */
 	public boolean getOfflineSyncPermissions() {
 		if (RequestOfflineSyncPermissionsActivity.hasOfflineSyncPermissions(this)) {

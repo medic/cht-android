@@ -225,8 +225,9 @@ public class MedicAndroidJavascript {
 			respondToOfflineSync(false, "hotspot_unsupported", "");
 			return;
 		}
-		// Asks if it is missing, and reports back through offlineSyncPermissionsResolved so the webapp can
-		// retry. Without this the hotspot call fails with a SecurityException the user cannot act on.
+		// Asks if it is missing, and reports back through offlineSyncPermissionsResolved so the webapp
+		// can offer the action again. Without this the hotspot call fails with a SecurityException
+		// the user cannot act on.
 		if(!parent.getOfflineSyncPermissions()) {
 			respondToOfflineSync(false, "permissions_required", "");
 			return;
