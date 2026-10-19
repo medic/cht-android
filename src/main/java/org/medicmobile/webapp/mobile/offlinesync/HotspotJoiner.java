@@ -130,17 +130,24 @@ public class HotspotJoiner {
 				.build();
 
 		activeCallback = new ConnectivityManager.NetworkCallback() {
+			/** The host's network once joined. Losing any other wifi, such as the one being left, is not a failure. */
+			private Network hostNetwork;
+
 			@Override public void onAvailable(Network network) {
 				if (!isConnectedTo(ssid)) {
 					// some other wifi came up; keep waiting for the host's
 					return;
 				}
 				cancelJoinTimeout();
+				hostNetwork = network;
 				log(HotspotJoiner.class, "Joined the host's network");
 				callback.onJoined(network);
 			}
 
 			@Override public void onLost(Network network) {
+				if (!network.equals(hostNetwork)) {
+					return;
+				}
 				warn(HotspotJoiner.class, "Lost the host's network");
 				callback.onLost();
 			}

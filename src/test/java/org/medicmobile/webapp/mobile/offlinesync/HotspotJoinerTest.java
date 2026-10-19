@@ -113,6 +113,33 @@ public class HotspotJoinerTest {
 		verify(callback, never()).onJoined(any());
 	}
 
+	@Test @Config(sdk = 28)
+	public void join_ignoresLosingTheWifiItLeavesBeforeAndroid10() {
+		when(wifiManager.addNetwork(any())).thenReturn(7);
+		when(wifiManager.enableNetwork(anyInt(), org.mockito.ArgumentMatchers.anyBoolean())).thenReturn(true);
+		WifiInfo info = mock(WifiInfo.class);
+		when(wifiManager.getConnectionInfo()).thenReturn(info);
+		Network previous = mock(Network.class);
+		Network host = mock(Network.class);
+
+		joiner.join(SSID, PASSWORD, callback);
+		ArgumentCaptor<ConnectivityManager.NetworkCallback> captor =
+				ArgumentCaptor.forClass(ConnectivityManager.NetworkCallback.class);
+		verify(connectivityManager).registerNetworkCallback(any(), captor.capture());
+		when(info.getSSID()).thenReturn("\"someone-elses-wifi\"");
+		captor.getValue().onAvailable(previous);
+		captor.getValue().onLost(previous);
+		when(info.getSSID()).thenReturn("\"" + SSID + "\"");
+		captor.getValue().onAvailable(host);
+
+		verify(callback, never()).onLost();
+		verify(callback).onJoined(host);
+
+		captor.getValue().onLost(host);
+
+		verify(callback).onLost();
+	}
+
 	@Test @Config(sdk = 29)
 	public void join_doesNotUseTheLegacyPathFromAndroid10() {
 		joiner.join(SSID, PASSWORD, callback);
