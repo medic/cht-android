@@ -90,7 +90,7 @@ public class EmbeddedBrowserActivityTest {
 
 		verify(firstScreen, never()).onFailed(any());
 		scenario.onActivity(activity -> assertTrue(shadowOf((WebView) activity.findViewById(R.id.wbvMain))
-				.getLastLoadedUrl().contains("resolveOfflineSyncPairing(false, \"network_lost\"")));
+				.getLastEvaluatedJavascript().contains("resolveOfflineSyncPairing(false, \"network_lost\"")));
 	}
 
 	@Test

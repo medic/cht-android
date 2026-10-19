@@ -411,6 +411,10 @@ public class EmbeddedBrowserActivity extends Activity {
 		this.offlineSyncPeer.pair(payload, pairingCallback);
 	}
 
+	/**
+		* The detail can be the host's own label, so this does not go through loadUrl: it
+		* percent-decodes the script, and an encoded quote would end the string it sits in.
+		*/
 	void resolveOfflineSyncPairing(boolean ok, String detail) {
 		evaluateJavascript(String.format(
 			"try {" +
@@ -421,7 +425,7 @@ public class EmbeddedBrowserActivity extends Activity {
 				"} catch (error) {" +
 				"  console.error('EmbeddedBrowserActivity :: Offline sync pairing result not delivered', error);" +
 				"}",
-			ok, org.json.JSONObject.quote(detail)));
+			ok, org.json.JSONObject.quote(detail)), false);
 	}
 
 	private void offlineSyncPermissionsResolved(boolean granted) {

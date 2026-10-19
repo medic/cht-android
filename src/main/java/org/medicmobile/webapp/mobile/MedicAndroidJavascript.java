@@ -309,6 +309,7 @@ public class MedicAndroidJavascript {
 		}
 	}
 
+	/** Not through loadUrl, which percent-decodes the script and would garble the diagnostic text. */
 	private void respondToOfflineSync(boolean ok, String detail, String diagnostic) {
 		parent.evaluateJavascript(String.format(
 				"try {" +
@@ -319,7 +320,7 @@ public class MedicAndroidJavascript {
 						"} catch (error) {" +
 						"  console.error('MedicAndroidJavascript :: Offline sync result not delivered', error);" +
 						"}",
-				ok, JSONObject.quote(detail), JSONObject.quote(diagnostic)));
+				ok, JSONObject.quote(detail), JSONObject.quote(diagnostic)), false);
 	}
 
 	/**

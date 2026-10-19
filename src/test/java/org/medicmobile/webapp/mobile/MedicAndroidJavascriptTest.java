@@ -1,6 +1,7 @@
 package org.medicmobile.webapp.mobile;
 
 import static org.mockito.ArgumentMatchers.contains;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -26,6 +27,7 @@ public class MedicAndroidJavascriptTest {
 		verify(manager).redirect(redirected.capture());
 		redirected.getValue().onLost("hotspot_stopped");
 
-		verify(screen).evaluateJavascript(contains("resolveOfflineSyncHostingResult(false, \"hotspot_stopped\""));
+		verify(screen).evaluateJavascript(
+				contains("resolveOfflineSyncHostingResult(false, \"hotspot_stopped\""), eq(false));
 	}
 }
