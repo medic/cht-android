@@ -84,34 +84,6 @@ public final class QrCodeHelper {
 	}
 
 	/**
-		* Generate a QR code bitmap from hotspot credentials.
-		*
-		* @param creds hotspot credentials
-		* @return QR code bitmap, or null if generation fails
-		*/
-	public static Bitmap generateQrCode(HotspotCredentials creds) {
-		return generateQrCode(creds, QR_SIZE);
-	}
-
-	/**
-		* Generate a QR code bitmap with custom dimensions.
-		*
-		* @param creds hotspot credentials
-		* @param size  bitmap width and height in pixels
-		* @return QR code bitmap, or null if generation fails
-		*/
-	public static Bitmap generateQrCode(HotspotCredentials creds, int size) {
-		try {
-			String payload = buildPayload(creds);
-			return encodeQrBitmap(payload, size);
-		} catch (WriterException | JSONException e) {
-			error(e, "Failed to generate QR code");
-			return null;
-		}
-	}
-
-
-	/**
 		* Renders the payload as a PNG data URL, for the webapp to show.
 		*
 		* Encoding here rather than in the webapp keeps the QR library on one side: ZXing is already
