@@ -8,8 +8,8 @@ import android.net.Network;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -39,11 +39,18 @@ public class PeerClientTest {
 		assertEquals("{\"device_label\":\"Sup\"}", body);
 	}
 
-	@Test public void readBounded_refusesAResponseThatNeverEnds() {
-		byte[] huge = new byte[200 * 1024];
-		Arrays.fill(huge, (byte) 'x');
+	@Test public void readBounded_refusesAResponseThatNeverEnds() throws IOException {
+		try (InputStream endless = new InputStream() {
+			private long served;
 
-		assertThrows(IOException.class,
-				() -> PeerClient.readBounded(new ByteArrayInputStream(huge)));
+			@Override public int read() {
+				if (++served > 1024 * 1024) {
+					throw new AssertionError("kept reading past the bound");
+				}
+				return 'x';
+			}
+		}) {
+			assertThrows(IOException.class, () -> PeerClient.readBounded(endless));
+		}
 	}
 }

@@ -7,7 +7,6 @@ import android.net.Network;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.io.InputStream;
@@ -123,14 +122,14 @@ public class PeerClient {
 	/** Package-private so the bound can be tested without standing up a server. */
 	static String readBounded(InputStream stream) throws IOException {
 		StringBuilder body = new StringBuilder();
-		try (BufferedReader reader = new BufferedReader(
-				new InputStreamReader(stream, StandardCharsets.UTF_8))) {
-			String line;
-			while ((line = reader.readLine()) != null) {
-				if (body.length() + line.length() > MAX_BODY_CHARS) {
+		char[] buffer = new char[4096];
+		try (InputStreamReader reader = new InputStreamReader(stream, StandardCharsets.UTF_8)) {
+			int read;
+			while ((read = reader.read(buffer)) != -1) {
+				if (body.length() + read > MAX_BODY_CHARS) {
 					throw new IOException("The host's response is larger than we will read");
 				}
-				body.append(line);
+				body.append(buffer, 0, read);
 			}
 		}
 		return body.toString();
