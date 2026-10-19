@@ -106,10 +106,6 @@ public class WifiHotspotProvider implements HotspotProvider {
 
 		try {
 			startLocalOnlyHotspot(callback);
-		} catch (SecurityException e) {
-			error(e, "Hotspot SecurityException");
-			stopCallbackThread();
-			callback.onFailed("permissions_required");
 		} catch (Exception e) {
 			error(e, "Failed to start hotspot");
 			stopCallbackThread();

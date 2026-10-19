@@ -4,6 +4,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -61,6 +62,17 @@ public class WifiHotspotProviderTest {
 
 		verify(wifiManager).startLocalOnlyHotspot(any(), any());
 		verify(callback, never()).onFailed("hotspot_unsupported");
+	}
+
+	@Test @Config(sdk = 26)
+	public void start_reportsARefusalAfterThePermissionCheckAsAHotspotError() {
+		WifiManager wifiManager = mock(WifiManager.class);
+		doThrow(new SecurityException("refused")).when(wifiManager).startLocalOnlyHotspot(any(), any());
+		HotspotProvider.HotspotCallback callback = mock(HotspotProvider.HotspotCallback.class);
+
+		new WifiHotspotProvider(wifiManager, locationManager()).start(callback);
+
+		verify(callback).onFailed("hotspot_error");
 	}
 
 	@Test @Config(sdk = 26)
