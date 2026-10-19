@@ -45,11 +45,6 @@ public class OfflineSyncPeer {
 		return instance;
 	}
 
-	/** Whether this device can join a session. Every supported Android version can. */
-	public static boolean isJoinSupported() {
-		return HotspotJoiner.SUPPORTED;
-	}
-
 	/**
 		* Joins the session described by a scanned payload.
 		*

@@ -33,9 +33,6 @@ public class HotspotJoiner {
 
 	private static final String JOIN_FAILED = "join_failed";
 
-	/** Every supported version can join, by one route or the other. */
-	public static final boolean SUPPORTED = true;
-
 	/** Long enough for the user to accept the system prompt, short enough to fail visibly. */
 	private static final int JOIN_TIMEOUT_MS = 60_000;
 

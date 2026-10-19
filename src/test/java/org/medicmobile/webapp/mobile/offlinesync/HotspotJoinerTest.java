@@ -1,7 +1,6 @@
 package org.medicmobile.webapp.mobile.offlinesync;
 
 import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -56,16 +55,6 @@ public class HotspotJoinerTest {
 		assertThrows(IllegalArgumentException.class, () -> new HotspotJoiner(null, wifiManager, locationManager));
 		assertThrows(IllegalArgumentException.class, () -> new HotspotJoiner(connectivityManager, null, locationManager));
 		assertThrows(IllegalArgumentException.class, () -> new HotspotJoiner(connectivityManager, wifiManager, null));
-	}
-
-	@Test @Config(sdk = 28)
-	public void isSupported_isTrueOnOlderVersionsToo() {
-		assertTrue(HotspotJoiner.SUPPORTED);
-	}
-
-	@Test @Config(sdk = 29)
-	public void isSupported_isTrueFromAndroid10() {
-		assertTrue(HotspotJoiner.SUPPORTED);
 	}
 
 	@Test @Config(sdk = 28)

@@ -252,7 +252,7 @@ public class MedicAndroidJavascript {
 	@android.webkit.JavascriptInterface
 	@SuppressWarnings("java:S100")  // the webapp calls this name literally over the bridge
 	public boolean offline_sync_join_available() {
-		return offlineSyncPeer != null && OfflineSyncPeer.isJoinSupported();
+		return offlineSyncPeer != null;
 	}
 
 	/**

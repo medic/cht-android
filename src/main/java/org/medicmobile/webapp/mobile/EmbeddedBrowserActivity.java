@@ -97,8 +97,8 @@ public class EmbeddedBrowserActivity extends Activity {
 			error(ex, "Failed to create SmsSender.");
 		}
 
-		// Hosting and joining have different Android version floors, so each is created only where
-		// it can actually work and the webapp asks before offering either.
+		// Hosting needs a newer Android than joining, so the manager is created only where it can
+		// work and the webapp asks before offering it.
 		if(OfflineSyncManager.isHostSupported()) {
 			try {
 				this.offlineSyncManager = OfflineSyncManager.getInstance(this, Build.MODEL);
@@ -106,10 +106,8 @@ public class EmbeddedBrowserActivity extends Activity {
 				error(ex, "Failed to create OfflineSyncManager.");
 			}
 		}
-		if(OfflineSyncPeer.isJoinSupported()) {
-			this.offlineSyncPeer = OfflineSyncPeer.getInstance(this);
-			this.offlineSyncPeer.redirect(pairingCallback);
-		}
+		this.offlineSyncPeer = OfflineSyncPeer.getInstance(this);
+		this.offlineSyncPeer.redirect(pairingCallback);
 
 		this.settings = SettingsStore.in(this);
 		this.appUrl = settings.getAppUrl();

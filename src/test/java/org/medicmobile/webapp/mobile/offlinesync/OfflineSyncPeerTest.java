@@ -103,13 +103,13 @@ public class OfflineSyncPeerTest {
 	@Test public void pair_reportsAJoinFailureAsIs() throws Exception {
 		doAnswer(invocation -> {
 			HotspotJoiner.JoinCallback cb = invocation.getArgument(2);
-			cb.onFailed("join_unsupported");
+			cb.onFailed("join_failed");
 			return null;
 		}).when(joiner).join(anyString(), anyString(), any());
 
 		peer.pair(validPayload(), callback);
 
-		verify(callback).onFailed("join_unsupported");
+		verify(callback).onFailed("join_failed");
 	}
 
 	@Test public void pair_treatsLosingTheNetworkAsAFailure() throws Exception {
