@@ -30,7 +30,7 @@ public class OfflineSyncPeer {
 		this.joiner = joiner;
 	}
 
-	public static OfflineSyncPeer create(Context context) {
+	private static OfflineSyncPeer create(Context context) {
 		return new OfflineSyncPeer(HotspotJoiner.create(context));
 	}
 

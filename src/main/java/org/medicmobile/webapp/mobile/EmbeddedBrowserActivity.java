@@ -391,10 +391,7 @@ public class EmbeddedBrowserActivity extends Activity {
 	}
 
 //> PRIVATE HELPERS
-	/**
-		* Why the scan ended without a code. The scanner reports this; without it every bad code
-		* would look to the user like they had cancelled the scan themselves.
-		*/
+	/** Why the scan ended without a code: the user backed out, or the scanner reported a failure. */
 	private static String scanFailureCode(Intent intent) {
 		if (intent == null) {
 			return "scan_cancelled";

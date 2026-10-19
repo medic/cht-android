@@ -55,10 +55,11 @@ public class OfflineSyncManager {
 		}
 		return instance;
 	}
+
 	/**
 		* Builds a manager wired to the real WiFi radio, with a fresh TLS identity for the session.
 		*/
-	public static OfflineSyncManager create(Context context, String deviceLabel) throws GeneralSecurityException {
+	private static OfflineSyncManager create(Context context, String deviceLabel) throws GeneralSecurityException {
 		Context appContext = context.getApplicationContext();
 		WifiManager wifiManager = (WifiManager) appContext.getSystemService(Context.WIFI_SERVICE);
 		LocationManager locationManager =
