@@ -25,9 +25,9 @@ public final class PinnedCertificateTrust {
 	private PinnedCertificateTrust() {}
 
 	/**
-		* A socket factory that completes a handshake only with the pinned certificate.
+		* A socket factory that completes a handshake only with the pinned key.
 		*
-		* @param expectedFingerprint SHA-256 of the host certificate, as read from the QR code
+		* @param expectedFingerprint SHA-256 of the host's public key, as read from the QR code
 		*/
 	public static SSLSocketFactory socketFactoryFor(String expectedFingerprint)
 			throws GeneralSecurityException {
@@ -74,8 +74,7 @@ public final class PinnedCertificateTrust {
 		}
 
 		if (!matches(expectedFingerprint, actual)) {
-			// Both values, because "does not match" alone cannot tell a wrong device from a device
-			// whose keystore hands back a different encoding than the one we fingerprinted. Neither
+			// Both values, so the log shows which key was expected and which one arrived. Neither
 			// is a secret: the expected one is printed in the QR code and the other was just sent
 			// over the wire.
 			throw new CertificateException(

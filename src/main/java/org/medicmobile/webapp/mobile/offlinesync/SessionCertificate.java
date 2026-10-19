@@ -205,11 +205,10 @@ public class SessionCertificate {
 	/**
 		* Binds the key managers to this session's entry.
 		*
-		* A key manager handed the whole keystore picks whichever entry it likes, and the keystore
-		* holds more than ours: entries this app wrote under older names outlive an upgrade, since
-		* only uninstalling clears them. Choosing any of those serves a key the QR code does not
-		* name, and pairing then fails in a way nothing on the device can explain. The peer trusts
-		* exactly one key, so the server has to offer exactly that one.
+		* A key manager handed the whole keystore picks whichever entry it likes, and nothing stops
+		* the keystore holding entries other than this session's. Choosing one of those serves a key
+		* the QR code does not name, and pairing then fails in a way nothing on the device can
+		* explain. The peer trusts exactly one key, so the server has to offer exactly that one.
 		*/
 	private KeyManager[] serveOnly(KeyManager[] managers) {
 		KeyManager[] bound = new KeyManager[managers.length];
@@ -397,8 +396,8 @@ public class SessionCertificate {
 			}
 			alias = null;
 		} catch (Exception e) {
-			// The next session overwrites the entry anyway, so this is not fatal, but a key we
-			// meant to destroy and did not is worth knowing about.
+			// The next session discards every session entry before making its own, so this is not
+			// fatal, but a key we meant to destroy and did not is worth knowing about.
 			warn(e, "Could not destroy the session certificate");
 		}
 	}

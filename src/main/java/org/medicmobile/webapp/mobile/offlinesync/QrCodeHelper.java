@@ -47,7 +47,7 @@ public final class QrCodeHelper {
 	private static final int PAYLOAD_VERSION = 1;
 
 	// QR payload JSON keys
-	/** SHA-256 of the host's session certificate; the peer refuses anything else. */
+	/** SHA-256 of the host's session public key; the peer refuses any other key. */
 	private static final String KEY_FINGERPRINT = "fp";
 	private static final String KEY_SSID = "ssid";
 	private static final String KEY_PWD = "pwd";
@@ -306,7 +306,7 @@ public final class QrCodeHelper {
 			this.certFingerprint = certFingerprint;
 		}
 
-		/** The certificate the host must present. Anything else means it is not the host. */
+		/** The fingerprint of the key the host must present. Any other key means it is not the host. */
 		public String getCertFingerprint() {
 			return certFingerprint;
 		}
