@@ -78,7 +78,7 @@ public final class PinnedCertificateTrust {
 			// is a secret: the expected one is printed in the QR code and the other was just sent
 			// over the wire.
 			throw new CertificateException(
-					"The host's certificate does not match the one in the QR code (expected " +
+					"The host's key does not match the one in the QR code (expected " +
 							shorten(expectedFingerprint) + ", got " + shorten(actual) +
 							" subject " + subjectOf(chain[0]) + ")");
 		}
@@ -108,7 +108,7 @@ public final class PinnedCertificateTrust {
 
 	/**
 		* Lint objects to custom trust managers because they are usually written to accept
-		* everything. This one is the opposite: it accepts a single certificate and rejects all
+		* everything. This one is the opposite: it accepts a single key and rejects all
 		* others, including any a certificate authority would vouch for. Delegating to the platform
 		* default is not an option, since the host's certificate is self-signed and seconds old, so
 		* the default would reject it outright and pairing could never work.

@@ -17,7 +17,7 @@ import fi.iki.elonen.NanoHTTPD;
 	* It answers a status probe so a peer can confirm it reached the right device.
 	*
 	* Served over TLS using a {@link SessionCertificate}. The certificate is self-signed and
-	* deliberately untrusted by any CA: the peer pins it against the fingerprint printed in the QR
+	* deliberately untrusted by any CA: the peer pins its key against the fingerprint printed in the QR
 	* code. Anyone else on the hotspot can reach this port, so the handshake is what identifies the
 	* host, not the network.
 	*/

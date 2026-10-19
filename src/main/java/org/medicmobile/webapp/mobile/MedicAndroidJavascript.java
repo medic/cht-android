@@ -257,7 +257,7 @@ public class MedicAndroidJavascript {
 
 	/**
 	 * Opens the scanner. The result arrives on the webapp's resolveOfflineSyncPairing callback once the
-	 * device has joined and confirmed the host's certificate.
+	 * device has joined and confirmed the host's key.
 	 */
 	@android.webkit.JavascriptInterface
 	@SuppressWarnings("java:S100")  // the webapp calls this name literally over the bridge

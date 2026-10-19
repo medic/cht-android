@@ -133,7 +133,7 @@ public class HotspotJoiner {
 		*
 		* This watches wifi in general, because below Android 10 there is no way to ask for one
 		* specific network, so it checks the SSID before calling the join done. Nothing here is a
-		* security boundary: the certificate pin is what proves the host is the right device.
+		* security boundary: the key pin is what proves the host is the right device.
 		*/
 	@SuppressWarnings("deprecation")
 	private void watchForWifi(String ssid, JoinCallback callback) {

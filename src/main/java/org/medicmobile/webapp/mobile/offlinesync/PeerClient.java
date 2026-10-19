@@ -20,12 +20,12 @@ import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSession;
 
 /**
-	* Talks to the host over the joined network, accepting only the pinned certificate.
+	* Talks to the host over the joined network, accepting only the pinned key.
 	*
 	* Two things have to be right for this to reach the intended device and nothing else. The socket
 	* is bound to the {@link Network} the join returned, because the hotspot is not the device's
 	* default route and unbound traffic would leave over mobile data. And the TLS handshake trusts
-	* only the certificate whose fingerprint came from the QR code, because everyone in range can
+	* only the key whose fingerprint came from the QR code, because everyone in range can
 	* join the same hotspot.
 	*/
 public class PeerClient {
@@ -42,8 +42,8 @@ public class PeerClient {
 		* The host's certificate is issued to a device label and we connect to an IP address that
 		* changes every session, so name-based verification could never pass and would only stop
 		* pairing from working. What replaces it is stricter, not weaker: the trust manager accepts
-		* exactly one certificate, the one whose fingerprint was read from the QR code, and rejects
-		* every other including any a certificate authority would vouch for.
+		* exactly one key, the one whose fingerprint was read from the QR code, and rejects every
+		* other including any a certificate authority would vouch for.
 		*
 		* Written as a named field rather than a lambda so it is visible to review and to lint,
 		* which only inspects classes for this and would otherwise never see it.
@@ -73,7 +73,7 @@ public class PeerClient {
 		* Confirms the device at this address is the host from the QR code.
 		*
 		* @return the host's reported label
-		* @throws IOException if the host cannot be reached, or presents a different certificate
+		* @throws IOException if the host cannot be reached, or presents a different key
 		*/
 	public String fetchStatus(String ipAddress, int port) throws IOException {
 		JSONObject body = get(ipAddress, port, "/_offline-sync/status");
@@ -106,7 +106,7 @@ public class PeerClient {
 		try {
 			connection.setSSLSocketFactory(PinnedCertificateTrust.socketFactoryFor(certFingerprint));
 		} catch (GeneralSecurityException e) {
-			throw new IOException("Could not pin the host's certificate", e);
+			throw new IOException("Could not pin the host's key", e);
 		}
 		connection.setHostnameVerifier(PIN_IS_THE_IDENTITY_CHECK);
 		connection.setConnectTimeout(CONNECT_TIMEOUT_MS);
