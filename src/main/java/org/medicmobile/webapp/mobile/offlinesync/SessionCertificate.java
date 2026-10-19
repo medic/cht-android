@@ -333,8 +333,10 @@ public class SessionCertificate {
 				client.startHandshake();
 			}
 			server.join(HANDSHAKE_TIMEOUT_MS);
-		} catch (IOException | InterruptedException e) {
+		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
+			throw new GeneralSecurityException("Interrupted while checking the session certificate", e);
+		} catch (IOException e) {
 			throw new GeneralSecurityException(
 					"This device cannot serve TLS with a keystore-backed key " + whatIsBeingServed(), e);
 		}
