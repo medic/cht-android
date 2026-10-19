@@ -12,10 +12,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.os.Build;
 import android.os.Looper;
 
 import java.time.Duration;
@@ -35,19 +37,25 @@ public class HotspotJoinerTest {
 
 	private ConnectivityManager connectivityManager;
 	private WifiManager wifiManager;
+	private LocationManager locationManager;
 	private HotspotJoiner joiner;
 	private HotspotJoiner.JoinCallback callback;
 
 	@Before public void setUp() {
 		connectivityManager = mock(ConnectivityManager.class);
 		wifiManager = mock(WifiManager.class);
-		joiner = new HotspotJoiner(connectivityManager, wifiManager);
+		locationManager = mock(LocationManager.class);
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+			when(locationManager.isLocationEnabled()).thenReturn(true);
+		}
+		joiner = new HotspotJoiner(connectivityManager, wifiManager, locationManager);
 		callback = mock(HotspotJoiner.JoinCallback.class);
 	}
 
 	@Test public void constructor_rejectsMissingSystemServices() {
-		assertThrows(IllegalArgumentException.class, () -> new HotspotJoiner(null, wifiManager));
-		assertThrows(IllegalArgumentException.class, () -> new HotspotJoiner(connectivityManager, null));
+		assertThrows(IllegalArgumentException.class, () -> new HotspotJoiner(null, wifiManager, locationManager));
+		assertThrows(IllegalArgumentException.class, () -> new HotspotJoiner(connectivityManager, null, locationManager));
+		assertThrows(IllegalArgumentException.class, () -> new HotspotJoiner(connectivityManager, wifiManager, null));
 	}
 
 	@Test @Config(sdk = 28)
@@ -111,6 +119,48 @@ public class HotspotJoinerTest {
 		captor.getValue().onAvailable(mock(Network.class));
 
 		verify(callback, never()).onJoined(any());
+	}
+
+	@Test @Config(sdk = 28)
+	public void join_saysWhenLocationIsSwitchedOffOnAndroid9() {
+		when(locationManager.isLocationEnabled()).thenReturn(false);
+
+		joiner.join(SSID, PASSWORD, callback);
+
+		verify(callback).onFailed("location_services_off");
+		verify(wifiManager, never()).addNetwork(any());
+	}
+
+	@Test @Config(sdk = 27)
+	public void join_saysWhenLocationIsSwitchedOffOnAndroid8_1() {
+		when(locationManager.isProviderEnabled(anyString())).thenReturn(false);
+
+		joiner.join(SSID, PASSWORD, callback);
+
+		verify(callback).onFailed("location_services_off");
+		verify(wifiManager, never()).addNetwork(any());
+	}
+
+	@Test @Config(sdk = 26)
+	public void join_doesNotNeedLocationOnAndroid8() {
+		when(locationManager.isProviderEnabled(anyString())).thenReturn(false);
+		when(wifiManager.addNetwork(any())).thenReturn(7);
+		when(wifiManager.enableNetwork(anyInt(), org.mockito.ArgumentMatchers.anyBoolean())).thenReturn(true);
+
+		joiner.join(SSID, PASSWORD, callback);
+
+		verify(wifiManager).addNetwork(any());
+		verify(callback, never()).onFailed(anyString());
+	}
+
+	@Test @Config(sdk = 29)
+	public void join_doesNotNeedLocationFromAndroid10() {
+		when(locationManager.isLocationEnabled()).thenReturn(false);
+
+		joiner.join(SSID, PASSWORD, callback);
+
+		verify(connectivityManager).requestNetwork(any(), any(ConnectivityManager.NetworkCallback.class), anyInt());
+		verify(callback, never()).onFailed(anyString());
 	}
 
 	@Test @Config(sdk = 28)

@@ -79,7 +79,7 @@ public class WifiHotspotProvider implements HotspotProvider {
 
 		// Granting the permission is not enough: the platform also refuses to start a hotspot while
 		// location is switched off, and says so in a way that looks like any other failure.
-		if (!isLocationEnabled()) {
+		if (!isLocationEnabled(locationManager)) {
 			warn(WifiHotspotProvider.class, "Location services are off, cannot start a hotspot");
 			return "location_services_off";
 		}
@@ -194,7 +194,7 @@ public class WifiHotspotProvider implements HotspotProvider {
 		* Separate from the permission: a user can grant location access and still have the setting
 		* switched off, and the hotspot then fails in a way that looks like any other error.
 		*/
-	private boolean isLocationEnabled() {
+	static boolean isLocationEnabled(LocationManager locationManager) {
 		if (locationManager == null) {
 			return false;
 		}

@@ -4,6 +4,7 @@ import static org.medicmobile.webapp.mobile.MedicLog.log;
 import static org.medicmobile.webapp.mobile.MedicLog.warn;
 
 import android.content.Context;
+import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
@@ -40,6 +41,7 @@ public class HotspotJoiner {
 
 	private final ConnectivityManager connectivityManager;
 	private final WifiManager wifiManager;
+	private final LocationManager locationManager;
 	private ConnectivityManager.NetworkCallback activeCallback;
 	/** Only the API 29+ path gets a timeout from the platform; below that we run our own. */
 	private final Handler timeoutHandler = new Handler(Looper.getMainLooper());
@@ -48,19 +50,22 @@ public class HotspotJoiner {
 		* taken back off it afterwards. */
 	private int savedNetworkId = -1;
 
-	public HotspotJoiner(ConnectivityManager connectivityManager, WifiManager wifiManager) {
-		if (connectivityManager == null || wifiManager == null) {
-			throw new IllegalArgumentException("connectivityManager and wifiManager must not be null");
+	public HotspotJoiner(ConnectivityManager connectivityManager, WifiManager wifiManager,
+			LocationManager locationManager) {
+		if (connectivityManager == null || wifiManager == null || locationManager == null) {
+			throw new IllegalArgumentException("connectivityManager, wifiManager and locationManager must not be null");
 		}
 		this.connectivityManager = connectivityManager;
 		this.wifiManager = wifiManager;
+		this.locationManager = locationManager;
 	}
 
 	public static HotspotJoiner create(Context context) {
 		Context appContext = context.getApplicationContext();
 		return new HotspotJoiner(
 				(ConnectivityManager) appContext.getSystemService(Context.CONNECTIVITY_SERVICE),
-				(WifiManager) appContext.getSystemService(Context.WIFI_SERVICE));
+				(WifiManager) appContext.getSystemService(Context.WIFI_SERVICE),
+				(LocationManager) appContext.getSystemService(Context.LOCATION_SERVICE));
 	}
 
 
@@ -94,6 +99,13 @@ public class HotspotJoiner {
 		*/
 	@SuppressWarnings("deprecation")
 	private void joinSavedNetwork(String ssid, String password, JoinCallback callback) {
+		// Android 8.1 and 9 hide the connected network's name while location is off, and this path
+		// only counts the join as done once it can read that name.
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1 && !WifiHotspotProvider.isLocationEnabled(locationManager)) {
+			callback.onFailed("location_services_off");
+			return;
+		}
+
 		android.net.wifi.WifiConfiguration config = new android.net.wifi.WifiConfiguration();
 		// the platform expects these quoted
 		config.SSID = "\"" + ssid + "\"";
