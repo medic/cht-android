@@ -38,15 +38,16 @@ public class AppNotificationManagerTest {
 		appNotificationManager = spy(new AppNotificationManager(context));
 		startOfDay = appNotificationManager.getStartOfDay();
 		appDataStore = AppDataStore.getInstance(context);
+		appDataStore.saveLongBlocking(AppNotificationManager.TASK_NOTIFICATION_DAY_KEY, startOfDay);
 		useBlockingDataStoreGet();
 	}
 
 	@After
 	public void resetDataStore() {
 		appDataStore.saveString(AppNotificationManager.TASK_NOTIFICATIONS_KEY, "[]");
-		appDataStore.saveLong(AppNotificationManager.TASK_NOTIFICATION_DAY_KEY, 0L);
-		appDataStore.saveLong(AppNotificationManager.LATEST_NOTIFICATION_TIMESTAMP_KEY, 0L);
-		appDataStore.saveLong(AppNotificationManager.MAX_NOTIFICATIONS_TO_SHOW_KEY, 8L);
+		appDataStore.saveLongBlocking(AppNotificationManager.TASK_NOTIFICATION_DAY_KEY, 0L);
+		appDataStore.saveLongBlocking(AppNotificationManager.LATEST_NOTIFICATION_TIMESTAMP_KEY, 0L);
+		appDataStore.saveLongBlocking(AppNotificationManager.MAX_NOTIFICATIONS_TO_SHOW_KEY, 8L);
 	}
 
 	@Test

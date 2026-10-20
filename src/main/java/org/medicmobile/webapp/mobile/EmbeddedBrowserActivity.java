@@ -41,6 +41,10 @@ import androidx.core.view.ViewCompat;
 import java.util.Arrays;
 import java.util.Optional;
 
+import org.medicmobile.webapp.mobile.offlinesync.OfflineSyncManager;
+import org.medicmobile.webapp.mobile.offlinesync.OfflineSyncPeer;
+import org.medicmobile.webapp.mobile.offlinesync.QrScannerActivity;
+
 @SuppressWarnings({ "PMD.GodClass", "PMD.TooManyMethods" })
 public class EmbeddedBrowserActivity extends Activity {
 
@@ -50,6 +54,17 @@ public class EmbeddedBrowserActivity extends Activity {
 	private MrdtSupport mrdt;
 	private FilePickerHandler filePickerHandler;
 	private SmsSender smsSender;
+	private OfflineSyncManager offlineSyncManager;
+	private OfflineSyncPeer offlineSyncPeer;
+	private final OfflineSyncPeer.PairCallback pairingCallback = new OfflineSyncPeer.PairCallback() {
+		@Override public void onPaired(String hostLabel) {
+			resolveOfflineSyncPairing(true, hostLabel);
+		}
+
+		@Override public void onFailed(String reason) {
+			resolveOfflineSyncPairing(false, reason);
+		}
+	};
 	private ChtExternalAppHandler chtExternalAppHandler;
 	private boolean isMigrationRunning = false;
 
@@ -80,6 +95,22 @@ public class EmbeddedBrowserActivity extends Activity {
 			this.smsSender = SmsSender.createInstance(this);
 		} catch(Exception ex) {
 			error(ex, "Failed to create SmsSender.");
+		}
+
+		// Hosting needs a newer Android than joining, so the manager is created only where it can
+		// work and the webapp asks before offering it.
+		if(OfflineSyncManager.isHostSupported()) {
+			try {
+				this.offlineSyncManager = OfflineSyncManager.getInstance(this, Build.MODEL);
+			} catch(Exception ex) {
+				error(ex, "Failed to create OfflineSyncManager.");
+			}
+		}
+		try {
+			this.offlineSyncPeer = OfflineSyncPeer.getInstance(this);
+			this.offlineSyncPeer.redirect(pairingCallback);
+		} catch(Exception ex) {
+			error(ex, "Failed to create OfflineSyncPeer.");
 		}
 
 		this.settings = SettingsStore.in(this);
@@ -228,6 +259,12 @@ public class EmbeddedBrowserActivity extends Activity {
 				case ACCESS_SEND_SMS_PERMISSION:
 					this.smsSender.resumeProcess(resultCode);
 					return;
+				case ACCESS_OFFLINE_SYNC_PERMISSIONS:
+					offlineSyncPermissionsResolved(resultCode == RESULT_OK);
+					return;
+				case SCAN_OFFLINE_SYNC_QR_CODE:
+					offlineSyncQrCodeScanned(resultCode, intent);
+					return;
 				default:
 					trace(this, "onActivityResult() :: no handling for requestCode=%s", requestCode.name());
 			}
@@ -268,6 +305,22 @@ public class EmbeddedBrowserActivity extends Activity {
 		return this.smsSender;
 	}
 
+	OfflineSyncManager getOfflineSyncManager() {
+		return this.offlineSyncManager;
+	}
+
+	OfflineSyncPeer getOfflineSyncPeer() {
+		return this.offlineSyncPeer;
+	}
+
+	/** Opens the scanner so the user can read a host's QR code. */
+	void scanOfflineSyncQrCode() {
+		startActivityForResult(
+			new Intent(this, QrScannerActivity.class),
+			RequestCode.SCAN_OFFLINE_SYNC_QR_CODE.getCode()
+		);
+	}
+
 	ChtExternalAppHandler getChtExternalAppHandler() {
 		return this.chtExternalAppHandler;
 	}
@@ -302,6 +355,26 @@ public class EmbeddedBrowserActivity extends Activity {
 		isMigrationRunning = migrationRunning;
 	}
 
+	/**
+	 * Whether an offline sync session may start, asking for the permissions if it may not.
+	 *
+	 * Returns false while the request is in flight; the webapp offers the action again once the
+	 * user has granted it.
+	 */
+	public boolean getOfflineSyncPermissions() {
+		if (RequestOfflineSyncPermissionsActivity.hasOfflineSyncPermissions(this)) {
+			trace(this, "getOfflineSyncPermissions() :: Offline sync permissions already granted");
+			return true;
+		}
+
+		trace(this, "getOfflineSyncPermissions() :: Offline sync permissions not granted before, requesting access...");
+		startActivityForResult(
+			new Intent(this, RequestOfflineSyncPermissionsActivity.class),
+			RequestCode.ACCESS_OFFLINE_SYNC_PERMISSIONS.getCode()
+		);
+		return false;
+	}
+
 	public boolean getLocationPermissions() {
 		boolean hasFineLocation = ContextCompat.checkSelfPermission(this, ACCESS_FINE_LOCATION) == PERMISSION_GRANTED;
 		boolean hasCoarseLocation = ContextCompat.checkSelfPermission(this, ACCESS_COARSE_LOCATION) == PERMISSION_GRANTED;
@@ -320,6 +393,56 @@ public class EmbeddedBrowserActivity extends Activity {
 	}
 
 //> PRIVATE HELPERS
+	/** Why the scan ended without a code: the user backed out, or the scanner reported a failure. */
+	private static String scanFailureCode(Intent intent) {
+		if (intent == null) {
+			return "scan_cancelled";
+		}
+		String reason = intent.getStringExtra(QrScannerActivity.EXTRA_QR_ERROR);
+		return reason == null ? "scan_cancelled" : reason;
+	}
+
+	/** Hands a scanned code to the peer, which joins and then checks the host is who it claims. */
+	private void offlineSyncQrCodeScanned(int resultCode, Intent intent) {
+		if(resultCode != RESULT_OK || intent == null) {
+			resolveOfflineSyncPairing(false, scanFailureCode(intent));
+			return;
+		}
+
+		String payload = intent.getStringExtra(QrScannerActivity.EXTRA_QR_RESULT);
+		this.offlineSyncPeer.pair(payload, pairingCallback);
+	}
+
+	void resolveOfflineSyncPairing(boolean ok, String detail) {
+		callOfflineSyncWebapp("resolveOfflineSyncPairing", ok + ", " + org.json.JSONObject.quote(detail));
+	}
+
+	/**
+	 * Calls one of the webapp's offline sync callbacks, if the webapp is far enough along to have it.
+	 *
+	 * Guarded rather than assumed: these fire from hotspot and network callbacks that can land
+	 * while the page is still loading, or after it has gone away. Not through loadUrl, which
+	 * percent-decodes the script: some of these values come from the other phone, and an encoded
+	 * quote would end the string it sits in.
+	 */
+	void callOfflineSyncWebapp(String method, String args) {
+		evaluateJavascript(String.format(
+			"try {" +
+				"const api = window.CHTCore.AndroidApi;" +
+				"if (api && api.v1 && api.v1.%1$s) {" +
+				"  api.v1.%1$s(%2$s);" +
+				"}" +
+				"} catch (error) {" +
+				"  console.error('EmbeddedBrowserActivity :: %1$s not delivered', error);" +
+				"}",
+			method, args), false);
+	}
+
+	private void offlineSyncPermissionsResolved(boolean granted) {
+		evaluateJavascript(String.format(
+			"window.CHTCore.AndroidApi.v1.offlineSyncPermissionsResolved(%s);", granted));
+	}
+
 	private void locationRequestResolved() {
 		evaluateJavascript("window.CHTCore.AndroidApi.v1.locationPermissionRequestResolved();");
 	}
@@ -451,7 +574,9 @@ public class EmbeddedBrowserActivity extends Activity {
 		ACCESS_SEND_SMS_PERMISSION(102),
 		CHT_EXTERNAL_APP_ACTIVITY(103),
 		GRAB_MRDT_PHOTO_ACTIVITY(104),
-		FILE_PICKER_ACTIVITY(105);
+		FILE_PICKER_ACTIVITY(105),
+		ACCESS_OFFLINE_SYNC_PERMISSIONS(106),
+		SCAN_OFFLINE_SYNC_QR_CODE(107);
 
 		private final int requestCode;
 
