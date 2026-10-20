@@ -164,7 +164,7 @@ public class LocalHttpServer extends NanoHTTPD {
 		*/
 	private Response store(String envelope, String signature, InputStream body, long declared)
 			throws IOException {
-		String id = inbox.store(envelope, signature, bounded(body, declared));
+		String id = inbox.store(envelope, signature, new BoundedInputStream(body, declared));
 		long stored = inbox.size(id);
 		if (stored != declared) {
 			warn(this, "Rejected a bundle that stopped after " + stored + " of " + declared + BYTES);
@@ -198,10 +198,6 @@ public class LocalHttpServer extends NanoHTTPD {
 		* The socket stays open for the next request, so reading to the end of the stream would
 		* block: the declared length is what says where this body stops.
 		*/
-	private InputStream bounded(InputStream body, long length) {
-		return new BoundedInputStream(body, length);
-	}
-
 	private static final class BoundedInputStream extends java.io.FilterInputStream {
 		private long remaining;
 

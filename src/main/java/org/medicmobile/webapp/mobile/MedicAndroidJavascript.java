@@ -432,37 +432,16 @@ public class MedicAndroidJavascript {
 	}
 
 	private void respondToOfflineSync(boolean ok, String detail, String diagnostic) {
-		callWebapp("resolveOfflineSyncHostingResult",
+		parent.callOfflineSyncWebapp("resolveOfflineSyncHostingResult",
 				ok + ", " + JSONObject.quote(detail) + ", " + JSONObject.quote(diagnostic));
 	}
 
 	private void respondToTransfer(boolean ok, String detail) {
-		callWebapp("resolveOfflineSyncTransfer", ok + ", " + JSONObject.quote(detail));
+		parent.callOfflineSyncWebapp("resolveOfflineSyncTransfer", ok + ", " + JSONObject.quote(detail));
 	}
 
 	private void respondToBundleReceived(String id) {
-		callWebapp("resolveOfflineSyncBundleReceived", JSONObject.quote(id));
-	}
-
-	/**
-	 * Calls one of the webapp's offline sync callbacks, if the webapp is far enough along to have it.
-	 *
-	 * Guarded rather than assumed: these fire from hotspot and network callbacks that can land
-	 * while the page is still loading, or after it has gone away. Not through loadUrl, which
-	 * percent-decodes the script: some of these values come from the other phone, and an encoded
-	 * quote would end the string it sits in.
-	 */
-	private void callWebapp(String method, String args) {
-		parent.evaluateJavascript(String.format(
-				"try {" +
-						"const api = window.CHTCore.AndroidApi;" +
-						"if (api && api.v1 && api.v1.%1$s) {" +
-						"  api.v1.%1$s(%2$s);" +
-						"}" +
-						"} catch (error) {" +
-						"  console.error('MedicAndroidJavascript :: %1$s not delivered', error);" +
-						"}",
-				method, args), false);
+		parent.callOfflineSyncWebapp("resolveOfflineSyncBundleReceived", JSONObject.quote(id));
 	}
 
 	/**

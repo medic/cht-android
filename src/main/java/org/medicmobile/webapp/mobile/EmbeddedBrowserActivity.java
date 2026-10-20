@@ -413,21 +413,29 @@ public class EmbeddedBrowserActivity extends Activity {
 		this.offlineSyncPeer.pair(payload, pairingCallback);
 	}
 
-	/**
-	 * The detail can be the host's own label, so this does not go through loadUrl: it
-	 * percent-decodes the script, and an encoded quote would end the string it sits in.
-	 */
 	void resolveOfflineSyncPairing(boolean ok, String detail) {
+		callOfflineSyncWebapp("resolveOfflineSyncPairing", ok + ", " + org.json.JSONObject.quote(detail));
+	}
+
+	/**
+	 * Calls one of the webapp's offline sync callbacks, if the webapp is far enough along to have it.
+	 *
+	 * Guarded rather than assumed: these fire from hotspot and network callbacks that can land
+	 * while the page is still loading, or after it has gone away. Not through loadUrl, which
+	 * percent-decodes the script: some of these values come from the other phone, and an encoded
+	 * quote would end the string it sits in.
+	 */
+	void callOfflineSyncWebapp(String method, String args) {
 		evaluateJavascript(String.format(
 			"try {" +
 				"const api = window.CHTCore.AndroidApi;" +
-				"if (api && api.v1 && api.v1.resolveOfflineSyncPairing) {" +
-				"  api.v1.resolveOfflineSyncPairing(%s, %s);" +
+				"if (api && api.v1 && api.v1.%1$s) {" +
+				"  api.v1.%1$s(%2$s);" +
 				"}" +
 				"} catch (error) {" +
-				"  console.error('EmbeddedBrowserActivity :: Offline sync pairing result not delivered', error);" +
+				"  console.error('EmbeddedBrowserActivity :: %1$s not delivered', error);" +
 				"}",
-			ok, org.json.JSONObject.quote(detail)), false);
+			method, args), false);
 	}
 
 	private void offlineSyncPermissionsResolved(boolean granted) {
