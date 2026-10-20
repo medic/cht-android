@@ -246,7 +246,7 @@ public class LocalHttpServerTest {
 	}
 
 	@Test
-	public void serve_refusesAnythingElse() throws Exception {
+	public void serve_refusesAnythingElse() {
 		assertEquals(
 				NanoHTTPD.Response.Status.NOT_FOUND,
 				server().serve(request(NanoHTTPD.Method.POST, "/_offline-sync/status")).getStatus());

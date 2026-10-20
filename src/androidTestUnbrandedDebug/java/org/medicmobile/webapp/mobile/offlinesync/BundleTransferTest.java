@@ -21,6 +21,7 @@ import org.junit.runner.RunWith;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 
 @RunWith(AndroidJUnit4.class)
@@ -75,6 +76,10 @@ public class BundleTransferTest {
 		return "127.0.0.1";
 	}
 
+	private InetSocketAddress host() {
+		return InetSocketAddress.createUnresolved(address(), server.getListeningPort());
+	}
+
 	@Test public void aPeerReachesTheHostItScanned() throws Exception {
 		String label = client(certificate.fingerprint())
 				.fetchStatus(address(), server.getListeningPort());
@@ -111,7 +116,7 @@ public class BundleTransferTest {
 		String contents = "{\"_id\":\"report-1\"}\n{\"_id\":\"report-2\"}\n";
 
 		client(certificate.fingerprint()).postBundle(
-				address(), server.getListeningPort(), ENVELOPE, SIGNATURE, bundleOf(contents));
+				host(), ENVELOPE, SIGNATURE, bundleOf(contents));
 
 		JSONArray held = inbox.list();
 		assertEquals(1, held.length());
@@ -131,7 +136,7 @@ public class BundleTransferTest {
 		String contents = large.toString();
 
 		client(certificate.fingerprint()).postBundle(
-				address(), server.getListeningPort(), ENVELOPE, SIGNATURE, bundleOf(contents));
+				host(), ENVELOPE, SIGNATURE, bundleOf(contents));
 
 		String id = inbox.list().getJSONObject(0).getString("id");
 		assertEquals(contents.length(), inbox.size(id));
@@ -139,7 +144,7 @@ public class BundleTransferTest {
 
 	@Test public void theSocketIsStillGoodAfterABundle() throws Exception {
 		PeerClient peer = client(certificate.fingerprint());
-		peer.postBundle(address(), server.getListeningPort(), ENVELOPE, SIGNATURE, bundleOf("first"));
+		peer.postBundle(host(), ENVELOPE, SIGNATURE, bundleOf("first"));
 
 		assertEquals(LABEL, peer.fetchStatus(address(), server.getListeningPort()));
 		assertTrue(server.isAlive());

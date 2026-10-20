@@ -1,9 +1,9 @@
 package org.medicmobile.webapp.mobile.offlinesync;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 import android.app.Notification;
 import android.app.Service;
@@ -44,7 +44,7 @@ public class OfflineSyncForegroundServiceTest {
 	@Test public void theNotificationCannotBeSwipedAway() {
 		Notification notification = started(OfflineSyncForegroundService.STATUS_HOSTING);
 
-		assertTrue((notification.flags & Notification.FLAG_ONGOING_EVENT) != 0);
+		assertNotEquals(0, notification.flags & Notification.FLAG_ONGOING_EVENT);
 	}
 
 	@Test public void itSaysWhichSideOfTheTransferThisPhoneIsOn() {

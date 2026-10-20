@@ -37,6 +37,7 @@ public class LocalHttpServer extends NanoHTTPD {
 	public static final int EPHEMERAL_PORT = 0;
 
 	private static final String MIME_JSON = "application/json";
+	private static final String BYTES = " bytes";
 	private static final String STATUS_PATH = "/_offline-sync/status";
 	private static final String BUNDLE_PATH = "/_offline-sync/bundle";
 	private static final String ENVELOPE_HEADER = "x-medic-bundle-envelope";
@@ -142,7 +143,7 @@ public class LocalHttpServer extends NanoHTTPD {
 			return error(Response.Status.BAD_REQUEST, "missing content length");
 		}
 		if (declared > MAX_BUNDLE_BYTES) {
-			warn(this, "Rejected a bundle of " + declared + " bytes");
+			warn(this, "Rejected a bundle of " + declared + BYTES);
 			return error(Response.Status.PAYLOAD_TOO_LARGE, "bundle too large");
 		}
 
@@ -166,12 +167,12 @@ public class LocalHttpServer extends NanoHTTPD {
 		String id = inbox.store(envelope, signature, bounded(body, declared));
 		long stored = inbox.size(id);
 		if (stored != declared) {
-			warn(this, "Rejected a bundle that stopped after " + stored + " of " + declared + " bytes");
+			warn(this, "Rejected a bundle that stopped after " + stored + " of " + declared + BYTES);
 			inbox.delete(id);
 			return error(Response.Status.BAD_REQUEST, "bundle was incomplete");
 		}
 
-		log(this, "Took a bundle of " + stored + " bytes");
+		log(this, "Took a bundle of " + stored + BYTES);
 		BundleListener told = listener;
 		if (told != null) {
 			told.onBundleReceived(id);
@@ -198,31 +199,38 @@ public class LocalHttpServer extends NanoHTTPD {
 		* block: the declared length is what says where this body stops.
 		*/
 	private InputStream bounded(InputStream body, long length) {
-		return new java.io.FilterInputStream(body) {
-			private long remaining = length;
+		return new BoundedInputStream(body, length);
+	}
 
-			@Override public int read() throws IOException {
-				if (remaining <= 0) {
-					return -1;
-				}
-				int value = super.read();
-				if (value != -1) {
-					remaining--;
-				}
-				return value;
-			}
+	private static final class BoundedInputStream extends java.io.FilterInputStream {
+		private long remaining;
 
-			@Override public int read(byte[] buffer, int offset, int count) throws IOException {
-				if (remaining <= 0) {
-					return -1;
-				}
-				int read = super.read(buffer, offset, (int) Math.min(count, remaining));
-				if (read != -1) {
-					remaining -= read;
-				}
-				return read;
+		BoundedInputStream(InputStream body, long length) {
+			super(body);
+			this.remaining = length;
+		}
+
+		@Override public int read() throws IOException {
+			if (remaining <= 0) {
+				return -1;
 			}
-		};
+			int value = super.read();
+			if (value != -1) {
+				remaining--;
+			}
+			return value;
+		}
+
+		@Override public int read(byte[] buffer, int offset, int count) throws IOException {
+			if (remaining <= 0) {
+				return -1;
+			}
+			int read = super.read(buffer, offset, (int) Math.min(count, remaining));
+			if (read != -1) {
+				remaining -= read;
+			}
+			return read;
+		}
 	}
 
 	private Response error(Response.Status status, String message) {

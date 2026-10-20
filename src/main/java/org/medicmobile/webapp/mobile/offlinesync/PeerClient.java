@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.net.InetSocketAddress;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -98,9 +99,9 @@ public class PeerClient {
 		*
 		* @throws IOException if the host could not be reached, or would not take the bundle
 		*/
-	public void postBundle(String ipAddress, int port, String envelope, String signature, File body)
+	public void postBundle(InetSocketAddress host, String envelope, String signature, File body)
 			throws IOException {
-		HttpsURLConnection connection = open(ipAddress, port, "/_offline-sync/bundle", "POST");
+		HttpsURLConnection connection = open(host.getHostString(), host.getPort(), "/_offline-sync/bundle", "POST");
 		try {
 			connection.setDoOutput(true);
 			// Streamed rather than buffered: a bundle is megabytes, and buffering would hold a second

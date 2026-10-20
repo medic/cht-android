@@ -9,6 +9,7 @@ import android.util.Base64;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.InetSocketAddress;
 
 /**
 	* The joining side of a pairing session.
@@ -189,21 +190,30 @@ public class OfflineSyncPeer {
 		}
 
 		File body = outbox.bundle(id);
-		new Thread(() -> {
-			try {
-				client.postBundle(address.getIpAddress(), address.getPort(), envelope, signature, body);
-				discard(body);
-				callback.onSent();
-			} catch (PeerClient.BundleRejectedException e) {
-				warn(e, "The host would not take the bundle");
-				discard(body);
-				callback.onFailed("bundle_rejected");
-			} catch (IOException e) {
-				warn(e, "Could not hand the bundle to the host");
-				discard(body);
-				callback.onFailed("transfer_failed");
-			}
-		}, "offline-sync-send").start();
+		InetSocketAddress target = InetSocketAddress.createUnresolved(address.getIpAddress(), address.getPort());
+		new Thread(() -> deliver(body, callback, () -> client.postBundle(target, envelope, signature, body)),
+				"offline-sync-send").start();
+	}
+
+	/** One attempt to hand a bundle over. */
+	private interface Upload {
+		void run() throws IOException;
+	}
+
+	private void deliver(File body, SendCallback callback, Upload upload) {
+		try {
+			upload.run();
+			discard(body);
+			callback.onSent();
+		} catch (PeerClient.BundleRejectedException e) {
+			warn(e, "The host would not take the bundle");
+			discard(body);
+			callback.onFailed("bundle_rejected");
+		} catch (IOException e) {
+			warn(e, "Could not hand the bundle to the host");
+			discard(body);
+			callback.onFailed("transfer_failed");
+		}
 	}
 
 	/**
