@@ -99,7 +99,7 @@ public class SessionCertificate {
 		*/
 	public void renew() throws GeneralSecurityException {
 		// A reload, not the instance held since construction: that one is a snapshot, and reading a
-		// freshly generated entry through it is where the stale key came from.
+		// freshly generated entry through it can return the previous key.
 		keyStore = loadKeyStore();
 		discardOldAliases();
 		alias = ALIAS_PREFIX + "-" + UUID.randomUUID();
@@ -140,8 +140,8 @@ public class SessionCertificate {
 	/**
 		* Removes any session key left behind, ours or a previous run's.
 		*
-		* Aliases are per session now, so a crash between renew() and destroy() would otherwise leave
-		* one in the keystore for good.
+		* Each session has its own alias, so a crash between renew() and destroy() would otherwise
+		* leave one in the keystore for good.
 		*/
 	private void discardOldAliases() throws GeneralSecurityException {
 		java.util.Enumeration<String> aliases = keyStore.aliases();

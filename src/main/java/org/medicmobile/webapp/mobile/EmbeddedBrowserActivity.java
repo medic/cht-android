@@ -414,9 +414,9 @@ public class EmbeddedBrowserActivity extends Activity {
 	}
 
 	/**
-		* The detail can be the host's own label, so this does not go through loadUrl: it
-		* percent-decodes the script, and an encoded quote would end the string it sits in.
-		*/
+	 * The detail can be the host's own label, so this does not go through loadUrl: it
+	 * percent-decodes the script, and an encoded quote would end the string it sits in.
+	 */
 	void resolveOfflineSyncPairing(boolean ok, String detail) {
 		evaluateJavascript(String.format(
 			"try {" +

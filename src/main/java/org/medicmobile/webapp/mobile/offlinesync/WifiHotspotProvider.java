@@ -189,10 +189,11 @@ public class WifiHotspotProvider implements HotspotProvider {
 	}
 
 	/**
-		* Whether the device's location setting is on, which the platform requires for a hotspot.
+		* Whether the device's location setting is on, which the platform requires for a hotspot and,
+		* on some versions, for reading the joined network's name.
 		*
 		* Separate from the permission: a user can grant location access and still have the setting
-		* switched off, and the hotspot then fails in a way that looks like any other error.
+		* switched off, and the platform then fails in a way that looks like any other error.
 		*/
 	static boolean isLocationEnabled(LocationManager locationManager) {
 		if (locationManager == null) {
