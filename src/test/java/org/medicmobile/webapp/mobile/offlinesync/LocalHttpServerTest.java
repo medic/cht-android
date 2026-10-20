@@ -1,0 +1,130 @@
+package org.medicmobile.webapp.mobile.offlinesync;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import org.json.JSONObject;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+
+import java.io.ByteArrayOutputStream;
+
+import fi.iki.elonen.NanoHTTPD;
+
+@RunWith(RobolectricTestRunner.class)
+public class LocalHttpServerTest {
+
+	private static final String LABEL = "Supervisor phone";
+
+	private SessionCertificate certificate;
+
+	@org.junit.Before public void setUp() {
+		certificate = mock(SessionCertificate.class);
+	}
+
+	private LocalHttpServer server() {
+		return new LocalHttpServer(LABEL, certificate);
+	}
+
+	private NanoHTTPD.IHTTPSession request(NanoHTTPD.Method method, String uri) {
+		NanoHTTPD.IHTTPSession session = mock(NanoHTTPD.IHTTPSession.class);
+		when(session.getMethod()).thenReturn(method);
+		when(session.getUri()).thenReturn(uri);
+		return session;
+	}
+
+	private String bodyOf(NanoHTTPD.Response response) throws Exception {
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		byte[] buffer = new byte[1024];
+		int read;
+		while ((read = response.getData().read(buffer)) > 0) {
+			out.write(buffer, 0, read);
+		}
+		return out.toString("UTF-8");
+	}
+
+	@Test
+	public void constructor_rejectsAnEmptyLabel() {
+		assertThrows(IllegalArgumentException.class, () -> new LocalHttpServer("", certificate));
+		assertThrows(IllegalArgumentException.class, () -> new LocalHttpServer("  ", certificate));
+		assertThrows(IllegalArgumentException.class, () -> new LocalHttpServer(null, certificate));
+		assertThrows(IllegalArgumentException.class, () -> new LocalHttpServer(LABEL, null));
+	}
+
+	@Test
+	public void status_identifiesTheHostSoAPeerCanConfirmWhatItReached() throws Exception {
+		LocalHttpServer server = server();
+
+		NanoHTTPD.Response response = server.serve(request(NanoHTTPD.Method.GET, "/_offline-sync/status"));
+
+		assertEquals(NanoHTTPD.Response.Status.OK, response.getStatus());
+		JSONObject body = new JSONObject(bodyOf(response));
+		assertEquals("cht-offline-sync", body.getString("service"));
+		assertEquals(LABEL, body.getString("device_label"));
+		assertEquals(1, body.getInt("protocol_version"));
+	}
+
+	@Test
+	public void unknownPath_is404() {
+		LocalHttpServer server = server();
+
+		NanoHTTPD.Response response = server.serve(request(NanoHTTPD.Method.GET, "/_offline-sync/anything-else"));
+
+		assertEquals(NanoHTTPD.Response.Status.NOT_FOUND, response.getStatus());
+	}
+
+	@Test
+	public void dataEndpointsFromTheOldProtocolAreGone() {
+		LocalHttpServer server = server();
+
+		for (String path : new String[] { "/_offline-sync/auth", "/_offline-sync/get-ids", "/_offline-sync/bulk-get", "/_offline-sync/accept-docs" }) {
+			NanoHTTPD.Response response = server.serve(request(NanoHTTPD.Method.POST, path));
+			assertEquals(path, NanoHTTPD.Response.Status.NOT_FOUND, response.getStatus());
+		}
+	}
+
+	@Test
+	public void statusOnlyAnswersGet() {
+		LocalHttpServer server = server();
+
+		NanoHTTPD.Response response = server.serve(request(NanoHTTPD.Method.POST, "/_offline-sync/status"));
+
+		assertEquals(NanoHTTPD.Response.Status.NOT_FOUND, response.getStatus());
+	}
+
+	@Test
+	public void stopServer_isSafeWhenNeverStarted() {
+		LocalHttpServer server = server();
+
+		server.stopServer();
+
+		assertFalse(server.isAlive());
+	}
+
+	@Test
+	public void defaultsToAnOsAssignedPort() {
+		assertEquals(0, LocalHttpServer.EPHEMERAL_PORT);
+	}
+
+	@Test
+	public void startServer_refusesToListenIfTheCertificateIsUnusable() throws Exception {
+		when(certificate.sslServerSocketFactory())
+				.thenThrow(new java.security.GeneralSecurityException("no key"));
+
+		assertThrows(java.security.GeneralSecurityException.class, () -> server().startServer());
+	}
+
+	@Test
+	public void startServer_asksTheSessionCertificateForItsSocketFactory() throws Exception {
+		when(certificate.sslServerSocketFactory())
+				.thenThrow(new java.security.GeneralSecurityException("stop before binding"));
+
+		assertThrows(java.security.GeneralSecurityException.class, () -> server().startServer());
+		verify(certificate).sslServerSocketFactory();
+	}
+}
