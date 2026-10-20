@@ -106,8 +106,12 @@ public class EmbeddedBrowserActivity extends Activity {
 				error(ex, "Failed to create OfflineSyncManager.");
 			}
 		}
-		this.offlineSyncPeer = OfflineSyncPeer.getInstance(this);
-		this.offlineSyncPeer.redirect(pairingCallback);
+		try {
+			this.offlineSyncPeer = OfflineSyncPeer.getInstance(this);
+			this.offlineSyncPeer.redirect(pairingCallback);
+		} catch(Exception ex) {
+			error(ex, "Failed to create OfflineSyncPeer.");
+		}
 
 		this.settings = SettingsStore.in(this);
 		this.appUrl = settings.getAppUrl();
