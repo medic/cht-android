@@ -11,8 +11,12 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.io.File;
+import java.io.IOException;
 
 import org.json.JSONObject;
 import org.junit.Before;
@@ -20,6 +24,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.util.ReflectionHelpers;
 
 @RunWith(RobolectricTestRunner.class)
 public class OfflineSyncPeerTest {
@@ -188,5 +193,45 @@ public class OfflineSyncPeerTest {
 		when(outbox.delete(any())).thenThrow(new IllegalArgumentException("not a bundle id"));
 
 		assertFalse(peer.discardBundle("../../secrets"));
+	}
+
+	private File sendTo(PeerClient host, OfflineSyncPeer.SendCallback send) throws Exception {
+		File body = File.createTempFile("bundle", ".bin");
+		when(outbox.bundle("b1")).thenReturn(body);
+		ReflectionHelpers.setField(peer, "host", host);
+		ReflectionHelpers.setField(peer, "hostAddress", QrCodeHelper.parsePayload(validPayload()));
+		peer.sendBundle("b1", "envelope", "signature", send);
+		return body;
+	}
+
+	@Test public void sendBundle_removesTheBundleOnceTheHostHasIt() throws Exception {
+		OfflineSyncPeer.SendCallback send = mock(OfflineSyncPeer.SendCallback.class);
+
+		File body = sendTo(mock(PeerClient.class), send);
+
+		verify(send, timeout(3000)).onSent();
+		assertFalse(body.exists());
+	}
+
+	@Test public void sendBundle_removesTheBundleTheHostRefused() throws Exception {
+		PeerClient host = mock(PeerClient.class);
+		doThrow(new PeerClient.BundleRejectedException("refused")).when(host).postBundle(any(), anyString(), anyString(), any());
+		OfflineSyncPeer.SendCallback send = mock(OfflineSyncPeer.SendCallback.class);
+
+		File body = sendTo(host, send);
+
+		verify(send, timeout(3000)).onFailed("bundle_rejected");
+		assertFalse(body.exists());
+	}
+
+	@Test public void sendBundle_removesTheBundleWhenTheTransferBreaks() throws Exception {
+		PeerClient host = mock(PeerClient.class);
+		doThrow(new IOException("gone")).when(host).postBundle(any(), anyString(), anyString(), any());
+		OfflineSyncPeer.SendCallback send = mock(OfflineSyncPeer.SendCallback.class);
+
+		File body = sendTo(host, send);
+
+		verify(send, timeout(3000)).onFailed("transfer_failed");
+		assertFalse(body.exists());
 	}
 }

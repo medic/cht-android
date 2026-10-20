@@ -174,9 +174,9 @@ public class OfflineSyncPeer {
 	/**
 		* Hands one sealed bundle to the paired host, off the calling thread.
 		*
-		* The bundle file is deleted once the host has taken it. A failure leaves it in place: the
-		* webapp packs the same data again next time rather than us retrying behind the user's back
-		* on a link that may already be gone.
+		* The bundle file is deleted whatever the outcome. Nothing is retried here: after a failure
+		* the webapp packs the same data again next time, rather than this retrying behind the
+		* user's back on a link that may already be gone.
 		*/
 	public void sendBundle(String id, String envelope, String signature, SendCallback callback) {
 		if (callback == null) {
