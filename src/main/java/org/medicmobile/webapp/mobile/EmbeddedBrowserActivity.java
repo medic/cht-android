@@ -228,6 +228,9 @@ public class EmbeddedBrowserActivity extends Activity {
 				case ACCESS_SEND_SMS_PERMISSION:
 					this.smsSender.resumeProcess(resultCode);
 					return;
+				case BARCODE_SCANNER:
+					processChtBarcodeResult(resultCode, intent);
+					return;
 				default:
 					trace(this, "onActivityResult() :: no handling for requestCode=%s", requestCode.name());
 			}
@@ -322,6 +325,10 @@ public class EmbeddedBrowserActivity extends Activity {
 //> PRIVATE HELPERS
 	private void locationRequestResolved() {
 		evaluateJavascript("window.CHTCore.AndroidApi.v1.locationPermissionRequestResolved();");
+	}
+
+	private void processChtBarcodeResult(int resultCode, Intent intentData) {
+		processChtExternalAppResult(resultCode, intentData);
 	}
 
 	private void processChtExternalAppResult(int resultCode, Intent intentData) {
@@ -451,7 +458,8 @@ public class EmbeddedBrowserActivity extends Activity {
 		ACCESS_SEND_SMS_PERMISSION(102),
 		CHT_EXTERNAL_APP_ACTIVITY(103),
 		GRAB_MRDT_PHOTO_ACTIVITY(104),
-		FILE_PICKER_ACTIVITY(105);
+		FILE_PICKER_ACTIVITY(105),
+		BARCODE_SCANNER(106);
 
 		private final int requestCode;
 
