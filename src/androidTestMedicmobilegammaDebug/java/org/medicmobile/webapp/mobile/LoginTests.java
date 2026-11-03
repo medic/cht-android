@@ -21,6 +21,8 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anything;
 import static org.hamcrest.Matchers.containsString;
 
+import android.Manifest;
+
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
@@ -31,6 +33,7 @@ import androidx.test.espresso.web.webdriver.Locator;
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.LargeTest;
+import androidx.test.rule.GrantPermissionRule;
 
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -52,6 +55,11 @@ public class LoginTests {
 	@Rule
 	public ActivityScenarioRule<SettingsDialogActivity> mActivityTestRule =
 			new ActivityScenarioRule<>(SettingsDialogActivity.class);
+	@Rule
+	public GrantPermissionRule permissionRule =
+			GrantPermissionRule.grant(
+					Manifest.permission.POST_NOTIFICATIONS
+			);
 
 	@Test
 	public void testLoginScreen() throws Exception {

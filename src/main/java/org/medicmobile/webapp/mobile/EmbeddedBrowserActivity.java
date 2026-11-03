@@ -19,8 +19,10 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.view.Window;
@@ -32,7 +34,9 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
+import androidx.core.view.ViewCompat;
 
 import java.util.Arrays;
 import java.util.Optional;
@@ -83,23 +87,26 @@ public class EmbeddedBrowserActivity extends Activity {
 
 		this.requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.main);
+		View webviewContainer = findViewById(R.id.lytWebView);
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+			ViewCompat.requestApplyInsets(webviewContainer.getRootView());
+		}
 
 		// Add an alarming red border if using configurable (i.e. dev)
 		// app with a medic production server.
 		if (settings.allowsConfiguration() && appUrl != null && appUrl.contains("app.medicmobile.org")) {
-			View webviewContainer = findViewById(R.id.lytWebView);
 			webviewContainer.setPadding(10, 10, 10, 10);
 			webviewContainer.setBackgroundResource(R.drawable.warning_background);
 		}
 
 		// Add a noticeable border to easily identify a training app
 		if (BuildConfig.IS_TRAINING_APP) {
-			View webviewContainer = findViewById(R.id.lytWebView);
 			webviewContainer.setPadding(10, 10, 10, 10);
 			webviewContainer.setBackgroundResource(R.drawable.training_background);
 		}
 
 		container = findViewById(R.id.wbvMain);
+
 		getFragmentManager()
 			.beginTransaction()
 			.add(new OpenSettingsDialogFragment(), OpenSettingsDialogFragment.class.getName())
@@ -114,20 +121,33 @@ public class EmbeddedBrowserActivity extends Activity {
 
 		enableUrlHandlers(container);
 
-		Intent appLinkIntent = getIntent();
-		Uri appLinkData = appLinkIntent.getData();
-		browseTo(appLinkData);
-
 		if (settings.allowsConfiguration()) {
 			toast(redactUrl(appUrl));
 		}
 
 		registerRetryConnectionBroadcastReceiver();
 
+		initializeNotifications();
+
 		String recentNavigation = settings.getLastUrl();
-		if (isValidNavigationUrl(appUrl, recentNavigation)) {
+		Intent appLinkIntent = getIntent();
+		Uri appLinkData = appLinkIntent.getData();
+		if (appLinkData != null) {
+			// The app has been opened via an app link.
+			browseTo(appLinkData);
+		} else if (isValidNavigationUrl(appUrl, recentNavigation)) {
+			// The app has been opened normally, and the user can start where they left off.
 			container.loadUrl(recentNavigation);
+		} else {
+			// The app has been opened normally, but no previous URL is available. (Maybe it is the first time.)
+			browseTo(null);
 		}
+	}
+
+	@Override
+	protected void onNewIntent(Intent intent) {
+		Uri appLinkData = intent.getData();
+		browseTo(appLinkData);
 	}
 
 	@SuppressWarnings("PMD.CallSuperFirst")
@@ -219,6 +239,27 @@ public class EmbeddedBrowserActivity extends Activity {
 			warn(ex, "Problem handling intent %s (%s) with requestCode=%s & resultCode=%s",
 				intent, action, requestCode.name(), resultCode);
 		}
+	}
+
+
+	@Override
+	public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+		if (requestCode == AppNotificationManager.REQUEST_NOTIFICATION_PERMISSION && grantResults.length > 0 &&
+				grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+			initializeNotifications();
+		}
+	}
+
+	private void initializeNotifications() {
+		AppNotificationManager appNotificationManager = new AppNotificationManager(this);
+		appNotificationManager.cancelAllNotifications();
+		if (!appNotificationManager.hasNotificationPermission()) {
+			appNotificationManager.requestNotificationPermission(this);
+			appNotificationManager.stopNotificationWorker();
+			return;
+		}
+		appNotificationManager.startNotificationWorker();
 	}
 
 //> ACCESSORS

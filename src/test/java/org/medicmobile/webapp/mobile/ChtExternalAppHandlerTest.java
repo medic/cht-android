@@ -135,9 +135,30 @@ public class ChtExternalAppHandlerTest {
 			Intent intent = mock(Intent.class);
 			ChtExternalAppHandler chtExternalAppHandler = new ChtExternalAppHandler(contextMock);
 			String expectedMessageWarn = "ChtExternalAppHandler :: Bad result code: %s. The external app either: " +
-					"explicitly returned this result, didn't return any result or crashed during the operation.";
+					"explicitly returned this result, did not return any result or crashed during the operation. [null]";
 			String expectedMessageConsole = "ChtExternalAppHandler :: Bad result code: " + RESULT_CANCELED + ". The external app either: " +
-					"explicitly returned this result, didn't return any result or crashed during the operation.";
+					"explicitly returned this result, did not return any result or crashed during the operation. [null]";
+
+			//> WHEN
+			String script = chtExternalAppHandler.processResult(RESULT_CANCELED, intent);
+
+			//> THEN
+			assertEquals("console.error('" + expectedMessageConsole + "')", script);
+			medicLogMock.verify(() -> MedicLog.warn(eq(chtExternalAppHandler), eq(expectedMessageWarn), eq(RESULT_CANCELED)));
+		}
+	}
+
+	@Test
+	public void processResult_withBadResultCodeAndData_logError() {
+		try (MockedStatic<MedicLog> medicLogMock = mockStatic(MedicLog.class)) {
+			//> GIVEN
+			Intent intent = new Intent();
+			intent.putExtra("name", "Eric");
+			ChtExternalAppHandler chtExternalAppHandler = new ChtExternalAppHandler(contextMock);
+			String expectedMessageWarn = "ChtExternalAppHandler :: Bad result code: %s. The external app either: " +
+				"explicitly returned this result, did not return any result or crashed during the operation. [{\"name\":\"Eric\"}]";
+			String expectedMessageConsole = "ChtExternalAppHandler :: Bad result code: " + RESULT_CANCELED + ". The external app either: " +
+				"explicitly returned this result, did not return any result or crashed during the operation. [{\"name\":\"Eric\"}]";
 
 			//> WHEN
 			String script = chtExternalAppHandler.processResult(RESULT_CANCELED, intent);

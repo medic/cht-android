@@ -7,6 +7,66 @@
 
 # Release notes
 
+## 1.8.0
+
+* Android 16 support ([#437](https://github.com/medic/cht-android/pull/437))
+* Enlarge CHT server URL input field ([#427](https://github.com/medic/cht-android/pull/427))
+
+## 1.7.0
+
+### Features
+
+* Show Android notifications for tasks ([#414](https://github.com/medic/cht-android/pull/414))
+
+### Flavors
+
+* Add flavor for MoH Civ Coach CHWs ([#419](https://github.com/medic/cht-android/pull/419))
+
+### Fixes
+
+* Add notification bar theme color ([#413](https://github.com/medic/cht-android/pull/413))
+* Log intent response data when external app fails ([#410](https://github.com/medic/cht-android/pull/410))
+
+### Technical Improvements
+
+* Roll back to Gradle v8.8 ([#422](https://github.com/medic/cht-android/issues/422))
+* Revise README for clarity and corrections ([#420](https://github.com/medic/cht-android/pull/420))
+* Clean up inaccurate comments ([#425](https://github.com/medic/cht-android/pull/425))
+
+## 1.6.0
+
+* Android 15 support ([#407](https://github.com/medic/cht-android/pull/407))
+* Update OIDC handling to use custom tabs ([#405](https://github.com/medic/cht-android/pull/405))
+
+## 1.5.2
+
+### Flavors
+
+* Add production flavor for MoH Nepal mHealth program ([#388](https://github.com/medic/cht-android/pull/388))
+* Add new flavor for MoH Nepal Lumbini ([#389](https://github.com/medic/cht-android/pull/389))
+* Fix case for `lumbini_chis` flavor ([#390](https://github.com/medic/cht-android/pull/390))
+* Fix missing URLs for `moh_nepal_mhealth` ([#391](https://github.com/medic/cht-android/pull/391))
+* Remove unused flavors: `cares_malawi_kch`, `cares_malawi_mpc`, `safaridoctors_kenya_yha` ([#345](https://github.com/medic/cht-android/issues/345))
+
+### Fixes
+
+* Fix URL handling to support SSO login ([#396](https://github.com/medic/cht-android/issues/396))
+
+### Technical Improvements
+
+* Bump copyright year to 2025 ([#381](https://github.com/medic/cht-android/pull/381))
+* Update `actions/cache` action in GitHub workflow ([#395](https://github.com/medic/cht-android/pull/395))
+
+## 1.5.1
+
+### Flavors
+
+* Change `musomali` instance URL to self-hosted one ([#384](https://github.com/medic/cht-android/issues/384))
+
+### Fixes
+
+* Don't show red warning border unless custom URL is enabled ([#385](https://github.com/medic/cht-android/issues/385))
+
 ## 1.5.0
 
 ### Technical Improvements

@@ -20,6 +20,7 @@
   <uses-permission android:name="android.permission.VIBRATE"/>
   <uses-permission android:name="com.android.launcher.permission.INSTALL_SHORTCUT"/>
   <uses-permission android:name="com.android.launcher.permission.UNINSTALL_SHORTCUT"/>
+  <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
 
   <!-- READ_EXTERNAL_STORAGE is required if users want to include photos from their phone  -->
   <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32"/>
@@ -34,9 +35,11 @@
   <application android:label="@string/app_name"
       android:icon="@mipmap/ic_launcher"
       android:allowBackup="false"
+      android:allowCrossUidActivitySwitchFromBelow="false"
       android:fullBackupContent="@xml/backup_rules_sdk_30_and_lower"
       android:dataExtractionRules="@xml/backup_rules"
       android:largeHeap="true"
+      android:enableOnBackInvokedCallback="false"
       tools:ignore="LockedOrientationActivity,UnusedAttribute">
     <meta-data
       android:name="com.google.mlkit.vision.DEPENDENCIES"
@@ -48,9 +51,20 @@
       </intent-filter>
     </activity>
     <activity android:name="EmbeddedBrowserActivity"
-        android:screenOrientation="portrait"
-        android:configChanges="orientation|screenSize"
-        tools:ignore="DiscouragedApi"/>
+      android:screenOrientation="portrait"
+      android:configChanges="orientation|screenSize"
+      android:launchMode="singleTask"
+      android:theme="@style/Theme.AppCompat.NoActionBar"
+      android:exported="true"
+      tools:ignore="DiscouragedApi">
+      <intent-filter android:autoVerify="true">
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <data android:scheme="@string/scheme" android:host="@string/app_host" android:pathPattern=".*"
+            tools:ignore="AppLinkUrlError" />
+      </intent-filter>
+    </activity>
     <activity android:name="ConnectionErrorActivity"
         android:screenOrientation="portrait"
         android:configChanges="orientation|screenSize"
@@ -103,6 +117,10 @@
         android:resource="@xml/file_paths">
       </meta-data>
     </provider>
+    <service android:name="androidx.work.impl.background.systemjob.SystemJobService"
+        android:permission="android.permission.BIND_JOB_SERVICE"
+        android:exported="true"
+        tools:targetApi="23" />
   </application>
 
   <queries>
