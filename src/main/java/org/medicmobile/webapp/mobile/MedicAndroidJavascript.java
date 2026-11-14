@@ -42,6 +42,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
@@ -198,21 +199,27 @@ public class MedicAndroidJavascript {
 	@android.webkit.JavascriptInterface
 	public void launchExternalApp(String action, String category, String type, String extras, String uri, String packageName, String flags) {
 		try {
-			JSONObject parsedExtras = extras == null ? null : new JSONObject(extras);
-			Uri parsedUri = uri == null ? null : Uri.parse(uri);
-			Integer parsedFlags = flags == null ? null : Integer.parseInt(flags);
+			//This implementation is hijacking this bridge
+			// Create a new webapp API specifically for this embedded barcode scanner
+			if(Objects.equals(action, "cht.android.SCAN_BARCODE")) {
+				this.chtExternalAppHandler.triggerScanner();
+			} else {
+				JSONObject parsedExtras = (extras == null) ? null : new JSONObject(extras);
+				Uri parsedUri = (uri == null) ? null : Uri.parse(uri);
+				Integer parsedFlags = (flags == null) ? null : Integer.parseInt(flags);
 
-			ChtExternalApp chtExternalApp = new ChtExternalApp
-					.Builder()
-					.setAction(action)
-					.setCategory(category)
-					.setType(type)
-					.setExtras(parsedExtras)
-					.setUri(parsedUri)
-					.setPackageName(packageName)
-					.setFlags(parsedFlags)
-					.build();
-			this.chtExternalAppHandler.startIntent(chtExternalApp);
+				ChtExternalApp chtExternalApp = new ChtExternalApp
+						.Builder()
+						.setAction(action)
+						.setCategory(category)
+						.setType(type)
+						.setExtras(parsedExtras)
+						.setUri(parsedUri)
+						.setPackageName(packageName)
+						.setFlags(parsedFlags)
+						.build();
+				this.chtExternalAppHandler.startIntent(chtExternalApp);
+			}
 
 		} catch (Exception ex) {
 			logException(ex);
